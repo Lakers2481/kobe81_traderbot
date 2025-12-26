@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+"""
+Kobe 24/7 Runner - Scheduled trading execution.
+
+Runs paper or live trading at configurable times throughout the trading day.
+Includes position reconciliation on startup and periodic health checks.
+"""
 from __future__ import annotations
 
 import argparse
@@ -14,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from core.structured_log import jlog
+from core.kill_switch import is_kill_switch_active, get_kill_switch_info
 from config.env_loader import load_env
 
 
@@ -56,7 +63,81 @@ def within_market_day(now: datetime) -> bool:
     return now.weekday() < 5
 
 
+def reconcile_positions(dotenv: Path) -> dict:
+    """
+    Run position reconciliation against broker.
+
+    Returns:
+        Dictionary with reconciliation results
+    """
+    jlog('reconcile_start', level='INFO')
+    result = {
+        'success': False,
+        'positions': [],
+        'orders_open': [],
+        'discrepancies': [],
+    }
+
+    try:
+        base = os.getenv('ALPACA_BASE_URL', 'https://paper-api.alpaca.markets').rstrip('/')
+        key = os.getenv('ALPACA_API_KEY_ID', '')
+        sec = os.getenv('ALPACA_API_SECRET_KEY', '')
+
+        if not key or not sec:
+            jlog('reconcile_no_credentials', level='WARNING')
+            return result
+
+        import requests
+        hdr = {'APCA-API-KEY-ID': key, 'APCA-API-SECRET-KEY': sec}
+
+        # Get positions from broker
+        r = requests.get(f"{base}/v2/positions", headers=hdr, timeout=10)
+        r.raise_for_status()
+        positions = r.json()
+        result['positions'] = positions
+
+        # Get open orders
+        r = requests.get(f"{base}/v2/orders?status=open", headers=hdr, timeout=10)
+        r.raise_for_status()
+        orders_open = r.json()
+        result['orders_open'] = orders_open
+
+        # Save reconciliation snapshot
+        out_dir = ROOT / 'state' / 'reconcile'
+        out_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+
+        (out_dir / f'positions_{timestamp}.json').write_text(json.dumps(positions, indent=2))
+        (out_dir / f'orders_open_{timestamp}.json').write_text(json.dumps(orders_open, indent=2))
+
+        result['success'] = True
+        jlog('reconcile_complete', level='INFO',
+             positions_count=len(positions),
+             open_orders_count=len(orders_open))
+
+        # Log position summary
+        for pos in positions:
+            jlog('reconcile_position', level='INFO',
+                 symbol=pos.get('symbol'),
+                 qty=pos.get('qty'),
+                 market_value=pos.get('market_value'),
+                 unrealized_pl=pos.get('unrealized_pl'))
+
+    except Exception as e:
+        jlog('reconcile_failed', level='ERROR', error=str(e))
+        result['error'] = str(e)
+
+    return result
+
+
 def run_submit(mode: str, universe: Path, cap: int, start_days: int, dotenv: Path) -> int:
+    # Check kill switch before submission
+    if is_kill_switch_active():
+        info = get_kill_switch_info()
+        jlog('runner_blocked_by_kill_switch', level='WARNING',
+             reason=info.get('reason') if info else 'Unknown')
+        return -1
+
     end = datetime.utcnow().date().isoformat()
     start = (datetime.utcnow().date() - timedelta(days=start_days)).isoformat()
     base_cmd = [sys.executable]
@@ -83,6 +164,7 @@ def main():
     ap.add_argument('--lookback-days', type=int, default=540)
     ap.add_argument('--dotenv', type=str, default='C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env')
     ap.add_argument('--once', action='store_true', help='Run once immediately and exit')
+    ap.add_argument('--skip-reconcile', action='store_true', help='Skip position reconciliation on startup')
     args = ap.parse_args()
 
     dotenv = Path(args.dotenv)
@@ -91,13 +173,49 @@ def main():
 
     universe = Path(args.universe)
     times = parse_times(args.scan_times)
+
+    # Position reconciliation on startup
+    if not args.skip_reconcile:
+        jlog('runner_startup_reconcile', level='INFO')
+        reconcile_result = reconcile_positions(dotenv)
+        if reconcile_result.get('discrepancies'):
+            jlog('runner_reconcile_discrepancies', level='WARNING',
+                 discrepancies=reconcile_result['discrepancies'])
+
+    # Check kill switch on startup
+    if is_kill_switch_active():
+        info = get_kill_switch_info()
+        jlog('runner_kill_switch_active', level='CRITICAL',
+             reason=info.get('reason') if info else 'Unknown')
+        print("ERROR: Kill switch is active. Trading halted.")
+        print(f"Reason: {info.get('reason') if info else 'Unknown'}")
+        print("Use /resume skill to deactivate after investigation.")
+        return
+
     if args.once:
         run_submit(args.mode, universe, args.cap, args.lookback_days, dotenv)
         return
 
     jlog('runner_start', mode=args.mode, scan_times=args.scan_times, universe=str(universe))
+    last_reconcile_date = datetime.now().date()
+
     while True:
         now = datetime.now()
+
+        # Check kill switch periodically
+        if is_kill_switch_active():
+            info = get_kill_switch_info()
+            jlog('runner_halted_by_kill_switch', level='WARNING',
+                 reason=info.get('reason') if info else 'Unknown')
+            time.sleep(60)  # Check again in 1 minute
+            continue
+
+        # Daily reconciliation (run once per day at start)
+        if now.date() != last_reconcile_date and within_market_day(now):
+            jlog('runner_daily_reconcile', level='INFO')
+            reconcile_positions(dotenv)
+            last_reconcile_date = now.date()
+
         if within_market_day(now):
             today_str = now.date().isoformat()
             for t in times:

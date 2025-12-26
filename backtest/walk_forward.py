@@ -102,4 +102,15 @@ def summarize_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
         "sharpe_avg": float(df["sharpe"].mean()),
         "max_drawdown_avg": float(df["max_drawdown"].mean()),
     }
+    # Include totals for gross/net PnL and fees if present
+    for col in ("gross_pnl", "net_pnl", "total_fees"):
+        if col in df.columns:
+            key = f"{col}_total"
+            try:
+                summary[key] = float(df[col].sum())
+            except Exception as e:
+                # Log the error but continue with default value
+                import logging
+                logging.warning(f"Failed to compute {key}: {e}")
+                summary[key] = 0.0
     return summary

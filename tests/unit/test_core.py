@@ -102,6 +102,8 @@ class TestStructuredLog:
 
         log_file = tmp_path / "events.jsonl"
         monkeypatch.setattr(structured_log, 'LOG_FILE', log_file)
+        # Reset file handler so it uses the new log file
+        monkeypatch.setattr(structured_log, '_file_handler', None)
 
         # Log an event
         structured_log.jlog("test_event", key="value")
@@ -124,6 +126,8 @@ class TestStructuredLog:
 
         log_file = tmp_path / "events.jsonl"
         monkeypatch.setattr(structured_log, 'LOG_FILE', log_file)
+        # Reset file handler so it uses the new log file
+        monkeypatch.setattr(structured_log, '_file_handler', None)
 
         # Log at different levels
         structured_log.jlog("debug_event", level="DEBUG")
