@@ -1,49 +1,49 @@
 # Kobe Trading System Dependencies
-# Pinned versions for production stability
+# Using minimum version specifiers for compatibility
 
 # Core Data Processing
-pandas==2.1.4
-numpy==1.26.3
-pyarrow==14.0.2
+pandas>=2.0
+numpy>=1.24
+pyarrow>=14.0
 
 # HTTP & API
-requests==2.31.0
-aiohttp==3.9.1
-websockets==12.0
+requests>=2.31
+aiohttp>=3.9
+websockets>=12.0
 
 # Broker Integration
-alpaca-py==0.13.2
+alpaca-py>=0.13
 
 # Configuration
-pyyaml==6.0.1
-python-dotenv==1.0.0
+pyyaml>=6.0
+python-dotenv>=1.0
 
 # Technical Analysis
-ta==0.11.0
+ta>=0.11.0
 
 # Visualization (for reports)
-matplotlib==3.8.2
-plotly==5.18.0
+matplotlib>=3.7
+plotly>=5.18
 
 # Testing
-pytest==7.4.4
-pytest-cov==4.1.0
-pytest-asyncio==0.23.3
+pytest>=7.4
+pytest-cov>=4.1
+pytest-asyncio>=0.21
 
 # Type Checking
-mypy==1.8.0
+mypy>=1.7
 
 # Code Quality
-black==24.1.1
-flake8==7.0.0
-isort==5.13.2
+black>=23.0
+flake8>=6.1
+isort>=5.12
 
 # Scheduling
-schedule==1.2.1
+schedule>=1.2
 
 # Date/Time
-python-dateutil==2.8.2
-pytz==2024.1
+python-dateutil>=2.8
+pytz>=2023.3
 
 # HTTP Server (for health endpoints)
-flask==3.0.0
+flask>=3.0
