@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /b \"C:\\\\Users\\\\Owner\\\\OneDrive\\\\Desktop\\\\kobe81_traderbot\\\\.claude\\\\skills\")",
+      "Bash(findstr:*)",
+      "Bash(dir /b \"C:\\\\Users\\\\Owner\\\\OneDrive\\\\Desktop\\\\kobe81_traderbot\\\\.claude\\\\skills\\\\*.md\")",
+      "Bash(git init:*)"
+    ]
+  }
+}
