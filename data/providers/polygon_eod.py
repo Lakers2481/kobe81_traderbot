@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+import re
 from typing import Optional, Dict
 import os
 import time
@@ -52,6 +53,26 @@ def fetch_daily_bars_polygon(
                 return df
             except Exception:
                 pass
+        # Look for a superset cached range and slice it
+        try:
+            s_req = pd.to_datetime(start)
+            e_req = pd.to_datetime(end)
+            pattern = re.compile(rf"^{re.escape(symbol)}_(\d{{4}}-\d{{2}}-\d{{2}})_(\d{{4}}-\d{{2}}-\d{{2}})\.csv$")
+            for f in cache_dir.glob(f"{symbol}_*.csv"):
+                m = pattern.match(f.name)
+                if not m:
+                    continue
+                s_file = pd.to_datetime(m.group(1))
+                e_file = pd.to_datetime(m.group(2))
+                if s_file <= s_req and e_file >= e_req:
+                    try:
+                        big = pd.read_csv(f, parse_dates=['timestamp'])
+                        big = big[(pd.to_datetime(big['timestamp']) >= s_req) & (pd.to_datetime(big['timestamp']) <= e_req)]
+                        return big
+                    except Exception:
+                        continue
+        except Exception:
+            pass
 
     url = POLYGON_AGGS_URL.format(ticker=symbol.upper(), start=start, end=end)
     params: Dict[str, str|int] = {

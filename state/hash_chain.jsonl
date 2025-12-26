@@ -1,0 +1,2 @@
+{"prev_hash": null, "payload": {"event": "test1", "data": "foo"}, "this_hash": "c92111968844deac40e032c0daa9e4331275e2dc9303c2920b12db1bdc088ff6"}
+{"prev_hash": "c92111968844deac40e032c0daa9e4331275e2dc9303c2920b12db1bdc088ff6", "payload": {"event": "test2", "data": "bar"}, "this_hash": "067402f162d22f0b597d0a5a6fff458ea7a26c7ee37b63f295077fbc25d47889"}

@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
+import re
 
 import pandas as pd
 
@@ -39,6 +40,26 @@ def fetch_daily_bars_yfinance(symbol: str, start: str, end: str, cache_dir: Opti
                 return df
             except Exception:
                 pass
+        # superset search for yf cache
+        try:
+            s_req = pd.to_datetime(start)
+            e_req = pd.to_datetime(end)
+            pattern = re.compile(rf"^{re.escape(symbol)}_(\d{{4}}-\d{{2}}-\d{{2}})_(\d{{4}}-\d{{2}}-\d{{2}})_yf\.csv$")
+            for f in cache_dir.glob(f"{symbol}_*_yf.csv"):
+                m = pattern.match(f.name)
+                if not m:
+                    continue
+                s_file = pd.to_datetime(m.group(1))
+                e_file = pd.to_datetime(m.group(2))
+                if s_file <= s_req and e_file >= e_req:
+                    try:
+                        big = pd.read_csv(f, parse_dates=['timestamp'])
+                        big = big[(pd.to_datetime(big['timestamp']) >= s_req) & (pd.to_datetime(big['timestamp']) <= e_req)]
+                        return big
+                    except Exception:
+                        continue
+        except Exception:
+            pass
 
     tkr = yf.Ticker(_yf_symbol(symbol))
     try:
@@ -82,6 +103,26 @@ def fetch_daily_bars_stooq(symbol: str, start: str, end: str, cache_dir: Optiona
                 return df
             except Exception:
                 pass
+        # superset search for stooq cache
+        try:
+            s_req = pd.to_datetime(start)
+            e_req = pd.to_datetime(end)
+            pattern = re.compile(rf"^{re.escape(symbol)}_(\d{{4}}-\d{{2}}-\d{{2}})_(\d{{4}}-\d{{2}}-\d{{2}})_stooq\.csv$")
+            for f in cache_dir.glob(f"{symbol}_*_stooq.csv"):
+                m = pattern.match(f.name)
+                if not m:
+                    continue
+                s_file = pd.to_datetime(m.group(1))
+                e_file = pd.to_datetime(m.group(2))
+                if s_file <= s_req and e_file >= e_req:
+                    try:
+                        big = pd.read_csv(f, parse_dates=['timestamp'])
+                        big = big[(pd.to_datetime(big['timestamp']) >= s_req) & (pd.to_datetime(big['timestamp']) <= e_req)]
+                        return big
+                    except Exception:
+                        continue
+        except Exception:
+            pass
 
     try:
         import datetime as dt
