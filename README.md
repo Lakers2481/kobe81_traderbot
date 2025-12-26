@@ -74,3 +74,71 @@ Safety
 - Audit: verify `python scripts/verify_hash_chain.py`.
 - Reconciliation: `python scripts/reconcile_alpaca.py --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env`.
 
+Config-Gated Features (config/base.yaml)
+All features below are disabled by default. Enable in `config/base.yaml`:
+
+1) Commissions/Fees Model (backtest only)
+   - Set `backtest.commissions.enabled: true`
+   - Configure per-share, BPS, SEC/TAF fees
+   - Outputs gross_pnl, net_pnl, total_fees in summary.json
+
+2) LULD/Volatility Clamp (execution)
+   - Set `execution.clamp.enabled: true`
+   - Fixed percentage or ATR-based clamping
+   - Prevents limit prices from exceeding LULD bands
+
+3) Order Rate Limiter + Retry
+   - Set `execution.rate_limiter.enabled: true`
+   - Token bucket with 120 orders/min capacity
+   - Exponential backoff retry on 429 errors
+
+4) Earnings Proximity Filter
+   - Set `filters.earnings.enabled: true`
+   - Skips signals 2 days before / 1 day after earnings
+   - Caches earnings dates in state/earnings_cache.json
+
+5) Metrics Endpoint
+   - Set `health.metrics.enabled: true` (default: true)
+   - GET /metrics returns request counters and performance stats
+   - Includes uptime, WR, PF, Sharpe from last run
+
+6) Regime Filter (SPY-based)
+   - Set `regime_filter.enabled: true`
+   - Trend gate: SPY close > SMA(200), fast SMA(20) > slow SMA(200)
+   - Volatility gate: realized vol <= max_ann_vol threshold
+   - Module: `core/regime_filter.py`
+
+7) Signal Selection (Top-N Ranking)
+   - Set `selection.enabled: true`
+   - Ranks signals by composite score (RSI-2, IBS, liquidity, vol penalty)
+   - Picks top_n signals per day (default: 10)
+
+8) Volatility-Targeted Sizing
+   - Set `sizing.enabled: true`
+   - Formula: qty = (risk_pct × equity) / (entry - stop)
+   - Default risk_per_trade_pct: 0.5% (0.005)
+   - Requires stop_loss in signal for calculation
+
+Robustness Tools
+- Parameter Optimization:
+  python scripts/optimize.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --cap 100 --outdir optimize_outputs --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+
+- Monte Carlo Robustness Testing:
+  python scripts/monte_carlo.py --trades wf_outputs/rsi2/split_00/trade_list.csv --iterations 1000 --outdir monte_carlo_outputs
+
+Crypto (Backtest-Only)
+Research-only crypto backtesting using Polygon hourly bars. No live execution.
+
+Universe Files:
+- data/universe/crypto_top3.csv (BTC, ETH, SOL)
+- data/universe/crypto_top10.csv (top 10 by market cap)
+
+Walk-Forward:
+  python scripts/run_wf_crypto.py --universe data/universe/crypto_top3.csv --start 2020-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --outdir wf_outputs_crypto --cache data/cache/crypto --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+
+Report:
+  python scripts/aggregate_wf_report.py --wfdir wf_outputs_crypto --out wf_outputs_crypto/wf_report.html
+
+Showdown:
+  python scripts/run_showdown_crypto.py --universe data/universe/crypto_top10.csv --start 2020-01-01 --end 2024-12-31 --outdir showdown_outputs_crypto --cache data/cache/crypto --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+

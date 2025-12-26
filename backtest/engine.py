@@ -7,12 +7,26 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 
+from config.settings_loader import get_sizing_config, is_sizing_enabled
+
+@dataclass
+class CommissionConfig:
+    """Commission model configuration."""
+    enabled: bool = False
+    per_share: float = 0.0  # $ per share
+    min_per_order: float = 0.0  # Minimum $ per order
+    bps: float = 0.0  # Basis points of notional
+    sec_fee_per_dollar: float = 0.0000278  # SEC fee on sales
+    taf_fee_per_share: float = 0.000166  # FINRA TAF on sales
+
+
 @dataclass
 class BacktestConfig:
     start_date: Optional[str] = None
     end_date: Optional[str] = None
     initial_cash: float = 100_000.0
     slippage_bps: float = 5.0  # 5 bps default
+    commissions: Optional[CommissionConfig] = None
 
 @dataclass
 class Trade:
@@ -37,6 +51,34 @@ class Backtester:
         self.positions: Dict[str, Position] = {}
         self.trades: List[Trade] = []
         self.initial_cash = cfg.initial_cash
+        self.total_commissions = 0.0  # Track total fees paid
+
+    def _compute_commission(self, qty: int, price: float, is_sell: bool) -> float:
+        """Compute commission for a trade. Returns total fee in dollars."""
+        comm_cfg = self.cfg.commissions
+        if comm_cfg is None or not comm_cfg.enabled:
+            return 0.0
+
+        notional = qty * price
+        fee = 0.0
+
+        # Per-share commission (e.g., IBKR Pro: $0.005/share)
+        if comm_cfg.per_share > 0:
+            fee = max(qty * comm_cfg.per_share, comm_cfg.min_per_order)
+
+        # Basis points of notional (alternative model)
+        if comm_cfg.bps > 0:
+            fee = max(fee, notional * comm_cfg.bps / 10000.0)
+
+        # SEC fee on sales only (~$27.80 per $1M sold)
+        if is_sell and comm_cfg.sec_fee_per_dollar > 0:
+            fee += notional * comm_cfg.sec_fee_per_dollar
+
+        # FINRA TAF on sales only (~$0.000166/share sold)
+        if is_sell and comm_cfg.taf_fee_per_share > 0:
+            fee += qty * comm_cfg.taf_fee_per_share
+
+        return fee
 
     def run(self, symbols: List[str], outdir: Optional[str] = None) -> Dict[str, Any]:
         # Load data per symbol
@@ -47,13 +89,20 @@ class Backtester:
                 continue
             if 'symbol' not in df:
                 df = df.copy(); df['symbol'] = s
+            # Normalize timestamps to tz-naive
+            df['timestamp'] = pd.to_datetime(df['timestamp'], utc=True).dt.tz_localize(None)
             by_sym[s] = df.sort_values('timestamp').reset_index(drop=True)
         if not by_sym:
             return {"trades": [], "pnl": 0.0, "equity": pd.DataFrame(), "metrics": {}}
 
         # Merge for signal generation (strategies may need cross-symbol frame)
-        merged = pd.concat(by_sym.values(), ignore_index=True).sort_values(['symbol','timestamp'])
+        merged = pd.concat(by_sym.values(), ignore_index=True)
+        merged['timestamp'] = pd.to_datetime(merged['timestamp'], utc=True).dt.tz_localize(None)
+        merged = merged.sort_values(['symbol','timestamp'])
         signals = self.get_signals(merged)
+        # Normalize signal timestamps
+        if not signals.empty and 'timestamp' in signals.columns:
+            signals['timestamp'] = pd.to_datetime(signals['timestamp'], utc=True).dt.tz_localize(None)
 
         # Group signals by symbol and simulate with exits (ATR stop + 5-bar time stop)
         for sym, sym_df in by_sym.items():
@@ -78,9 +127,12 @@ class Backtester:
     def _execute(self, sym: str, side: str, qty: int, price: float, ts: datetime):
         if side == 'long':
             cost = qty * price
-            if cost > self.cash:
+            commission = self._compute_commission(qty, price, is_sell=False)
+            total_cost = cost + commission
+            if total_cost > self.cash:
                 return
-            self.cash -= cost
+            self.cash -= total_cost
+            self.total_commissions += commission
             pos = self.positions.get(sym, Position(symbol=sym))
             new_qty = pos.qty + qty
             pos.avg_cost = (pos.avg_cost * pos.qty + cost) / new_qty if new_qty else pos.avg_cost
@@ -96,7 +148,9 @@ class Backtester:
         if not pos or pos.qty < qty:
             return
         proceeds = qty * price
-        self.cash += proceeds
+        commission = self._compute_commission(qty, price, is_sell=True)
+        self.cash += proceeds - commission
+        self.total_commissions += commission
         pos.qty -= qty
         if pos.qty == 0:
             pos.avg_cost = 0.0
@@ -111,13 +165,13 @@ class Backtester:
         - One open position per symbol at a time
         """
         df = df.sort_values('timestamp').reset_index(drop=True)
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        df['timestamp'] = pd.to_datetime(df['timestamp'], utc=True).dt.tz_localize(None)
         open_trade = None  # dict with keys: entry_idx, qty, stop, side
         # Pre-index by timestamp for quick lookup of entry index
         ts_index = pd.Series(df.index.values, index=df['timestamp'])
         # Iterate over signals chronologically
         for _, sig in sigs.sort_values('timestamp').iterrows():
-            sig_ts = pd.to_datetime(sig['timestamp'])
+            sig_ts = pd.to_datetime(sig['timestamp'], utc=True).tz_localize(None)
             # Find next bar index strictly after signal ts
             later = df[df['timestamp'] > sig_ts]
             if later.empty:
@@ -130,9 +184,27 @@ class Backtester:
             entry_open = float(df.loc[entry_idx, 'open'])
             side = str(sig.get('side', 'long'))
             px = entry_open * (1 + (self.cfg.slippage_bps/1e4) * (1 if side=='long' else -1))
-            # Position sizing: ~0.7% of current cash
-            notional = max(0.0, self.cash) * 0.007
-            qty = int(max(1, notional // px))
+
+            # Position sizing (config-gated volatility targeting)
+            stop_price = float(sig.get('stop_loss')) if sig.get('stop_loss') is not None else None
+
+            if is_sizing_enabled() and stop_price is not None:
+                # Volatility-targeted sizing: qty = (risk_pct * equity) / (entry - stop)
+                sizing_cfg = get_sizing_config()
+                risk_pct = sizing_cfg.get('risk_per_trade_pct', 0.005)
+                risk_amount = max(0.0, self.cash) * risk_pct
+                risk_per_share = abs(px - stop_price)
+                if risk_per_share > 0:
+                    qty = int(max(1, risk_amount / risk_per_share))
+                else:
+                    # Fallback if stop is at entry
+                    notional = max(0.0, self.cash) * 0.007
+                    qty = int(max(1, notional // px))
+            else:
+                # Default sizing: ~0.7% of current cash
+                notional = max(0.0, self.cash) * 0.007
+                qty = int(max(1, notional // px))
+
             if qty <= 0:
                 continue
             # Book entry
@@ -181,7 +253,7 @@ class Backtester:
         # Sort trades by timestamp to update positions chronologically
         for ts in closes.index:
             # apply trades at their timestamp
-            for tr in [t for t in self.trades if pd.to_datetime(t.timestamp) == pd.to_datetime(ts)]:
+            for tr in [t for t in self.trades if pd.to_datetime(t.timestamp, utc=True).tz_localize(None) == pd.to_datetime(ts, utc=True).tz_localize(None)]:
                 if tr.side.upper() == 'BUY':
                     pos = pos_qty.get(tr.symbol, 0)
                     pos_qty[tr.symbol] = pos + tr.qty
@@ -239,13 +311,22 @@ class Backtester:
         cummax = equity['equity'].cummax() if not equity.empty else pd.Series([0.0])
         dd_series = (equity['equity'] / cummax - 1.0) if not equity.empty else pd.Series([0.0])
         maxdd = dd_series.min() if len(dd_series) else 0.0
+
+        # Compute gross and net PnL
+        final_equity = float(equity['equity'].iloc[-1]) if not equity.empty else self.cash
+        net_pnl = final_equity - self.initial_cash
+        gross_pnl = net_pnl + self.total_commissions  # Add back fees to get gross
+
         return {
             "trades": len(trades),
             "win_rate": wr,
             "profit_factor": pf,
             "sharpe": sharpe,
             "max_drawdown": float(maxdd),
-            "final_equity": float(equity['equity'].iloc[-1]) if not equity.empty else self.cash,
+            "final_equity": final_equity,
+            "gross_pnl": gross_pnl,
+            "net_pnl": net_pnl,
+            "total_fees": self.total_commissions,
         }
 
     def _write_outputs(self, outdir: str, equity: pd.DataFrame, metrics: Dict[str, Any]) -> None:

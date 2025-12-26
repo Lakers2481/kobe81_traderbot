@@ -16,8 +16,15 @@ data:
 # Backtest Settings
 backtest:
   initial_capital: 100000
-  commission: 0.0  # Alpaca is commission-free
   slippage_pct: 0.001  # 0.1% slippage estimate
+  # Commission model (config-gated)
+  commissions:
+    enabled: false  # Set true to apply commission model
+    per_share: 0.0  # $ per share (e.g., 0.005 for IBKR Pro)
+    min_per_order: 0.0  # Minimum $ per order
+    bps: 0.0  # Basis points of notional (alternative to per_share)
+    sec_fee_per_dollar: 0.0000278  # SEC fee (~$27.80 per $1M sold)
+    taf_fee_per_share: 0.000166  # FINRA TAF (~$0.000166/share sold)
 
 # Walk-Forward Settings
 walk_forward:
@@ -31,11 +38,33 @@ risk:
   max_order_value: 75      # $75 per order (micro budget)
   max_open_positions: 10   # Maximum concurrent positions
 
+# Strategy Filters (config-gated)
+filters:
+  # Earnings proximity filter
+  earnings:
+    enabled: false  # Set true to skip signals near earnings
+    days_before: 2  # Skip N days before earnings
+    days_after: 1   # Skip N days after earnings
+    cache_file: "state/earnings_cache.json"  # Cache earnings dates
+
 # Execution Settings
 execution:
   broker: "alpaca"
   order_type: "ioc_limit"  # IOC LIMIT orders only
   limit_buffer: 0.001      # 0.1% above ask for buys
+  # LULD/Volatility clamp (config-gated)
+  clamp:
+    enabled: false  # Set true to clamp limit prices
+    max_pct_from_quote: 0.02  # Max 2% from last quote
+    use_atr: false  # Alternative: clamp to ATR band
+    atr_multiple: 2.0  # ATR(14) × multiple
+  # Rate limiter (config-gated)
+  rate_limiter:
+    enabled: false  # Set true to enable rate limiting
+    max_orders_per_minute: 120  # Token bucket capacity
+    retry_on_429: true  # Retry with exponential backoff on 429
+    max_retries: 3  # Max retry attempts
+    base_delay_ms: 500  # Initial backoff delay
 
 # Logging
 logging:
@@ -48,6 +77,11 @@ health:
   enabled: true
   port: 8081
   endpoint: "/health"
+  # Metrics endpoint (config-gated)
+  metrics:
+    enabled: true  # Expose /metrics JSON endpoint
+    include_performance: true  # Include WR, PF, Sharpe from last run
+    include_requests: true  # Include request counters
 
 # Kill Switch
 kill_switch:
@@ -57,3 +91,30 @@ kill_switch:
 audit:
   hash_chain_file: "state/hash_chain.jsonl"
   verify_on_startup: true
+
+# Regime Filter (config-gated, equities only)
+regime_filter:
+  enabled: false  # Set true to filter signals by SPY regime
+  trend:
+    fast: 20      # Fast SMA period (optional, set 0 to disable)
+    slow: 200     # Slow SMA period (SPY close > SMA(slow))
+    require_above_slow: true  # Must be above slow SMA
+  vol:
+    window: 20    # Realized volatility window (days)
+    max_ann_vol: null  # Max annualized vol threshold (e.g., 0.25 for 25%)
+
+# Signal Selection (config-gated)
+selection:
+  enabled: false  # Set true to use ranked Top-N selection
+  top_n: 10       # Max signals per day
+  score_weights:
+    rsi2: 0.6        # Weight for RSI-2 rank (lower RSI2 = higher rank)
+    ibs: 0.4         # Weight for IBS rank (lower IBS = higher rank)
+  include_and_guard: true  # Only rank candidates passing AND (RSI2+IBS) filter
+  min_price: 5.0     # Minimum stock price filter
+
+# Volatility-Targeted Sizing (config-gated)
+sizing:
+  enabled: false  # Set true to use ATR-based position sizing
+  risk_per_trade_pct: 0.005  # 0.5% of equity per trade
+  atr_multiple_for_stop: 2.0  # Stop = entry - ATR(14) × multiple

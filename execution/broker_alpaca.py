@@ -10,6 +10,12 @@ import requests
 
 from oms.order_state import OrderRecord, OrderStatus
 from oms.idempotency_store import IdempotencyStore
+from config.settings_loader import (
+    is_clamp_enabled,
+    get_clamp_max_pct,
+    get_clamp_use_atr,
+    get_clamp_atr_multiple,
+)
 
 
 ALPACA_ORDERS_URL = "/v2/orders"
@@ -104,12 +110,67 @@ def place_ioc_limit(order: OrderRecord) -> OrderRecord:
         return order
 
 
-def construct_decision(symbol: str, side: str, qty: int, best_ask: Optional[float]) -> OrderRecord:
+def _apply_clamp(raw_limit: float, best_quote: float, atr_value: Optional[float] = None) -> float:
+    """
+    Apply LULD/volatility clamp to limit price (config-gated).
+    Clamps the limit price to be within a reasonable band from the quote.
+
+    Args:
+        raw_limit: The raw limit price (e.g., best_ask * 1.001)
+        best_quote: The current best quote (ask for buys, bid for sells)
+        atr_value: Optional ATR(14) value for ATR-based clamping
+
+    Returns:
+        Clamped limit price
+    """
+    if not is_clamp_enabled():
+        return raw_limit
+
+    if get_clamp_use_atr() and atr_value is not None and atr_value > 0:
+        # ATR-based clamp: quote ± (ATR × multiple)
+        atr_multiple = get_clamp_atr_multiple()
+        max_deviation = atr_value * atr_multiple
+        lower_bound = best_quote - max_deviation
+        upper_bound = best_quote + max_deviation
+    else:
+        # Fixed percentage clamp
+        max_pct = get_clamp_max_pct()
+        lower_bound = best_quote * (1 - max_pct)
+        upper_bound = best_quote * (1 + max_pct)
+
+    # Clamp the limit price within bounds
+    clamped = max(lower_bound, min(raw_limit, upper_bound))
+    return round(clamped, 2)
+
+
+def construct_decision(
+    symbol: str,
+    side: str,
+    qty: int,
+    best_ask: Optional[float],
+    atr_value: Optional[float] = None,
+) -> OrderRecord:
+    """
+    Construct an order decision with optional LULD/volatility clamping.
+
+    Args:
+        symbol: Stock symbol
+        side: "BUY" or "SELL"
+        qty: Number of shares
+        best_ask: Best ask price from quote
+        atr_value: Optional ATR(14) for ATR-based clamping
+    """
     now = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
     decision_id = f"DEC_{now}_{symbol.upper()}_{uuid.uuid4().hex[:6].upper()}"
     idk = decision_id  # idempotency = decision id
+
     # Limit: best ask + 0.1% (fallback to None -> caller must guard)
-    limit_price = round(best_ask * 1.001, 2) if best_ask else None
+    if best_ask:
+        raw_limit = best_ask * 1.001
+        limit_price = _apply_clamp(raw_limit, best_ask, atr_value)
+    else:
+        limit_price = None
+
     return OrderRecord(
         decision_id=decision_id,
         signal_id=decision_id.replace("DEC_", "SIG_"),

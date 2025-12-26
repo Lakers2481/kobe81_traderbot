@@ -181,15 +181,19 @@ def fetch_daily_bars_multi(symbol: str, start: str, end: str, cache_dir: Optiona
         return dfp
 
     # Concatenate and prefer Polygon on overlaps
+    # Normalize timestamps to tz-naive before merging to avoid comparison errors
+    dfo['timestamp'] = pd.to_datetime(dfo['timestamp'], utc=True).dt.tz_localize(None)
+    dfp['timestamp'] = pd.to_datetime(dfp['timestamp'], utc=True).dt.tz_localize(None)
     dfo['__src'] = 'yf'
     dfp['__src'] = 'poly'
     merged = pd.concat([dfo, dfp], ignore_index=True)
+    merged['timestamp'] = pd.to_datetime(merged['timestamp'], utc=True).dt.tz_localize(None)
     merged = merged.sort_values(['timestamp','__src'])
     merged = merged.drop_duplicates(subset=['timestamp'], keep='last')  # keep Polygon rows when overlapping
     merged = merged.drop(columns=['__src'])
     merged = merged.sort_values('timestamp').reset_index(drop=True)
     # Bound to [start, end]
-    s = pd.to_datetime(start)
-    e = pd.to_datetime(end)
-    merged = merged[(pd.to_datetime(merged['timestamp']) >= s) & (pd.to_datetime(merged['timestamp']) <= e)]
+    s = pd.to_datetime(start, utc=True).tz_localize(None)
+    e = pd.to_datetime(end, utc=True).tz_localize(None)
+    merged = merged[(merged['timestamp'] >= s) & (merged['timestamp'] <= e)]
     return merged

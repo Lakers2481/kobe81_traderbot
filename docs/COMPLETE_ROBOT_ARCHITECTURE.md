@@ -57,8 +57,86 @@ This document maps the end‑to‑end trading blueprint to the Kobe codebase. It
 - Config pinning: `core/config_pin.py`, `scripts/show_config_pin.py` (SHA256 of settings)
 - Structured logs: `core/structured_log.py` (JSON lines under `logs/events.jsonl`)
 - Kill switch: `state/KILL_SWITCH`
-- Secrets: `.env` external to repo; loaded via `configs/env_loader.py`
+- Secrets: `.env` external to repo; loaded via `config/env_loader.py`
 - Governance: PolicyGate budgets + veto, CLI scripts require human invocation
+
+## Config-Gated Enhancements (config/base.yaml)
+All features below are **disabled by default** to preserve existing behavior:
+
+### 1. Commission/Fees Model (Backtest)
+- Config: `backtest.commissions.enabled: true`
+- Module: `backtest/engine.py`
+- Reports gross_pnl, net_pnl, total_fees in summary.json
+
+### 2. LULD/Volatility Clamp (Execution)
+- Config: `execution.clamp.enabled: true`
+- Module: `execution/broker_alpaca.py`
+- Fixed % or ATR-based clamping to prevent price overshoot
+
+### 3. Rate Limiter + Retry (Execution)
+- Config: `execution.rate_limiter.enabled: true`
+- Module: `core/rate_limiter.py`
+- Token bucket (120/min), exponential backoff on 429
+
+### 4. Earnings Proximity Filter (Signals)
+- Config: `filters.earnings.enabled: true`
+- Module: `core/earnings_filter.py`
+- Skips signals 2 days before / 1 day after earnings
+
+### 5. Metrics Endpoint (Monitoring)
+- Config: `health.metrics.enabled: true` (default: true)
+- Module: `monitor/health_endpoints.py`
+- GET /metrics returns request counters and performance stats
+
+### 6. Regime Filter (Signals)
+- Config: `regime_filter.enabled: true`
+- Module: `core/regime_filter.py`
+- SPY-based trend gate: close > SMA(200), SMA(20) > SMA(200)
+- Volatility gate: realized vol ≤ max_ann_vol threshold
+- Filters signals to only trade in favorable market regimes
+
+### 7. Signal Selection (Portfolio)
+- Config: `selection.enabled: true`
+- Module: Uses `config/settings_loader.py`
+- Ranks signals by composite score (RSI-2, IBS, liquidity, vol penalty)
+- Picks top_n signals per day (default: 10)
+
+### 8. Volatility-Targeted Sizing (Portfolio)
+- Config: `sizing.enabled: true`
+- Module: `backtest/engine.py`
+- Formula: qty = (risk_pct × equity) / (entry - stop)
+- Default: 0.5% risk per trade (0.005)
+- Falls back to fixed notional if no stop_loss provided
+
+## Robustness Tools
+
+### Parameter Optimization
+- Script: `scripts/optimize.py`
+- Grid search over RSI-2 and IBS parameters
+- Outputs: heatmap CSV, HTML report, best_params.json
+- Finds robust parameter plateaus (not single spikes)
+
+### Monte Carlo Testing
+- Script: `scripts/monte_carlo.py`
+- Trade reordering and block bootstrap (1000 iterations)
+- Computes robustness score (0-100) based on:
+  - Sharpe stability
+  - Drawdown stability
+  - Win rate stability
+  - Positive expectancy percentage
+- Outputs: distributions CSV, robustness_score.json, HTML report
+
+## Crypto Backtesting (Research-Only)
+Crypto strategies mirror equities (RSI-2, IBS, AND) using hourly bars.
+
+- Data Provider: `data/providers/polygon_crypto.py`
+  - `fetch_crypto_bars()` for X:BTCUSD, X:ETHUSD, etc.
+  - Hourly bars with caching under `data/cache/crypto/`
+- Universe: `data/universe/crypto_top3.csv`, `crypto_top10.csv`
+- Scripts: `scripts/run_wf_crypto.py`, `scripts/run_showdown_crypto.py`
+- Outputs: Same structure as equities (wf_outputs_crypto/, showdown_outputs_crypto/)
+- IBS guard: Flat bars (high==low) excluded to prevent division by zero
+- No live crypto execution
 
 ## Deployment Pipeline
 1. Shadow/Backtest: `scripts/smoke_test.py`, `scripts/run_backtest.py`
