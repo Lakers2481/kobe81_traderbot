@@ -21,7 +21,7 @@ import os
 import requests
 import sys
 sys.path.insert(0, '.')
-from configs.env_loader import load_env
+from config.env_loader import load_env
 from pathlib import Path
 
 load_env(Path('C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env'))
@@ -73,7 +73,7 @@ import os
 import requests
 import sys
 sys.path.insert(0, '.')
-from configs.env_loader import load_env
+from config.env_loader import load_env
 from pathlib import Path
 
 load_env(Path('C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env'))
@@ -100,7 +100,7 @@ import os
 import requests
 import sys
 sys.path.insert(0, '.')
-from configs.env_loader import load_env
+from config.env_loader import load_env
 from pathlib import Path
 
 load_env(Path('C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env'))

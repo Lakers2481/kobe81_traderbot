@@ -26,7 +26,7 @@ from typing import Any, Dict, List, Optional
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from configs.env_loader import load_env
+from config.env_loader import load_env
 
 SNAPSHOTS_DIR = ROOT / "snapshots"
 

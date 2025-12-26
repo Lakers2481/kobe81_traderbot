@@ -22,7 +22,7 @@ from typing import Any, Dict, Optional
 
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from configs.env_loader import load_env
+from config.env_loader import load_env
 
 try:
     import requests

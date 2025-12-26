@@ -80,7 +80,7 @@ if len(errors) > 10:
 python -c "
 import os
 import requests
-from configs.env_loader import load_env
+from config.env_loader import load_env
 from pathlib import Path
 
 load_env(Path('C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env'))

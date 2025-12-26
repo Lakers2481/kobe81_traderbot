@@ -24,7 +24,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import pandas as pd
 
-from configs.env_loader import load_env
+from config.env_loader import load_env
 from data.providers.polygon_eod import fetch_eod_bars
 from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
 from data.universe.loader import load_universe
@@ -84,7 +84,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import pandas as pd
 
-from configs.env_loader import load_env
+from config.env_loader import load_env
 from data.providers.polygon_eod import fetch_eod_bars
 from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
 

@@ -20,7 +20,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from configs.env_loader import load_env
+from config.env_loader import load_env
 from data.universe.loader import load_universe
 from data.providers.polygon_eod import fetch_daily_bars_polygon
 

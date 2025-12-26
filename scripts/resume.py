@@ -20,7 +20,7 @@ from typing import Optional
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from configs.env_loader import load_env
+from config.env_loader import load_env
 from core.structured_log import jlog
 
 STATE_DIR = ROOT / "state"

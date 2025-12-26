@@ -136,7 +136,7 @@ import os
 import sys
 sys.path.insert(0, '.')
 from pathlib import Path
-from configs.env_loader import load_env
+from config.env_loader import load_env
 
 load_env(Path('C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env'))
 
