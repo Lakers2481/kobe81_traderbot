@@ -24,7 +24,7 @@ pandas-datareader>=0.10
 
 # Technical Analysis
 ta>=0.11.0
-pandas-ta>=0.3.14b0  # 150+ technical indicators
+pandas-ta  # 150+ technical indicators (uses latest available)
 
 # ML & AI Features
 stumpy>=1.12  # Matrix profile for anomaly detection
