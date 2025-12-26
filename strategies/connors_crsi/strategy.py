@@ -118,7 +118,8 @@ class ConnorsCRSIStrategy:
             g['rsi3'] = rsi(g['close'], self.params.rsi_period, self.params.rsi_method)
             streak = compute_streak(g['close'])
             g['streak'] = streak
-            g['streak_rsi2'] = rsi(streak.abs(), self.params.streak_rsi_period, self.params.rsi_method)  # magnitude based
+            # Use RSI of the raw streak (signed) to reflect consecutive declines vs advances
+            g['streak_rsi2'] = rsi(streak, self.params.streak_rsi_period, self.params.rsi_method)
             roc3 = g['close'].pct_change(self.params.roc_lookback)
             g['pr_roc3_100'] = percent_rank(roc3, self.params.pr_window)
             g['sma200'] = sma(g['close'], self.params.sma_period)

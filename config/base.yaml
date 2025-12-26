@@ -11,7 +11,7 @@ system:
 data:
   provider: "polygon"
   cache_dir: "data/cache"
-  universe_file: "data/universe/optionable_liquid_final.csv"
+  universe_file: "data/universe/optionable_liquid_900.csv"
 
 # Backtest Settings
 backtest:

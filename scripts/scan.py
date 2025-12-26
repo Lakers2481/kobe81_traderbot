@@ -41,7 +41,7 @@ from core.earnings_filter import filter_signals_by_earnings
 # -----------------------------------------------------------------------------
 # Constants
 # -----------------------------------------------------------------------------
-DEFAULT_UNIVERSE = ROOT / "data" / "universe" / "optionable_liquid_final.csv"
+DEFAULT_UNIVERSE = ROOT / "data" / "universe" / "optionable_liquid_900.csv"
 SIGNALS_LOG = ROOT / "logs" / "signals.jsonl"
 CACHE_DIR = ROOT / "data" / "cache"
 LOOKBACK_DAYS = 300  # Need 200+ days for SMA(200) + buffer

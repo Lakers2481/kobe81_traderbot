@@ -310,6 +310,14 @@ def main():
         print(f'\nRunning TOPN variant (top_n={selection_cfg.get("top_n", 10)})...')
         topn_results = run_walk_forward(symbols, fetcher, get_topn, splits, outdir=str(outdir / 'topn'))
 
+    # Ensure subdirs exist for CSV outputs
+    (outdir / 'rsi2').mkdir(parents=True, exist_ok=True)
+    (outdir / 'ibs').mkdir(parents=True, exist_ok=True)
+    (outdir / 'and').mkdir(parents=True, exist_ok=True)
+    (outdir / 'crsi').mkdir(parents=True, exist_ok=True)
+    if use_topn:
+        (outdir / 'topn').mkdir(parents=True, exist_ok=True)
+
     # Summaries
     rsi2_summary = summarize_results(rsi2_results)
     ibs_summary = summarize_results(ibs_results)
