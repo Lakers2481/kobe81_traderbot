@@ -14,7 +14,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from configs.env_loader import load_env
+from config.env_loader import load_env
 from data.universe.loader import load_universe
 from data.providers.polygon_eod import fetch_daily_bars_polygon
 from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
@@ -89,7 +89,7 @@ def main():
 
     # Submit orders with IOC LIMIT at best ask + 0.1%
     submitted = 0
-    config_pin = sha256_file('configs/settings.json') if Path('configs/settings.json').exists() else None
+    config_pin = sha256_file('config/settings.json') if Path('config/settings.json').exists() else None
     for _, row in todays.iterrows():
         sym = row['symbol']
         side = 'BUY' if str(row['side']).lower() == 'long' else 'SELL'

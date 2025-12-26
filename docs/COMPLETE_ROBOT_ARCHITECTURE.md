@@ -4,7 +4,7 @@ This document maps the end‑to‑end trading blueprint to the Kobe codebase. It
 
 ## Layer 0: External Data
 - Vendors: Polygon (EOD OHLCV), Alpaca (broker + quotes)
-- Config: `configs/env_loader.py` (loads `.env`), `configs/settings.json`
+- Config: `config/env_loader.py` (loads `.env`), `config/settings.json`
 
 ## Layer 1: Ingestion
 - Data provider: `data/providers/polygon_eod.py`
@@ -80,4 +80,3 @@ This document maps the end‑to‑end trading blueprint to the Kobe codebase. It
 ## Notes
 - Strategies are canonical; indicators shifted one bar; fills at next open; ATR(14)×2 stop and 5‑bar time stop.
 - Default concurrency is conservative; adjust based on your Polygon plan.
-

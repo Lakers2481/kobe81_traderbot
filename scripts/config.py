@@ -17,7 +17,7 @@ from typing import Dict, List, Any, Optional, Tuple
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from configs.env_loader import load_env
+from config.env_loader import load_env
 from core.config_pin import sha256_file
 
 
@@ -25,7 +25,7 @@ from core.config_pin import sha256_file
 # Configuration
 # -----------------------------------------------------------------------------
 DEFAULT_DOTENV = "C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env"
-CONFIG_FILE = ROOT / "configs" / "settings.json"
+CONFIG_FILE = ROOT / "config" / "settings.json"
 
 # Default configuration schema/values for comparison
 DEFAULT_CONFIG = {

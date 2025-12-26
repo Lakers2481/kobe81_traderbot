@@ -14,7 +14,7 @@ from strategies.ibs.strategy import IBSStrategy
 from backtest.engine import Backtester, BacktestConfig
 from data.universe.loader import load_universe
 from data.providers.polygon_eod import fetch_daily_bars_polygon
-from configs.env_loader import load_env
+from config.env_loader import load_env
 
 
 def main():
@@ -102,4 +102,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

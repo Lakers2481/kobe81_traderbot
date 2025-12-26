@@ -12,7 +12,7 @@ import pandas as pd
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from configs.env_loader import load_env
+from config.env_loader import load_env
 from data.universe.loader import load_universe
 from data.providers.polygon_eod import fetch_daily_bars_polygon
 
@@ -63,4 +63,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

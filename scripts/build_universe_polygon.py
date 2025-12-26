@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from data.providers.polygon_eod import fetch_daily_bars_polygon, has_options_polygon
 from data.providers.multi_source import fetch_daily_bars_multi
 from data.universe.loader import load_universe
-from configs.env_loader import load_env
+from config.env_loader import load_env
 
 
 def analyze_symbol(sym: str, start: str, end: str, cache_dir: Path, use_fallback: bool = False) -> Dict[str, Any]:

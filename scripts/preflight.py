@@ -9,14 +9,14 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from configs.env_loader import load_env
+from config.env_loader import load_env
 from core.config_pin import sha256_file
 
 
 def main():
     ap = argparse.ArgumentParser(description='Kobe preflight checks')
     ap.add_argument('--dotenv', type=str, default='C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env')
-    ap.add_argument('--config', type=str, default='configs/settings.json')
+    ap.add_argument('--config', type=str, default='config/settings.json')
     args = ap.parse_args()
 
     loaded = {}
@@ -56,4 +56,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

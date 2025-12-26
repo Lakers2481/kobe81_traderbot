@@ -50,7 +50,7 @@ SNAPSHOT_INCLUDES = {
 
 # Individual files to always include
 SNAPSHOT_FILES = [
-    ROOT / "configs" / "settings.json",
+    ROOT / "config" / "settings.json",
     ROOT / "VERSION.json",
 ]
 

@@ -24,7 +24,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from configs.env_loader import load_env
+from config.env_loader import load_env
 
 
 def format_size(size_bytes: int) -> str:
@@ -361,7 +361,7 @@ def run_profiling() -> None:
     print("\n--- File Operations ---")
 
     # JSON parsing
-    settings_file = ROOT / "configs" / "settings.json"
+    settings_file = ROOT / "config" / "settings.json"
     if settings_file.exists():
         def parse_json():
             json.loads(settings_file.read_text(encoding="utf-8"))

@@ -18,7 +18,7 @@ from data.providers.polygon_eod import fetch_daily_bars_polygon
 from data.providers.multi_source import fetch_daily_bars_multi
 from backtest.walk_forward import generate_splits, run_walk_forward, summarize_results
 from backtest.engine import BacktestConfig
-from configs.env_loader import load_env
+from config.env_loader import load_env
 
 
 def main():
