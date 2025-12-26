@@ -176,7 +176,10 @@ def fetch_spy_bars(
     cache_dir: Optional[Path] = None,
 ) -> pd.DataFrame:
     """
-    Fetch SPY daily bars using the standard Polygon EOD provider.
+    Fetch SPY daily bars with fallback to free sources for robustness.
+
+    Uses the multi-source provider which prefers Polygon but will backfill
+    or substitute with Yahoo/Stooq when Polygon coverage is missing.
 
     Args:
         start: Start date YYYY-MM-DD
@@ -187,7 +190,11 @@ def fetch_spy_bars(
         DataFrame with SPY daily bars
     """
     try:
-        from data.providers.polygon_eod import fetch_daily_bars_polygon
-        return fetch_daily_bars_polygon("SPY", start, end, cache_dir=cache_dir)
+        from data.providers.multi_source import fetch_daily_bars_multi
+        return fetch_daily_bars_multi("SPY", start, end, cache_dir=cache_dir)
     except ImportError:
-        return pd.DataFrame()
+        try:
+            from data.providers.polygon_eod import fetch_daily_bars_polygon
+            return fetch_daily_bars_polygon("SPY", start, end, cache_dir=cache_dir)
+        except ImportError:
+            return pd.DataFrame()

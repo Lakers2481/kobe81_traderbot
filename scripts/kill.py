@@ -24,6 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from config.env_loader import load_env
+from core.alerts import send_telegram
 from core.structured_log import jlog
 
 STATE_DIR = ROOT / "state"
@@ -31,33 +32,7 @@ KILL_SWITCH_FILE = STATE_DIR / "KILL_SWITCH"
 
 
 def send_telegram_alert(message: str) -> bool:
-    """
-    Send alert via Telegram if configured.
-    Returns True if alert was sent successfully.
-    """
-    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-    chat_id = os.getenv("TELEGRAM_CHAT_ID")
-
-    if not bot_token or not chat_id:
-        return False
-
-    try:
-        import urllib.request
-        import urllib.parse
-
-        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-        data = urllib.parse.urlencode({
-            "chat_id": chat_id,
-            "text": message,
-            "parse_mode": "HTML"
-        }).encode()
-
-        req = urllib.request.Request(url, data=data)
-        with urllib.request.urlopen(req, timeout=10) as response:
-            return response.status == 200
-    except Exception as e:
-        print(f"Warning: Failed to send Telegram alert: {e}")
-        return False
+    return send_telegram(message)
 
 
 def create_kill_switch(reason: Optional[str] = None) -> bool:

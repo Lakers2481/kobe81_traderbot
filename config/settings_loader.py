@@ -158,11 +158,11 @@ def get_selection_config() -> Dict[str, Any]:
         "enabled": bool(get_setting("selection.enabled", False)),
         "top_n": int(get_setting("selection.top_n", 10)),
         "score_weights": {
-            "rsi2": float(get_setting("selection.score_weights.rsi2", 1.0)),
-            "ibs": float(get_setting("selection.score_weights.ibs", 1.0)),
-            "liquidity": float(get_setting("selection.score_weights.liquidity", 0.25)),
-            "vol_penalty": float(get_setting("selection.score_weights.vol_penalty", 0.25)),
+            "rsi2": float(get_setting("selection.score_weights.rsi2", 0.6)),
+            "ibs": float(get_setting("selection.score_weights.ibs", 0.4)),
         },
+        "include_and_guard": bool(get_setting("selection.include_and_guard", True)),
+        "min_price": float(get_setting("selection.min_price", 5.0)),
     }
 
 

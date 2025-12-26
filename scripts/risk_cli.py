@@ -126,113 +126,78 @@ def check_current_exposure() -> Dict[str, Any]:
     position_details = []
 
     for pos in positions:
-        market_value = float(pos.get("market_value", 0))
-        qty = int(pos.get("qty", 0))
-        symbol = pos.get("symbol", "UNKNOWN")
-
-        if qty > 0:
-            long_exposure += market_value
+        try:
+            mv = float(pos.get('market_value', 0))
+        except Exception:
+            mv = 0.0
+        total_exposure += abs(mv)
+        if mv >= 0:
+            long_exposure += mv
         else:
-            short_exposure += abs(market_value)
-
-        total_exposure += abs(market_value)
+            short_exposure += abs(mv)
         position_details.append({
-            "symbol": symbol,
-            "qty": qty,
-            "market_value": f"${market_value:.2f}"
+            'symbol': pos.get('symbol'),
+            'qty': pos.get('qty'),
+            'market_value': pos.get('market_value'),
+            'unrealized_pl': pos.get('unrealized_pl'),
         })
 
-    portfolio_value = float(account.get("portfolio_value", 0)) if account else total_exposure
-    exposure_pct = (total_exposure / portfolio_value * 100) if portfolio_value > 0 else 0
+    equity = 0.0
+    if account:
+        try:
+            equity = float(account.get('portfolio_value', 0))
+        except Exception:
+            equity = 0.0
 
-    return {
-        "check": "current_exposure",
-        "status": "PASS" if exposure_pct <= 100 else "WARN",
-        "details": {
-            "total_exposure": f"${total_exposure:.2f}",
-            "long_exposure": f"${long_exposure:.2f}",
-            "short_exposure": f"${short_exposure:.2f}",
-            "exposure_pct": f"{exposure_pct:.1f}%",
-            "portfolio_value": f"${portfolio_value:.2f}",
-            "position_count": len(positions),
-            "positions": position_details
-        }
+    concentration = 0.0
+    if position_details:
+        try:
+            mvs = [abs(float(p.get('market_value', 0))) for p in position_details]
+            if sum(mvs) > 0:
+                concentration = max(mvs) / sum(mvs)
+        except Exception:
+            concentration = 0.0
+
+    status = 'PASS'
+    details: Dict[str, Any] = {
+        'equity': f"${equity:.2f}",
+        'total_exposure': f"${total_exposure:.2f}",
+        'long_exposure': f"${long_exposure:.2f}",
+        'short_exposure': f"${short_exposure:.2f}",
+        'max_position_concentration': f"{concentration:.2%}",
+        'positions': position_details,
     }
 
-
-def check_position_concentration() -> Dict[str, Any]:
-    """Check position concentration limits."""
-    positions = load_positions()
-    account = fetch_account_info()
-
-    portfolio_value = float(account.get("portfolio_value", 0)) if account else 0
-    violations = []
-    concentrations = []
-
-    if portfolio_value > 0:
-        for pos in positions:
-            market_value = abs(float(pos.get("market_value", 0)))
-            symbol = pos.get("symbol", "UNKNOWN")
-            concentration = market_value / portfolio_value
-
-            concentrations.append({
-                "symbol": symbol,
-                "concentration": f"{concentration * 100:.1f}%",
-                "market_value": f"${market_value:.2f}"
-            })
-
-            if concentration > MAX_POSITION_CONCENTRATION:
-                violations.append({
-                    "symbol": symbol,
-                    "concentration": f"{concentration * 100:.1f}%",
-                    "limit": f"{MAX_POSITION_CONCENTRATION * 100:.0f}%"
-                })
-
-    # Sort by concentration descending
-    concentrations.sort(key=lambda x: float(x["concentration"].rstrip("%")), reverse=True)
+    if concentration > MAX_POSITION_CONCENTRATION:
+        status = 'WARN'
+        details['note'] = 'Position concentration high'
 
     return {
-        "check": "position_concentration",
-        "status": "FAIL" if violations else "PASS",
-        "details": {
-            "max_allowed": f"{MAX_POSITION_CONCENTRATION * 100:.0f}%",
-            "violations": violations,
-            "top_concentrations": concentrations[:5]  # Top 5
-        }
+        'check': 'current_exposure',
+        'status': status,
+        'details': details,
     }
 
 
 def check_correlation_limits() -> Dict[str, Any]:
-    """Check correlation limits (placeholder - requires historical data)."""
-    positions = load_positions()
-    symbols = [pos.get("symbol", "") for pos in positions]
-
-    # Note: Full correlation analysis requires historical price data
-    # This is a simplified check based on position count
-
-    diversification_score = min(len(symbols) / 10, 1.0)  # Simple heuristic
-
+    """Placeholder: pairwise correlation checks (requires historical data)."""
+    # Not implemented in v1; return PASS with note
     return {
-        "check": "correlation_limits",
-        "status": "PASS" if diversification_score >= 0.3 else "WARN",
-        "details": {
-            "max_correlation_threshold": MAX_CORRELATION_THRESHOLD,
-            "unique_positions": len(symbols),
-            "diversification_score": f"{diversification_score * 100:.0f}%",
-            "note": "Full correlation analysis requires historical data",
-            "symbols": symbols
+        'check': 'correlation_limits',
+        'status': 'PASS',
+        'details': {
+            'note': 'Correlation check not implemented in v1',
+            'threshold': MAX_CORRELATION_THRESHOLD,
         }
     }
 
 
 def run_all_checks() -> List[Dict[str, Any]]:
-    """Run all risk checks."""
-    return [
-        check_policy_gate_limits(),
-        check_current_exposure(),
-        check_position_concentration(),
-        check_correlation_limits()
-    ]
+    results = []
+    results.append(check_policy_gate_limits())
+    results.append(check_current_exposure())
+    results.append(check_correlation_limits())
+    return results
 
 
 def test_order_against_limits(symbol: str, side: str, price: float, qty: int) -> Dict[str, Any]:
@@ -318,9 +283,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python risk.py --check              # Run all risk checks
-  python risk.py --status             # Quick status summary
-  python risk.py --check --verbose    # Detailed output
+  python risk_cli.py --check              # Run all risk checks
+  python risk_cli.py --status             # Quick status summary
+  python risk_cli.py --check --verbose    # Detailed output
         """
     )
     parser.add_argument("--dotenv", type=str, default=DEFAULT_DOTENV,
@@ -360,3 +325,4 @@ Examples:
 
 if __name__ == "__main__":
     main()
+

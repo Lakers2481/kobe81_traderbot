@@ -42,7 +42,7 @@ risk:
 filters:
   # Earnings proximity filter
   earnings:
-    enabled: false  # Set true to skip signals near earnings
+    enabled: true  # Skip signals near earnings
     days_before: 2  # Skip N days before earnings
     days_after: 1   # Skip N days after earnings
     cache_file: "state/earnings_cache.json"  # Cache earnings dates
@@ -54,13 +54,13 @@ execution:
   limit_buffer: 0.001      # 0.1% above ask for buys
   # LULD/Volatility clamp (config-gated)
   clamp:
-    enabled: false  # Set true to clamp limit prices
+    enabled: true  # Enable LULD/volatility clamp
     max_pct_from_quote: 0.02  # Max 2% from last quote
     use_atr: false  # Alternative: clamp to ATR band
     atr_multiple: 2.0  # ATR(14) × multiple
   # Rate limiter (config-gated)
   rate_limiter:
-    enabled: false  # Set true to enable rate limiting
+    enabled: true  # Enable rate limiting for safety
     max_orders_per_minute: 120  # Token bucket capacity
     retry_on_429: true  # Retry with exponential backoff on 429
     max_retries: 3  # Max retry attempts
@@ -94,24 +94,25 @@ audit:
 
 # Regime Filter (config-gated, equities only)
 regime_filter:
-  enabled: false  # Set true to filter signals by SPY regime
+  enabled: true  # Enable regime filter by default
   trend:
     fast: 20      # Fast SMA period (optional, set 0 to disable)
     slow: 200     # Slow SMA period (SPY close > SMA(slow))
     require_above_slow: true  # Must be above slow SMA
   vol:
     window: 20    # Realized volatility window (days)
-    max_ann_vol: null  # Max annualized vol threshold (e.g., 0.25 for 25%)
+    max_ann_vol: 0.25  # Max annualized vol threshold (e.g., 0.25 for 25%)
 
 # Signal Selection (config-gated)
 selection:
-  enabled: false  # Set true to use ranked Top-N selection
-  top_n: 10       # Max signals per day
+  enabled: true  # Use ranked Top-N selection by default
+  top_n: 5       # Max signals per day
   score_weights:
-    rsi2: 0.6        # Weight for RSI-2 rank (lower RSI2 = higher rank)
-    ibs: 0.4         # Weight for IBS rank (lower IBS = higher rank)
+    rsi2: 0.3        # Weight for RSI-2 rank (lower RSI2 = higher rank)
+    ibs: 0.2         # Weight for IBS rank (lower IBS = higher rank)
+    crsi: 0.5        # Weight for CRSI rank (lower CRSI = higher rank)
   include_and_guard: true  # Only rank candidates passing AND (RSI2+IBS) filter
-  min_price: 5.0     # Minimum stock price filter
+  min_price: 10.0     # Minimum stock price filter
 
 # Volatility-Targeted Sizing (config-gated)
 sizing:

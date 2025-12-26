@@ -27,5 +27,14 @@ def load_env(path: str | Path) -> Dict[str, str]:
         val = val.strip().strip('"').strip("'")
         os.environ[key] = val
         loaded[key] = val
-    return loaded
 
+    # Backward-compatible alias mapping
+    # Map ALPACA_API_KEY -> ALPACA_API_KEY_ID, ALPACA_SECRET_KEY -> ALPACA_API_SECRET_KEY if missing
+    if 'ALPACA_API_KEY_ID' not in os.environ and 'ALPACA_API_KEY' in os.environ:
+        os.environ['ALPACA_API_KEY_ID'] = os.environ['ALPACA_API_KEY']
+        loaded['ALPACA_API_KEY_ID'] = os.environ['ALPACA_API_KEY']
+    if 'ALPACA_API_SECRET_KEY' not in os.environ:
+        if 'ALPACA_SECRET_KEY' in os.environ:
+            os.environ['ALPACA_API_SECRET_KEY'] = os.environ['ALPACA_SECRET_KEY']
+            loaded['ALPACA_API_SECRET_KEY'] = os.environ['ALPACA_SECRET_KEY']
+    return loaded

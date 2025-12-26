@@ -165,6 +165,19 @@ class Backtester:
         - One open position per symbol at a time
         """
         df = df.sort_values('timestamp').reset_index(drop=True)
+        # Precompute ATR(14) for trailing stops if needed
+        def _atr(data: pd.DataFrame, period: int = 14) -> pd.Series:
+            high = data['high']
+            low = data['low']
+            close = data['close']
+            prev_close = close.shift(1)
+            tr = pd.concat([
+                high - low,
+                (high - prev_close).abs(),
+                (low - prev_close).abs(),
+            ], axis=1).max(axis=1)
+            return tr.rolling(window=period, min_periods=period).mean()
+        df['__atr14__'] = _atr(df, 14)
         df['timestamp'] = pd.to_datetime(df['timestamp'], utc=True).dt.tz_localize(None)
         open_trade = None  # dict with keys: entry_idx, qty, stop, side
         # Pre-index by timestamp for quick lookup of entry index
@@ -187,6 +200,7 @@ class Backtester:
 
             # Position sizing (config-gated volatility targeting)
             stop_price = float(sig.get('stop_loss')) if sig.get('stop_loss') is not None else None
+            trail_mult = float(sig.get('trail_atr_mult')) if sig.get('trail_atr_mult') is not None else None
 
             if is_sizing_enabled() and stop_price is not None:
                 # Volatility-targeted sizing: qty = (risk_pct * equity) / (entry - stop)
@@ -216,8 +230,8 @@ class Backtester:
                 'stop': stop_price,
                 'side': side,
             }
-            # Walk forward up to time stop
-            time_stop = 5  # bars
+            # Walk forward up to time stop (allow strategy override per signal)
+            time_stop = int(sig.get('time_stop_bars', 5))  # bars
             for i in range(entry_idx + 1, min(entry_idx + 1 + time_stop, len(df))):
                 bar = df.loc[i]
                 # ATR stop check (long only in v1)
@@ -227,6 +241,26 @@ class Backtester:
                     if float(bar['low']) <= float(open_trade['stop']):
                         do_exit = True
                         exit_px = float(open_trade['stop'])
+                # Take-profit check (long only)
+                tp = sig.get('take_profit')
+                if not do_exit and tp is not None:
+                    try:
+                        tp_val = float(tp)
+                        # If intraday high touches or exceeds TP, fill at TP
+                        if float(bar['high']) >= tp_val:
+                            do_exit = True
+                            exit_px = tp_val
+                    except Exception:
+                        pass
+                # Trailing stop update (long only, ATR-based)
+                if not do_exit and open_trade['side'] == 'long' and trail_mult is not None and not pd.isna(df.loc[i, '__atr14__']):
+                    atrv = float(df.loc[i, '__atr14__'])
+                    if atrv > 0:
+                        trail_stop = float(bar['close']) - trail_mult * atrv
+                        if open_trade['stop'] is not None:
+                            open_trade['stop'] = max(open_trade['stop'], trail_stop)
+                        else:
+                            open_trade['stop'] = trail_stop
                 # Time stop at final bar in window
                 if i == entry_idx + time_stop - 1:
                     do_exit = True
@@ -243,30 +277,71 @@ class Backtester:
                 open_trade = None
 
     def _compute_equity_series(self, data: pd.DataFrame) -> pd.DataFrame:
-        # Pivot close prices to wide format and forward-fill
-        closes = data.pivot_table(index='timestamp', columns='symbol', values='close').sort_index().ffill()
-        # Track equity over time
-        eq = []
-        cash = self.cash
-        # Reconstruct positions over time from trades (approximate)
+        """
+        Reconstruct the daily equity curve by replaying trades chronologically.
+        - Start from initial cash (not the final cash), then apply BUY/SELL cash flows
+        - Track position quantities per symbol
+        - Mark to market at each day's close
+        Commissions are applied if enabled in the current config.
+        """
+        # Wide close price matrix (dates x symbols), forward-filled
+        closes = (
+            data.pivot_table(index='timestamp', columns='symbol', values='close')
+            .sort_index()
+            .ffill()
+        )
+
+        # Nothing to do without prices
+        if closes.empty:
+            return pd.DataFrame(columns=["equity", "returns"])\
+                .assign(equity=pd.Series(dtype=float), returns=pd.Series(dtype=float))
+
+        # Ensure trade timestamps align with price index for matching
+        trade_rows = [
+            Trade(
+                timestamp=pd.to_datetime(t.timestamp, utc=True).tz_localize(None),
+                symbol=t.symbol,
+                side=t.side,
+                qty=t.qty,
+                price=t.price,
+            )
+            for t in self.trades
+        ]
+
+        # Track cash and positions over time by replaying trades
+        cash = float(self.initial_cash)
         pos_qty: Dict[str, int] = {}
-        # Sort trades by timestamp to update positions chronologically
+        eq_rows: List[Dict[str, Any]] = []
+
         for ts in closes.index:
-            # apply trades at their timestamp
-            for tr in [t for t in self.trades if pd.to_datetime(t.timestamp, utc=True).tz_localize(None) == pd.to_datetime(ts, utc=True).tz_localize(None)]:
-                if tr.side.upper() == 'BUY':
-                    pos = pos_qty.get(tr.symbol, 0)
-                    pos_qty[tr.symbol] = pos + tr.qty
-                    cash -= tr.qty * tr.price
-            # compute portfolio value
-            port = cash
+            # Apply any trades that occurred at this timestamp
+            for tr in (tr for tr in trade_rows if tr.timestamp == ts):
+                is_sell = tr.side.upper() == 'SELL'
+                # Commission model if enabled
+                fee = self._compute_commission(tr.qty, tr.price, is_sell=is_sell)
+                if is_sell:
+                    # Reduce position and add proceeds minus fees
+                    prev = pos_qty.get(tr.symbol, 0)
+                    pos_qty[tr.symbol] = max(0, prev - tr.qty)
+                    cash += tr.qty * tr.price - fee
+                else:  # BUY
+                    prev = pos_qty.get(tr.symbol, 0)
+                    pos_qty[tr.symbol] = prev + tr.qty
+                    cash -= tr.qty * tr.price + fee
+
+            # Compute mark-to-market equity at close
+            port_val = cash
             row = closes.loc[ts]
             for sym, qty in pos_qty.items():
-                if sym in row and not np.isnan(row[sym]):
-                    port += qty * float(row[sym])
-            eq.append({"timestamp": ts, "equity": port})
-        equity_df = pd.DataFrame(eq).set_index('timestamp')
-        equity_df['returns'] = equity_df['equity'].pct_change().fillna(0.0)
+                if qty <= 0:
+                    continue
+                px = row.get(sym)
+                if pd.notna(px):
+                    port_val += qty * float(px)
+            eq_rows.append({"timestamp": ts, "equity": port_val})
+
+        equity_df = pd.DataFrame(eq_rows).set_index("timestamp")
+        equity_df["returns"] = equity_df["equity"].pct_change().fillna(0.0)
         return equity_df
 
     def _compute_metrics(self, equity: pd.DataFrame, trades: List[Trade]) -> Dict[str, Any]:

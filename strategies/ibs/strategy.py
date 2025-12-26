@@ -99,6 +99,7 @@ class IBSStrategy:
                     'take_profit': None,
                     'reason': f"IBS={ibsv:.3f} < {self.params.ibs_long_max} & above SMA{self.params.sma_period}",
                     'ibs': round(ibsv, 3),
+                    'time_stop_bars': int(self.params.time_stop_bars),
                 })
 
             # Short entry: IBS > 0.8 and below SMA(200)
@@ -114,6 +115,7 @@ class IBSStrategy:
                     'take_profit': None,
                     'reason': f"IBS={ibsv:.3f} > {self.params.ibs_short_min} & below SMA{self.params.sma_period}",
                     'ibs': round(ibsv, 3),
+                    'time_stop_bars': int(self.params.time_stop_bars),
                 })
 
         cols = ['timestamp','symbol','side','entry_price','stop_loss','take_profit','reason','ibs']
@@ -150,6 +152,7 @@ class IBSStrategy:
                     'take_profit': None,
                     'reason': f"IBS={row['ibs_sig']:.3f} {'<' if side=='long' else '>'} threshold & trend",
                     'ibs': round(float(row['ibs_sig']), 3),
+                    'time_stop_bars': int(self.params.time_stop_bars),
                 })
         cols = ['timestamp','symbol','side','entry_price','stop_loss','take_profit','reason','ibs']
         return pd.DataFrame(rows, columns=cols) if rows else pd.DataFrame(columns=cols)

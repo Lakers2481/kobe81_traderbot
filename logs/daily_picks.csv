@@ -1,0 +1,4 @@
+timestamp,symbol,side,entry_price,stop_loss,take_profit,reason,rsi2,strategy,ibs,donchian_hi,time_stop_bars,r,breakout_strength,crsi,score
+2024-12-23 05:00:00,BABA,long,85.14,80.38,,RSI2=4.8<= 10.0 & above SMA200,4.77,rsi2,,,,,,,0.9523
+2024-12-23 05:00:00,WMT,long,90.35,87.2,,RSI2=6.5<= 10.0 & above SMA200,6.51,rsi2,,,,,,,0.9349000000000001
+2024-12-23 05:00:00,AAPL,long,255.27,247.05,275.83,Donchian55 breakout,,donchian,,255.0,20.0,8.219999999999999,0.032846715328468404,,

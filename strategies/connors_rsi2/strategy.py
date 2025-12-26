@@ -128,6 +128,7 @@ class ConnorsRSI2Strategy:
                     'take_profit': tp,
                     'reason': f"RSI2={rsi2:.1f}<= {self.params.long_entry_rsi_max} & above SMA{self.params.sma_period}",
                     'rsi2': round(rsi2, 2),
+                    'time_stop_bars': int(self.params.time_stop_bars),
                 })
 
             # Short entry: below SMA(200) and RSI(2) >= 90
@@ -144,6 +145,7 @@ class ConnorsRSI2Strategy:
                     'take_profit': tp,
                     'reason': f"RSI2={rsi2:.1f}>= {self.params.short_entry_rsi_min} & below SMA{self.params.sma_period}",
                     'rsi2': round(rsi2, 2),
+                    'time_stop_bars': int(self.params.time_stop_bars),
                 })
 
         columns = ['timestamp','symbol','side','entry_price','stop_loss','take_profit','reason','rsi2']
@@ -182,6 +184,7 @@ class ConnorsRSI2Strategy:
                     'take_profit': None,
                     'reason': f"RSI2={row['rsi2_sig']:.1f} {'<=' if side=='long' else '>='} {self.params.long_entry_rsi_max if side=='long' else self.params.short_entry_rsi_min}",
                     'rsi2': round(float(row['rsi2_sig']), 2),
+                    'time_stop_bars': int(self.params.time_stop_bars),
                 })
         columns = ['timestamp','symbol','side','entry_price','stop_loss','take_profit','reason','rsi2']
         return pd.DataFrame(rows, columns=columns) if rows else pd.DataFrame(columns=columns)

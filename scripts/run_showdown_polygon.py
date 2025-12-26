@@ -19,8 +19,10 @@ from config.env_loader import load_env
 from config.settings_loader import (
     get_regime_filter_config, is_regime_filter_enabled,
     get_selection_config, is_selection_enabled,
+    is_earnings_filter_enabled,
 )
 from core.regime_filter import filter_signals_by_regime, fetch_spy_bars
+from core.earnings_filter import filter_signals_by_earnings
 
 
 def main():
@@ -69,6 +71,15 @@ def main():
             return signals
         if use_regime and not spy_bars.empty:
             signals = filter_signals_by_regime(signals, spy_bars, regime_cfg)
+        return signals
+
+    def apply_earnings_filter(signals: pd.DataFrame) -> pd.DataFrame:
+        if signals.empty:
+            return signals
+        if is_earnings_filter_enabled():
+            recs = signals.to_dict('records')
+            filtered = filter_signals_by_earnings(recs, date_key='timestamp', symbol_key='symbol')
+            return pd.DataFrame(filtered)
         return signals
 
     def apply_topn_crosssectional(signals: pd.DataFrame, cfg: dict) -> pd.DataFrame:
@@ -124,11 +135,15 @@ def main():
 
     def get_rsi2(df: pd.DataFrame) -> pd.DataFrame:
         signals = rsi2.scan_signals_over_time(df)
-        return apply_regime_filter(signals)
+        signals = apply_regime_filter(signals)
+        signals = apply_earnings_filter(signals)
+        return signals
 
     def get_ibs(df: pd.DataFrame) -> pd.DataFrame:
         signals = ibs.scan_signals_over_time(df)
-        return apply_regime_filter(signals)
+        signals = apply_regime_filter(signals)
+        signals = apply_earnings_filter(signals)
+        return signals
 
     def get_and(df: pd.DataFrame) -> pd.DataFrame:
         a = rsi2.scan_signals_over_time(df)
@@ -147,7 +162,9 @@ def main():
         elif 'rsi2' in merged.columns: out['rsi2'] = merged['rsi2']
         if 'ibs_ibs' in merged.columns: out['ibs'] = merged['ibs_ibs']
         elif 'ibs' in merged.columns: out['ibs'] = merged['ibs']
-        return apply_regime_filter(out)
+        out = apply_regime_filter(out)
+        out = apply_earnings_filter(out)
+        return out
 
     def get_topn(df: pd.DataFrame) -> pd.DataFrame:
         if selection_cfg.get('include_and_guard', True):
@@ -157,6 +174,7 @@ def main():
             b = ibs.scan_signals_over_time(df)
             signals = pd.concat([a, b], ignore_index=True).drop_duplicates(subset=['timestamp', 'symbol', 'side'])
             signals = apply_regime_filter(signals)
+            signals = apply_earnings_filter(signals)
         return apply_topn_crosssectional(signals, selection_cfg)
 
     # Run per strategy

@@ -10,6 +10,7 @@ import requests
 
 from oms.order_state import OrderRecord, OrderStatus
 from oms.idempotency_store import IdempotencyStore
+from core.rate_limiter import with_retry
 from config.settings_loader import (
     is_clamp_enabled,
     get_clamp_max_pct,
@@ -94,7 +95,10 @@ def place_ioc_limit(order: OrderRecord) -> OrderRecord:
         "extended_hours": False,
     }
     try:
-        r = requests.post(url, json=payload, headers=_auth_headers(cfg), timeout=10)
+        def _post():
+            return requests.post(url, json=payload, headers=_auth_headers(cfg), timeout=10)
+
+        r = with_retry(_post)
         if r.status_code not in (200, 201):
             order.status = OrderStatus.REJECTED
             order.notes = f"alpaca_http_{r.status_code}"

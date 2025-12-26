@@ -1,7 +1,43 @@
 # Kobe81 Traderbot - Progress Status
 
-**Last Updated:** 2025-12-26 (Session End)
+**Last Updated:** 2025-12-26 18:00 UTC
 **Project:** C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot
+
+---
+
+## CURRENT STATUS: Full WF Backtest (MR strict + Donchian 2.5R) Running
+
+Task started: 2025-12-26 (local)
+Command:
+`python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 60 --cap 900 --outdir wf_outputs_full --cache data/cache --fallback-free --topn-on --regime-on --rsi2-long-max 5 --ibs-long-max 0.15 --crsi-long-max 7 --time-stop-bars 3 --topn-k 5 --min-price 10 --donchian-on --donchian-lookback 55 --donchian-stop-mult 2.0 --donchian-time-stop 20 --donchian-r-mult 2.5 --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env`
+
+Progress: initializing (this run includes RSI2/IBS/CRSI + Donchian)
+Estimated completion: 30–90+ minutes
+Outputs: `wf_outputs_full/`
+
+Notes:
+- MR aims for high WR (strict selection); Donchian targets 2.5R winners.
+- After completion, run: `python scripts/aggregate_wf_report.py --wfdir wf_outputs_full` to generate HTML.
+
+**Task ID:** be8b951
+**Command:** `python scripts/run_wf_polygon.py --topn-on --universe ... --cap 900 --start 2015-01-01 --end 2024-12-31`
+**Progress:** ~Split 3 of 25 (RSI2 strategy)
+**Estimated Completion:** 30-60+ minutes remaining
+
+The backtest runs 4 strategies (RSI2, IBS, AND, TOPN) × 25 splits = 100 total runs.
+Warnings about "possibly delisted" stocks are expected for IPOs after 2015 (PLTR, COIN, RIVN, etc.).
+
+### Baseline Results (Already Complete)
+| Strategy | Win Rate | Profit Factor | Sharpe |
+|----------|----------|---------------|--------|
+| RSI2     | 40.6%    | 0.93          | -0.12  |
+| IBS      | 39.8%    | 0.89          | -0.18  |
+| AND      | 40.3%    | 0.91          | -0.15  |
+
+**When TOPN completes:**
+1. Results will appear in `wf_outputs/wf_summary_compare.csv` with TOPN row
+2. TOPN per-split metrics in `wf_outputs/topn/wf_splits.csv`
+3. Generate report: `python scripts/aggregate_wf_report.py --wfdir wf_outputs`
 
 ---
 

@@ -28,10 +28,14 @@ def main():
     rsi2_split = wfdir / 'rsi2' / 'wf_splits.csv'
     ibs_split = wfdir / 'ibs' / 'wf_splits.csv'
     and_split = wfdir / 'and' / 'wf_splits.csv'
+    crsi_split = wfdir / 'crsi' / 'wf_splits.csv'
+    don_split = wfdir / 'donchian' / 'wf_splits.csv'
     topn_split = wfdir / 'topn' / 'wf_splits.csv'
     rsi2_df = pd.read_csv(rsi2_split) if rsi2_split.exists() else pd.DataFrame()
     ibs_df = pd.read_csv(ibs_split) if ibs_split.exists() else pd.DataFrame()
     and_df = pd.read_csv(and_split) if and_split.exists() else pd.DataFrame()
+    crsi_df = pd.read_csv(crsi_split) if crsi_split.exists() else pd.DataFrame()
+    don_df = pd.read_csv(don_split) if don_split.exists() else pd.DataFrame()
     topn_df = pd.read_csv(topn_split) if topn_split.exists() else pd.DataFrame()
 
     # Simple HTML assembly
@@ -42,7 +46,11 @@ def main():
     parts.append('</head><body>')
     parts.append(f'<h1>Walk-Forward Report</h1><p>Generated: {ts}</p>')
 
-    parts.append('<h2>Summary (RSI2 vs IBS vs AND)</h2>')
+    # Dynamic heading reflecting presence of TOPN
+    heading = 'Summary (RSI2 vs IBS vs AND)'
+    if 'strategy' in compare_df.columns and any(compare_df['strategy'].astype(str).str.upper() == 'TOPN'):
+        heading = 'Summary (RSI2 vs IBS vs AND vs TOPN)'
+    parts.append(f'<h2>{heading}</h2>')
     parts.append(compare_df.to_html(index=False))
 
     if not rsi2_df.empty:
@@ -54,12 +62,18 @@ def main():
     if not and_df.empty:
         parts.append('<h2>AND (RSI2+IBS) Per-Split Metrics</h2>')
         parts.append(and_df.to_html(index=False))
+    if not crsi_df.empty:
+        parts.append('<h2>CRSI Per-Split Metrics</h2>')
+        parts.append(crsi_df.to_html(index=False))
+    if not don_df.empty:
+        parts.append('<h2>Donchian Breakout Per-Split Metrics</h2>')
+        parts.append(don_df.to_html(index=False))
     if not topn_df.empty:
         parts.append('<h2>TOPN (Composite Scoring) Per-Split Metrics</h2>')
         parts.append(topn_df.to_html(index=False))
 
     # Note about net metrics if present in compare_df
-    if 'net_pnl' in compare_df.columns or 'gross_pnl' in compare_df.columns:
+    if any(c in compare_df.columns for c in ('net_pnl','net_pnl_total','gross_pnl','gross_pnl_total','total_fees','total_fees_total')):
         parts.append('<h2>Net Metrics Note</h2>')
         parts.append('<p>gross_pnl = PnL before commissions; net_pnl = PnL after commissions; total_fees = sum of all commissions paid.</p>')
 
@@ -70,4 +84,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

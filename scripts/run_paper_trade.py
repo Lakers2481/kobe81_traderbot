@@ -15,6 +15,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from config.env_loader import load_env
+from config.settings_loader import is_earnings_filter_enabled
+from core.earnings_filter import filter_signals_by_earnings
 from data.universe.loader import load_universe
 from data.providers.polygon_eod import fetch_daily_bars_polygon
 from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
@@ -24,6 +26,7 @@ from risk.policy_gate import PolicyGate, RiskLimits
 from oms.order_state import OrderStatus
 from core.hash_chain import append_block
 from core.structured_log import jlog
+from monitor.health_endpoints import update_request_counter
 from core.config_pin import sha256_file
 
 
@@ -80,6 +83,9 @@ def main():
     # Reduce to last date only (today's bar) to avoid replaying history
     last_ts = sigs['timestamp'].max()
     todays = sigs[sigs['timestamp'] == last_ts].copy()
+    # Apply earnings filter if enabled
+    if not todays.empty and is_earnings_filter_enabled():
+        todays = pd.DataFrame(filter_signals_by_earnings(todays.to_dict('records')))
 
     # Kill switch check
     if Path(args.kill_switch).exists():
@@ -122,6 +128,10 @@ def main():
         })
         jlog('order_submit', symbol=sym, status=str(rec.status), qty=max_qty, price=limit_px, decision_id=rec.decision_id)
         print(f"{sym} -> {rec.status} @ {limit_px} qty {max_qty} note={rec.notes}")
+        if str(rec.status).upper().endswith('SUBMITTED'):
+            update_request_counter('orders_submitted', 1)
+        elif str(rec.status).upper().endswith('REJECTED'):
+            update_request_counter('orders_rejected', 1)
         submitted += 1
     print(f"Submitted {submitted} IOC LIMIT orders.")
 
