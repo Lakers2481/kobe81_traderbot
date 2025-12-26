@@ -1,0 +1,23 @@
+# Cache
+data/cache/
+__pycache__/
+*.pyc
+
+# Windows
+nul
+
+# Outputs (large files)
+wf_outputs/
+smoke_outputs/
+
+# Environment
+.env
+*.env
+
+# IDE
+.vscode/
+.idea/
+
+# State files (generated at runtime)
+state/
+logs/

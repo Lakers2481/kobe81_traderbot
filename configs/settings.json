@@ -1,0 +1,13 @@
+﻿{
+  "polygon": {
+    "base_url": "https://api.polygon.io",
+    "adjusted": true,
+    "sort": "asc",
+    "limit": 50000
+  },
+  "backtest": {
+    "initial_cash": 100000,
+    "slippage_bps": 5
+  }
+}
+
