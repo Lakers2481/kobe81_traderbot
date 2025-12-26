@@ -135,7 +135,7 @@ def run_mypy(verbose: bool = False) -> CheckResult:
         "oms",
         "execution",
         "core",
-        "configs",
+        "config",
         "monitor",
     ]
 
@@ -253,7 +253,7 @@ def run_mypy(verbose: bool = False) -> CheckResult:
 def run_import_check() -> CheckResult:
     """Check that key modules can be imported."""
     modules_to_check = [
-        ("configs.env_loader", "load_env"),
+        ("config.env_loader", "load_env"),
         ("data.universe.loader", "load_universe"),
         ("data.providers.polygon_eod", "fetch_daily_bars_polygon"),
         ("strategies.connors_rsi2.strategy", "ConnorsRSI2Strategy"),

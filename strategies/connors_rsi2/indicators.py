@@ -1,1 +1,1 @@
-﻿from .strategy import rsi, sma, atr
+from .strategy import rsi, sma, atr

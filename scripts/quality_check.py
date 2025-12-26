@@ -192,7 +192,7 @@ def check_imports(root: Path) -> CheckResult:
         'strategies.ibs.strategy',
         'backtest.engine',
         'data.providers.polygon_eod',
-        'configs.env_loader',
+        'config.env_loader',
         'core.structured_log',
     ]
 

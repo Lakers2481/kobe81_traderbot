@@ -1,1 +1,1 @@
-﻿from .strategy import ibs, sma, atr
+from .strategy import ibs, sma, atr
