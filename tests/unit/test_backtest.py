@@ -13,67 +13,100 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 
-class TestBacktestEngine:
-    """Tests for the backtest engine."""
+class TestBacktester:
+    """Tests for the Backtester class."""
 
-    def test_engine_import(self):
-        """Test that engine can be imported."""
-        from backtest.engine import BacktestEngine
-        assert BacktestEngine is not None
+    def test_backtester_import(self):
+        """Test that Backtester can be imported."""
+        from backtest.engine import Backtester, BacktestConfig
+        assert Backtester is not None
+        assert BacktestConfig is not None
 
-    def test_engine_initialization(self):
-        """Test engine initialization."""
-        from backtest.engine import BacktestEngine
-        engine = BacktestEngine(initial_capital=100000)
-        assert engine is not None
-        assert engine.initial_capital == 100000
+    def test_backtest_config(self):
+        """Test BacktestConfig initialization."""
+        from backtest.engine import BacktestConfig
+        cfg = BacktestConfig(initial_cash=100000)
+        assert cfg.initial_cash == 100000
+        assert cfg.slippage_bps == 5.0  # default
 
-    def test_empty_signals_returns_empty_results(self):
-        """Test that empty signals produce empty results."""
-        from backtest.engine import BacktestEngine
-        engine = BacktestEngine(initial_capital=100000)
+    def test_backtester_initialization(self):
+        """Test Backtester initialization."""
+        from backtest.engine import Backtester, BacktestConfig
 
-        # Empty signals DataFrame
-        signals = pd.DataFrame(columns=['timestamp', 'symbol', 'side', 'entry_price'])
-        prices = pd.DataFrame({'close': [100, 101, 102]})
+        cfg = BacktestConfig(initial_cash=100000)
 
-        # Should handle gracefully
-        # (actual implementation may vary)
+        def dummy_signals(df):
+            return pd.DataFrame(columns=['timestamp', 'symbol', 'side', 'stop_loss'])
 
-    def test_equity_curve_starts_at_initial_capital(self, sample_ohlcv_data):
-        """Test that equity curve starts at initial capital."""
-        from backtest.engine import BacktestEngine
+        def dummy_fetch(symbol):
+            return pd.DataFrame(columns=['timestamp', 'symbol', 'open', 'high', 'low', 'close', 'volume'])
 
-        initial_capital = 100000
-        engine = BacktestEngine(initial_capital=initial_capital)
+        bt = Backtester(cfg, dummy_signals, dummy_fetch)
+        assert bt is not None
+        assert bt.cash == 100000
 
-        # The first value of equity curve should equal initial capital
-        # (Implementation detail - adjust based on actual engine behavior)
+    def test_backtester_empty_run(self):
+        """Test Backtester with no data returns empty results."""
+        from backtest.engine import Backtester, BacktestConfig
+
+        cfg = BacktestConfig(initial_cash=100000)
+
+        def dummy_signals(df):
+            return pd.DataFrame(columns=['timestamp', 'symbol', 'side', 'stop_loss'])
+
+        def dummy_fetch(symbol):
+            return pd.DataFrame()  # Empty data
+
+        bt = Backtester(cfg, dummy_signals, dummy_fetch)
+        result = bt.run(['AAPL', 'MSFT'])
+
+        assert result['trades'] == []
+        assert result['pnl'] == 0.0
 
 
 class TestWalkForward:
     """Tests for walk-forward analysis."""
 
     def test_walk_forward_import(self):
-        """Test that walk_forward can be imported."""
-        from backtest.walk_forward import WalkForwardAnalyzer
-        assert WalkForwardAnalyzer is not None
+        """Test that walk_forward functions can be imported."""
+        from backtest.walk_forward import generate_splits, run_walk_forward, WFSplit
+        assert generate_splits is not None
+        assert run_walk_forward is not None
+        assert WFSplit is not None
 
-    def test_split_generation(self):
+    def test_generate_splits(self):
         """Test that train/test splits are generated correctly."""
-        from backtest.walk_forward import WalkForwardAnalyzer
+        from backtest.walk_forward import generate_splits
+        from datetime import date
 
-        # 252 trading days = 1 year
-        train_days = 252
-        test_days = 63  # 1 quarter
+        start = date(2020, 1, 1)
+        end = date(2022, 12, 31)
 
-        analyzer = WalkForwardAnalyzer(train_days=train_days, test_days=test_days)
+        splits = generate_splits(start, end, train_days=252, test_days=63)
 
-        # Generate date range for 3 years
-        dates = pd.date_range(start='2020-01-01', periods=756, freq='D')
+        # Should generate multiple splits for 3 years of data
+        assert len(splits) > 0
 
-        # Should generate multiple splits
-        # (Implementation detail - adjust based on actual analyzer behavior)
+        # Each split should have valid dates
+        for split in splits:
+            assert split.train_start <= split.train_end
+            assert split.train_end < split.test_start
+            assert split.test_start <= split.test_end
+
+    def test_wf_split_dataclass(self):
+        """Test WFSplit dataclass."""
+        from backtest.walk_forward import WFSplit
+        from datetime import date
+
+        split = WFSplit(
+            train_start=date(2020, 1, 1),
+            train_end=date(2020, 12, 31),
+            test_start=date(2021, 1, 1),
+            test_end=date(2021, 3, 31)
+        )
+
+        assert split.train_start == date(2020, 1, 1)
+        assert split.test_end == date(2021, 3, 31)
 
 
 class TestEquityCurve:
@@ -81,7 +114,6 @@ class TestEquityCurve:
 
     def test_no_trades_flat_equity(self):
         """Test that no trades results in flat equity curve."""
-        # With no trades, equity should remain at initial capital
         initial_capital = 100000
 
         # Simulate empty trade history

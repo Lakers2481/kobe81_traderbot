@@ -35,17 +35,29 @@ class TestBacktestWorkflow:
 
     def test_backtest_produces_results(self, sample_ohlcv_data):
         """Test that backtest produces results."""
-        from backtest.engine import BacktestEngine
+        from backtest.engine import Backtester, BacktestConfig
         from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
 
-        engine = BacktestEngine(initial_capital=100000)
         strategy = ConnorsRSI2Strategy()
 
-        # Generate signals
-        signals = strategy.scan_signals_over_time(sample_ohlcv_data)
+        # Create backtester with strategy's signal function
+        cfg = BacktestConfig(initial_cash=100000)
 
-        # Run backtest
-        # (Actual implementation may vary)
+        def fetch_data(symbol):
+            # Return our test data
+            df = sample_ohlcv_data.copy()
+            df['symbol'] = symbol
+            return df
+
+        bt = Backtester(cfg, strategy.scan_signals_over_time, fetch_data)
+
+        # Run on a single test symbol
+        result = bt.run(['TEST'])
+
+        # Should return a result dict
+        assert isinstance(result, dict)
+        assert 'trades' in result
+        assert 'pnl' in result
 
 
 class TestRiskCheckWorkflow:
@@ -53,22 +65,46 @@ class TestRiskCheckWorkflow:
 
     def test_order_passes_through_risk_gate(self):
         """Test that order flows through risk gate."""
-        from risk.policy_gate import PolicyGate
+        from risk.policy_gate import PolicyGate, RiskLimits
 
-        gate = PolicyGate(max_order_value=75, max_daily_loss=1000)
+        limits = RiskLimits(max_notional_per_order=75, max_daily_notional=1000)
+        gate = PolicyGate(limits)
 
         # Simulate order flow
         order = {
             "symbol": "AAPL",
-            "side": "buy",
+            "side": "long",
             "qty": 1,
             "price": 50,
         }
 
-        order_value = order["qty"] * order["price"]
-        result = gate.check(order_value=order_value)
+        allowed, reason = gate.check(
+            symbol=order["symbol"],
+            side=order["side"],
+            price=order["price"],
+            qty=order["qty"]
+        )
 
-        assert result["allowed"] == True
+        assert allowed == True
+        assert reason == "ok"
+
+    def test_order_blocked_when_exceeds_budget(self):
+        """Test that order is blocked when exceeding budget."""
+        from risk.policy_gate import PolicyGate, RiskLimits
+
+        limits = RiskLimits(max_notional_per_order=75, max_daily_notional=1000)
+        gate = PolicyGate(limits)
+
+        # Order that exceeds per-order limit
+        allowed, reason = gate.check(
+            symbol="AAPL",
+            side="long",
+            price=100,
+            qty=1  # $100 > $75 limit
+        )
+
+        assert allowed == False
+        assert "per_order" in reason
 
 
 class TestStateManagementWorkflow:
@@ -103,3 +139,36 @@ class TestStateManagementWorkflow:
 
         assert len(saved) == 1
         assert saved[0]["symbol"] == "AAPL"
+
+    def test_order_history_tracking(self, temp_state_dir):
+        """Test order history tracking."""
+        import json
+        from datetime import datetime
+
+        orders_file = temp_state_dir / "order_history.json"
+
+        # Load existing (empty)
+        with open(orders_file) as f:
+            orders = json.load(f)
+        assert orders == []
+
+        # Add an order
+        new_order = {
+            "order_id": "test_001",
+            "symbol": "MSFT",
+            "side": "BUY",
+            "qty": 5,
+            "price": 350.00,
+            "timestamp": datetime.now().isoformat(),
+        }
+        orders.append(new_order)
+
+        with open(orders_file, 'w') as f:
+            json.dump(orders, f)
+
+        # Verify
+        with open(orders_file) as f:
+            saved = json.load(f)
+
+        assert len(saved) == 1
+        assert saved[0]["order_id"] == "test_001"

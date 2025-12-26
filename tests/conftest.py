@@ -17,22 +17,23 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 @pytest.fixture
 def sample_ohlcv_data():
-    """Generate sample OHLCV data for testing."""
+    """Generate sample OHLCV data for testing with symbol column."""
     np.random.seed(42)
-    dates = pd.date_range(start='2023-01-01', periods=100, freq='D')
+    dates = pd.date_range(start='2023-01-01', periods=250, freq='D')  # ~1 year for SMA200
 
     # Generate realistic price data
     base_price = 100
-    returns = np.random.randn(100) * 0.02  # 2% daily volatility
+    returns = np.random.randn(250) * 0.02  # 2% daily volatility
     prices = base_price * np.exp(np.cumsum(returns))
 
     df = pd.DataFrame({
         'timestamp': dates,
-        'open': prices * (1 + np.random.randn(100) * 0.005),
-        'high': prices * (1 + np.abs(np.random.randn(100) * 0.01)),
-        'low': prices * (1 - np.abs(np.random.randn(100) * 0.01)),
+        'symbol': 'TEST',  # Add symbol column
+        'open': prices * (1 + np.random.randn(250) * 0.005),
+        'high': prices * (1 + np.abs(np.random.randn(250) * 0.01)),
+        'low': prices * (1 - np.abs(np.random.randn(250) * 0.01)),
         'close': prices,
-        'volume': np.random.randint(100000, 10000000, 100),
+        'volume': np.random.randint(100000, 10000000, 250),
     })
 
     # Ensure high >= open, close, low and low <= open, close, high
@@ -40,6 +41,35 @@ def sample_ohlcv_data():
     df['low'] = df[['open', 'low', 'close']].min(axis=1)
 
     return df
+
+
+@pytest.fixture
+def sample_multi_symbol_data():
+    """Generate sample OHLCV data for multiple symbols."""
+    np.random.seed(42)
+    dates = pd.date_range(start='2023-01-01', periods=250, freq='D')
+
+    dfs = []
+    for symbol in ['AAPL', 'MSFT', 'GOOGL']:
+        base_price = np.random.randint(100, 500)
+        returns = np.random.randn(250) * 0.02
+        prices = base_price * np.exp(np.cumsum(returns))
+
+        df = pd.DataFrame({
+            'timestamp': dates,
+            'symbol': symbol,
+            'open': prices * (1 + np.random.randn(250) * 0.005),
+            'high': prices * (1 + np.abs(np.random.randn(250) * 0.01)),
+            'low': prices * (1 - np.abs(np.random.randn(250) * 0.01)),
+            'close': prices,
+            'volume': np.random.randint(100000, 10000000, 250),
+        })
+
+        df['high'] = df[['open', 'high', 'close']].max(axis=1)
+        df['low'] = df[['open', 'low', 'close']].min(axis=1)
+        dfs.append(df)
+
+    return pd.concat(dfs, ignore_index=True)
 
 
 @pytest.fixture

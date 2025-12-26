@@ -16,57 +16,116 @@ class TestPolicyGate:
 
     def test_policy_gate_import(self):
         """Test that PolicyGate can be imported."""
-        from risk.policy_gate import PolicyGate
+        from risk.policy_gate import PolicyGate, RiskLimits
         assert PolicyGate is not None
+        assert RiskLimits is not None
+
+    def test_risk_limits_defaults(self):
+        """Test RiskLimits default values."""
+        from risk.policy_gate import RiskLimits
+        limits = RiskLimits()
+        assert limits.max_notional_per_order == 75.0
+        assert limits.max_daily_notional == 1000.0
+        assert limits.min_price == 3.0
+        assert limits.max_price == 1000.0
+        assert limits.allow_shorts == False
 
     def test_policy_gate_initialization(self):
         """Test PolicyGate initialization."""
-        from risk.policy_gate import PolicyGate
-        gate = PolicyGate(max_order_value=75, max_daily_loss=1000)
+        from risk.policy_gate import PolicyGate, RiskLimits
+        limits = RiskLimits(max_notional_per_order=100, max_daily_notional=500)
+        gate = PolicyGate(limits)
         assert gate is not None
+        assert gate.limits.max_notional_per_order == 100
 
     def test_order_within_budget_passes(self):
         """Test that order within budget passes check."""
-        from risk.policy_gate import PolicyGate
-        gate = PolicyGate(max_order_value=75, max_daily_loss=1000)
+        from risk.policy_gate import PolicyGate, RiskLimits
+        limits = RiskLimits(max_notional_per_order=75, max_daily_notional=1000)
+        gate = PolicyGate(limits)
 
-        # Order value of $50 should pass
-        order_value = 50
-        result = gate.check(order_value=order_value)
+        # Order value of $50 should pass (price=10, qty=5)
+        allowed, reason = gate.check(symbol="AAPL", side="long", price=10, qty=5)
 
-        assert result['allowed'] == True
+        assert allowed == True
+        assert reason == "ok"
 
-    def test_order_exceeds_budget_fails(self):
-        """Test that order exceeding budget fails check."""
-        from risk.policy_gate import PolicyGate
-        gate = PolicyGate(max_order_value=75, max_daily_loss=1000)
+    def test_order_exceeds_per_order_budget_fails(self):
+        """Test that order exceeding per-order budget fails check."""
+        from risk.policy_gate import PolicyGate, RiskLimits
+        limits = RiskLimits(max_notional_per_order=75, max_daily_notional=1000)
+        gate = PolicyGate(limits)
 
-        # Order value of $100 should fail
-        order_value = 100
-        result = gate.check(order_value=order_value)
+        # Order value of $100 should fail (price=50, qty=2)
+        allowed, reason = gate.check(symbol="AAPL", side="long", price=50, qty=2)
 
-        assert result['allowed'] == False
-        assert 'budget' in result['reason'].lower()
+        assert allowed == False
+        assert "per_order" in reason
 
     def test_daily_loss_limit(self):
         """Test daily loss limit enforcement."""
-        from risk.policy_gate import PolicyGate
-        gate = PolicyGate(max_order_value=75, max_daily_loss=1000)
+        from risk.policy_gate import PolicyGate, RiskLimits
+        limits = RiskLimits(max_notional_per_order=75, max_daily_notional=200)
+        gate = PolicyGate(limits)
 
-        # Simulate accumulated daily loss
-        gate.record_loss(500)
-        gate.record_loss(400)
+        # First order: $70 notional - should pass
+        allowed1, _ = gate.check(symbol="AAPL", side="long", price=70, qty=1)
+        assert allowed1 == True
 
-        # Next order should still pass (total: $900)
-        result = gate.check(order_value=50)
-        assert result['allowed'] == True
+        # Second order: $70 notional - should pass (total $140)
+        allowed2, _ = gate.check(symbol="MSFT", side="long", price=70, qty=1)
+        assert allowed2 == True
 
-        # After another loss, should hit limit
-        gate.record_loss(100)  # Total: $1000
+        # Third order: $70 notional - should fail (total would be $210)
+        allowed3, reason = gate.check(symbol="GOOGL", side="long", price=70, qty=1)
+        assert allowed3 == False
+        assert "daily" in reason
 
-        # Now should fail
-        result = gate.check(order_value=50)
-        assert result['allowed'] == False
+    def test_reset_daily(self):
+        """Test daily reset clears accumulated notional."""
+        from risk.policy_gate import PolicyGate, RiskLimits
+        limits = RiskLimits(max_notional_per_order=75, max_daily_notional=100)
+        gate = PolicyGate(limits)
+
+        # Use up daily budget
+        gate.check(symbol="AAPL", side="long", price=75, qty=1)
+
+        # Should fail now
+        allowed, _ = gate.check(symbol="MSFT", side="long", price=75, qty=1)
+        assert allowed == False
+
+        # Reset daily
+        gate.reset_daily()
+
+        # Should pass again
+        allowed2, _ = gate.check(symbol="MSFT", side="long", price=75, qty=1)
+        assert allowed2 == True
+
+    def test_price_bounds(self):
+        """Test price bounds enforcement."""
+        from risk.policy_gate import PolicyGate, RiskLimits
+        limits = RiskLimits(min_price=3.0, max_price=1000.0)
+        gate = PolicyGate(limits)
+
+        # Price too low
+        allowed1, reason1 = gate.check(symbol="PENNY", side="long", price=2, qty=1)
+        assert allowed1 == False
+        assert "bounds" in reason1
+
+        # Price too high
+        allowed2, reason2 = gate.check(symbol="BRK.A", side="long", price=1500, qty=1)
+        assert allowed2 == False
+        assert "bounds" in reason2
+
+    def test_shorts_disabled_by_default(self):
+        """Test that shorts are disabled by default."""
+        from risk.policy_gate import PolicyGate, RiskLimits
+        limits = RiskLimits()
+        gate = PolicyGate(limits)
+
+        allowed, reason = gate.check(symbol="AAPL", side="short", price=50, qty=1)
+        assert allowed == False
+        assert "short" in reason
 
 
 class TestKillSwitch:
@@ -87,9 +146,6 @@ class TestKillSwitch:
         kill_switch_file.touch()
 
         assert kill_switch_file.exists()
-
-        # Trading should be blocked when file exists
-        # (Actual implementation check would go here)
 
     def test_kill_switch_can_be_deactivated(self, tmp_path):
         """Test that kill switch can be deactivated."""
