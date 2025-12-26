@@ -24,7 +24,8 @@ pandas-datareader>=0.10
 
 # Technical Analysis
 ta>=0.11.0
-pandas-ta  # 150+ technical indicators (uses latest available)
+# pandas-ta requires Python 3.12+, install manually if needed:
+# pip install pandas-ta  # 150+ technical indicators
 
 # ML & AI Features
 stumpy>=1.12  # Matrix profile for anomaly detection
