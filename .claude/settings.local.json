@@ -4,7 +4,12 @@
       "Bash(dir /b \"C:\\\\Users\\\\Owner\\\\OneDrive\\\\Desktop\\\\kobe81_traderbot\\\\.claude\\\\skills\")",
       "Bash(findstr:*)",
       "Bash(dir /b \"C:\\\\Users\\\\Owner\\\\OneDrive\\\\Desktop\\\\kobe81_traderbot\\\\.claude\\\\skills\\\\*.md\")",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd CLAUDE.md and 70 Claude Code skills for Kobe trading system\n\n- CLAUDE.md: Main guidance file with project overview, commands, architecture\n- 70 skills across 22 categories covering full trading operations:\n  - Core: start, stop, kill, status, scan, paper, live\n  - Data: prefetch, universe, polygon, integrity-check\n  - Strategy: backtest, wf, signals, showdown\n  - Risk: audit, risk, reconcile, exposure\n  - Analytics: quant, metrics, benchmark, regime\n  - System: logs, health, backup, cleanup, snapshot\n  - And more...\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git config:*)",
+      "Bash(git add:*)",
+      "Bash(git reset:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Kobe trading system codebase\n\nCore modules:\n- backtest/: Engine with equity curve, ATR/time stops, walk-forward\n- strategies/: Connors RSI-2 and IBS with Wilder smoothing\n- data/: Polygon EOD provider with CSV caching, universe loader\n- execution/: Alpaca broker with IOC LIMIT orders\n- risk/: PolicyGate with $75/order and $1k/daily budgets\n- oms/: Order state tracking, idempotency store\n- core/: Hash chain audit, structured logging, config pin\n- monitor/: Health check endpoints\n- scripts/: Preflight, WF runner, paper/live trade, reconciliation\n\nIncludes:\n- 950-stock universe \\(optionable, liquid, 10+ years history\\)\n- .gitignore for cache, outputs, env files\n- Documentation and requirements\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }

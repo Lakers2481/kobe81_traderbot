@@ -61,6 +61,52 @@ def fetch_daily_bars_yfinance(symbol: str, start: str, end: str, cache_dir: Opti
     return out
 
 
+def fetch_daily_bars_stooq(symbol: str, start: str, end: str, cache_dir: Optional[Path] = None) -> pd.DataFrame:
+    """
+    Fetch daily OHLCV from Stooq via pandas_datareader. Stooq prices are adjusted.
+    Returns DataFrame with columns: timestamp, symbol, open, high, low, close, volume
+    """
+    try:
+        from pandas_datareader import data as web  # type: ignore
+    except Exception:
+        return pd.DataFrame(columns=['timestamp','symbol','open','high','low','close','volume'])
+
+    cache_file: Optional[Path] = None
+    if cache_dir:
+        cache_dir = Path(cache_dir)
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        cache_file = cache_dir / f"{symbol}_{start}_{end}_stooq.csv"
+        if cache_file.exists():
+            try:
+                df = pd.read_csv(cache_file, parse_dates=['timestamp'])
+                return df
+            except Exception:
+                pass
+
+    try:
+        import datetime as dt
+        s = pd.to_datetime(start)
+        e = pd.to_datetime(end)
+        df = web.DataReader(symbol, 'stooq', s, e)
+    except Exception:
+        return pd.DataFrame(columns=['timestamp','symbol','open','high','low','close','volume'])
+    if df is None or df.empty:
+        return pd.DataFrame(columns=['timestamp','symbol','open','high','low','close','volume'])
+    # Stooq returns columns: Open, High, Low, Close, Volume with Date index (descending)
+    df = df.rename(columns={'Open':'open','High':'high','Low':'low','Close':'close','Volume':'volume'})
+    df = df.reset_index().rename(columns={'Date':'timestamp'})
+    df['symbol'] = symbol.upper()
+    out = df[['timestamp','symbol','open','high','low','close','volume']].copy()
+    out['timestamp'] = pd.to_datetime(out['timestamp']).dt.normalize()
+    out = out.sort_values('timestamp').reset_index(drop=True)
+    if cache_file is not None:
+        try:
+            out.to_csv(cache_file, index=False)
+        except Exception:
+            pass
+    return out
+
+
 def fetch_daily_bars_multi(symbol: str, start: str, end: str, cache_dir: Optional[Path] = None) -> pd.DataFrame:
     """
     Combined fetcher: use Polygon for the requested window; if Polygon coverage
@@ -83,6 +129,8 @@ def fetch_daily_bars_multi(symbol: str, start: str, end: str, cache_dir: Optiona
 
     if need_backfill:
         dfo = fetch_daily_bars_yfinance(symbol, start, missing_end, cache_dir=cache_dir)
+        if dfo is None or dfo.empty:
+            dfo = fetch_daily_bars_stooq(symbol, start, missing_end, cache_dir=cache_dir)
     else:
         dfo = pd.DataFrame(columns=['timestamp','symbol','open','high','low','close','volume'])
 
@@ -104,4 +152,3 @@ def fetch_daily_bars_multi(symbol: str, start: str, end: str, cache_dir: Optiona
     e = pd.to_datetime(end)
     merged = merged[(pd.to_datetime(merged['timestamp']) >= s) & (pd.to_datetime(merged['timestamp']) <= e)]
     return merged
-
