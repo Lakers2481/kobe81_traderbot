@@ -1,0 +1,59 @@
+# Kobe Trading System - Base Configuration
+# This file contains global settings for the trading system
+
+system:
+  name: "Kobe"
+  version: "1.0.0"
+  mode: "paper"  # paper | live
+  timezone: "America/New_York"
+
+# Data Provider Settings
+data:
+  provider: "polygon"
+  cache_dir: "data/cache"
+  universe_file: "data/universe/optionable_liquid_final.csv"
+
+# Backtest Settings
+backtest:
+  initial_capital: 100000
+  commission: 0.0  # Alpaca is commission-free
+  slippage_pct: 0.001  # 0.1% slippage estimate
+
+# Walk-Forward Settings
+walk_forward:
+  train_days: 252  # 1 year training
+  test_days: 63    # 1 quarter testing
+
+# Risk Management
+risk:
+  max_position_size: 0.10  # 10% of portfolio per position
+  max_daily_loss: 1000     # $1,000 daily loss limit
+  max_order_value: 75      # $75 per order (micro budget)
+  max_open_positions: 10   # Maximum concurrent positions
+
+# Execution Settings
+execution:
+  broker: "alpaca"
+  order_type: "ioc_limit"  # IOC LIMIT orders only
+  limit_buffer: 0.001      # 0.1% above ask for buys
+
+# Logging
+logging:
+  level: "INFO"
+  events_file: "logs/events.jsonl"
+  trades_file: "logs/trades.jsonl"
+
+# Health Check
+health:
+  enabled: true
+  port: 8081
+  endpoint: "/health"
+
+# Kill Switch
+kill_switch:
+  file: "state/KILL_SWITCH"
+
+# Audit
+audit:
+  hash_chain_file: "state/hash_chain.jsonl"
+  verify_on_startup: true

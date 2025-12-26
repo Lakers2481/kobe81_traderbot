@@ -1,0 +1,2 @@
+# This file ensures the state directory is tracked by git
+# State files contain runtime data and should be initialized empty

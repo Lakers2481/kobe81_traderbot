@@ -1,0 +1,149 @@
+name: Kobe CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Run unit tests
+        run: |
+          pytest tests/unit -v --tb=short
+
+      - name: Run integration tests
+        run: |
+          pytest tests/integration -v --tb=short
+        continue-on-error: true  # Integration tests may need API keys
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install linters
+        run: |
+          pip install ruff
+
+      - name: Run Ruff linter
+        run: |
+          ruff check . --ignore=E501,F401 --exclude=wf_outputs,wf_outputs_full10y,smoke_outputs,logs,state
+        continue-on-error: true  # Don't fail on lint warnings
+
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verify imports
+        run: |
+          python -c "
+          import sys
+          sys.path.insert(0, '.')
+
+          # Core imports
+          from core.hash_chain import append_block, verify_chain
+          from core.structured_log import jlog
+          from core.config_pin import sha256_file
+
+          # Strategy imports
+          from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
+          from strategies.ibs.strategy import IBSStrategy
+
+          # Risk imports
+          from risk.policy_gate import PolicyGate, RiskLimits
+
+          # OMS imports
+          from oms.order_state import OrderRecord, OrderStatus
+          from oms.idempotency_store import IdempotencyStore
+
+          # Backtest imports
+          from backtest.engine import Backtester
+
+          print('All core imports successful')
+          "
+
+      - name: Verify strategy execution
+        run: |
+          python -c "
+          import sys
+          sys.path.insert(0, '.')
+          import pandas as pd
+          import numpy as np
+          from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
+
+          # Create synthetic data
+          dates = pd.date_range(end='2024-01-01', periods=250, freq='B')
+          df = pd.DataFrame({
+              'timestamp': dates,
+              'symbol': 'TEST',
+              'open': 100 + np.random.randn(250).cumsum() * 0.5,
+              'high': 101 + np.random.randn(250).cumsum() * 0.5,
+              'low': 99 + np.random.randn(250).cumsum() * 0.5,
+              'close': 100 + np.random.randn(250).cumsum() * 0.5,
+              'volume': np.random.randint(1000000, 5000000, 250),
+          })
+          df['high'] = df[['open', 'high', 'close']].max(axis=1) + 0.5
+          df['low'] = df[['open', 'low', 'close']].min(axis=1) - 0.5
+
+          strat = ConnorsRSI2Strategy()
+          sigs = strat.generate_signals(df)
+          print(f'Strategy generated {len(sigs)} signals on synthetic data')
+          print('Strategy execution test passed')
+          "
+
+      - name: Verify PolicyGate
+        run: |
+          python -c "
+          import sys
+          sys.path.insert(0, '.')
+          from risk.policy_gate import PolicyGate
+
+          pg = PolicyGate()
+          ok, reason = pg.check('TEST', 'long', 50.0, 1)
+          print(f'PolicyGate check: {ok} ({reason})')
+          assert ok, 'PolicyGate should pass for valid order'
+          print('PolicyGate test passed')
+          "

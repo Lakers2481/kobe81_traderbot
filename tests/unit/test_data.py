@@ -1,0 +1,126 @@
+"""
+Unit tests for data handling.
+"""
+
+import pytest
+import pandas as pd
+import numpy as np
+from pathlib import Path
+import sys
+
+# Add project root to path
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+
+
+class TestPolygonProvider:
+    """Tests for Polygon data provider."""
+
+    def test_provider_import(self):
+        """Test that provider can be imported."""
+        from data.providers.polygon_eod import PolygonEODProvider
+        assert PolygonEODProvider is not None
+
+    def test_provider_initialization(self, mock_env_vars):
+        """Test provider initialization with API key."""
+        from data.providers.polygon_eod import PolygonEODProvider
+        provider = PolygonEODProvider()
+        assert provider is not None
+
+    def test_cache_file_naming(self):
+        """Test cache file naming convention."""
+        symbol = "AAPL"
+        start = "2023-01-01"
+        end = "2023-12-31"
+
+        # Expected cache filename format
+        expected_name = f"{symbol}_{start}_{end}.parquet"
+
+        assert symbol in expected_name
+        assert ".parquet" in expected_name
+
+
+class TestUniverseLoader:
+    """Tests for universe loading."""
+
+    def test_loader_import(self):
+        """Test that loader can be imported."""
+        from data.universe.loader import UniverseLoader
+        assert UniverseLoader is not None
+
+    def test_load_universe_from_csv(self, tmp_path):
+        """Test loading universe from CSV file."""
+        from data.universe.loader import UniverseLoader
+
+        # Create test CSV
+        csv_path = tmp_path / "test_universe.csv"
+        csv_path.write_text("symbol\nAAPL\nMSFT\nGOOGL\n")
+
+        loader = UniverseLoader()
+        symbols = loader.load(str(csv_path))
+
+        assert len(symbols) == 3
+        assert "AAPL" in symbols
+        assert "MSFT" in symbols
+        assert "GOOGL" in symbols
+
+    def test_universe_deduplication(self, tmp_path):
+        """Test that duplicate symbols are removed."""
+        from data.universe.loader import UniverseLoader
+
+        # Create CSV with duplicates
+        csv_path = tmp_path / "test_universe.csv"
+        csv_path.write_text("symbol\nAAPL\nMSFT\nAAPL\nGOOGL\nMSFT\n")
+
+        loader = UniverseLoader()
+        symbols = loader.load(str(csv_path))
+
+        # Should have only unique symbols
+        assert len(symbols) == len(set(symbols))
+
+    def test_universe_cap(self, tmp_path):
+        """Test that universe respects cap limit."""
+        from data.universe.loader import UniverseLoader
+
+        # Create CSV with many symbols
+        symbols_list = [f"SYM{i}" for i in range(100)]
+        csv_path = tmp_path / "test_universe.csv"
+        csv_path.write_text("symbol\n" + "\n".join(symbols_list))
+
+        loader = UniverseLoader()
+        symbols = loader.load(str(csv_path), cap=50)
+
+        assert len(symbols) <= 50
+
+
+class TestDataValidation:
+    """Tests for data validation."""
+
+    def test_ohlcv_data_has_required_columns(self, sample_ohlcv_data):
+        """Test that OHLCV data has all required columns."""
+        required_columns = ['timestamp', 'open', 'high', 'low', 'close', 'volume']
+
+        for col in required_columns:
+            assert col in sample_ohlcv_data.columns
+
+    def test_high_gte_low(self, sample_ohlcv_data):
+        """Test that high >= low for all bars."""
+        assert (sample_ohlcv_data['high'] >= sample_ohlcv_data['low']).all()
+
+    def test_high_gte_open_close(self, sample_ohlcv_data):
+        """Test that high >= open and high >= close."""
+        assert (sample_ohlcv_data['high'] >= sample_ohlcv_data['open']).all()
+        assert (sample_ohlcv_data['high'] >= sample_ohlcv_data['close']).all()
+
+    def test_low_lte_open_close(self, sample_ohlcv_data):
+        """Test that low <= open and low <= close."""
+        assert (sample_ohlcv_data['low'] <= sample_ohlcv_data['open']).all()
+        assert (sample_ohlcv_data['low'] <= sample_ohlcv_data['close']).all()
+
+    def test_volume_positive(self, sample_ohlcv_data):
+        """Test that volume is positive."""
+        assert (sample_ohlcv_data['volume'] > 0).all()
+
+    def test_no_missing_values(self, sample_ohlcv_data):
+        """Test that there are no missing values."""
+        assert not sample_ohlcv_data.isnull().any().any()

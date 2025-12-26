@@ -1,0 +1,58 @@
+# Connors RSI-2 Strategy Configuration
+# Mean-reversion strategy based on 2-period RSI
+
+strategy:
+  name: "connors_rsi2"
+  description: "Connors RSI-2 mean reversion strategy"
+  type: "mean_reversion"
+  direction: "long_only"
+
+# Entry Conditions
+entry:
+  rsi_period: 2
+  rsi_threshold: 10        # Enter when RSI(2) <= 10
+  sma_filter_period: 200   # Only trade above 200 SMA
+  use_wilder_smoothing: true
+
+# Exit Conditions
+exit:
+  # Take profit when RSI crosses above threshold
+  rsi_exit_threshold: 70
+
+  # ATR-based stop loss
+  atr_period: 14
+  atr_multiplier: 2.0      # Stop at 2x ATR below entry
+
+  # Time-based stop
+  max_hold_bars: 5         # Exit after 5 bars if not stopped
+
+# Signal Generation
+signals:
+  # Shift indicators by 1 bar to prevent lookahead
+  lookahead_prevention: true
+  shift_bars: 1
+
+  # Fill assumptions
+  fill_on: "next_open"     # Signals at close(t), fill at open(t+1)
+
+# Position Sizing
+position_sizing:
+  method: "fixed_dollar"
+  amount: 75               # $75 per trade (micro budget)
+
+# Backtest Parameters
+backtest:
+  start_date: "2015-01-01"
+  end_date: "2024-12-31"
+
+# Walk-Forward Optimization
+optimization:
+  parameters:
+    - name: "rsi_threshold"
+      min: 5
+      max: 20
+      step: 5
+    - name: "atr_multiplier"
+      min: 1.5
+      max: 3.0
+      step: 0.5

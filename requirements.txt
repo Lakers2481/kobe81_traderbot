@@ -1,4 +1,48 @@
+# Kobe Trading System Dependencies
+
+# Core Data Processing
 pandas>=2.0
 numpy>=1.24
-requests>=2.31
+pyarrow>=14.0        # Parquet file support
 
+# HTTP & API
+requests>=2.31
+aiohttp>=3.9         # Async HTTP client
+websockets>=12.0     # WebSocket support
+
+# Broker Integration
+alpaca-py>=0.13      # Alpaca trading API
+
+# Configuration
+pyyaml>=6.0          # YAML config files
+python-dotenv>=1.0   # Environment variable loading
+
+# Technical Analysis
+ta>=0.11.0           # Technical analysis library (optional)
+
+# Visualization (for reports)
+matplotlib>=3.7
+plotly>=5.18         # Interactive charts
+
+# Testing
+pytest>=7.4
+pytest-cov>=4.1      # Coverage reporting
+pytest-asyncio>=0.21 # Async test support
+
+# Type Checking (optional)
+mypy>=1.7            # Static type checking
+
+# Code Quality (optional)
+black>=23.0          # Code formatting
+flake8>=6.1          # Linting
+isort>=5.12          # Import sorting
+
+# Scheduling
+schedule>=1.2        # Job scheduling
+
+# Date/Time
+python-dateutil>=2.8
+pytz>=2023.3
+
+# HTTP Server (for health endpoints)
+flask>=3.0           # Lightweight web framework (optional)
