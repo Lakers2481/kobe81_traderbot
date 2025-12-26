@@ -43,6 +43,23 @@ from .strategy_enhancer import (
     EnhancerConfig,
     enhance_strategy,
 )
+from .regime_hmm import (
+    MarketRegimeDetector,
+    MarketRegime,
+    RegimeResult,
+    get_regime_detector,
+)
+from .conviction_scorer import (
+    ConvictionScorer,
+    ConvictionBreakdown,
+    get_conviction_scorer,
+)
+from .ensemble_brain import (
+    EnsembleBrain,
+    QuickEnsemble,
+    PredictionResult,
+    get_ensemble_brain,
+)
 
 __all__ = [
     # Technical Features
@@ -72,4 +89,18 @@ __all__ = [
     "StrategyEnhancer",
     "EnhancerConfig",
     "enhance_strategy",
+    # Regime Detection (HMM)
+    "MarketRegimeDetector",
+    "MarketRegime",
+    "RegimeResult",
+    "get_regime_detector",
+    # Conviction Scoring
+    "ConvictionScorer",
+    "ConvictionBreakdown",
+    "get_conviction_scorer",
+    # Ensemble Brain
+    "EnsembleBrain",
+    "QuickEnsemble",
+    "PredictionResult",
+    "get_ensemble_brain",
 ]

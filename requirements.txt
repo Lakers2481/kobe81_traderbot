@@ -58,3 +58,21 @@ pytz>=2023.3
 
 # HTTP Server (for health endpoints)
 flask>=3.0
+
+# Dashboard (Mission Control)
+fastapi>=0.104
+uvicorn>=0.24
+
+# Alerts & Notifications
+python-telegram-bot>=20.0
+
+# Bayesian Optimization
+optuna>=3.4
+
+# Market Regime Detection (HMM)
+hmmlearn>=0.3
+
+# Ensemble ML (optional - for advanced ML features)
+# Install these manually for full ensemble functionality:
+# pip install xgboost>=2.0
+# pip install lightgbm>=4.0

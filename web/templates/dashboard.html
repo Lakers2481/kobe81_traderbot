@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kobe Trading Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-card: #1a1a1a;
+            --bg-hover: #222222;
+            --border: #2a2a2a;
+            --border-light: #333333;
+            --text-white: #ffffff;
+            --text-gray: #888888;
+            --text-muted: #555555;
+            --green: #00ff88;
+            --green-dark: #00cc66;
+            --red: #ff4444;
+            --red-dark: #cc3333;
+            --yellow: #ffaa00;
+            --blue: #00aaff;
+            --purple: #aa66ff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-white);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 25px;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--green) 0%, var(--blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .system-status.healthy {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--green);
+            color: var(--green);
+        }
+
+        .system-status.alert {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid var(--red);
+            color: var(--red);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-dot.green { background: var(--green); }
+        .status-dot.red { background: var(--red); }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .time-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: var(--text-gray);
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-light);
+            background: var(--bg-hover);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 11px;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+
+        .card-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .card-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .card-value.positive { color: var(--green); }
+        .card-value.negative { color: var(--red); }
+        .card-value.neutral { color: var(--text-white); }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        .card-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-top: 8px;
+        }
+
+        .card-change.positive {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--green);
+        }
+
+        .card-change.negative {
+            background: rgba(255, 68, 68, 0.1);
+            color: var(--red);
+        }
+
+        /* Sections */
+        .section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-size: 14px;
+            color: var(--text-white);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        /* Kill Switch */
+        .kill-switch-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .kill-switch-status {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .kill-switch-status.active { color: var(--red); }
+        .kill-switch-status.inactive { color: var(--green); }
+
+        .kill-btn {
+            background: var(--red);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+        }
+
+        .kill-btn:hover {
+            background: var(--red-dark);
+            transform: translateY(-1px);
+        }
+
+        .kill-btn.deactivate {
+            background: var(--green);
+        }
+
+        .kill-btn.deactivate:hover {
+            background: var(--green-dark);
+        }
+
+        .kill-switch-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .kill-layer {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .kill-layer.triggered {
+            background: rgba(255, 68, 68, 0.1);
+            border-color: var(--red);
+        }
+
+        .kill-layer-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .kill-layer-name {
+            font-size: 12px;
+            color: var(--text-gray);
+        }
+
+        .kill-layer-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .kill-layer-limit {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .kill-layer-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .kill-layer-status.ok { background: var(--green); }
+        .kill-layer-status.triggered { background: var(--red); }
+
+        /* Market Context */
+        .market-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+        }
+
+        .market-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .market-card:hover {
+            border-color: var(--border-light);
+        }
+
+        .market-name {
+            font-size: 12px;
+            color: var(--text-gray);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .market-price {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .market-badge {
+            display: inline-block;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        .market-badge.low { background: rgba(0, 255, 136, 0.1); color: var(--green); }
+        .market-badge.normal { background: rgba(255, 170, 0, 0.1); color: var(--yellow); }
+        .market-badge.high { background: rgba(255, 68, 68, 0.1); color: var(--red); }
+        .market-badge.open { background: rgba(0, 255, 136, 0.1); color: var(--green); }
+        .market-badge.closed { background: rgba(136, 136, 136, 0.1); color: var(--text-gray); }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            color: var(--text-gray);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+        }
+
+        tr:hover td {
+            background: var(--bg-hover);
+        }
+
+        .symbol-cell {
+            font-weight: 700;
+            color: var(--text-white);
+        }
+
+        .direction-long { color: var(--green); }
+        .direction-short { color: var(--red); }
+
+        .pnl-positive { color: var(--green); }
+        .pnl-negative { color: var(--red); }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 12px;
+            padding: 30px;
+            border-top: 1px solid var(--border);
+            margin-top: 20px;
+        }
+
+        .footer a {
+            color: var(--blue);
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-grid { grid-template-columns: repeat(2, 1fr); }
+            .kill-switch-grid { grid-template-columns: repeat(2, 1fr); }
+            .market-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .kill-switch-grid { grid-template-columns: 1fr; }
+            .market-grid { grid-template-columns: repeat(2, 1fr); }
+            .header { flex-direction: column; gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <div class="logo">KOBE</div>
+                <div class="system-status" :class="data.system_healthy ? 'healthy' : 'alert'">
+                    <span class="status-dot" :class="data.system_healthy ? 'green' : 'red'"></span>
+                    <span>{{ data.system_healthy ? 'ALL SYSTEMS GO' : 'SYSTEM ALERT' }}</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="time-display">
+                    <span style="color: var(--text-muted);">Last Update:</span> {{ lastUpdate }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Metrics Grid -->
+        <div class="main-grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Account Equity</span>
+                </div>
+                <div class="card-value neutral">${{ formatNumber(data.performance?.current_equity || 0) }}</div>
+                <div class="card-subtitle">Initial: ${{ formatNumber(data.performance?.initial_capital || 100000) }}</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Cumulative P&L</span>
+                </div>
+                <div class="card-value" :class="getPnlClass(data.performance?.cumulative_pnl || 0)">
+                    {{ formatPnl(data.performance?.cumulative_pnl || 0) }}
+                </div>
+                <div class="card-change" :class="getPnlClass(data.performance?.cumulative_pnl_pct || 0)">
+                    {{ data.performance?.cumulative_pnl_pct >= 0 ? '+' : '' }}{{ data.performance?.cumulative_pnl_pct || 0 }}%
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Win Rate</span>
+                </div>
+                <div class="card-value" :class="(data.performance?.win_rate || 0) >= 50 ? 'positive' : 'negative'">
+                    {{ data.performance?.win_rate || 0 }}%
+                </div>
+                <div class="card-subtitle">{{ data.performance?.winning_trades || 0 }}W / {{ data.performance?.losing_trades || 0 }}L ({{ data.performance?.total_trades || 0 }} total)</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Open Positions</span>
+                </div>
+                <div class="card-value neutral">{{ data.performance?.open_positions || 0 }}</div>
+                <div class="card-subtitle">
+                    Unrealized:
+                    <span :class="getPnlClass(data.performance?.unrealized_pnl || 0)">
+                        {{ formatPnl(data.performance?.unrealized_pnl || 0) }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kill Switch Section -->
+        <div class="section">
+            <div class="section-header">
+                <div class="kill-switch-header">
+                    <span class="section-title">Kill Switch Monitor</span>
+                    <span class="kill-switch-status" :class="data.kill_switches?.kill_switch_active ? 'active' : 'inactive'">
+                        {{ data.kill_switches?.kill_switch_active ? 'ACTIVE - TRADING HALTED' : 'Inactive' }}
+                    </span>
+                </div>
+                <button class="kill-btn" :class="{ deactivate: data.kill_switches?.kill_switch_active }"
+                        @click="toggleKillSwitch">
+                    {{ data.kill_switches?.kill_switch_active ? 'DEACTIVATE' : 'EMERGENCY STOP' }}
+                </button>
+            </div>
+            <div class="kill-switch-grid">
+                <div class="kill-layer" v-for="layer in data.kill_switches?.layers || []" :class="{ triggered: layer.triggered }">
+                    <div class="kill-layer-info">
+                        <span class="kill-layer-name">{{ layer.name }}</span>
+                        <span class="kill-layer-value">{{ layer.current }}</span>
+                        <span class="kill-layer-limit">Limit: {{ layer.limit }}</span>
+                    </div>
+                    <div class="kill-layer-status" :class="layer.triggered ? 'triggered' : 'ok'"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Context Section -->
+        <div class="section">
+            <div class="section-header">
+                <span class="section-title">Market Context</span>
+            </div>
+            <div class="market-grid">
+                <div class="market-card">
+                    <div class="market-name">VIX</div>
+                    <div class="market-price" :style="{ color: getVixColor(data.market?.vix?.current) }">
+                        {{ data.market?.vix?.current || 0 }}
+                    </div>
+                    <div class="market-badge" :class="getVixBadgeClass(data.market?.vix?.regime)">
+                        {{ data.market?.vix?.regime || 'NORMAL' }}
+                    </div>
+                </div>
+                <div class="market-card">
+                    <div class="market-name">S&P 500 (SPY)</div>
+                    <div class="market-price">${{ data.market?.indices?.SPY || 0 }}</div>
+                </div>
+                <div class="market-card">
+                    <div class="market-name">NASDAQ (QQQ)</div>
+                    <div class="market-price">${{ data.market?.indices?.QQQ || 0 }}</div>
+                </div>
+                <div class="market-card">
+                    <div class="market-name">Russell 2000 (IWM)</div>
+                    <div class="market-price">${{ data.market?.indices?.IWM || 0 }}</div>
+                </div>
+                <div class="market-card">
+                    <div class="market-name">Market Status</div>
+                    <div class="market-price" :style="{ color: data.market?.market?.is_open ? '#00ff88' : '#888' }">
+                        {{ data.market?.market?.status || 'CLOSED' }}
+                    </div>
+                    <div class="market-badge" :class="data.market?.market?.is_open ? 'open' : 'closed'">
+                        {{ data.market?.market?.is_open ? 'Trading Active' : 'Closed' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Positions Section -->
+        <div class="section" v-if="data.positions && data.positions.length > 0">
+            <div class="section-header">
+                <span class="section-title">Open Positions</span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Side</th>
+                        <th>Qty</th>
+                        <th>Entry Price</th>
+                        <th>Current Price</th>
+                        <th>P&L ($)</th>
+                        <th>P&L (%)</th>
+                        <th>Market Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="pos in data.positions">
+                        <td class="symbol-cell">{{ pos.symbol }}</td>
+                        <td :class="pos.side === 'long' ? 'direction-long' : 'direction-short'">
+                            {{ pos.side.toUpperCase() }}
+                        </td>
+                        <td>{{ pos.qty }}</td>
+                        <td>${{ pos.entry_price.toFixed(2) }}</td>
+                        <td>${{ pos.current_price.toFixed(2) }}</td>
+                        <td :class="pos.unrealized_pnl >= 0 ? 'pnl-positive' : 'pnl-negative'">
+                            {{ formatPnl(pos.unrealized_pnl) }}
+                        </td>
+                        <td :class="pos.unrealized_pnl_pct >= 0 ? 'pnl-positive' : 'pnl-negative'">
+                            {{ pos.unrealized_pnl_pct >= 0 ? '+' : '' }}{{ pos.unrealized_pnl_pct.toFixed(2) }}%
+                        </td>
+                        <td>${{ formatNumber(pos.market_value) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Signals Section -->
+        <div class="section" v-if="data.signals && data.signals.length > 0">
+            <div class="section-header">
+                <span class="section-title">Recent Signals</span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Direction</th>
+                        <th>Entry</th>
+                        <th>Stop Loss</th>
+                        <th>Target</th>
+                        <th>R:R Ratio</th>
+                        <th>Confidence</th>
+                        <th>RSI(2)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="sig in data.signals">
+                        <td class="symbol-cell">{{ sig.symbol }}</td>
+                        <td :class="sig.direction === 'long' ? 'direction-long' : 'direction-short'">
+                            {{ sig.direction.toUpperCase() }}
+                        </td>
+                        <td>${{ sig.entry_price }}</td>
+                        <td>${{ sig.stop_loss }}</td>
+                        <td>${{ sig.take_profit }}</td>
+                        <td>{{ sig.rr_ratio }}:1</td>
+                        <td>{{ sig.confidence }}%</td>
+                        <td>{{ sig.rsi_2 }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty States -->
+        <div class="section" v-if="(!data.positions || data.positions.length === 0) && (!data.signals || data.signals.length === 0)">
+            <div class="empty-state">
+                <div class="empty-state-icon">&#128202;</div>
+                <div>No active positions or signals</div>
+                <div style="margin-top: 8px; font-size: 11px;">Waiting for trading opportunities...</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            Kobe Trading System | Dashboard v1.0.0 | WebSocket Refresh: 5 seconds
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script>
+        const { createApp, ref, onMounted, onUnmounted } = Vue;
+
+        createApp({
+            setup() {
+                const data = ref({});
+                const lastUpdate = ref('--:--:--');
+                let ws = null;
+
+                const formatNumber = (num) => {
+                    return new Intl.NumberFormat('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }).format(num);
+                };
+
+                const formatPnl = (pnl) => {
+                    const sign = pnl >= 0 ? '+' : '';
+                    return sign + '$' + formatNumber(Math.abs(pnl));
+                };
+
+                const getPnlClass = (pnl) => {
+                    return pnl >= 0 ? 'positive' : 'negative';
+                };
+
+                const getVixColor = (vix) => {
+                    if (!vix) return '#888';
+                    if (vix < 15) return '#00ff88';
+                    if (vix < 25) return '#ffaa00';
+                    return '#ff4444';
+                };
+
+                const getVixBadgeClass = (regime) => {
+                    if (!regime) return 'normal';
+                    return regime.toLowerCase();
+                };
+
+                const toggleKillSwitch = async () => {
+                    const action = data.value.kill_switches?.kill_switch_active ? 'deactivate' : 'activate';
+                    try {
+                        await fetch(`/api/kill-switch/${action}`, { method: 'POST' });
+                    } catch (e) {
+                        console.error('Kill switch toggle failed:', e);
+                    }
+                };
+
+                const connectWebSocket = () => {
+                    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                    ws = new WebSocket(`${protocol}//${window.location.host}/ws/live`);
+
+                    ws.onmessage = (event) => {
+                        const msg = JSON.parse(event.data);
+                        data.value = msg.data;
+                        lastUpdate.value = new Date().toLocaleTimeString();
+                    };
+
+                    ws.onclose = () => {
+                        console.log('WebSocket closed, reconnecting...');
+                        setTimeout(connectWebSocket, 3000);
+                    };
+
+                    ws.onerror = (e) => {
+                        console.error('WebSocket error:', e);
+                    };
+                };
+
+                onMounted(() => {
+                    // Initial data fetch
+                    fetch('/api/data')
+                        .then(r => r.json())
+                        .then(d => {
+                            data.value = d;
+                            lastUpdate.value = new Date().toLocaleTimeString();
+                        })
+                        .catch(e => console.error('Initial data fetch failed:', e));
+
+                    connectWebSocket();
+                });
+
+                onUnmounted(() => {
+                    if (ws) ws.close();
+                });
+
+                return {
+                    data,
+                    lastUpdate,
+                    formatNumber,
+                    formatPnl,
+                    getPnlClass,
+                    getVixColor,
+                    getVixBadgeClass,
+                    toggleKillSwitch
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
