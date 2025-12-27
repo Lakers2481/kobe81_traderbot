@@ -7,9 +7,9 @@ Historical Signal Replay
 - Compare with actual trades if available
 
 Usage:
-    python replay.py --start 2023-01-01 --end 2023-12-31 --strategy rsi2
-    python replay.py --start 2023-06-01 --end 2023-06-30 --strategy ibs --actual-trades outputs/trade_list.csv
-    python replay.py --start 2023-01-01 --end 2023-03-31 --dotenv path/to/.env
+    python replay.py --start 2023-01-01 --end 2023-12-31 --strategy donchian
+    python replay.py --start 2023-06-01 --end 2023-06-30 --strategy turtle_soup --actual-trades outputs/trade_list.csv
+    python replay.py --start 2023-01-01 --end 2023-03-31 --dotenv ./.env
 """
 from __future__ import annotations
 
@@ -26,16 +26,16 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from config.env_loader import load_env
-from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
-from strategies.ibs.strategy import IBSStrategy
+from strategies.donchian.strategy import DonchianBreakoutStrategy
+from strategies.ict.turtle_soup import TurtleSoupStrategy
 
 
 def create_strategy(strategy_name: str):
     """Create strategy instance."""
-    if strategy_name == 'rsi2':
-        return ConnorsRSI2Strategy()
-    elif strategy_name == 'ibs':
-        return IBSStrategy()
+    if strategy_name == 'donchian':
+        return DonchianBreakoutStrategy()
+    elif strategy_name in ('turtle_soup','ict'):
+        return TurtleSoupStrategy()
     else:
         raise ValueError(f"Unknown strategy: {strategy_name}")
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Kobe Trading System - Debug and Diagnosis Tool
 
@@ -215,7 +215,7 @@ def trace_signal_generation(
     symbol: str,
     start: str,
     end: str,
-    strategy: str = 'rsi2',
+    strategy: str = 'donchian',
     verbose: bool = True
 ) -> pd.DataFrame:
     """Trace signal generation step-by-step for a symbol."""
@@ -228,12 +228,12 @@ def trace_signal_generation(
 
     # Import strategy
     try:
-        if strategy == 'rsi2':
-            from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy, rsi, sma, atr
-            strat = ConnorsRSI2Strategy()
-        elif strategy == 'ibs':
-            from strategies.ibs.strategy import IBSStrategy, sma, atr, ibs
-            strat = IBSStrategy()
+        if strategy == "donchian":
+            from strategies.donchian.strategy import DonchianBreakoutStrategy as Strat
+            strat = Strat()
+        elif strategy in ("turtle_soup","ict"):
+            from strategies.ict.turtle_soup import TurtleSoupStrategy as Strat
+            strat = Strat()
         else:
             print(f"Unknown strategy: {strategy}")
             return pd.DataFrame()
@@ -243,14 +243,12 @@ def trace_signal_generation(
 
     # Fetch data
     print(f"[1] Fetching data for {symbol}...")
-
     try:
         from data.providers.polygon_eod import fetch_daily_bars_polygon
         cache_dir = ROOT / 'data' / 'cache'
         df = fetch_daily_bars_polygon(symbol, start, end, cache_dir=cache_dir)
     except Exception as e:
         print(f"    Error fetching data: {e}")
-        # Try cache directly
         cache_pattern = list((ROOT / 'data' / 'cache').glob(f'{symbol}_*.csv'))
         if cache_pattern:
             df = pd.read_csv(cache_pattern[0], parse_dates=['timestamp'])
@@ -258,156 +256,22 @@ def trace_signal_generation(
         else:
             print(f"    No cached data found for {symbol}")
             return pd.DataFrame()
-
     if df.empty:
         print(f"    No data available for {symbol}")
         return pd.DataFrame()
-
     print(f"    Loaded {len(df)} bars")
     print(f"    Date range: {df['timestamp'].min()} to {df['timestamp'].max()}")
 
-    # Compute indicators step by step
-    print(f"\n[2] Computing indicators...")
-
-    df = df.sort_values('timestamp').copy()
-
-    if strategy == 'rsi2':
-        # RSI
-        df['rsi2'] = rsi(df['close'], period=2)
-        print(f"    RSI(2) - last 5 values: {df['rsi2'].tail().tolist()}")
-
-        # SMA
-        df['sma200'] = sma(df['close'], period=200)
-        print(f"    SMA(200) - last value: {df['sma200'].iloc[-1]:.2f}")
-
-        # ATR
-        df['atr14'] = atr(df, period=14)
-        print(f"    ATR(14) - last value: {df['atr14'].iloc[-1]:.2f}")
-
-        # Shifted signals (no lookahead)
-        df['rsi2_sig'] = df['rsi2'].shift(1)
-        df['sma200_sig'] = df['sma200'].shift(1)
-        df['atr14_sig'] = df['atr14'].shift(1)
-
-    elif strategy == 'ibs':
-        # IBS
-        df['ibs'] = ibs(df)
-        print(f"    IBS - last 5 values: {df['ibs'].tail().tolist()}")
-
-        # SMA
-        df['sma200'] = sma(df['close'], period=200)
-        print(f"    SMA(200) - last value: {df['sma200'].iloc[-1]:.2f}")
-
-        # ATR
-        df['atr14'] = atr(df, period=14)
-        print(f"    ATR(14) - last value: {df['atr14'].iloc[-1]:.2f}")
-
-        # Shifted signals
-        df['ibs_sig'] = df['ibs'].shift(1)
-        df['sma200_sig'] = df['sma200'].shift(1)
-        df['atr14_sig'] = df['atr14'].shift(1)
-
-    # Check conditions
-    print(f"\n[3] Checking entry conditions...")
-
-    signals_found = 0
-    signal_rows: List[Dict] = []
-
-    for idx, row in df.iterrows():
-        if pd.isna(row.get('sma200_sig')) or pd.isna(row['close']):
-            continue
-
-        close = row['close']
-        sma200_val = row['sma200_sig']
-
-        if strategy == 'rsi2':
-            rsi_val = row.get('rsi2_sig', np.nan)
-            if pd.isna(rsi_val):
-                continue
-
-            # Long: close > SMA200 and RSI <= 10
-            if close > sma200_val and rsi_val <= 10:
-                signals_found += 1
-                signal_rows.append({
-                    'timestamp': row['timestamp'],
-                    'side': 'long',
-                    'close': close,
-                    'sma200': sma200_val,
-                    'rsi2': rsi_val,
-                    'reason': f'RSI2={rsi_val:.1f} <= 10 & above SMA200'
-                })
-
-            # Short: close < SMA200 and RSI >= 90
-            elif close < sma200_val and rsi_val >= 90:
-                signals_found += 1
-                signal_rows.append({
-                    'timestamp': row['timestamp'],
-                    'side': 'short',
-                    'close': close,
-                    'sma200': sma200_val,
-                    'rsi2': rsi_val,
-                    'reason': f'RSI2={rsi_val:.1f} >= 90 & below SMA200'
-                })
-
-        elif strategy == 'ibs':
-            ibs_val = row.get('ibs_sig', np.nan)
-            if pd.isna(ibs_val):
-                continue
-
-            # Long: close > SMA200 and IBS < 0.2
-            if close > sma200_val and ibs_val < 0.2:
-                signals_found += 1
-                signal_rows.append({
-                    'timestamp': row['timestamp'],
-                    'side': 'long',
-                    'close': close,
-                    'sma200': sma200_val,
-                    'ibs': ibs_val,
-                    'reason': f'IBS={ibs_val:.3f} < 0.2 & above SMA200'
-                })
-
-            # Short: close < SMA200 and IBS > 0.8
-            elif close < sma200_val and ibs_val > 0.8:
-                signals_found += 1
-                signal_rows.append({
-                    'timestamp': row['timestamp'],
-                    'side': 'short',
-                    'close': close,
-                    'sma200': sma200_val,
-                    'ibs': ibs_val,
-                    'reason': f'IBS={ibs_val:.3f} > 0.8 & below SMA200'
-                })
-
-    print(f"    Found {signals_found} signals")
-
-    if signal_rows:
-        signals_df = pd.DataFrame(signal_rows)
-        print(f"\n[4] Signal Details:")
-        print(signals_df.to_string(index=False))
-        return signals_df
-    else:
-        print(f"\n    No signals generated for {symbol}")
-        print(f"    Possible reasons:")
-        print(f"    - Price not above/below SMA(200)")
-        print(f"    - Indicator values not at entry thresholds")
-        print(f"    - Insufficient data for indicator calculation")
-
-        # Show last indicator values for diagnosis
-        if verbose:
-            print(f"\n[5] Last bar diagnostics:")
-            last_row = df.iloc[-1]
-            print(f"    Close: {last_row['close']:.2f}")
-            print(f"    SMA(200): {last_row.get('sma200', 'N/A')}")
-            print(f"    Trend: {'BULLISH' if last_row['close'] > last_row.get('sma200', 0) else 'BEARISH'}")
-
-            if strategy == 'rsi2':
-                print(f"    RSI(2): {last_row.get('rsi2', 'N/A')}")
-                print(f"    Entry needed: RSI <= 10 (long) or RSI >= 90 (short)")
-            elif strategy == 'ibs':
-                print(f"    IBS: {last_row.get('ibs', 'N/A')}")
-                print(f"    Entry needed: IBS < 0.2 (long) or IBS > 0.8 (short)")
-
-        return pd.DataFrame()
+    print(f"\n[2] Generating signals (delegated to strategy)...")
+    df = df.sort_values("timestamp").copy()
+    sigs = strat.scan_signals_over_time(df)
+    if sigs.empty:
+        print("    No signals generated.")
+        return sigs
+    # Show last few
+    print("\n[3] Last 5 signals:")
+    print(sigs.tail(5).to_string(index=False))
+    return sigs
 
 
 # =============================================================================
@@ -617,7 +481,7 @@ def main():
     )
     parser.add_argument(
         '--dotenv', type=str,
-        default='C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env',
+        default='./.env',
         help='Path to .env file'
     )
     parser.add_argument(
@@ -637,7 +501,7 @@ def main():
         help='End date for signal trace (YYYY-MM-DD)'
     )
     parser.add_argument(
-        '--strategy', type=str, choices=['rsi2', 'ibs'], default='rsi2',
+        '--strategy', type=str, choices=['donchian', 'turtle_soup', 'ict'], default='donchian',
         help='Strategy for signal trace'
     )
     parser.add_argument(

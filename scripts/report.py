@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Report Generator for Kobe Trading System.
 
@@ -11,7 +11,7 @@ Generates HTML, CSV, or JSON performance reports including:
 Usage:
     python report.py --format html --output report.html
     python report.py --format csv --output trades.csv --dotenv
-    python report.py --format json --output report.json --strategy rsi2
+    python report.py --format json --output report.json --strategy donchian
 """
 from __future__ import annotations
 
@@ -340,7 +340,7 @@ def generate_report_data(
             # Determine strategy from path
             parts = tf.parts
             for i, p in enumerate(parts):
-                if p in ('rsi2', 'ibs', 'and', 'connors_rsi2'):
+                if p in ('donchian', 'TURTLE_SOUP', 'and', 'connors_donchian'):
                     df['strategy'] = p
                     break
             else:
@@ -791,7 +791,7 @@ def main():
     parser.add_argument(
         '--strategy',
         type=str,
-        help='Filter by strategy name (e.g., rsi2, ibs)'
+        help='Filter by strategy name (e.g., donchian, TURTLE_SOUP)'
     )
     parser.add_argument(
         '--format',
@@ -872,3 +872,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

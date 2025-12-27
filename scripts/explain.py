@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
-Kobe Signal Explainer - Show why a signal was generated.
+Kobe Signal Explainer (Deprecated)
 
-Usage:
-    python explain.py --symbol AAPL
-    python explain.py --symbol AAPL --date 2024-03-15
-    python explain.py --symbol AAPL --strategy rsi2
+This script previously explained RSI2/IBS signals. The system is now
+standardized to two strategies: Donchian Breakout and ICT Turtle Soup.
+
+For step-by-step reasoning on current strategies, use:
+  python scripts/debugger.py --strategy donchian --symbol AAPL ...
+  python scripts/debugger.py --strategy turtle_soup --symbol AAPL ...
 """
 from __future__ import annotations
 
@@ -305,58 +307,16 @@ def print_explanation(explanation: Dict[str, Any]) -> None:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Kobe Signal Explainer")
-    ap.add_argument("--dotenv", type=str, default="C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env",
-                    help="Path to .env file")
-
-    # Required
-    ap.add_argument("--symbol", type=str, required=True, help="Symbol to explain")
-
-    # Options
+    ap = argparse.ArgumentParser(description="Kobe Signal Explainer (deprecated)")
+    ap.add_argument("--dotenv", type=str, default="./.env", help="Path to .env file")
+    ap.add_argument("--symbol", type=str, required=False, help="Symbol to explain")
     ap.add_argument("--date", type=str, help="Specific date (YYYY-MM-DD), defaults to latest")
-    ap.add_argument("--strategy", type=str, choices=["rsi2", "ibs", "all"], default="all",
-                    help="Strategy to explain (default: all)")
-    ap.add_argument("--lookback", type=int, default=30,
-                    help="Days of price history to fetch (default: 30)")
+    ap.add_argument("--lookback", type=int, default=30, help="Days of price history to fetch (default: 30)")
 
     args = ap.parse_args()
 
-    # Load environment
-    dotenv = Path(args.dotenv)
-    if dotenv.exists():
-        load_env(dotenv)
-
-    symbol = args.symbol.upper()
-    target_date = args.date
-
-    print(f"Signal Explainer for: {symbol}")
-    if target_date:
-        print(f"Target Date: {target_date}")
-    else:
-        print("Target Date: Latest available")
-
-    # Fetch price data
-    end_date = datetime.utcnow().date().isoformat()
-    start_date = (datetime.utcnow().date() - timedelta(days=args.lookback)).isoformat()
-
-    print(f"\nFetching price data ({start_date} to {end_date})...")
-    df = fetch_price_data(symbol, start_date, end_date)
-
-    if df is None or (hasattr(df, "empty") and df.empty):
-        print("Error: Could not fetch price data.")
-        print("Ensure POLYGON_API_KEY is set and the symbol is valid.")
-        sys.exit(1)
-
-    print(f"Loaded {len(df)} bars of data.")
-
-    # Generate explanations
-    if args.strategy in ["rsi2", "all"]:
-        explanation = explain_rsi2_signal(df, target_date)
-        print_explanation(explanation)
-
-    if args.strategy in ["ibs", "all"]:
-        explanation = explain_ibs_signal(df, target_date)
-        print_explanation(explanation)
+    print("This script is deprecated. Use scripts/debugger.py for Donchian/ICT signal traces.")
+    sys.exit(0)
 
 
 if __name__ == "__main__":

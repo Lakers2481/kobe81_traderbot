@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Quantitative Analysis Dashboard for Kobe Trading System.
 
@@ -10,7 +10,7 @@ Advanced analytics including:
 - Statistical significance tests
 
 Usage:
-    python quant_dashboard.py --wfdir wf_outputs/rsi2 --dotenv
+    python quant_dashboard.py --wfdir wf_outputs/donchian --dotenv
     python quant_dashboard.py --equity equity_curve.csv --confidence 0.95
 """
 from __future__ import annotations
@@ -654,7 +654,7 @@ def main():
     parser.add_argument(
         '--strategy',
         type=str,
-        help='Filter by strategy name (e.g., rsi2, ibs)'
+        help='Filter by strategy name (e.g., donchian, TURTLE_SOUP)'
     )
     parser.add_argument(
         '--benchmark',
@@ -795,3 +795,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

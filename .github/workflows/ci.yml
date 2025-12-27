@@ -89,8 +89,8 @@ jobs:
           from core.config_pin import sha256_file
 
           # Strategy imports
-          from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
-          from strategies.ibs.strategy import IBSStrategy
+          from strategies.donchian.strategy import DonchianBreakoutStrategy
+          from strategies.ict.turtle_soup import TurtleSoupStrategy
 
           # Risk imports
           from risk.policy_gate import PolicyGate, RiskLimits
@@ -112,7 +112,7 @@ jobs:
           sys.path.insert(0, '.')
           import pandas as pd
           import numpy as np
-          from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
+          from strategies.donchian.strategy import DonchianBreakoutStrategy
 
           # Create synthetic data
           dates = pd.date_range(end='2024-01-01', periods=250, freq='B')
@@ -128,7 +128,7 @@ jobs:
           df['high'] = df[['open', 'high', 'close']].max(axis=1) + 0.5
           df['low'] = df[['open', 'low', 'close']].min(axis=1) - 0.5
 
-          strat = ConnorsRSI2Strategy()
+          strat = DonchianBreakoutStrategy()
           sigs = strat.generate_signals(df)
           print(f'Strategy generated {len(sigs)} signals on synthetic data')
           print('Strategy execution test passed')

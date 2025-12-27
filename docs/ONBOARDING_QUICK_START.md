@@ -1,5 +1,7 @@
 # Kobe81 Traderbot - Onboarding Quick Start
 
+> Note: This guide contains references to legacy RSI2/IBS content and a 950-stock universe. The system is now standardized to two strategies (Donchian Breakout + ICT Turtle Soup) and a 900-stock universe. For up-to-date commands, see `README.md` and the scripts in `scripts/`.
+
 **Target Audience:** New developers, operators, quantitative analysts
 **Prerequisites:** Basic Python, understanding of trading concepts
 **Time Required:** 30-60 minutes

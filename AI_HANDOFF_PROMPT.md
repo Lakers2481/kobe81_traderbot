@@ -1,27 +1,28 @@
 # AI Handoff Prompt for Kobe81 Trading Bot
 
-> **Instructions:** Copy everything below the line and paste it as your first message to a new AI assistant.
+> Instructions: Copy everything below the line and paste it as your first message to a new AI assistant.
 
 ---
 
-## COPY FROM HERE ↓
+## COPY FROM HERE
 
 I'm continuing work on the Kobe81 algorithmic trading bot. Please read the project context below to understand where we are.
 
 ### Project Location
-- **Root:** `C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot`
-- **GitHub:** https://github.com/Lakers2481/kobe81_traderbot
-- **Environment File:** `C:\Users\Owner\OneDrive\Desktop\GAME_PLAN_2K28\.env`
+- Root: `C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot`
+- GitHub: https://github.com/Lakers2481/kobe81_traderbot
+- Environment File: `./.env`
 
 ### What Is Kobe81?
-A production-grade algorithmic trading system implementing:
-- **RSI-2 Strategy:** Mean reversion on RSI(2) ≤ 10, exit ≥ 70
-- **IBS Strategy:** Internal Bar Strength < 0.2 entries
-- **AND Filter:** Both strategies agree for higher selectivity
+A production-grade algorithmic trading system implementing exactly two strategies:
+- Donchian Breakout (trend-following): Channel breakout with ATR-based stop, time stop, optional R-multiple take profit.
+- ICT Turtle Soup (mean reversion): Failed breakout (liquidity sweep) reversion with R-multiple target and time stop.
+
+Selection/TOPN ranking is disabled in this setup; only these two strategies are compared and traded.
 
 ### Architecture (10 Layers)
 1. DATA - Polygon API, CSV caching
-2. UNIVERSE - 950 optionable liquid stocks, 10Y coverage
+2. UNIVERSE - 900 optionable liquid stocks, 10Y coverage
 3. STRATEGY - Signal generation with lookahead prevention
 4. BACKTEST - Walk-forward validation
 5. RISK - PolicyGate ($75/order, $1k/day limits)
@@ -33,18 +34,20 @@ A production-grade algorithmic trading system implementing:
 
 ### Current Status (as of 2025-12-26)
 - All 10 layers implemented and tested
-- 63 unit tests passing in CI/CD
-- Import paths fixed (configs → config)
-- Universe: 950 stocks validated
-- Documentation complete
+- Unit tests passing locally
+- Imports normalized (configs -> config)
+- Universe: 900 stocks validated
+- Documentation aligned to Donchian + ICT
 
 ### Key Files to Know
-- `strategies/connors_rsi2/strategy.py` - Main strategy
-- `backtest/engine.py` - Backtesting
-- `execution/broker_alpaca.py` - Broker integration
-- `risk/policy_gate.py` - Risk controls
-- `scripts/runner.py` - 24/7 scheduler
-- `config/settings.json` - Global settings
+- `strategies/donchian/strategy.py` - Donchian Breakout Strategy
+- `strategies/ict/turtle_soup.py` - ICT Turtle Soup Strategy
+- `backtest/engine.py` - Backtesting engine
+- `backtest/walk_forward.py` - Walk-forward framework
+- `execution/broker_alpaca.py` - Broker integration (IOC LIMIT)
+- `risk/policy_gate.py` - Risk controls and guardrails
+- `scripts/run_wf_polygon.py` - Donchian vs ICT walk-forward
+- `config/base.yaml` - Global configuration (universe file, features)
 
 ### Safety Mechanisms
 - Kill switch: `state/KILL_SWITCH` file
@@ -55,13 +58,13 @@ A production-grade algorithmic trading system implementing:
 ### How to Run
 ```bash
 # Preflight check
-python scripts/preflight.py --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+python scripts/preflight.py --dotenv ./.env
 
-# Walk-forward validation
-python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+# Walk-forward validation (Donchian vs ICT)
+python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 
 # Paper trading
-python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_final.csv --cap 50 --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_final.csv --cap 50 --dotenv ./.env
 ```
 
 ### Environment Variables Needed
@@ -72,9 +75,10 @@ ALPACA_API_SECRET_KEY=xxx
 ALPACA_BASE_URL=https://paper-api.alpaca.markets
 ```
 
-### Recent Commits
-- `17ce36a` - Fixed 55 import paths (configs → config)
-- `9a61a5b` - Added CI/CD workflow, fixed tests
+### Recent Changes
+- Normalized environment path usage to `./.env`
+- Aligned docs/scripts to 900-stock universe
+- Removed/deprecated legacy RSI2/IBS/CRSI references
 
 ### Documentation
 Read these files for full context:
@@ -87,7 +91,7 @@ Read these files for full context:
 
 ---
 
-## END COPY ↑
+## END COPY
 
 ---
 
@@ -101,3 +105,4 @@ When starting a new AI session:
 
 For even faster onboarding, you can also say:
 > "Read PROJECT_CONTEXT.md at C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot to understand this project"
+

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Performance Metrics Calculator for Kobe Trading System.
 
@@ -6,8 +6,8 @@ Calculates win rate, profit factor, Sharpe ratio, returns analysis,
 and max drawdown from trade history.
 
 Usage:
-    python metrics.py --period 30d --strategy rsi2
-    python metrics.py --wfdir wf_outputs/rsi2 --dotenv
+    python metrics.py --period 30d --strategy donchian
+    python metrics.py --wfdir wf_outputs/donchian --dotenv
 """
 from __future__ import annotations
 
@@ -528,7 +528,7 @@ def main():
     parser.add_argument(
         '--strategy',
         type=str,
-        help='Filter by strategy name (e.g., rsi2, ibs)'
+        help='Filter by strategy name (e.g., donchian, TURTLE_SOUP)'
     )
     parser.add_argument(
         '--dotenv',
@@ -658,3 +658,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

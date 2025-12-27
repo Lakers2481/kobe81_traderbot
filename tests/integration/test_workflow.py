@@ -17,9 +17,9 @@ class TestScanToSignalWorkflow:
 
     def test_strategy_generates_signals_from_data(self, sample_ohlcv_data):
         """Test that strategy can generate signals from OHLCV data."""
-        from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
+        from strategies.donchian.strategy import DonchianBreakoutStrategy
 
-        strategy = ConnorsRSI2Strategy()
+        strategy = DonchianBreakoutStrategy()
         signals = strategy.scan_signals_over_time(sample_ohlcv_data)
 
         # Should return a DataFrame
@@ -36,9 +36,9 @@ class TestBacktestWorkflow:
     def test_backtest_produces_results(self, sample_ohlcv_data):
         """Test that backtest produces results."""
         from backtest.engine import Backtester, BacktestConfig
-        from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
+        from strategies.donchian.strategy import DonchianBreakoutStrategy
 
-        strategy = ConnorsRSI2Strategy()
+        strategy = DonchianBreakoutStrategy()
 
         # Create backtester with strategy's signal function
         cfg = BacktestConfig(initial_cash=100000)

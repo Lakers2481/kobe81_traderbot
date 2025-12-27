@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Benchmark Comparison Tool for Kobe Trading System.
 
@@ -6,7 +6,7 @@ Compares strategy performance against SPY benchmark.
 Calculates alpha, beta, correlation, and relative performance.
 
 Usage:
-    python benchmark.py --wfdir wf_outputs/rsi2 --start 2021-01-01 --end 2022-12-31
+    python benchmark.py --wfdir wf_outputs/donchian --start 2021-01-01 --end 2022-12-31
     python benchmark.py --equity equity_curve.csv --dotenv
 """
 from __future__ import annotations
@@ -478,7 +478,7 @@ def main():
     parser.add_argument(
         '--strategy',
         type=str,
-        help='Filter by strategy name (e.g., rsi2, ibs)'
+        help='Filter by strategy name (e.g., donchian, TURTLE_SOUP)'
     )
     parser.add_argument(
         '--start',
@@ -621,3 +621,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

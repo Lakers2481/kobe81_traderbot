@@ -45,16 +45,16 @@ def analyze_symbol(sym: str, start: str, end: str, cache_dir: Path, use_fallback
 
 
 def main():
-    ap = argparse.ArgumentParser(description='Build a 950-stock optionable, liquid universe using Polygon EOD')
+    ap = argparse.ArgumentParser(description='Build a 900-stock optionable, liquid universe using Polygon EOD')
     ap.add_argument('--candidates', type=str, required=True, help='CSV with candidate symbols (column: symbol)')
     ap.add_argument('--start', type=str, default='2015-01-01')
     ap.add_argument('--end', type=str, default=datetime.utcnow().date().isoformat())
     ap.add_argument('--min-years', type=int, default=10)
-    ap.add_argument('--cap', type=int, default=950)
+    ap.add_argument('--cap', type=int, default=900)
     ap.add_argument('--concurrency', type=int, default=3)
     ap.add_argument('--cache', type=str, default='data/cache')
     ap.add_argument('--out', type=str, default='data/universe/optionable_liquid_final.csv')
-    ap.add_argument('--dotenv', type=str, default='C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env')
+    ap.add_argument('--dotenv', type=str, default='./.env')
     ap.add_argument('--fallback-free', action='store_true', default=False, help='Backfill pre-Polygon coverage with Yahoo Finance')
     args = ap.parse_args()
 

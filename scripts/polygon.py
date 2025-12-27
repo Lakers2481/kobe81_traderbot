@@ -3,7 +3,7 @@
 Polygon Data Source Validation - Kobe Trading System
 
 Validates Polygon API configuration, checks rate limits,
-validates 950-symbol coverage, and compares cache vs fresh fetches.
+validates 900-symbol coverage, and compares cache vs fresh fetches.
 """
 from __future__ import annotations
 
@@ -504,8 +504,8 @@ Examples:
             print(f"  No Data:            {coverage['no_data']}")
             print(f"  Errors:             {coverage['errors']}")
 
-            # Check 950 symbol requirement
-            target = 950
+            # Check 900 symbol requirement
+            target = 900
             if coverage["sufficient_history"] >= target:
                 print(f"\n  [PASS] >= {target} symbols with sufficient history")
             else:

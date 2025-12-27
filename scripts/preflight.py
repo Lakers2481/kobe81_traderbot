@@ -15,7 +15,7 @@ from core.config_pin import sha256_file
 
 def main():
     ap = argparse.ArgumentParser(description='Kobe preflight checks')
-    ap.add_argument('--dotenv', type=str, default='C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env')
+    ap.add_argument('--dotenv', type=str, default='./.env')
     ap.add_argument('--config', type=str, default='config/settings.json')
     args = ap.parse_args()
 

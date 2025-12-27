@@ -2,13 +2,13 @@
 """
 Kobe Daily Stock Scanner
 
-Scans the universe for trading signals using RSI-2, IBS, CRSI (mean-reversion),
-and Donchian breakout (trend) strategies.
+Scans the universe for trading signals using ICT Turtle Soup (failed breakout mean-reversion)
+and Donchian breakout (trend-following).
 
 Features:
 - Loads universe from data/universe/optionable_liquid_900.csv (900 symbols)
 - Fetches latest EOD data via Polygon
-- Runs both RSI-2 and IBS strategies (or filter by --strategy)
+- Runs Donchian and ICT strategies (or filter by --strategy)
 - Outputs signals to stdout and logs/signals.jsonl
 """
 from __future__ import annotations
@@ -29,10 +29,8 @@ sys.path.insert(0, str(ROOT))
 from config.env_loader import load_env
 from data.providers.multi_source import fetch_daily_bars_multi
 from data.universe.loader import load_universe
-from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
-from strategies.ibs.strategy import IBSStrategy
-from strategies.connors_crsi.strategy import ConnorsCRSIStrategy
 from strategies.donchian.strategy import DonchianBreakoutStrategy, DonchianParams
+from strategies.ict.turtle_soup import TurtleSoupStrategy
 from config.settings_loader import get_selection_config
 from core.regime_filter import get_regime_filter_config, filter_signals_by_regime, fetch_spy_bars
 from core.earnings_filter import filter_signals_by_earnings
@@ -79,36 +77,6 @@ def run_strategies(
     """Run specified strategies and return combined signals."""
     all_signals: List[pd.DataFrame] = []
 
-    if "rsi2" in strategies or "all" in strategies:
-        try:
-            rsi2_strat = ConnorsRSI2Strategy()
-            rsi2_signals = rsi2_strat.generate_signals(data)
-            if not rsi2_signals.empty:
-                rsi2_signals["strategy"] = "rsi2"
-                all_signals.append(rsi2_signals)
-        except Exception as e:
-            print(f"  [WARN] RSI-2 strategy error: {e}", file=sys.stderr)
-
-    if "ibs" in strategies or "all" in strategies:
-        try:
-            ibs_strat = IBSStrategy()
-            ibs_signals = ibs_strat.generate_signals(data)
-            if not ibs_signals.empty:
-                ibs_signals["strategy"] = "ibs"
-                all_signals.append(ibs_signals)
-        except Exception as e:
-            print(f"  [WARN] IBS strategy error: {e}", file=sys.stderr)
-
-    if "crsi" in strategies or "all" in strategies:
-        try:
-            crsi_strat = ConnorsCRSIStrategy()
-            crsi_signals = crsi_strat.generate_signals(data)
-            if not crsi_signals.empty:
-                crsi_signals["strategy"] = "crsi"
-                all_signals.append(crsi_signals)
-        except Exception as e:
-            print(f"  [WARN] CRSI strategy error: {e}", file=sys.stderr)
-
     if "donchian" in strategies or "all" in strategies:
         try:
             sel_cfg = get_selection_config()
@@ -127,6 +95,16 @@ def run_strategies(
                 all_signals.append(don_signals)
         except Exception as e:
             print(f"  [WARN] Donchian strategy error: {e}", file=sys.stderr)
+
+    if "turtle_soup" in strategies or "ict" in strategies or "all" in strategies:
+        try:
+            ict_strat = TurtleSoupStrategy()
+            ict_signals = ict_strat.generate_signals(data)
+            if not ict_signals.empty:
+                ict_signals["strategy"] = "turtle_soup"
+                all_signals.append(ict_signals)
+        except Exception as e:
+            print(f"  [WARN] ICT Turtle Soup strategy error: {e}", file=sys.stderr)
 
     if all_signals:
         sigs = pd.concat(all_signals, ignore_index=True)
@@ -218,8 +196,8 @@ def main() -> int:
         epilog="""
 Examples:
   python scripts/scan.py                        # Scan all strategies
-  python scripts/scan.py --strategy rsi2        # Only RSI-2 signals
-  python scripts/scan.py --strategy ibs         # Only IBS signals
+  python scripts/scan.py --strategy donchian    # Only Donchian signals
+  python scripts/scan.py --strategy turtle_soup # Only ICT signals
   python scripts/scan.py --cap 50               # Scan first 50 symbols
   python scripts/scan.py --json                 # Output as JSON
         """,
@@ -227,7 +205,7 @@ Examples:
     ap.add_argument(
         "--dotenv",
         type=str,
-        default="C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env",
+        default="./.env",
         help="Path to .env file",
     )
     ap.add_argument(
@@ -239,7 +217,7 @@ Examples:
     ap.add_argument(
         "--strategy",
         type=str,
-        choices=["rsi2", "ibs", "crsi", "donchian", "all"],
+        choices=["donchian", "turtle_soup", "ict", "all"],
         default="all",
         help="Strategy to run (default: all)",
     )
@@ -249,7 +227,7 @@ Examples:
         default=None,
         help="Limit number of symbols to scan",
     )
-    ap.add_argument("--top3", action="store_true", help="Select top 3 picks: 2 MR (CRSI/RSI2/IBS) + 1 Donchian")
+    ap.add_argument("--top3", action="store_true", help="Select top 3 picks: 2 ICT (MR) + 1 Donchian")
     ap.add_argument("--min-price", type=float, default=None, help="Override min price for selection")
     ap.add_argument("--no-filters", action="store_true", help="Disable regime/earnings filters")
     ap.add_argument("--date", type=str, default=None, help="Use YYYY-MM-DD as end date (default: last business day)")
@@ -326,7 +304,7 @@ Examples:
         print(f"Date range: {start_date} to {end_date}")
 
     # Determine strategies to run
-    strategies = [args.strategy] if args.strategy != "all" else ["rsi2", "ibs", "crsi", "donchian"]
+    strategies = [args.strategy] if args.strategy != "all" else ["donchian", "turtle_soup"]
     if args.verbose:
         print(f"Strategies: {strategies}")
 
@@ -406,39 +384,20 @@ Examples:
         if not args.top3:
             print_signals_table(signals)
         else:
-            # Rank MR and Donchian and pick 2 + 1
+            # Rank ICT (MR) and Donchian and pick 2 + 1
             picks = []
             if not signals.empty:
                 df = signals.copy()
                 # Enforce min_price
                 if 'entry_price' in df.columns:
                     df = df[df['entry_price'] >= float(sel_cfg.get('min_price', 5.0))]
-                # Split MR vs Donchian
-                mr = df[df['strategy'].isin(['crsi','rsi2','ibs'])].copy()
+                # Split ICT MR vs Donchian
+                mr = df[df['strategy'].isin(['turtle_soup'])].copy()
                 dn = df[df['strategy'] == 'donchian'].copy()
-                # MR ranking: lower CRSI/RSI2/IBS better
+                # Simple MR ranking: prefer tighter stops (higher r_multiple potential); fallback to most recent
                 if not mr.empty:
-                    mr['crsi'] = mr.get('crsi', pd.Series([pd.NA]*len(mr)))
-                    mr['rsi2'] = mr.get('rsi2', pd.Series([pd.NA]*len(mr)))
-                    mr['ibs'] = mr.get('ibs', pd.Series([pd.NA]*len(mr)))
-                    w = sel_cfg.get('score_weights', {'crsi':0.5,'rsi2':0.3,'ibs':0.2})
-                    def score_row(row):
-                        vals = []
-                        s = 0.0
-                        total = 0.0
-                        if pd.notna(row.get('crsi')):
-                            s += float(w.get('crsi',0.0)) * (100.0 - float(row['crsi']))/100.0
-                            total += float(w.get('crsi',0.0))
-                        if pd.notna(row.get('rsi2')):
-                            s += float(w.get('rsi2',0.0)) * (100.0 - float(row['rsi2']))/100.0
-                            total += float(w.get('rsi2',0.0))
-                        if pd.notna(row.get('ibs')):
-                            # IBS in [0,1], lower is better
-                            s += float(w.get('ibs',0.0)) * (1.0 - float(row['ibs']))
-                            total += float(w.get('ibs',0.0))
-                        return s/total if total>0 else 0.0
-                    mr['score'] = mr.apply(score_row, axis=1)
-                    mr = mr.sort_values('score', ascending=False)
+                    if 'time_stop_bars' in mr.columns:
+                        mr = mr.sort_values(['time_stop_bars'], ascending=True)
                     picks.append(mr.head(2))
                 # Donchian: rank by breakout_strength (higher better)
                 if not dn.empty:
@@ -464,11 +423,6 @@ Examples:
                     out['breakout_strength'] = 0.0
                 def conf(row):
                     strat = str(row.get('strategy','')).lower()
-                    if strat in ('crsi','rsi2','ibs'):
-                        try:
-                            return float(row.get('score', 0.0))
-                        except Exception:
-                            return 0.0
                     if strat == 'donchian':
                         try:
                             bs = float(row.get('breakout_strength', 0.0))
@@ -476,7 +430,8 @@ Examples:
                             return max(0.0, min(bs, 3.0)) / 3.0
                         except Exception:
                             return 0.0
-                    return 0.0
+                    # ICT Turtle Soup confidence currently neutral (0.0) unless provided by ML enhancers
+                    return float(row.get('score', 0.0)) if strat in ('turtle_soup','ict') else 0.0
                 out['conf_score'] = out.apply(conf, axis=1)
 
                 # Write Top 3 picks

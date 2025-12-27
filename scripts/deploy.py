@@ -23,8 +23,6 @@ ROLLBACK_DIR = DEPLOY_DIR / "rollback"
 # Critical files that need backup before deploy
 CRITICAL_FILES = [
     "config/base.yaml",
-    "config/strategies/connors_rsi2.yaml",
-    "config/strategies/ibs.yaml",
     "state/positions.json",
     "state/order_history.json",
     "state/hash_chain.jsonl",

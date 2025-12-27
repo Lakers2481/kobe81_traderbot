@@ -1,30 +1,30 @@
-Kobe81 Traderbot — Backtesting, Paper, Live (Micro)
+﻿Kobe81 Traderbot â€” Backtesting, Paper, Live (Micro)
 
 Overview
-- Strategies: canonical Connors RSI‑2 and IBS (with AND filter).
+- Strategies: ICT Turtle Soup (failed breakout mean reversion) and Donchian breakout (trend-following).
 - Data: Polygon daily OHLCV with caching.
-- Universe: optionable + liquid candidates filtered to final 950 with ≥10y coverage.
-- Backtesting: deterministic next‑bar fills, ATR(14)×2 stop, 5‑bar time stop, no lookahead.
+- Universe: optionable + liquid candidates filtered to final 900 with 10y coverage.
+- Backtesting: deterministic next-bar fills, ATR(14) x2 stop, 5-bar time stop, no lookahead.
 - Outputs: trade_list.csv, equity_curve.csv, summary.json per run/split.
-- Walk‑forward: rolling splits, side‑by‑side RSI‑2 vs IBS vs AND, HTML report.
+- Walk-forward: rolling splits, side-by-side comparison (Donchian vs ICT), HTML report.
 - Execution: Alpaca IOC LIMIT submission (paper or live), kill switch, budgets, idempotency, audit log.
 
 Project Map
-- strategies/ — RSI‑2 and IBS implementations
-- backtest/ — engine + walk‑forward
-- data/ — providers (Polygon) + universe loader
-- execution/ — Alpaca broker adapter (IOC limit)
-- risk/ — PolicyGate (budgets, bounds)
-- oms/ — order state + idempotency store
-- core/ — hash‑chain audit, config pin, structured logs
-- monitor/ — health endpoints
-- scripts/ — preflight, build/prefetch, WF/report, showdown, paper/live, reconcile, runner
-- docs/ — COMPLETE_ROBOT_ARCHITECTURE.md, RUN_24x7.md, docs index
+- strategies/ — ICT Turtle Soup and Donchian implementations
+- backtest/ â€” engine + walkâ€‘forward
+- data/ â€” providers (Polygon) + universe loader
+- execution/ â€” Alpaca broker adapter (IOC limit)
+- risk/ â€” PolicyGate (budgets, bounds)
+- oms/ â€” order state + idempotency store
+- core/ â€” hashâ€‘chain audit, config pin, structured logs
+- monitor/ â€” health endpoints
+- scripts/ â€” preflight, build/prefetch, WF/report, showdown, paper/live, reconcile, runner
+- docs/ â€” COMPLETE_ROBOT_ARCHITECTURE.md, RUN_24x7.md, docs index
 
 Requirements
 - Python 3.11+
 - Install: `pip install -r requirements.txt`
-- Env: set in `C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env`
+- Env: set in `./.env`
   - `POLYGON_API_KEY=...`
   - `ALPACA_API_KEY_ID=...`
   - `ALPACA_API_SECRET_KEY=...`
@@ -32,30 +32,30 @@ Requirements
 
 Quick Start
 1) Preflight (keys + config pin + broker probe)
-   python scripts/preflight.py --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+   python scripts/preflight.py --dotenv ./.env
 
-2) Build the 950‑stock universe with proofs
-   python scripts/build_universe_polygon.py --candidates data/universe/optionable_liquid_candidates.csv --start 2015-01-01 --end 2024-12-31 --min-years 10 --cap 950 --concurrency 3 --cache data/cache --out data/universe/optionable_liquid_final.csv --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+2) Build the 900-stock universe with proofs
+   python scripts/build_universe_polygon.py --candidates data/universe/optionable_liquid_candidates.csv --start 2015-01-01 --end 2024-12-31 --min-years 10 --cap 900 --concurrency 3 --cache data/cache --out data/universe/optionable_liquid_final.csv --dotenv ./.env
 
 3) Prefetch EOD bars (faster WF)
-   python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --cache data/cache --concurrency 3 --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+   python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --cache data/cache --concurrency 3 --dotenv ./.env
 
-4) Walk‑forward comparison and report
-   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 950 --outdir wf_outputs --cache data/cache --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+4) Walkâ€‘forward comparison and report
+   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
    python scripts/aggregate_wf_report.py --wfdir wf_outputs --out wf_outputs/wf_report.html
 
-5) Showdown (full‑period side‑by‑side)
-   python scripts/run_showdown_polygon.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --cap 950 --outdir showdown_outputs --cache data/cache --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+5) Showdown (fullâ€‘period sideâ€‘byâ€‘side)
+   python scripts/run_showdown_polygon.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --cap 900 --outdir showdown_outputs --cache data/cache --dotenv ./.env
 
 Paper and Live Trading (IOC LIMIT)
 - Paper (micro budgets):
-  python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --cap 50 --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+  python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --cap 50 --dotenv ./.env
 
 - Live (micro budgets; set ALPACA_BASE_URL to live in .env):
-  python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --cap 10 --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+  python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --cap 10 --dotenv ./.env
 
 Evidence Artifacts
-- wf_outputs/wf_summary_compare.csv — strategy side‑by‑side KPIs
+- wf_outputs/wf_summary_compare.csv â€” strategy sideâ€‘byâ€‘side KPIs
 - wf_outputs/<strategy>/split_NN/{trade_list.csv,equity_curve.csv,summary.json}
 - showdown_outputs/showdown_summary.csv, showdown_report.html
 - data/universe/optionable_liquid_final.csv and `.full.csv` (coverage, ADV, options proofs)
@@ -63,16 +63,16 @@ Evidence Artifacts
 
 24/7 Runner
 - Paper example:
-  python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_final.csv --cap 50 --scan-times 09:35,10:30,15:55 --lookback-days 540 --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+  python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_final.csv --cap 50 --scan-times 09:35,10:30,15:55 --lookback-days 540 --dotenv ./.env
 - Live example:
-  python scripts/runner.py --mode live --universe data/universe/optionable_liquid_final.csv --cap 10 --scan-times 09:35,10:30,15:55 --lookback-days 540 --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+  python scripts/runner.py --mode live --universe data/universe/optionable_liquid_final.csv --cap 10 --scan-times 09:35,10:30,15:55 --lookback-days 540 --dotenv ./.env
 - Task Scheduler setup: see docs/RUN_24x7.md
 
 Safety
 - Kill switch: create file `state/KILL_SWITCH` to halt submissions.
-- Policy Gate: per‑order and daily budgets ($75 / $1,000), price bounds, shorts disabled by default.
+- Policy Gate: perâ€‘order and daily budgets ($75 / $1,000), price bounds, shorts disabled by default.
 - Audit: verify `python scripts/verify_hash_chain.py`.
-- Reconciliation: `python scripts/reconcile_alpaca.py --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env`.
+- Reconciliation: `python scripts/reconcile_alpaca.py --dotenv ./.env`.
 
 Config-Gated Features (config/base.yaml)
 All features below are disabled by default. Enable in `config/base.yaml`:
@@ -115,16 +115,16 @@ All features below are disabled by default. Enable in `config/base.yaml`:
 
 8) Volatility-Targeted Sizing
    - Set `sizing.enabled: true`
-   - Formula: qty = (risk_pct × equity) / (entry - stop)
+   - Formula: qty = (risk_pct Ã— equity) / (entry - stop)
    - Default risk_per_trade_pct: 0.5% (0.005)
    - Requires stop_loss in signal for calculation
 
 Robustness Tools
 - Parameter Optimization:
-  python scripts/optimize.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --cap 100 --outdir optimize_outputs --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+  python scripts/optimize.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --cap 100 --outdir optimize_outputs --dotenv ./.env
 
 - Monte Carlo Robustness Testing:
-  python scripts/monte_carlo.py --trades wf_outputs/rsi2/split_00/trade_list.csv --iterations 1000 --outdir monte_carlo_outputs
+  python scripts/monte_carlo.py --trades wf_outputs/donchian/split_00/trade_list.csv --iterations 1000 --outdir monte_carlo_outputs
 
 Crypto (Backtest-Only)
 Research-only crypto backtesting using Polygon hourly bars. No live execution.
@@ -134,11 +134,24 @@ Universe Files:
 - data/universe/crypto_top10.csv (top 10 by market cap)
 
 Walk-Forward:
-  python scripts/run_wf_crypto.py --universe data/universe/crypto_top3.csv --start 2020-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --outdir wf_outputs_crypto --cache data/cache/crypto --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+  python scripts/run_wf_crypto.py --universe data/universe/crypto_top3.csv --start 2020-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --outdir wf_outputs_crypto --cache data/cache/crypto --dotenv ./.env
 
 Report:
   python scripts/aggregate_wf_report.py --wfdir wf_outputs_crypto --out wf_outputs_crypto/wf_report.html
 
 Showdown:
-  python scripts/run_showdown_crypto.py --universe data/universe/crypto_top10.csv --start 2020-01-01 --end 2024-12-31 --outdir showdown_outputs_crypto --cache data/cache/crypto --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+  python scripts/run_showdown_crypto.py --universe data/universe/crypto_top10.csv --start 2020-01-01 --end 2024-12-31 --outdir showdown_outputs_crypto --cache data/cache/crypto --dotenv ./.env
+
+---
+
+Interview Quick Start (3 commands)
+- Ensure `./.env` exists with your keys (see Requirements above).
+- Run the quick test (50 stocks, ~12 months):
+  python scripts/interview_quick_test.py --dotenv ./.env
+- Open the HTML report: `wf_outputs_interview_quick/wf_report.html`
+- Share the summary JSON: `INTERVIEW_SUMMARY.json`
+
+
+
+
 

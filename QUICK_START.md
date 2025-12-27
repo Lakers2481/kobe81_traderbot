@@ -1,4 +1,4 @@
-# Quick Start Guide - Kobe81 Trading Bot
+﻿# Quick Start Guide - Kobe81 Trading Bot
 
 ## Prerequisites
 
@@ -21,7 +21,7 @@ pip install -r requirements.txt
 
 ### Step 2: Verify Environment
 ```bash
-python scripts/preflight.py --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+python scripts/preflight.py --dotenv ./.env
 ```
 
 Expected output: All checks pass (API keys valid, config loaded).
@@ -33,7 +33,7 @@ python scripts/run_backtest_polygon.py \
   --start 2023-01-01 \
   --end 2024-01-01 \
   --cache data/cache \
-  --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+  --dotenv ./.env
 ```
 
 ---
@@ -43,12 +43,12 @@ python scripts/run_backtest_polygon.py \
 ### A. Full Walk-Forward Validation (10 Years)
 
 ```bash
-# 1. Prefetch data (one-time, ~30 min for 950 stocks)
+# 1. Prefetch data (one-time, ~30 min for 900 stocks)
 python scripts/prefetch_polygon_universe.py \
   --universe data/universe/optionable_liquid_final.csv \
   --start 2015-01-01 --end 2024-12-31 \
   --cache data/cache --concurrency 3 \
-  --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+  --dotenv ./.env
 
 # 2. Run walk-forward
 python scripts/run_wf_polygon.py \
@@ -57,7 +57,7 @@ python scripts/run_wf_polygon.py \
   --train-days 252 --test-days 63 \
   --cap 900 --outdir wf_outputs \
   --cache data/cache \
-  --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+  --dotenv ./.env
 
 # 3. Generate HTML report
 python scripts/aggregate_wf_report.py \
@@ -65,7 +65,7 @@ python scripts/aggregate_wf_report.py \
   --out wf_outputs/wf_report.html
 ```
 
-### B. Strategy Showdown (Compare RSI-2 vs IBS)
+### B. Strategy Showdown (Compare Donchian breakout vs ICT Turtle Soup)
 
 ```bash
 python scripts/run_showdown_polygon.py \
@@ -73,7 +73,7 @@ python scripts/run_showdown_polygon.py \
   --start 2015-01-01 --end 2024-12-31 \
   --cap 900 --outdir showdown_outputs \
   --cache data/cache \
-  --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+  --dotenv ./.env
 ```
 
 ### C. Paper Trading
@@ -82,7 +82,7 @@ python scripts/run_showdown_polygon.py \
 python scripts/run_paper_trade.py \
   --universe data/universe/optionable_liquid_final.csv \
   --cap 50 \
-  --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+  --dotenv ./.env
 ```
 
 ### D. 24/7 Scheduled Trading
@@ -90,7 +90,7 @@ python scripts/run_paper_trade.py \
 ```bash
 python scripts/runner.py \
   --scan-times 09:35,10:30,15:55 \
-  --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+  --dotenv ./.env
 ```
 
 See `docs/RUN_24x7.md` for Windows Task Scheduler setup.
@@ -131,9 +131,9 @@ After running backtests/walk-forward:
 
 | File | Location | Contents |
 |------|----------|----------|
-| Trade List | `wf_outputs/rsi2/split_XX/trade_list.csv` | All trades with P&L |
-| Equity Curve | `wf_outputs/rsi2/split_XX/equity_curve.csv` | Daily portfolio value |
-| Summary | `wf_outputs/rsi2/split_XX/summary.json` | KPIs (Sharpe, WR, DD) |
+| Trade List | `wf_outputs/Donchian breakout/split_XX/trade_list.csv` | All trades with P&L |
+| Equity Curve | `wf_outputs/Donchian breakout/split_XX/equity_curve.csv` | Daily portfolio value |
+| Summary | `wf_outputs/Donchian breakout/split_XX/summary.json` | KPIs (Sharpe, WR, DD) |
 | Report | `wf_outputs/wf_report.html` | Interactive HTML report |
 
 ---
@@ -144,10 +144,10 @@ Before going live, verify:
 
 | Metric | Target | How to Check |
 |--------|--------|--------------|
-| Win Rate | ≥ 55% | `summary.json` → win_rate |
-| Profit Factor | ≥ 1.5 | `summary.json` → profit_factor |
-| Sharpe Ratio | ≥ 1.0 | `summary.json` → sharpe |
-| Max Drawdown | ≤ 20% | `summary.json` → max_dd |
+| Win Rate | â‰¥ 55% | `summary.json` â†’ win_rate |
+| Profit Factor | â‰¥ 1.5 | `summary.json` â†’ profit_factor |
+| Sharpe Ratio | â‰¥ 1.0 | `summary.json` â†’ sharpe |
+| Max Drawdown | â‰¤ 20% | `summary.json` â†’ max_dd |
 
 ---
 
@@ -163,8 +163,8 @@ set PYTHONPATH=%PYTHONPATH%;.
 
 ### "POLYGON_API_KEY not found"
 ```bash
-# Check .env file exists and has correct path
-python scripts/preflight.py --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+# Check .env file exists  has correct path
+python scripts/preflight.py --dotenv ./.env
 ```
 
 ### "No data for symbol XXX"
@@ -179,18 +179,18 @@ python scripts/prefetch_polygon_universe.py ...
 
 ```
 kobe81_traderbot/
-├── strategies/          # RSI-2, IBS strategies
-├── backtest/            # Backtesting engine
-├── data/                # Providers, universe (950 stocks)
-├── execution/           # Alpaca broker
-├── risk/                # PolicyGate ($75/order)
-├── oms/                 # Order management
-├── core/                # Audit, logging
-├── config/              # Settings, strategy params
-├── scripts/             # 78 operational scripts
-├── tests/               # Unit tests (63 passing)
-├── state/               # Runtime state, audit log
-└── logs/                # Event logs
+â”œâ”€â”€ strategies/          # Donchian breakout, ICT Turtle Soup strategies
+â”œâ”€â”€ backtest/            # Backtesting engine
+â”œâ”€â”€ data/                # Providers, universe (900 stocks)
+â”œâ”€â”€ execution/           # Alpaca broker
+â”œâ”€â”€ risk/                # PolicyGate ($75/order)
+â”œâ”€â”€ oms/                 # Order management
+â”œâ”€â”€ core/                # Audit, logging
+â”œâ”€â”€ config/              # Settings, strategy params
+â”œâ”€â”€ scripts/             # 78 operational scripts
+â”œâ”€â”€ tests/               # Unit tests (63 passing)
+â”œâ”€â”€ state/               # Runtime state, audit log
+â””â”€â”€ logs/                # Event logs
 ```
 
 ---
@@ -207,3 +207,5 @@ kobe81_traderbot/
 ---
 
 *For detailed architecture, see `PROJECT_CONTEXT.md`*
+
+

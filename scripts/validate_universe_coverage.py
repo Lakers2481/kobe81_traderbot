@@ -7,10 +7,10 @@ import pandas as pd
 
 
 def main():
-    ap = argparse.ArgumentParser(description='Validate universe coverage (>=950 and >=10 years each)')
+    ap = argparse.ArgumentParser(description='Validate universe coverage (>=900 and >=10 years each)')
     ap.add_argument('--earliest-file', type=str, default='data/universe/earliest_latest_universe.csv')
     ap.add_argument('--min-years', type=float, default=10.0)
-    ap.add_argument('--min-count', type=int, default=950)
+    ap.add_argument('--min-count', type=int, default=900)
     args = ap.parse_args()
 
     p = Path(args.earliest_file)
@@ -35,4 +35,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

@@ -1,4 +1,4 @@
-# Kobe81 Traderbot - Progress Status
+﻿# Kobe81 Traderbot - Progress Status
 
 **Last Updated:** 2025-12-26 23:30 UTC
 **Project:** C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot
@@ -16,11 +16,11 @@ All 14 verification items verified. System ready for production.
 | # | Item | Status | Evidence |
 |---|------|--------|----------|
 | 1 | Universe (900 symbols) | PASS | optionable_liquid_900.csv verified, config + scripts aligned |
-| 2 | No-lookahead + CRSI signed streak | PASS | RSI(signed_streak, 2), shift(1), next-bar fills verified |
+| 2 | No-lookahead + ICT Turtle Soup signed streak | PASS | RSI(signed_streak, 2), shift(1), next-bar fills verified |
 | 3 | Data pipeline robustness | PASS | multi_source.py: Polygon->Yahoo->Stooq fallback chain |
 | 4 | Daily Top-3 + Trade of Day | PASS | scan.py --top3, export_ai_bundle.py, trade_top3.py verified |
-| 5 | Full backtest setup | PASS | run_wf_polygon.py runs 6 strategies (RSI2/IBS/AND/CRSI/TOPN/DONCHIAN) |
-| 6 | CRSI signed streak | PASS | Uses RSI(streak, 2) with threshold <= 10.0 |
+| 5 | Full backtest setup | PASS | run_wf_polygon.py runs 6 strategies (Donchian breakout/ICT Turtle Soup//ICT Turtle Soup/TOPN/DONCHIAN) |
+| 6 | ICT Turtle Soup signed streak | PASS | Uses RSI(streak, 2) with threshold <= 10.0 |
 | 7 | Cost modeling wired | PASS | CommissionConfig with SEC/TAF fees, slippage_bps in engine |
 | 8 | Windows Task Scheduler | PASS | scan_top3.ps1, trade_top3.ps1 use --cap 900 |
 | 9 | Compile/import sanity | PASS | 20/20 modules import OK, all scripts pass py_compile |
@@ -32,17 +32,17 @@ All 14 verification items verified. System ready for production.
 
 ---
 
-## CRSI Configuration
+## ICT Turtle Soup Configuration
 
 **File:** `strategies/connors_crsi/strategy.py`
 
-The Connors CRSI composite uses:
+The Connors ICT Turtle Soup composite uses:
 - RSI(close, 3) with Wilder smoothing
 - RSI(signed_streak, 2) - **signed streak** (positive for up, negative for down)
 - PercentRank(ROC(close, 3), 100)
 
 ```
-CRSI = (RSI3 + RSI_streak + PercentRank_ROC3) / 3
+ICT Turtle Soup = (RSI3 + RSI_streak + PercentRank_ROC3) / 3
 ```
 
 **Default Parameters:**
@@ -62,16 +62,16 @@ CRSI = (RSI3 + RSI_streak + PercentRank_ROC3) / 3
 
 | Strategy | Splits | Trades | Win Rate | Profit Factor | Net PnL |
 |----------|--------|--------|----------|---------------|---------|
-| RSI2 | 14 | 512 | 42.6% | 1.76 | -$160.60 |
-| IBS | 14 | 1676 | 45.2% | 1.09 | +$2764.78 |
-| AND | 14 | 112 | 6.8% | 0.09 | -$608.00 |
-| CRSI | 14 | 0 | - | - | $0.00 |
+| Donchian breakout | 14 | 512 | 42.6% | 1.76 | -$160.60 |
+| ICT Turtle Soup | 14 | 1676 | 45.2% | 1.09 | +$2764.78 |
+|  | 14 | 112 | 6.8% | 0.09 | -$608.00 |
+| ICT Turtle Soup | 14 | 0 | - | - | $0.00 |
 | TOPN | 14 | 112 | 6.8% | 0.09 | -$608.00 |
 
 **Notes:**
-- CRSI shows 0 trades with threshold 10 on small sample (by design - conservative)
-- IBS shows best results (+$2764) with most trades
-- AND/TOPN have low trade count due to strict AND filter
+- ICT Turtle Soup shows 0 trades with threshold 10 on small sample (by design - conservative)
+- ICT Turtle Soup shows best results (+$2764) with most trades
+- /TOPN have low trade count due to strict  filter
 - Commissions disabled in smoke run (test pipeline only)
 
 ---
@@ -81,16 +81,16 @@ CRSI = (RSI3 + RSI_streak + PercentRank_ROC3) / 3
 ### Strategies (4 types, 6 backtest variants)
 | Strategy | Type | Entry Condition | Default Threshold |
 |----------|------|-----------------|-------------------|
-| RSI-2 | Mean Reversion | RSI(2) <= max AND close > SMA(200) | 10.0 |
-| IBS | Mean Reversion | IBS < max AND close > SMA(200) | 0.20 |
-| CRSI | Mean Reversion | CRSI <= max AND close > SMA(200) | 10.0 |
+| Donchian breakout | Mean Reversion | RSI(2) <= max  close > SMA(200) | 10.0 |
+| ICT Turtle Soup | Mean Reversion | ICT Turtle Soup < max  close > SMA(200) | 0.20 |
+| ICT Turtle Soup | Mean Reversion | ICT Turtle Soup <= max  close > SMA(200) | 10.0 |
 | Donchian | Trend | Close > Donchian(55) high | Breakout |
 
 ### Backtest Variants
-- `RSI2`: RSI-2 standalone
-- `IBS`: IBS standalone
-- `AND`: RSI-2 + IBS conjunction
-- `CRSI`: Connors RSI composite
+- `Donchian breakout`: Donchian breakout stalone
+- `ICT Turtle Soup`: ICT Turtle Soup stalone
+- ``: Donchian breakout + ICT Turtle Soup conjunction
+- `ICT Turtle Soup`: Connors RSI composite
 - `TOPN`: Cross-sectional ranked selection
 - `DONCHIAN`: Trend-following breakout
 
@@ -139,7 +139,7 @@ To enable cost modeling in backtests:
 
 ---
 
-## Quick Start Commands
+## Quick Start Comms
 
 ```bash
 # Run daily scanner
@@ -156,8 +156,8 @@ python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.
 # Generate HTML report
 python scripts/aggregate_wf_report.py --wfdir wf_outputs
 
-# CRSI with higher threshold (more signals)
-python scripts/run_wf_polygon.py ... --crsi-long-max 15
+# ICT Turtle Soup with higher threshold (more signals)
+python scripts/run_wf_polygon.py ... --ICT Turtle Soup-long-max 15
 ```
 
 ---
@@ -192,8 +192,8 @@ python scripts/run_wf_polygon.py ... --crsi-long-max 15
 ## Import Verification (20/20 Modules)
 
 All core modules import successfully:
-- strategies.connors_rsi2.strategy
-- strategies.ibs.strategy
+- strategies.connors_Donchian breakout.strategy
+- strategies.ICT Turtle Soup.strategy
 - strategies.connors_crsi.strategy
 - strategies.donchian.strategy
 - backtest.engine
@@ -227,3 +227,4 @@ All 10 core audit items verified. Kobe81 trading system is ready for:
 - Full WF run (2015-2024, cap 900) - ~2-4 hours
 - Cost sensitivity analysis
 - OOS stability analysis with --anchored
+

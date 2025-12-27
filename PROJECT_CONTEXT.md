@@ -1,6 +1,6 @@
-# PROJECT CONTEXT: Kobe81 Trading Bot
+﻿# PROJECT CONTEXT: Kobe81 Trading Bot
 
-> **Purpose:** This document provides complete context for any AI or developer to understand and continue work on this project.
+> **Purpose:** This document provides complete context for any AI or developer to underst  continue work on this project.
 
 ---
 
@@ -19,9 +19,9 @@
 | Component | Status | Notes |
 |-----------|--------|-------|
 | Core Architecture | COMPLETE | 10-layer system fully implemented |
-| Strategies | COMPLETE | RSI-2, IBS, AND filter |
+| Strategies | COMPLETE | Donchian breakout, ICT Turtle Soup,  filter |
 | Backtesting | COMPLETE | Walk-forward validated |
-| Universe | COMPLETE | 950 stocks, 10Y coverage |
+| Universe | COMPLETE | 900 stocks, 10Y coverage |
 | Paper Trading | READY | Micro budgets enforced |
 | Live Trading | READY | Pending paper validation |
 | CI/CD | PASSING | GitHub Actions (63 tests) |
@@ -32,55 +32,55 @@
 ## 10-Layer Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│ Layer 10: RUNNER         scripts/runner.py                  │
-│           24/7 scheduler, scan times, state persistence     │
-├─────────────────────────────────────────────────────────────┤
-│ Layer 9: MONITOR         monitor/health_endpoints.py        │
-│          Health checks, reconciliation, metrics             │
-├─────────────────────────────────────────────────────────────┤
-│ Layer 8: CORE            core/hash_chain.py, structured_log │
-│          Audit trail, JSON logging, config pinning          │
-├─────────────────────────────────────────────────────────────┤
-│ Layer 7: EXECUTION       execution/broker_alpaca.py         │
-│          IOC LIMIT orders, Alpaca API integration           │
-├─────────────────────────────────────────────────────────────┤
-│ Layer 6: OMS             oms/order_state.py, idempotency    │
-│          Order lifecycle, duplicate prevention              │
-├─────────────────────────────────────────────────────────────┤
-│ Layer 5: RISK            risk/policy_gate.py                │
-│          $75/order, $1k/day, kill switch, price bounds      │
-├─────────────────────────────────────────────────────────────┤
-│ Layer 4: BACKTEST        backtest/engine.py, walk_forward   │
-│          Historical simulation, rolling validation          │
-├─────────────────────────────────────────────────────────────┤
-│ Layer 3: STRATEGY        strategies/connors_rsi2, ibs       │
-│          Signal generation, lookahead prevention            │
-├─────────────────────────────────────────────────────────────┤
-│ Layer 2: UNIVERSE        data/universe/loader.py            │
-│          950 stocks, optionable, liquid, 10Y coverage       │
-├─────────────────────────────────────────────────────────────┤
-│ Layer 1: DATA            data/providers/polygon_eod.py      │
-│          Polygon API, CSV caching, rate limiting            │
-└─────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ Layer 10: RUNNER         scripts/runner.py                  â”‚
+â”‚           24/7 scheduler, scan times, state persistence     â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ Layer 9: MONITOR         monitor/health_endpoints.py        â”‚
+â”‚          Health checks, reconciliation, metrics             â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ Layer 8: CORE            core/hash_chain.py, structured_log â”‚
+â”‚          Audit trail, JSON logging, config pinning          â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ Layer 7: EXECUTION       execution/broker_alpaca.py         â”‚
+â”‚          IOC LIMIT orders, Alpaca API integration           â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ Layer 6: OMS             oms/order_state.py, idempotency    â”‚
+â”‚          Order lifecycle, duplicate prevention              â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ Layer 5: RISK            risk/policy_gate.py                â”‚
+â”‚          $75/order, $1k/day, kill switch, price bounds      â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ Layer 4: BACKTEST        backtest/engine.py, walk_forward   â”‚
+â”‚          Historical simulation, rolling validation          â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ Layer 3: STRATEGY        strategies/connors_Donchian breakout, ICT Turtle Soup       â”‚
+â”‚          Signal generation, lookahead prevention            â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ Layer 2: UNIVERSE        data/universe/loader.py            â”‚
+â”‚          900 stocks, optionable, liquid, 10Y coverage       â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ Layer 1: DATA            data/providers/polygon_eod.py      â”‚
+â”‚          Polygon API, CSV caching, rate limiting            â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
 
 ## Trading Strategies
 
-### 1. Connors RSI-2 (Primary)
-- **Entry:** RSI(2) ≤ 10 AND Close > SMA(200)
-- **Exit:** RSI(2) ≥ 70 OR ATR(14)×2 stop OR 5-bar timeout
+### 1. Connors Donchian breakout (Primary)
+- **Entry:** RSI(2) â‰¤ 10  Close > SMA(200)
+- **Exit:** RSI(2) â‰¥ 70 OR ATR(14)Ã—2 stop OR 5-bar timeout
 - **Expected:** 58-62% win rate, Sharpe 1.2-1.8
 
-### 2. IBS (Internal Bar Strength)
-- **Entry:** IBS < 0.2 AND Close > SMA(200)
-- **Exit:** ATR(14)×2 stop OR 5-bar timeout
+### 2. ICT Turtle Soup (Internal Bar Strength)
+- **Entry:** ICT Turtle Soup < 0.2  Close > SMA(200)
+- **Exit:** ATR(14)Ã—2 stop OR 5-bar timeout
 - **Expected:** 54-58% win rate, Sharpe 1.0-1.5
 
-### 3. AND Filter (Combined)
-- **Entry:** BOTH RSI-2 AND IBS signal on same bar
+### 3.  Filter (Combined)
+- **Entry:** BOTH Donchian breakout  ICT Turtle Soup signal on same bar
 - **Higher selectivity:** 60-65% win rate, fewer trades
 
 ---
@@ -89,13 +89,13 @@
 
 ### Configuration
 - `config/settings.json` - Global settings
-- `config/strategies/connors_rsi2.yaml` - RSI-2 parameters
-- `config/strategies/ibs.yaml` - IBS parameters
+- `config/strategies/connors_Donchian breakout.yaml` - Donchian breakout parameters
+- `config/strategies/ICT Turtle Soup.yaml` - ICT Turtle Soup parameters
 - `.env` - API keys (POLYGON, ALPACA) - NOT in git
 
 ### Core Modules
-- `strategies/connors_rsi2/strategy.py` - RSI-2 implementation
-- `strategies/ibs/strategy.py` - IBS implementation
+- `strategies/connors_Donchian breakout/strategy.py` - Donchian breakout implementation
+- `strategies/ICT Turtle Soup/strategy.py` - ICT Turtle Soup implementation
 - `backtest/engine.py` - Backtesting engine
 - `execution/broker_alpaca.py` - Broker integration
 - `risk/policy_gate.py` - Risk controls
@@ -108,7 +108,7 @@
 - `scripts/runner.py` - 24/7 scheduler
 
 ### Data
-- `data/universe/optionable_liquid_final.csv` - 950 stocks
+- `data/universe/optionable_liquid_final.csv` - 900 stocks
 - `data/cache/` - Polygon data cache (203 MB)
 
 ### State
@@ -168,7 +168,7 @@ python scripts/runner.py \
 
 | Commit | Description |
 |--------|-------------|
-| `17ce36a` | Fixed 55 import paths (configs → config) |
+| `17ce36a` | Fixed 55 import paths (configs â†’ config) |
 | `9a61a5b` | Added CI/CD workflow, fixed tests |
 | `2350278` | Added 70 Claude skills |
 
@@ -223,22 +223,22 @@ pytest tests/unit -v
 
 ```
 kobe81_traderbot/
-├── strategies/          # Trading strategies (RSI-2, IBS)
-├── backtest/            # Backtesting engine
-├── data/                # Data providers, universe
-├── execution/           # Broker integration
-├── risk/                # Risk management
-├── oms/                 # Order management
-├── core/                # Infrastructure (logs, audit)
-├── monitor/             # Health monitoring
-├── config/              # Configuration files
-├── scripts/             # 78 operational scripts
-├── tests/               # Unit + integration tests
-├── .claude/skills/      # 70 Claude AI skills
-├── docs/                # Documentation
-├── state/               # Runtime state
-├── logs/                # Event logs
-└── wf_outputs/          # Walk-forward results
+â”œâ”€â”€ strategies/          # Trading strategies (Donchian breakout, ICT Turtle Soup)
+â”œâ”€â”€ backtest/            # Backtesting engine
+â”œâ”€â”€ data/                # Data providers, universe
+â”œâ”€â”€ execution/           # Broker integration
+â”œâ”€â”€ risk/                # Risk management
+â”œâ”€â”€ oms/                 # Order management
+â”œâ”€â”€ core/                # Infrastructure (logs, audit)
+â”œâ”€â”€ monitor/             # Health monitoring
+â”œâ”€â”€ config/              # Configuration files
+â”œâ”€â”€ scripts/             # 78 operational scripts
+â”œâ”€â”€ tests/               # Unit + integration tests
+â”œâ”€â”€ .claude/skills/      # 70 Claude AI skills
+â”œâ”€â”€ docs/                # Documentation
+â”œâ”€â”€ state/               # Runtime state
+â”œâ”€â”€ logs/                # Event logs
+â””â”€â”€ wf_outputs/          # Walk-forward results
 ```
 
 ---
@@ -251,3 +251,5 @@ kobe81_traderbot/
 ---
 
 *Last Updated: 2025-12-26*
+
+

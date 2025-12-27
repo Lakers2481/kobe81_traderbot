@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Showdown backtest for crypto: RSI-2 vs IBS vs AND over full period.
+Showdown backtest for crypto: Donchian vs ICT Turtle Soup over full period.
 Uses Polygon hourly crypto data.
 """
 from __future__ import annotations
@@ -13,8 +13,8 @@ import pandas as pd
 import sys
 sys.path.insert(0, str(_P(__file__).resolve().parents[1]))
 
-from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
-from strategies.ibs.strategy import IBSStrategy
+from strategies.donchian.strategy import DonchianBreakoutStrategy
+from strategies.ict.turtle_soup import TurtleSoupStrategy
 from backtest.engine import Backtester, BacktestConfig
 from data.universe.loader import load_universe
 from data.providers.polygon_crypto import fetch_crypto_bars
@@ -22,14 +22,14 @@ from config.env_loader import load_env
 
 
 def main():
-    ap = argparse.ArgumentParser(description='Showdown backtest: RSI-2 vs IBS vs AND over full period (Crypto)')
+    ap = argparse.ArgumentParser(description='Showdown backtest: Donchian vs ICT over full period (Crypto)')
     ap.add_argument('--universe', type=str, required=True, help='Path to crypto universe CSV')
     ap.add_argument('--start', type=str, required=True, help='YYYY-MM-DD')
     ap.add_argument('--end', type=str, required=True, help='YYYY-MM-DD')
     ap.add_argument('--outdir', type=str, default='showdown_outputs_crypto')
     ap.add_argument('--cache', type=str, default='data/cache/crypto')
     ap.add_argument('--timeframe', type=str, default='1h', help='Bar timeframe (1h, 4h, etc)')
-    ap.add_argument('--dotenv', type=str, default='C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env')
+    ap.add_argument('--dotenv', type=str, default='./.env')
     args = ap.parse_args()
 
     dotenv = _P(args.dotenv)
@@ -53,51 +53,28 @@ def main():
         return df
 
     # Strategies
-    rsi2 = ConnorsRSI2Strategy()
-    ibs = IBSStrategy()
+    don = DonchianBreakoutStrategy()
+    ict = TurtleSoupStrategy()
 
-    def get_rsi2(df: pd.DataFrame) -> pd.DataFrame:
-        return rsi2.scan_signals_over_time(df)
+    def get_donchian(df: pd.DataFrame) -> pd.DataFrame:
+        return don.scan_signals_over_time(df)
 
-    def get_ibs(df: pd.DataFrame) -> pd.DataFrame:
-        return _safe_ibs_scan(ibs, df)
-
-    def get_and(df: pd.DataFrame) -> pd.DataFrame:
-        a = rsi2.scan_signals_over_time(df)
-        b = _safe_ibs_scan(ibs, df)
-        if a.empty or b.empty:
-            return pd.DataFrame(columns=a.columns if not a.empty else b.columns)
-        merged = pd.merge(a, b, on=['timestamp', 'symbol', 'side'], suffixes=('_rsi2', '_ibs'))
-        if merged.empty:
-            return merged
-        out = merged[['timestamp', 'symbol', 'side']].copy()
-        out['entry_price'] = merged['entry_price_rsi2']
-        out['stop_loss'] = merged['stop_loss_rsi2']
-        out['take_profit'] = merged.get('take_profit_rsi2', pd.NA)
-        out['reason'] = 'RSI2+IBS AND (Crypto)'
-        if 'rsi2' in merged.columns:
-            out['rsi2'] = merged['rsi2']
-        if 'ibs' in merged.columns:
-            out['ibs'] = merged['ibs']
-        return out
+    def get_turtle_soup(df: pd.DataFrame) -> pd.DataFrame:
+        return ict.scan_signals_over_time(df)
 
     # Run per strategy
-    print('Running RSI-2...')
+    print('Running Donchian...')
     cfg = BacktestConfig(initial_cash=100_000.0)
-    bt_rsi2 = Backtester(cfg, get_rsi2, fetcher)
-    r1 = bt_rsi2.run(symbols, outdir=str(outdir / 'rsi2'))
+    bt_don = Backtester(cfg, get_donchian, fetcher)
+    r1 = bt_don.run(symbols, outdir=str(outdir / 'donchian'))
 
-    print('Running IBS...')
-    bt_ibs = Backtester(cfg, get_ibs, fetcher)
-    r2 = bt_ibs.run(symbols, outdir=str(outdir / 'ibs'))
-
-    print('Running AND...')
-    bt_and = Backtester(cfg, get_and, fetcher)
-    r3 = bt_and.run(symbols, outdir=str(outdir / 'and'))
+    print('Running ICT Turtle Soup...')
+    bt_ict = Backtester(cfg, get_turtle_soup, fetcher)
+    r2 = bt_ict.run(symbols, outdir=str(outdir / 'turtle_soup'))
 
     # Combined summary
     rows = []
-    for name, res in (('RSI2_crypto', r1), ('IBS_crypto', r2), ('AND_crypto', r3)):
+    for name, res in (('DONCHIAN_crypto', r1), ('TURTLE_SOUP_crypto', r2)):
         m = res.get('metrics', {})
         rows.append({
             'strategy': name,
@@ -124,25 +101,12 @@ def main():
         '</body></html>'
     ]
     (outdir / 'showdown_report.html').write_text('\n'.join(html), encoding='utf-8')
-    print('Showdown (crypto) complete. Summary:')
+    print('Showdown (crypto) complete. Summary (Donchian vs ICT):')
     print(df)
 
 
-def _safe_ibs_scan(ibs_strategy, df: pd.DataFrame) -> pd.DataFrame:
-    """
-    IBS scan with zero-division guard.
-    If (high - low) == 0, IBS is undefined; exclude that bar.
-    """
-    if df.empty:
-        return pd.DataFrame(columns=['timestamp', 'symbol', 'side', 'entry_price', 'stop_loss', 'take_profit', 'reason'])
-
-    # Filter out bars where high == low (flat bars, no range)
-    df_filtered = df[df['high'] != df['low']].copy()
-    if df_filtered.empty:
-        return pd.DataFrame(columns=['timestamp', 'symbol', 'side', 'entry_price', 'stop_loss', 'take_profit', 'reason'])
-
-    return ibs_strategy.scan_signals_over_time(df_filtered)
-
+    # No IBS in this setup
+    
 
 if __name__ == '__main__':
     main()

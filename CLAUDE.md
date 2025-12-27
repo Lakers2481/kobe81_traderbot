@@ -1,10 +1,10 @@
-# CLAUDE.md
+﻿# CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository. The trading robot is named "Kobe". Do not refer to any prior system name.
 
 ## Project Overview
 
-Python quantitative trading system: backtesting, paper trading, and live execution for mean-reversion strategies (Connors RSI-2, IBS). Uses Polygon.io for EOD data, Alpaca for execution.
+Python quantitative trading system: backtesting, paper trading,  live execution for mean-reversion strategies (Connors Donchian breakout, ICT Turtle Soup). Uses Polygon.io for EOD data, Alpaca for execution.
 
 ## Requirements
 
@@ -12,14 +12,14 @@ Python quantitative trading system: backtesting, paper trading, and live executi
 - `pip install -r requirements.txt`
 - Environment: `.env` file with `POLYGON_API_KEY`, `ALPACA_API_KEY_ID`, `ALPACA_API_SECRET_KEY`, `ALPACA_BASE_URL`
 
-## Common Commands
+## Common Comms
 
 ```bash
 # Preflight check (env keys, config pin, broker probe)
 python scripts/preflight.py --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
 
-# Build 950-stock universe (optionable, liquid, ≥10 years)
-python scripts/build_universe_polygon.py --candidates data/universe/optionable_liquid_candidates.csv --start 2015-01-01 --end 2024-12-31 --min-years 10 --cap 950 --concurrency 3
+# Build 900-stock universe (optionable, liquid, â‰¥10 years)
+python scripts/build_universe_polygon.py --cidates data/universe/optionable_liquid_cidates.csv --start 2015-01-01 --end 2024-12-31 --min-years 10 --cap 900 --concurrency 3
 
 # Prefetch EOD bars for faster WF
 python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31
@@ -46,7 +46,7 @@ python scripts/reconcile_alpaca.py
 
 All scripts accept `--dotenv` to specify env file location.
 
-## Skills (Slash Commands)
+## Skills (Slash Comms)
 
 **70 skills** organized by category. Definitions in `.claude/skills/*.md`.
 
@@ -79,7 +79,7 @@ All scripts accept `--dotenv` to specify env file location.
 |-------|---------|
 | `/positions` | Show open positions with live P&L |
 | `/pnl` | Daily/weekly/total P&L summary |
-| `/orders` | Order history and fill details |
+| `/orders` | Order history  fill details |
 
 ### Strategy & Signals (4 skills)
 | Skill | Purpose |
@@ -100,7 +100,7 @@ All scripts accept `--dotenv` to specify env file location.
 |-------|---------|
 | `/data` | Data fetch status, cache health |
 | `/prefetch` | Prefetch EOD bars for universe |
-| `/universe` | Manage 950-stock universe |
+| `/universe` | Manage 900-stock universe |
 
 ### Broker & Execution (3 skills)
 | Skill | Purpose |
@@ -113,7 +113,7 @@ All scripts accept `--dotenv` to specify env file location.
 | Skill | Purpose |
 |-------|---------|
 | `/audit` | Verify hash chain (tamper detection) |
-| `/risk` | Check all risk limits and gates |
+| `/risk` | Check all risk limits  gates |
 | `/config` | View/modify config with signature |
 
 ### System Management (4 skills)
@@ -135,7 +135,7 @@ All scripts accept `--dotenv` to specify env file location.
 | Skill | Purpose |
 |-------|---------|
 | `/metrics` | Performance stats (win rate, PF, Sharpe) |
-| `/alerts` | Manage alert thresholds and channels |
+| `/alerts` | Manage alert thresholds  channels |
 
 ### Analytics & Reporting (3 skills)
 | Skill | Purpose |
@@ -191,12 +191,12 @@ All scripts accept `--dotenv` to specify env file location.
 |-------|---------|
 | `/regime` | Market regime detection (bull/bear/chop) |
 | `/correlation` | Position correlation matrix |
-| `/drawdown` | Drawdown analysis and recovery stats |
+| `/drawdown` | Drawdown analysis  recovery stats |
 
 ### Data Validation (2 skills)
 | Skill | Purpose |
 |-------|---------|
-| `/polygon` | Validate Polygon data source & 950 coverage |
+| `/polygon` | Validate Polygon data source & 900 coverage |
 | `/integrity-check` | Detect lookahead, bias, bugs, fake data, manipulation |
 
 ### Dashboard (1 skill)
@@ -207,7 +207,7 @@ All scripts accept `--dotenv` to specify env file location.
 ### Quality & Testing (1 skill)
 | Skill | Purpose |
 |-------|---------|
-| `/quality` | Run code, data, test, and system quality checks with scoring |
+| `/quality` | Run code, data, test,  system quality checks with scoring |
 
 ### Quant Analysis (1 skill)
 | Skill | Purpose |
@@ -225,7 +225,7 @@ All scripts accept `--dotenv` to specify env file location.
 | `/version` | Show Kobe version, last update |
 | `/cleanup` | Purge old logs, cache, temp files |
 | `/snapshot` | Full state snapshot for recovery |
-| `/test` | Run unit tests and integration tests |
+| `/test` | Run unit tests  integration tests |
 | `/performance` | Real-time system performance monitoring |
 
 ## Architecture
@@ -235,9 +235,9 @@ All scripts accept `--dotenv` to specify env file location.
 |-------|--------|---------|
 | Data | `data/providers/polygon_eod.py` | EOD OHLCV fetch with CSV caching |
 | Universe | `data/universe/loader.py` | Symbol list loading, dedup, cap |
-| Strategies | `strategies/connors_rsi2/`, `strategies/ibs/` | Signal generation with shifted indicators |
+| Strategies | `strategies/connors_Donchian breakout/`, `strategies/ICT Turtle Soup/` | Signal generation with shifted indicators |
 | Backtest | `backtest/engine.py`, `backtest/walk_forward.py` | Simulation engine, WF splits |
-| Risk | `risk/policy_gate.py` | Per-order ($75) and daily ($1k) budgets |
+| Risk | `risk/policy_gate.py` | Per-order ($75)  daily ($1k) budgets |
 | Risk Advanced | `risk/advanced/` | VaR, Kelly sizing, correlation limits |
 | ML Advanced | `ml_advanced/` | LSTM, HMM regime, ensemble, online learning |
 | OMS | `oms/order_state.py`, `oms/idempotency_store.py` | Order records, duplicate prevention |
@@ -291,11 +291,11 @@ Output columns: `timestamp, symbol, side, entry_price, stop_loss, take_profit, r
 
 ### Core Trading
 - `backtest/engine.py`: Backtester with equity curve, ATR/time stops, FIFO P&L
-- `strategies/connors_rsi2/strategy.py`: RSI(2)<=10 entry, SMA(200) filter, Wilder smoothing
-- `strategies/ibs/strategy.py`: IBS<0.2 entry, SMA(200) filter
+- `strategies/connors_Donchian breakout/strategy.py`: RSI(2)<=10 entry, SMA(200) filter, Wilder smoothing
+- `strategies/ICT Turtle Soup/strategy.py`: ICT Turtle Soup<0.2 entry, SMA(200) filter
 - `execution/broker_alpaca.py`: `place_ioc_limit()`, `get_best_ask()`, idempotency
 - `risk/policy_gate.py`: `PolicyGate.check()` for budget enforcement
-- `scripts/runner.py`: 24/7 scheduler with `--scan-times` and state persistence
+- `scripts/runner.py`: 24/7 scheduler with `--scan-times`  state persistence
 
 ### Advanced Risk (Quant Interview Ready)
 - `risk/advanced/monte_carlo_var.py`: 10K-simulation VaR with stress testing
@@ -321,3 +321,5 @@ Output columns: `timestamp, symbol, side, entry_price, stop_loss, take_profit, r
 /logs           Recent events
 /broker         Broker connection
 ```
+
+

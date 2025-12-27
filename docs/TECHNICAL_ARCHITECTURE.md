@@ -1,5 +1,7 @@
 # Kobe81 Traderbot - Technical Architecture Documentation
 
+> Note: Strategy set is standardized to Donchian Breakout + ICT Turtle Soup and universe size is 900. Any mentions of RSI2/IBS or 950 symbols are legacy and will be updated. See `README.md` for the canonical setup.
+
 **Version:** 1.0
 **Last Updated:** 2025-12-26
 **System Name:** Kobe81 Traderbot (Institutional-Grade Quantitative Trading System)

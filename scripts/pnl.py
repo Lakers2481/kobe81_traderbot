@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Kobe Trading System - P&L Summary
 
@@ -13,7 +13,7 @@ Usage:
     python pnl.py --period today     # Today's P&L only
     python pnl.py --period week      # This week's P&L
     python pnl.py --period month     # This month's P&L
-    python pnl.py --strategy rsi2    # Filter by strategy
+    python pnl.py --strategy donchian    # Filter by strategy
     python pnl.py --dotenv /path/to/.env
 """
 from __future__ import annotations
@@ -158,9 +158,9 @@ def filter_trades_by_strategy(
         # Match by keyword
         if strategy_lower in trade_strat:
             filtered.append(trade)
-        elif strategy_lower == "rsi2" and "rsi" in trade_strat:
+        elif strategy_lower == "donchian" and "rsi" in trade_strat:
             filtered.append(trade)
-        elif strategy_lower == "ibs" and "ibs" in trade_strat:
+        elif strategy_lower == "TURTLE_SOUP" and "TURTLE_SOUP" in trade_strat:
             filtered.append(trade)
     return filtered
 
@@ -266,8 +266,8 @@ def compute_pnl_by_strategy(trades: List[Dict[str, Any]]) -> Dict[str, Dict[str,
         strategy_lower = strategy.lower()
         if "rsi" in strategy_lower:
             strategy = "RSI-2"
-        elif "ibs" in strategy_lower:
-            strategy = "IBS"
+        elif "TURTLE_SOUP" in strategy_lower:
+            strategy = "TURTLE_SOUP"
         else:
             strategy = strategy or "Unknown"
         by_strategy[strategy].append(trade)
@@ -450,7 +450,7 @@ def main():
         "--strategy",
         type=str,
         default=None,
-        help="Filter by strategy name (e.g., rsi2, ibs)",
+        help="Filter by strategy name (e.g., donchian, TURTLE_SOUP)",
     )
     args = ap.parse_args()
 
@@ -465,3 +465,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

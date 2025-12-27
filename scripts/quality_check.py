@@ -188,8 +188,8 @@ def check_flake8(root: Path) -> CheckResult:
 def check_imports(root: Path) -> CheckResult:
     """Check that critical modules can be imported."""
     critical_modules = [
-        'strategies.connors_rsi2.strategy',
-        'strategies.ibs.strategy',
+        'strategies.donchian.strategy',
+        'strategies.ict.turtle_soup',
         'backtest.engine',
         'data.providers.polygon_eod',
         'config.env_loader',

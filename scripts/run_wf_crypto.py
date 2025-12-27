@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Walk-forward backtest for crypto pairs using Polygon hourly data.
-Same strategy logic (RSI-2, IBS, AND) adapted for 1-hour bars.
+Same blueprint adapted for 1-hour bars using Donchian and ICT Turtle Soup.
 """
 from __future__ import annotations
 
@@ -14,8 +14,8 @@ import pandas as pd
 import sys
 sys.path.insert(0, str(_P(__file__).resolve().parents[1]))
 
-from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
-from strategies.ibs.strategy import IBSStrategy
+from strategies.donchian.strategy import DonchianBreakoutStrategy
+from strategies.ict.turtle_soup import TurtleSoupStrategy
 from data.universe.loader import load_universe
 from data.providers.polygon_crypto import fetch_crypto_bars
 from backtest.walk_forward import generate_splits, run_walk_forward, summarize_results
@@ -23,7 +23,7 @@ from config.env_loader import load_env
 
 
 def main():
-    ap = argparse.ArgumentParser(description='Walk-forward backtest (Crypto) with RSI-2, IBS, and AND')
+    ap = argparse.ArgumentParser(description='Walk-forward backtest (Crypto) with Donchian and ICT Turtle Soup')
     ap.add_argument('--universe', type=str, required=True, help='Path to crypto universe CSV')
     ap.add_argument('--start', type=str, required=True, help='YYYY-MM-DD')
     ap.add_argument('--end', type=str, required=True, help='YYYY-MM-DD')
@@ -33,7 +33,7 @@ def main():
     ap.add_argument('--outdir', type=str, default='wf_outputs_crypto')
     ap.add_argument('--cache', type=str, default='data/cache/crypto')
     ap.add_argument('--timeframe', type=str, default='1h', help='Bar timeframe (1h, 4h, etc)')
-    ap.add_argument('--dotenv', type=str, default='C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env')
+    ap.add_argument('--dotenv', type=str, default='./.env')
     args = ap.parse_args()
 
     universe = _P(args.universe)
@@ -62,53 +62,29 @@ def main():
         return df
 
     # Strategies (same as equities)
-    rsi2 = ConnorsRSI2Strategy()
-    ibs = IBSStrategy()
+    don = DonchianBreakoutStrategy()
+    ict = TurtleSoupStrategy()
 
-    def get_rsi2(df: pd.DataFrame) -> pd.DataFrame:
-        return rsi2.scan_signals_over_time(df)
+    def get_donchian(df: pd.DataFrame) -> pd.DataFrame:
+        return don.scan_signals_over_time(df)
 
-    def get_ibs(df: pd.DataFrame) -> pd.DataFrame:
-        # IBS with zero-division guard
-        return _safe_ibs_scan(ibs, df)
-
-    def get_and(df: pd.DataFrame) -> pd.DataFrame:
-        a = rsi2.scan_signals_over_time(df)
-        b = _safe_ibs_scan(ibs, df)
-        if a.empty or b.empty:
-            return pd.DataFrame(columns=a.columns if not a.empty else b.columns)
-        merged = pd.merge(a, b, on=['timestamp', 'symbol', 'side'], suffixes=('_rsi2', '_ibs'))
-        if merged.empty:
-            return pd.DataFrame(columns=['timestamp', 'symbol', 'side', 'entry_price', 'stop_loss', 'take_profit', 'reason'])
-        out = merged[['timestamp', 'symbol', 'side']].copy()
-        out['entry_price'] = merged['entry_price_rsi2']
-        out['stop_loss'] = merged['stop_loss_rsi2']
-        out['take_profit'] = merged.get('take_profit_rsi2', pd.NA)
-        out['reason'] = 'RSI2+IBS AND (Crypto)'
-        if 'rsi2' in merged.columns:
-            out['rsi2'] = merged['rsi2']
-        if 'ibs' in merged.columns:
-            out['ibs'] = merged['ibs']
-        return out
+    def get_turtle_soup(df: pd.DataFrame) -> pd.DataFrame:
+        return ict.scan_signals_over_time(df)
 
     # Run WF per strategy
-    print('Running RSI-2...')
-    rsi2_results = run_walk_forward(symbols, fetcher, get_rsi2, splits, outdir=str(outdir / 'rsi2'))
-    print('Running IBS...')
-    ibs_results = run_walk_forward(symbols, fetcher, get_ibs, splits, outdir=str(outdir / 'ibs'))
-    print('Running AND...')
-    and_results = run_walk_forward(symbols, fetcher, get_and, splits, outdir=str(outdir / 'and'))
+    print('Running Donchian...')
+    don_results = run_walk_forward(symbols, fetcher, get_donchian, splits, outdir=str(outdir / 'donchian'))
+    print('Running ICT Turtle Soup...')
+    ts_results = run_walk_forward(symbols, fetcher, get_turtle_soup, splits, outdir=str(outdir / 'turtle_soup'))
 
     # Summaries
-    rsi2_summary = summarize_results(rsi2_results)
-    ibs_summary = summarize_results(ibs_results)
-    and_summary = summarize_results(and_results)
+    don_summary = summarize_results(don_results)
+    ts_summary = summarize_results(ts_results)
 
     # Combined side-by-side CSV
     rows = []
-    rows.append({'strategy': 'RSI2_crypto', **rsi2_summary})
-    rows.append({'strategy': 'IBS_crypto', **ibs_summary})
-    rows.append({'strategy': 'AND_crypto', **and_summary})
+    rows.append({'strategy': 'DONCHIAN_crypto', **don_summary})
+    rows.append({'strategy': 'TURTLE_SOUP_crypto', **ts_summary})
     compare_df = pd.DataFrame(rows)
     compare_df.to_csv(outdir / 'wf_summary_compare.csv', index=False)
 

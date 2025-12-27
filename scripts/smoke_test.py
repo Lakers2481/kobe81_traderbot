@@ -10,8 +10,8 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
-from strategies.ibs.strategy import IBSStrategy
+from strategies.donchian.strategy import DonchianBreakoutStrategy
+from strategies.ict.turtle_soup import TurtleSoupStrategy
 from backtest.engine import Backtester, BacktestConfig
 
 
@@ -41,8 +41,8 @@ def main():
     data = pd.concat(frames, ignore_index=True)
 
     for name, strat in (
-        ('rsi2', ConnorsRSI2Strategy()),
-        ('ibs', IBSStrategy()),
+        ('donchian', DonchianBreakoutStrategy()),
+        ('turtle_soup', TurtleSoupStrategy()),
     ):
         def get_signals(df: pd.DataFrame) -> pd.DataFrame:
             return strat.scan_signals_over_time(df)
@@ -56,4 +56,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

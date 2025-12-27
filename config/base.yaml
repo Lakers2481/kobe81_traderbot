@@ -105,14 +105,10 @@ regime_filter:
 
 # Signal Selection (config-gated)
 selection:
-  enabled: true  # Use ranked Top-N selection by default
-  top_n: 5       # Max signals per day
-  score_weights:
-    rsi2: 0.3        # Weight for RSI-2 rank (lower RSI2 = higher rank)
-    ibs: 0.2         # Weight for IBS rank (lower IBS = higher rank)
-    crsi: 0.5        # Weight for CRSI rank (lower CRSI = higher rank)
-  include_and_guard: true  # Only rank candidates passing AND (RSI2+IBS) filter
-  min_price: 10.0     # Minimum stock price filter
+  enabled: false  # Disabled in two-strategy setup (no cross-sectional TOPN)
+  top_n: 5        # Ignored when selection.enabled is false
+  # Note: legacy RSI2/IBS/CRSI weights removed; selection not used for Donchian/ICT
+  min_price: 10.0  # Generic floor used by some helpers when present
 
 # Volatility-Targeted Sizing (config-gated)
 sizing:

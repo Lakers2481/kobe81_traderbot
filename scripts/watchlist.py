@@ -134,14 +134,14 @@ def check_watchlist_signals(name: str) -> Dict[str, Any]:
         "symbols": {},
     }
 
-    # Try to import strategies and check for signals
+    # Try to import strategies and check for signals (Donchian / ICT)
     try:
-        from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
-        from strategies.ibs.strategy import IBSStrategy
+        from strategies.donchian.strategy import DonchianBreakoutStrategy
+        from strategies.ict.turtle_soup import TurtleSoupStrategy
         from data.providers.polygon_eod import fetch_daily_bars_polygon
 
-        rsi2_strat = ConnorsRSI2Strategy()
-        ibs_strat = IBSStrategy()
+        don_strat = DonchianBreakoutStrategy()
+        ict_strat = TurtleSoupStrategy()
 
         end_date = datetime.utcnow().date().isoformat()
         start_date = (datetime.utcnow().date() - timedelta(days=90)).isoformat()
@@ -154,31 +154,28 @@ def check_watchlist_signals(name: str) -> Dict[str, Any]:
                     continue
 
                 signals = []
-                # Check RSI2 signals
+                # Donchian
                 try:
-                    rsi2_signals = rsi2_strat.scan_signals_over_time(df)
-                    if not rsi2_signals.empty:
-                        latest = rsi2_signals.iloc[-1] if len(rsi2_signals) > 0 else None
-                        if latest is not None:
-                            signals.append({
-                                "strategy": "connors_rsi2",
-                                "direction": str(latest.get("direction", "N/A")),
-                                "date": str(latest.get("timestamp", "N/A")),
-                            })
+                    s = don_strat.scan_signals_over_time(df)
+                    if not s.empty:
+                        latest = s.iloc[-1]
+                        signals.append({
+                            "strategy": "donchian",
+                            "direction": str(latest.get("side", "N/A")),
+                            "date": str(latest.get("timestamp", "N/A")),
+                        })
                 except Exception:
                     pass
-
-                # Check IBS signals
+                # ICT Turtle Soup
                 try:
-                    ibs_signals = ibs_strat.scan_signals_over_time(df)
-                    if not ibs_signals.empty:
-                        latest = ibs_signals.iloc[-1] if len(ibs_signals) > 0 else None
-                        if latest is not None:
-                            signals.append({
-                                "strategy": "ibs",
-                                "direction": str(latest.get("direction", "N/A")),
-                                "date": str(latest.get("timestamp", "N/A")),
-                            })
+                    s = ict_strat.scan_signals_over_time(df)
+                    if not s.empty:
+                        latest = s.iloc[-1]
+                        signals.append({
+                            "strategy": "turtle_soup",
+                            "direction": str(latest.get("side", "N/A")),
+                            "date": str(latest.get("timestamp", "N/A")),
+                        })
                 except Exception:
                     pass
 

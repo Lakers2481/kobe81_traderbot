@@ -78,7 +78,7 @@ def get_risk_params_from_config() -> Dict[str, Any]:
 
 def get_scanner_config() -> Dict[str, Any]:
     """Get scanner configuration."""
-    return {"universe_mode": "PROVEN_950", "rsi_threshold": 10, "max_signals": 50}
+    return {"universe_mode": "PROVEN_900", "rsi_threshold": 10, "max_signals": 50}
 
 # Kobe imports with graceful degradation
 # Create simple AlpacaBroker wrapper for dashboard compatibility
@@ -415,13 +415,13 @@ class ProDashboardData:
                         # Build expected format
                         data = {
                             "scan_time": data.get("scan_timestamp", datetime.now().isoformat()),
-                            "total_scanned": data.get("universe_size", 950),
+                            "total_scanned": data.get("universe_size", 900),
                             "signals_found": len(mapped_candidates),
                             "long_count": len(longs),
                             "short_count": len(shorts),
                             "top_10": mapped_candidates[:10],
                             "top_3": mapped_candidates[:3],
-                            "universe_mode": "PROVEN_950",
+                            "universe_mode": "PROVEN_900",
                         }
 
                     def transform_signal(signal):
@@ -620,7 +620,7 @@ class ProDashboardData:
                     return {
                         "total_signals": data.get("signals_found", data.get("total_found", 0)),
                         "total_scanned": data.get("total_scanned", data.get("universe_size", 0)),
-                        "universe_mode": data.get("universe_mode", "PROVEN_950"),
+                        "universe_mode": data.get("universe_mode", "PROVEN_900"),
                         "long_count": long_count,
                         "short_count": 0,  # Connors RSI-2 is LONG ONLY
                         "top_10": top_10,
@@ -632,7 +632,7 @@ class ProDashboardData:
                     }
         except Exception as e:
             print(f"Error loading scanner results: {e}")
-        return {"total_signals": 0, "total_scanned": 0, "long_count": 0, "short_count": 0, "universe_mode": "PROVEN_950", "top_10": [], "top_3": [], "scan_time": None, "scan_runtime_seconds": None, "scanner_freshness": "Unknown", "scanner_age_seconds": None}
+        return {"total_signals": 0, "total_scanned": 0, "long_count": 0, "short_count": 0, "universe_mode": "PROVEN_900", "top_10": [], "top_3": [], "scan_time": None, "scan_runtime_seconds": None, "scanner_freshness": "Unknown", "scanner_age_seconds": None}
 
     def _calculate_rr_ratio(self, entry: float, stop: float, target: float) -> float:
         """Calculate risk-reward ratio."""
@@ -822,15 +822,15 @@ class ProDashboardData:
         }
 
     def _get_universe_info(self) -> Dict:
-        """Get universe information from PROVEN_950 universe (data/polygon/daily)."""
+        """Get universe information from PROVEN_900 universe (data/polygon/daily)."""
         try:
-            # PROVEN_950 universe: data/polygon/daily/*.parquet
+            # PROVEN_900 universe: data/polygon/daily/*.parquet
             # Verified: 66.96% WR, 1.53 PF (SSOT v2.1.0)
             data_dir = Path("data/polygon/daily")
             if data_dir.exists():
                 parquet_count = len(list(data_dir.glob("*.parquet")))
                 return {
-                    "name": "PROVEN_950_UNIVERSE",
+                    "name": "PROVEN_900_UNIVERSE",
                     "count": parquet_count,
                     "expected": 832,
                     "verified_results": {
@@ -842,7 +842,7 @@ class ProDashboardData:
         except:
             pass
         return {
-            "name": "PROVEN_950_UNIVERSE",
+            "name": "PROVEN_900_UNIVERSE",
             "count": 832,
             "expected": 832,
         }
@@ -1500,13 +1500,13 @@ async def metrics_endpoint():
 @app.post("/api/scan")
 async def trigger_scan():
     """
-    Trigger BB_RSI_LSTM_UNIFIED scanner on PROVEN_950 universe.
+    Trigger BB_RSI_LSTM_UNIFIED scanner on PROVEN_900 universe.
 
     Signal Detection Logic (validated production strategy - SSOT v2.1.0):
     - Entry: Close < Lower BB(20,2) AND RSI(5) < 3 (EXTREME) AND Close > SMA(200)
     - Exit: RSI(5) > 50 OR 30-day timeout
     - Direction: LONG ONLY (mean reversion on extreme oversold)
-    - Universe: 950 liquid US equities (PROVEN_950 from data/polygon/daily/*.parquet)
+    - Universe: 900 liquid US equities (PROVEN_900 from data/polygon/daily/*.parquet)
     - Validated: Win Rate 66.96%, PF 1.53, 1,501 trades (SINGLE_SOURCE_OF_TRUTH.json v2.1.0)
 
     Ranking: Deterministic by (confidence DESC, rr_ratio DESC, symbol ASC)
@@ -1518,10 +1518,10 @@ async def trigger_scan():
         scan_start = datetime.now(CT)
         start_monotonic = time_module.monotonic()
 
-        # Get universe symbols from PROVEN_950 (data/polygon/daily/*.parquet)
+        # Get universe symbols from PROVEN_900 (data/polygon/daily/*.parquet)
         try:
             from src.config.universe_config import get_universe_symbols, UniverseMode
-            symbols = get_universe_symbols(UniverseMode.PROVEN_950)
+            symbols = get_universe_symbols(UniverseMode.PROVEN_900)
         except Exception:
             # Fallback to liquid stocks if universe loading fails
             symbols = ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA", "JPM", "V", "MA",
@@ -1715,7 +1715,7 @@ async def trigger_scan():
         scan_results = {
             "scan_time": scan_start.isoformat(),
             "scan_runtime_seconds": elapsed_seconds,
-            "universe_mode": "PROVEN_950",
+            "universe_mode": "PROVEN_900",
             "universe_size": len(symbols),
             "total_scanned": len(scan_symbols),
             "total_found": len(signals),

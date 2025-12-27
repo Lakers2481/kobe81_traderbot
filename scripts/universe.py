@@ -536,7 +536,7 @@ Examples:
                 print(f"  ... and {len(results['no_data_symbols']) - 20} more")
 
         # Summary
-        target = 950
+        target = 900
         if results["valid"] >= target:
             print(f"\n[PASS] >= {target} symbols have sufficient history")
         else:

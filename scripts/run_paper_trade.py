@@ -19,8 +19,8 @@ from config.settings_loader import is_earnings_filter_enabled
 from core.earnings_filter import filter_signals_by_earnings
 from data.universe.loader import load_universe
 from data.providers.polygon_eod import fetch_daily_bars_polygon
-from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
-from strategies.ibs.strategy import IBSStrategy
+from strategies.donchian.strategy import DonchianBreakoutStrategy
+from strategies.ict.turtle_soup import TurtleSoupStrategy
 from execution.broker_alpaca import get_best_ask, construct_decision, place_ioc_limit
 from risk.policy_gate import PolicyGate, RiskLimits
 from oms.order_state import OrderStatus
@@ -36,7 +36,7 @@ def main():
     ap.add_argument('--start', type=str, required=True)
     ap.add_argument('--end', type=str, required=True)
     ap.add_argument('--cap', type=int, default=50)
-    ap.add_argument('--dotenv', type=str, default='C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env')
+    ap.add_argument('--dotenv', type=str, default='./.env')
     ap.add_argument('--cache', type=str, default='data/cache')
     ap.add_argument('--kill-switch', type=str, default='state/KILL_SWITCH')
     args = ap.parse_args()
@@ -53,9 +53,9 @@ def main():
     symbols = load_universe(Path(args.universe), cap=args.cap)
     cache_dir = Path(args.cache)
 
-    # Strategies
-    rsi2 = ConnorsRSI2Strategy()
-    ibs = IBSStrategy()
+    # Strategies (Donchian + ICT Turtle Soup)
+    don = DonchianBreakoutStrategy()
+    ict = TurtleSoupStrategy()
 
     # Risk/Policy
     policy = PolicyGate(RiskLimits(max_notional_per_order=75.0, max_daily_notional=1000.0, min_price=3.0, allow_shorts=False))
@@ -73,16 +73,20 @@ def main():
         return
     data = pd.concat(frames, ignore_index=True).sort_values(['symbol','timestamp'])
 
-    # Generate AND signals (same-bar concurrence)
-    a = rsi2.scan_signals_over_time(data)
-    b = ibs.scan_signals_over_time(data)
-    sigs = pd.merge(a, b, on=['timestamp','symbol','side'], suffixes=('_rsi2','_ibs')) if not a.empty and not b.empty else pd.DataFrame()
-    if sigs.empty:
-        print('No AND signals today.')
+    # Generate Donchian and ICT signals; select only current bar
+    a = don.scan_signals_over_time(data)
+    b = ict.scan_signals_over_time(data)
+    if a.empty and b.empty:
+        print('No signals today (Donchian/ICT).')
         return
-    # Reduce to last date only (today's bar) to avoid replaying history
-    last_ts = sigs['timestamp'].max()
-    todays = sigs[sigs['timestamp'] == last_ts].copy()
+    # Reduce to last date only to avoid replaying history
+    last_ts = max([x['timestamp'].max() for x in [a, b] if not x.empty])
+    cols = ['timestamp','symbol','side','entry_price','stop_loss','take_profit','reason']
+    a = a[a['timestamp'] == last_ts][cols].copy() if not a.empty else pd.DataFrame(columns=cols)
+    a['strategy'] = 'DONCHIAN'
+    b = b[b['timestamp'] == last_ts][cols].copy() if not b.empty else pd.DataFrame(columns=cols)
+    b['strategy'] = 'TURTLE_SOUP'
+    todays = pd.concat([a, b], ignore_index=True)
     # Apply earnings filter if enabled
     if not todays.empty and is_earnings_filter_enabled():
         todays = pd.DataFrame(filter_signals_by_earnings(todays.to_dict('records')))
