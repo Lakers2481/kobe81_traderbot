@@ -17,22 +17,23 @@ from .monte_carlo_var import (
     VaRResult,
     StressScenario,
     StressTestResult,
-    create_var_calculator
 )
 
 from .kelly_position_sizer import (
     KellyPositionSizer,
-    KellyResult,
+    KellyPositionResult,
     optimal_kelly,
     fractional_kelly,
     volatility_adjusted_kelly,
-    create_kelly_sizer
+    quick_kelly_position,
 )
 
 from .correlation_limits import (
     EnhancedCorrelationLimits,
     CorrelationCheckResult,
-    create_correlation_checker
+    PortfolioDiversificationMetrics,
+    RiskLevel,
+    check_correlation_limits,
 )
 
 __all__ = [
@@ -41,18 +42,19 @@ __all__ = [
     'VaRResult',
     'StressScenario',
     'StressTestResult',
-    'create_var_calculator',
 
     # Kelly Position Sizer
     'KellyPositionSizer',
-    'KellyResult',
+    'KellyPositionResult',
     'optimal_kelly',
     'fractional_kelly',
     'volatility_adjusted_kelly',
-    'create_kelly_sizer',
+    'quick_kelly_position',
 
     # Correlation Limits
     'EnhancedCorrelationLimits',
     'CorrelationCheckResult',
-    'create_correlation_checker',
+    'PortfolioDiversificationMetrics',
+    'RiskLevel',
+    'check_correlation_limits',
 ]

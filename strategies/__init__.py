@@ -1,9 +1,18 @@
-from .connors_rsi2.strategy import ConnorsRSI2Strategy, ConnorsRSI2Params
-from .ibs.strategy import IBSStrategy, IBSParams
+"""
+Kobe Trading Strategies
+=======================
+
+Available strategies:
+- DonchianBreakoutStrategy: Donchian channel breakout
+- TurtleSoupStrategy: ICT Turtle Soup reversal pattern
+"""
+
+from .donchian.strategy import DonchianBreakoutStrategy, DonchianParams
+from .ict.turtle_soup import TurtleSoupStrategy, TurtleSoupParams
 
 __all__ = [
-    "ConnorsRSI2Strategy",
-    "ConnorsRSI2Params",
-    "IBSStrategy",
-    "IBSParams",
+    "DonchianBreakoutStrategy",
+    "DonchianParams",
+    "TurtleSoupStrategy",
+    "TurtleSoupParams",
 ]
