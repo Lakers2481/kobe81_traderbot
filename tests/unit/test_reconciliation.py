@@ -12,6 +12,7 @@ from execution.reconcile import (
     ReconciliationReport,
     Discrepancy,
     DiscrepancyType,
+    DiscrepancySeverity,
     BrokerPosition,
     BrokerOrder,
     OMSPosition,
@@ -28,11 +29,11 @@ class TestBrokerPosition:
         pos = BrokerPosition(
             symbol="AAPL",
             qty=100,
-            side="long",
-            avg_entry_price=150.0,
+            avg_price=150.0,
             current_price=155.0,
             market_value=15500.0,
             unrealized_pnl=500.0,
+            side="long",
         )
         assert pos.symbol == "AAPL"
         assert pos.qty == 100
@@ -46,8 +47,8 @@ class TestOMSPosition:
         pos = OMSPosition(
             symbol="AAPL",
             qty=100,
+            avg_price=150.0,
             side="long",
-            avg_entry_price=150.0,
         )
         assert pos.symbol == "AAPL"
         assert pos.qty == 100
@@ -59,26 +60,28 @@ class TestDiscrepancy:
     def test_quantity_mismatch(self):
         disc = Discrepancy(
             discrepancy_type=DiscrepancyType.QUANTITY_MISMATCH,
+            severity=DiscrepancySeverity.CRITICAL,
             symbol="AAPL",
             broker_value=100,
-            local_value=90,
-            message="Quantity mismatch: broker=100, local=90",
-            severity="high",
+            oms_value=90,
+            description="Quantity mismatch: broker=100, OMS=90",
+            suggested_action="Reconcile position quantities",
         )
         assert disc.discrepancy_type == DiscrepancyType.QUANTITY_MISMATCH
-        assert disc.severity == "high"
+        assert disc.severity == DiscrepancySeverity.CRITICAL
 
     def test_to_dict(self):
         disc = Discrepancy(
-            discrepancy_type=DiscrepancyType.ORPHAN_BROKER,
+            discrepancy_type=DiscrepancyType.MISSING_IN_OMS,
+            severity=DiscrepancySeverity.CRITICAL,
             symbol="MSFT",
             broker_value=50,
-            local_value=None,
-            message="Position exists at broker but not locally",
-            severity="high",
+            oms_value=None,
+            description="Position exists at broker but not in OMS",
+            suggested_action="Investigate order origin",
         )
         d = disc.to_dict()
-        assert d["type"] == "ORPHAN_BROKER"
+        assert d["type"] == "MISSING_IN_OMS"
         assert d["symbol"] == "MSFT"
 
 
@@ -93,10 +96,18 @@ class TestReconciler:
         reconciler = Reconciler()
 
         broker_positions = [
-            BrokerPosition("AAPL", 100, "long", 150.0, 155.0, 15500.0, 500.0),
+            BrokerPosition(
+                symbol="AAPL",
+                qty=100,
+                avg_price=150.0,
+                current_price=155.0,
+                market_value=15500.0,
+                unrealized_pnl=500.0,
+                side="long",
+            ),
         ]
         oms_positions = [
-            OMSPosition("AAPL", 90, "long", 150.0),  # 10 share difference
+            OMSPosition(symbol="AAPL", qty=90, avg_price=150.0, side="long"),
         ]
 
         discrepancies = reconciler.detect_position_discrepancies(
@@ -110,57 +121,91 @@ class TestReconciler:
         assert len(qty_mismatches) == 1
         assert qty_mismatches[0].symbol == "AAPL"
 
-    def test_detect_orphan_broker(self):
+    def test_detect_missing_in_oms(self):
+        """Position in broker but not in OMS (formerly ORPHAN_BROKER)."""
         reconciler = Reconciler()
 
         broker_positions = [
-            BrokerPosition("AAPL", 100, "long", 150.0, 155.0, 15500.0, 500.0),
-            BrokerPosition("MSFT", 50, "long", 300.0, 310.0, 15500.0, 500.0),
+            BrokerPosition(
+                symbol="AAPL",
+                qty=100,
+                avg_price=150.0,
+                current_price=155.0,
+                market_value=15500.0,
+                unrealized_pnl=500.0,
+                side="long",
+            ),
+            BrokerPosition(
+                symbol="MSFT",
+                qty=50,
+                avg_price=300.0,
+                current_price=310.0,
+                market_value=15500.0,
+                unrealized_pnl=500.0,
+                side="long",
+            ),
         ]
         oms_positions = [
-            OMSPosition("AAPL", 100, "long", 150.0),
-            # MSFT missing locally
+            OMSPosition(symbol="AAPL", qty=100, avg_price=150.0, side="long"),
+            # MSFT missing in OMS
         ]
 
         discrepancies = reconciler.detect_position_discrepancies(
             broker_positions, oms_positions
         )
 
-        orphans = [
-            d for d in discrepancies if d.discrepancy_type == DiscrepancyType.ORPHAN_BROKER
+        missing_in_oms = [
+            d for d in discrepancies if d.discrepancy_type == DiscrepancyType.MISSING_IN_OMS
         ]
-        assert len(orphans) == 1
-        assert orphans[0].symbol == "MSFT"
+        assert len(missing_in_oms) == 1
+        assert missing_in_oms[0].symbol == "MSFT"
 
-    def test_detect_orphan_local(self):
+    def test_detect_missing_in_broker(self):
+        """Position in OMS but not in broker (formerly ORPHAN_OMS)."""
         reconciler = Reconciler()
 
         broker_positions = [
-            BrokerPosition("AAPL", 100, "long", 150.0, 155.0, 15500.0, 500.0),
+            BrokerPosition(
+                symbol="AAPL",
+                qty=100,
+                avg_price=150.0,
+                current_price=155.0,
+                market_value=15500.0,
+                unrealized_pnl=500.0,
+                side="long",
+            ),
         ]
         oms_positions = [
-            OMSPosition("AAPL", 100, "long", 150.0),
-            OMSPosition("GOOG", 25, "long", 100.0),  # Not at broker
+            OMSPosition(symbol="AAPL", qty=100, avg_price=150.0, side="long"),
+            OMSPosition(symbol="GOOG", qty=25, avg_price=100.0, side="long"),
         ]
 
         discrepancies = reconciler.detect_position_discrepancies(
             broker_positions, oms_positions
         )
 
-        orphans = [
-            d for d in discrepancies if d.discrepancy_type == DiscrepancyType.ORPHAN_OMS
+        missing_in_broker = [
+            d for d in discrepancies if d.discrepancy_type == DiscrepancyType.MISSING_IN_BROKER
         ]
-        assert len(orphans) == 1
-        assert orphans[0].symbol == "GOOG"
+        assert len(missing_in_broker) == 1
+        assert missing_in_broker[0].symbol == "GOOG"
 
     def test_detect_price_mismatch(self):
         reconciler = Reconciler(price_tolerance_pct=1.0)  # 1% tolerance
 
         broker_positions = [
-            BrokerPosition("AAPL", 100, "long", 150.0, 155.0, 15500.0, 500.0),
+            BrokerPosition(
+                symbol="AAPL",
+                qty=100,
+                avg_price=150.0,
+                current_price=155.0,
+                market_value=15500.0,
+                unrealized_pnl=500.0,
+                side="long",
+            ),
         ]
         oms_positions = [
-            OMSPosition("AAPL", 100, "long", 145.0),  # 3.3% difference
+            OMSPosition(symbol="AAPL", qty=100, avg_price=145.0, side="long"),
         ]
 
         discrepancies = reconciler.detect_position_discrepancies(
@@ -176,10 +221,18 @@ class TestReconciler:
         reconciler = Reconciler()
 
         broker_positions = [
-            BrokerPosition("AAPL", 100, "long", 150.0, 155.0, 15500.0, 500.0),
+            BrokerPosition(
+                symbol="AAPL",
+                qty=100,
+                avg_price=150.0,
+                current_price=155.0,
+                market_value=15500.0,
+                unrealized_pnl=500.0,
+                side="long",
+            ),
         ]
         oms_positions = [
-            OMSPosition("AAPL", 100, "long", 150.0),
+            OMSPosition(symbol="AAPL", qty=100, avg_price=150.0, side="long"),
         ]
 
         discrepancies = reconciler.detect_position_discrepancies(
@@ -193,28 +246,21 @@ class TestReconciler:
 
         broker_orders = [
             BrokerOrder(
-                order_id="order1",
+                order_id="broker-order1",
+                client_order_id="order1",
                 symbol="AAPL",
                 side="buy",
                 qty=100,
                 filled_qty=75,  # Partial fill
-                status="partially_filled",
-                order_type="limit",
                 limit_price=150.0,
-                submitted_at=datetime.now(ET),
-            ),
-        ]
-        oms_orders = [
-            OMSOrder(
-                order_id="order1",
-                symbol="AAPL",
-                side="buy",
-                qty=100,
-                status="submitted",
+                avg_fill_price=149.50,
+                status="partially_filled",
+                created_at=datetime.now(ET),
+                filled_at=None,
             ),
         ]
 
-        discrepancies = reconciler.detect_order_discrepancies(broker_orders, oms_orders)
+        discrepancies = reconciler.detect_partial_fills(broker_orders)
 
         partial_fills = [
             d for d in discrepancies if d.discrepancy_type == DiscrepancyType.PARTIAL_FILL
@@ -227,49 +273,56 @@ class TestReconciliationReport:
 
     def test_report_creation(self):
         report = ReconciliationReport(
-            timestamp=datetime.now(ET),
+            run_id="reconcile_test_001",
+            timestamp=datetime.now(ET).isoformat(),
             broker_positions=1,
-            local_positions=1,
-            broker_orders=5,
-            local_orders=5,
+            oms_positions=1,
+            broker_orders_checked=5,
+            oms_orders_checked=5,
             discrepancies=[],
-            status="CLEAN",
+            is_clean=True,
+            summary={"total_discrepancies": 0, "critical": 0, "warning": 0, "info": 0},
         )
-        assert report.status == "CLEAN"
+        assert report.is_clean is True
         assert len(report.discrepancies) == 0
 
     def test_report_with_discrepancies(self):
         disc = Discrepancy(
             discrepancy_type=DiscrepancyType.QUANTITY_MISMATCH,
+            severity=DiscrepancySeverity.CRITICAL,
             symbol="AAPL",
             broker_value=100,
-            local_value=90,
-            message="Mismatch",
-            severity="high",
+            oms_value=90,
+            description="Mismatch",
+            suggested_action="Reconcile",
         )
         report = ReconciliationReport(
-            timestamp=datetime.now(ET),
+            run_id="reconcile_test_002",
+            timestamp=datetime.now(ET).isoformat(),
             broker_positions=1,
-            local_positions=1,
-            broker_orders=5,
-            local_orders=5,
+            oms_positions=1,
+            broker_orders_checked=5,
+            oms_orders_checked=5,
             discrepancies=[disc],
-            status="DISCREPANCIES_FOUND",
+            is_clean=False,
+            summary={"total_discrepancies": 1, "critical": 1, "warning": 0, "info": 0},
         )
-        assert report.status == "DISCREPANCIES_FOUND"
+        assert report.is_clean is False
         assert len(report.discrepancies) == 1
 
     def test_report_to_dict(self):
         report = ReconciliationReport(
-            timestamp=datetime.now(ET),
+            run_id="reconcile_test_003",
+            timestamp=datetime.now(ET).isoformat(),
             broker_positions=2,
-            local_positions=2,
-            broker_orders=10,
-            local_orders=10,
+            oms_positions=2,
+            broker_orders_checked=10,
+            oms_orders_checked=10,
             discrepancies=[],
-            status="CLEAN",
+            is_clean=True,
+            summary={"total_discrepancies": 0, "critical": 0, "warning": 0, "info": 0},
         )
         d = report.to_dict()
-        assert d["status"] == "CLEAN"
+        assert d["is_clean"] is True
         assert d["broker_positions"] == 2
         assert "timestamp" in d
