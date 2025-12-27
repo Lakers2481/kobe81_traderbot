@@ -6,6 +6,8 @@
 - Decisioning: ML meta-model + sentiment blending; confidence-gated TOTD
 - Options: Synthetic Black-Scholes pricing with delta-targeted strikes
 
+> **Full System Architecture:** See [ARCHITECTURE.md](ARCHITECTURE.md) for complete ASCII diagram of all 14 layers and components.
+
 ## Today's Artifacts
 - Morning Report: pending (morning_report_20251227.html)
 - Morning Check: exists
