@@ -49,13 +49,42 @@
 - Fixed `test_options.py`: Changed OTM put assertion from `< 100` to `<= 100` to handle ATM edge case correctly
 - Full test suite: **331 passed, 0 failed** ✓
 
-**Test Suite Status:** All green - ready for production
+### 2025-12-27 00:30 CST - Claude Opus 4.5
+**Completed:** Production readiness improvements
+
+**What was done:**
+- Created `pytest.ini` - Proper test configuration with warning filters for third-party libraries
+- Fixed `scripts/promote_models.py` - Added missing `datetime` import (bug fix)
+- Created `scripts/run_alpha_screener.py` - CLI for walk-forward alpha screening with leaderboard
+- Created `risk/liquidity_gate.py` - ADV and spread checks for live execution:
+  - Min ADV threshold (default $100k)
+  - Max spread threshold (default 0.50%)
+  - Order impact limits (max % of ADV)
+  - LiquidityCheck result with detailed metrics
+- Created `tests/test_liquidity_gate.py` - 17 tests for liquidity gate
+- Updated `risk/__init__.py` - Export new LiquidityGate
+
+**Files added:** 4 files
+**Tests:** **348 passed, 0 warnings** ✓
+
+**Test Suite Status:** All green with zero warnings - production ready
 
 ---
 
 ## Goals & Next Steps
+- ~~Enforce liquidity/spread gates for live execution~~ ✓ (risk/liquidity_gate.py)
+- ~~Alpha screener CLI~~ ✓ (scripts/run_alpha_screener.py)
+- Integrate LiquidityGate into execution flow (broker_alpaca.py)
 - Maintain confidence calibration; monitor Brier/WR/PF/Sharpe on holdout
-- Enforce liquidity/spread gates for live execution; expand ADV/spread checks
 - Weekly retrain/promote with promotion gates; rollback on drift/perf drop
 - Extend features (breadth, dispersion) and add SHAP insights to morning report
+
+## System Readiness Checklist
+- [x] Data Lake: Frozen, reproducible, SHA256 manifests
+- [x] Research: 25 features, 18 alphas, walk-forward screener
+- [x] Evidence Gate: OOS Sharpe/PF/trades requirements
+- [x] Risk: PolicyGate ($75/order, $1k/day) + LiquidityGate (ADV, spread)
+- [x] Tests: 348 passing, 0 warnings
+- [ ] Live integration: Wire LiquidityGate to broker
+- [ ] Monitoring: Brier score, drift detection
 
