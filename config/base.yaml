@@ -115,3 +115,63 @@ sizing:
   enabled: false  # Set true to use ATR-based position sizing
   risk_per_trade_pct: 0.005  # 0.5% of equity per trade
   atr_multiple_for_stop: 2.0  # Stop = entry - ATR(14) × multiple
+
+# Multi-Asset Scheduler (Top-1% Gaps)
+scheduler:
+  equities:
+    enabled: true
+    scan_times: "09:35,10:30,15:55"  # ET times
+  crypto:
+    enabled: false  # Disabled by default
+    cadence_hours: 4  # Scan every 4 hours
+    universe_file: "data/universe/crypto_top10.csv"
+  options:
+    enabled: false  # Disabled by default
+
+# Portfolio Risk Gate (Top-1% Gaps)
+portfolio_risk:
+  enabled: true
+  limits:
+    max_gross_exposure_pct: 100  # 100% of NAV
+    max_single_name_pct: 10     # 10% per position
+    max_sector_pct: 30          # 30% per sector
+    max_correlated_basket_pct: 40  # 40% in correlated positions
+    max_simultaneous_positions: 20
+    correlation_threshold: 0.70
+    correlation_window_days: 20
+  sector_map_file: "data/sector_map.csv"
+
+# Execution Guard (Top-1% Gaps)
+execution_guard:
+  enabled: true
+  max_quote_age_seconds: 5.0
+  max_spread_pct: 0.50  # 0.50%
+  stand_down_on_uncertainty: true  # CRITICAL: Reject on ANY doubt
+
+# Backtest Realism (Top-1% Gaps)
+backtest_realism:
+  slippage:
+    type: "fixed_bps"  # fixed_bps, atr_fraction, spread_percentile, volume_impact
+    bps: 5.0           # 5 bps default
+    atr_fraction: 0.10
+  costs:
+    enabled: true      # Enable realistic costs by default
+    include_sec_fee: true
+    include_finra_taf: true
+  fill_model:
+    type: "limit_order"  # always, limit_order, probabilistic, partial
+    use_open_for_gap: true
+
+# Live Trading Safety (Top-1% Gaps)
+live_trading:
+  require_env_approval: true   # Requires LIVE_TRADING_APPROVED=YES
+  require_cli_flag: true       # Requires --approve-live flag
+  double_confirmation: true    # Both required for live trading
+
+# Supervisor Settings (Top-1% Gaps)
+supervisor:
+  enabled: true
+  check_interval_seconds: 60
+  max_error_count: 5
+  error_window_minutes: 15
+  max_restart_attempts: 3

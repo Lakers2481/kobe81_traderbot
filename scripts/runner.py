@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """
-Kobe 24/7 Runner - Scheduled trading execution.
+Kobe 24/7 Runner - Multi-Asset Scheduled Trading Execution.
 
 Runs paper or live trading at configurable times throughout the trading day.
-Includes position reconciliation on startup and periodic health checks.
+Supports equities (NYSE hours), crypto (24/7), and options (event-driven).
 
 Features:
+- Multi-asset scheduling (equities, crypto, options)
 - Single-instance enforcement via file locking
 - Heartbeat tracking for process monitoring
 - Graceful shutdown on SIGTERM/SIGINT
 - Kill switch integration
+- Live trading safety (requires LIVE_TRADING_APPROVED=YES + --approve-live)
+- Decision packet artifact generation
 """
 from __future__ import annotations
 
@@ -36,6 +39,20 @@ from market_calendar import is_market_closed, get_market_hours
 from core.alerts import send_telegram
 from core.kill_switch import is_kill_switch_active, get_kill_switch_info
 from config.env_loader import load_env
+
+# Multi-asset clock imports
+try:
+    from core.clock import MarketClock, AssetType, SessionType
+    MULTI_ASSET_AVAILABLE = True
+except ImportError:
+    MULTI_ASSET_AVAILABLE = False
+
+# Decision packet imports
+try:
+    from explainability.decision_packet import build_decision_packet
+    DECISION_PACKET_AVAILABLE = True
+except ImportError:
+    DECISION_PACKET_AVAILABLE = False
 
 # Global shutdown flag
 _shutdown_requested = False
@@ -186,6 +203,24 @@ def reconcile_positions(dotenv: Path) -> dict:
     return result
 
 
+def check_live_trading_approved(require_flag: bool = True) -> tuple[bool, str]:
+    """
+    Check if live trading is approved.
+
+    Returns (approved, reason).
+
+    CRITICAL SAFETY: Live trading requires BOTH:
+    1. LIVE_TRADING_APPROVED=YES environment variable
+    2. --approve-live CLI flag (if require_flag=True)
+    """
+    env_approved = os.getenv('LIVE_TRADING_APPROVED', '').upper() == 'YES'
+
+    if not env_approved:
+        return False, "LIVE_TRADING_APPROVED environment variable not set to YES"
+
+    return True, "Live trading approved"
+
+
 def run_submit(mode: str, universe: Path, cap: int, start_days: int, dotenv: Path) -> int:
     # Check kill switch before submission
     if is_kill_switch_active():
@@ -214,7 +249,7 @@ def run_submit(mode: str, universe: Path, cap: int, start_days: int, dotenv: Pat
 def main():
     global _lock, _heartbeat, _shutdown_requested
 
-    ap = argparse.ArgumentParser(description='Kobe 24/7 Runner (submit on schedule)')
+    ap = argparse.ArgumentParser(description='Kobe 24/7 Multi-Asset Runner')
     ap.add_argument('--mode', type=str, choices=['paper','live'], default='paper')
     ap.add_argument('--universe', type=str, required=True)
     ap.add_argument('--cap', type=int, default=50)
@@ -222,9 +257,32 @@ def main():
     ap.add_argument('--lookback-days', type=int, default=540)
     ap.add_argument('--dotenv', type=str, default='./.env')
     ap.add_argument('--once', action='store_true', help='Run once immediately and exit')
+    ap.add_argument('--dry-run', action='store_true', help='Dry run - produce artifacts without placing orders')
     ap.add_argument('--skip-reconcile', action='store_true', help='Skip position reconciliation on startup')
     ap.add_argument('--skip-lock', action='store_true', help='Skip single-instance lock (for debugging)')
+    # Live trading safety
+    ap.add_argument('--approve-live', action='store_true',
+                    help='Explicitly approve live trading (ALSO requires LIVE_TRADING_APPROVED=YES env)')
+    # Multi-asset options
+    ap.add_argument('--enable-crypto', action='store_true', help='Enable crypto scanning (24/7)')
+    ap.add_argument('--crypto-cadence', type=int, default=4, help='Crypto scan cadence in hours')
+    ap.add_argument('--crypto-universe', type=str, help='Crypto universe file (optional)')
+    ap.add_argument('--enable-options', action='store_true', help='Enable options event scanning')
     args = ap.parse_args()
+
+    # CRITICAL: Live trading safety check
+    if args.mode == 'live':
+        approved, reason = check_live_trading_approved()
+        if not approved:
+            jlog('live_trading_blocked', level='CRITICAL', reason=reason)
+            print(f"BLOCKED: {reason}")
+            sys.exit(1)
+        if not args.approve_live:
+            jlog('live_trading_blocked', level='CRITICAL', reason='--approve-live flag not provided')
+            print("BLOCKED: Live trading requires --approve-live flag")
+            print("This is a safety measure to prevent accidental live trading.")
+            sys.exit(1)
+        jlog('live_trading_approved', level='WARNING')
 
     dotenv = Path(args.dotenv)
     if dotenv.exists():
