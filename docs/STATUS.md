@@ -67,14 +67,42 @@
 **Files added:** 4 files
 **Tests:** **348 passed, 0 warnings** ✓
 
-**Test Suite Status:** All green with zero warnings - production ready
+### 2025-12-27 01:00 CST - Claude Opus 4.5
+**Completed:** Wire LiquidityGate to broker execution flow
+
+**What was done:**
+- Updated `execution/broker_alpaca.py`:
+  - Added `get_quote_with_sizes()` - fetch bid/ask with sizes
+  - Added `get_avg_volume()` - fetch 20-day average volume from Alpaca bars
+  - Added `check_liquidity_for_order()` - pre-trade liquidity validation
+  - Added `place_order_with_liquidity_check()` - order placement with liquidity gate
+  - Added `execute_signal()` - high-level signal execution with all safety checks
+  - Added `OrderResult` dataclass for rich execution results
+  - Added global toggle `enable_liquidity_gate()` / `is_liquidity_gate_enabled()`
+- Updated `execution/__init__.py` - Export all new functions
+- Created `tests/test_broker_liquidity_integration.py` - 17 integration tests
+
+**New execution flow:**
+```python
+from execution import execute_signal
+
+result = execute_signal("AAPL", "BUY", 100)
+if result.success:
+    print(f"Order placed: {result.order.broker_order_id}")
+elif result.blocked_by_liquidity:
+    print(f"Blocked: {result.liquidity_check.reason}")
+```
+
+**Tests:** **365 passed, 0 warnings** ✓
+
+**Test Suite Status:** All green - liquidity gate fully integrated
 
 ---
 
 ## Goals & Next Steps
 - ~~Enforce liquidity/spread gates for live execution~~ ✓ (risk/liquidity_gate.py)
 - ~~Alpha screener CLI~~ ✓ (scripts/run_alpha_screener.py)
-- Integrate LiquidityGate into execution flow (broker_alpaca.py)
+- ~~Integrate LiquidityGate into execution flow~~ ✓ (broker_alpaca.py)
 - Maintain confidence calibration; monitor Brier/WR/PF/Sharpe on holdout
 - Weekly retrain/promote with promotion gates; rollback on drift/perf drop
 - Extend features (breadth, dispersion) and add SHAP insights to morning report
@@ -84,7 +112,7 @@
 - [x] Research: 25 features, 18 alphas, walk-forward screener
 - [x] Evidence Gate: OOS Sharpe/PF/trades requirements
 - [x] Risk: PolicyGate ($75/order, $1k/day) + LiquidityGate (ADV, spread)
-- [x] Tests: 348 passing, 0 warnings
-- [ ] Live integration: Wire LiquidityGate to broker
+- [x] Tests: 365 passing, 0 warnings
+- [x] Live integration: LiquidityGate wired to broker
 - [ ] Monitoring: Brier score, drift detection
 
