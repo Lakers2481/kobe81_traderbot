@@ -17,6 +17,26 @@
 
 ## Work Log
 
+### 2025-12-27 03:00 CST - Claude Opus 4.5
+**Completed:** Drift detection and calibration monitoring
+
+**What was done:**
+- Created `monitor/drift_detector.py`:
+  - Rolling performance metrics (win rate, PF, Sharpe)
+  - Baseline comparison for degradation detection
+  - Consecutive loss tracking, drawdown monitoring
+  - Stand-down recommendations when drift exceeds thresholds
+- Created `monitor/calibration.py`:
+  - Brier score calculation
+  - Bucket-wise calibration analysis with grades (A-F)
+- Created `tests/test_drift_detection.py` - 28 tests
+- Wired `LiquidityGate` into broker execution flow:
+  - `execute_signal()` - high-level entry point with all safety checks
+  - `place_order_with_liquidity_check()` - order placement with gate
+- Created `tests/test_broker_liquidity_integration.py` - 17 tests
+
+**Tests:** **393 passed, 0 warnings**
+
 ### 2025-12-27 02:30 CST - Claude Opus 4.5
 **Completed:** Free Reproducible Backtesting System + CI Fixes
 
