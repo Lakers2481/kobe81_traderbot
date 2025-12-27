@@ -131,7 +131,7 @@
 - [x] Experiments: Reproducible tracking with result hashing
 - [x] Tests: 331 passing, CI green on Python 3.11 & 3.12
 - [x] Live integration: LiquidityGate wired to broker
-- [ ] Monitoring: Brier score, drift detection
+- [x] Monitoring: Brier score (monitor/calibration.py), drift detection (monitor/drift_detector.py)
 
 ## Test Summary
 ```
