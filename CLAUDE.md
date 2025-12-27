@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Python quantitative trading system: backtesting, paper trading,  live execution for mean-reversion strategies (Connors Donchian breakout, ICT Turtle Soup). Uses Polygon.io for EOD data, Alpaca for execution.
+Python quantitative trading system: backtesting, paper trading,  live execution for two strategies: Donchian Breakout (trend) and ICT Turtle Soup (mean reversion). Uses Polygon.io for EOD data, Alpaca for execution.
 
 ## Requirements
 
@@ -16,26 +16,26 @@ Python quantitative trading system: backtesting, paper trading,  live execution 
 
 ```bash
 # Preflight check (env keys, config pin, broker probe)
-python scripts/preflight.py --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+python scripts/preflight.py --dotenv ./.env
 
 # Build 900-stock universe (optionable, liquid, â‰¥10 years)
 python scripts/build_universe_polygon.py --cidates data/universe/optionable_liquid_cidates.csv --start 2015-01-01 --end 2024-12-31 --min-years 10 --cap 900 --concurrency 3
 
 # Prefetch EOD bars for faster WF
-python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31
+python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31
 
 # Walk-forward + HTML report
-python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63
+python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63
 python scripts/aggregate_wf_report.py --wfdir wf_outputs
 
 # Paper trade (micro budget)
-python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_final.csv --cap 50
+python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --cap 50
 
 # Live trade (micro budget; requires live ALPACA_BASE_URL)
-python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_final.csv --cap 10
+python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_900.csv --cap 10
 
 # 24/7 runner (paper)
-python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_final.csv --cap 50 --scan-times 09:35,10:30,15:55
+python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv --cap 50 --scan-times 09:35,10:30,15:55
 
 # Verify audit chain
 python scripts/verify_hash_chain.py
@@ -235,7 +235,7 @@ All scripts accept `--dotenv` to specify env file location.
 |-------|--------|---------|
 | Data | `data/providers/polygon_eod.py` | EOD OHLCV fetch with CSV caching |
 | Universe | `data/universe/loader.py` | Symbol list loading, dedup, cap |
-| Strategies | `strategies/connors_Donchian breakout/`, `strategies/ICT Turtle Soup/` | Signal generation with shifted indicators |
+| Strategies | `strategies/donchian/`, `strategies/ict/` | Signal generation with shifted indicators |
 | Backtest | `backtest/engine.py`, `backtest/walk_forward.py` | Simulation engine, WF splits |
 | Risk | `risk/policy_gate.py` | Per-order ($75)  daily ($1k) budgets |
 | Risk Advanced | `risk/advanced/` | VaR, Kelly sizing, correlation limits |
@@ -282,6 +282,100 @@ Output columns: `timestamp, symbol, side, entry_price, stop_loss, take_profit, r
 - `logs/events.jsonl` - structured logs
 - `state/hash_chain.jsonl` - audit chain
 
+### Frozen Data Lake (`data/lake/`)
+Immutable datasets for reproducible backtesting. Once frozen, data never changes.
+
+| Module | Purpose |
+|--------|---------|
+| `manifest.py` | Dataset manifests with SHA256 hashes, deterministic IDs |
+| `io.py` | LakeWriter/LakeReader for parquet/CSV with integrity verification |
+
+```bash
+# Freeze equities from Stooq (free, no API key)
+python scripts/freeze_equities_eod.py \
+    --universe data/universe/optionable_liquid_900.csv \
+    --start 2015-01-01 --end 2025-12-31 \
+    --provider stooq
+
+# Freeze crypto from Binance (free, no API key)
+python scripts/freeze_crypto_ohlcv.py \
+    --symbols BTCUSDT,ETHUSDT,SOLUSDT \
+    --start 2020-01-01 --end 2025-12-31 \
+    --timeframe 1h
+
+# Validate frozen dataset
+python scripts/validate_lake.py --dataset-id YOUR_DATASET_ID
+```
+
+### Free Data Providers (`data/providers/`)
+No API keys required for backtesting.
+
+| Provider | Asset Class | Source |
+|----------|-------------|--------|
+| `stooq_eod.py` | Equities (US) | Stooq.com (primary) |
+| `yfinance_eod.py` | Equities (US) | Yahoo Finance (fallback) |
+| `binance_klines.py` | Crypto (USDT pairs) | Binance public API |
+
+### Synthetic Options Engine (`options/`)
+Black-Scholes pricing for options backtesting without real options data.
+
+| Module | Purpose |
+|--------|---------|
+| `black_scholes.py` | BS pricing, Greeks, implied volatility |
+| `volatility.py` | Realized volatility (close-to-close, Parkinson, Yang-Zhang) |
+| `selection.py` | Delta-targeted strike selection via binary search |
+| `position_sizing.py` | 2% risk enforcement for long/short options |
+| `backtest.py` | Daily repricing with transaction costs |
+
+```bash
+# Run synthetic options backtest
+python scripts/run_backtest_options_synth.py \
+    --dataset-id YOUR_DATASET_ID \
+    --signals my_signals.csv \
+    --equity 100000 --risk-pct 0.02
+
+# Demo mode (synthetic data)
+python scripts/run_backtest_options_synth.py --demo
+```
+
+### Experiment Registry (`experiments/`)
+Track all experiments for reproducibility.
+
+| Module | Purpose |
+|--------|---------|
+| `registry.py` | Register experiments, record results, verify reproducibility |
+
+```python
+from experiments import register_experiment, record_experiment_results
+
+exp_id = register_experiment(
+    name="momentum_test",
+    dataset_id="stooq_1d_2015_2025_abc123",
+    strategy="momentum",
+    params={"lookback": 20},
+    seed=42,
+)
+# Run backtest...
+record_experiment_results(exp_id, results)
+```
+
+### Data Quality Gate (`preflight/data_quality.py`)
+Validates data before backtesting.
+
+- Coverage checks (min 5 years history)
+- Gap detection (max 5% missing)
+- OHLC violation detection
+- Staleness checks
+- KnowledgeBoundary integration for stand-down decisions
+
+```python
+from preflight import validate_data_quality
+
+report = validate_data_quality(dataset_id="stooq_1d_2015_2025_abc123")
+if report.passed:
+    print("Data quality OK")
+```
+
 ## Advisory Usage Policy
 - Claude acts as advisory-only reviewer; never in hot execution path
 - Cannot override PolicyGate budgets or kill switch
@@ -291,7 +385,7 @@ Output columns: `timestamp, symbol, side, entry_price, stop_loss, take_profit, r
 
 ### Core Trading
 - `backtest/engine.py`: Backtester with equity curve, ATR/time stops, FIFO P&L
-- `strategies/connors_Donchian breakout/strategy.py`: RSI(2)<=10 entry, SMA(200) filter, Wilder smoothing
+- `strategies/donchian/strategy.py`: Donchian breakout (channel breakout with ATR/time stops)
 - `strategies/ICT Turtle Soup/strategy.py`: ICT Turtle Soup<0.2 entry, SMA(200) filter
 - `execution/broker_alpaca.py`: `place_ioc_limit()`, `get_best_ask()`, idempotency
 - `risk/policy_gate.py`: `PolicyGate.check()` for budget enforcement
@@ -321,5 +415,9 @@ Output columns: `timestamp, symbol, side, entry_price, stop_loss, take_profit, r
 /logs           Recent events
 /broker         Broker connection
 ```
+
+
+
+
 
 

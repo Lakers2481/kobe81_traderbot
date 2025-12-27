@@ -1,0 +1,9 @@
+# TensorFlow disabled due to access violation crashes on this Windows system
+# Remove this file to re-enable TensorFlow after fixing the installation
+#
+# To fix TensorFlow:
+# 1. pip uninstall tensorflow
+# 2. pip install tensorflow==2.15.0 (or latest stable)
+# 3. Delete this file
+#
+# Created: 2025-12-26

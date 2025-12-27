@@ -27,12 +27,16 @@ try:
     from tensorflow.keras.callbacks import (
         EarlyStopping, ReduceLROnPlateau
     )
+    TF_AVAILABLE = True
     KERAS_AVAILABLE = True
-except ImportError:
+except Exception:
+    # Catch all exceptions - TensorFlow can crash with access violations on Windows
+    TF_AVAILABLE = False
     KERAS_AVAILABLE = False
     Model = Any
     keras = None
-    logging.warning("TensorFlow/Keras not installed. Model training disabled.")
+    tf = None
+    logging.warning("TensorFlow/Keras not available. Model training disabled.")
 
 from .config import LSTMConfig, DEFAULT_CONFIG
 

@@ -18,7 +18,7 @@ Usage:
         timeframe='1d',
         start_date='2015-01-01',
         end_date='2024-12-31',
-        universe_path='data/universe/optionable_liquid_final.csv',
+        universe_path='data/universe/optionable_liquid_900.csv',
         schema_version='v1.0',
     )
 """

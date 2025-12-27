@@ -19,7 +19,7 @@ Usage:
         df=ohlcv_data,
         provider='stooq',
         timeframe='1d',
-        universe_path='data/universe/optionable_liquid_final.csv',
+        universe_path='data/universe/optionable_liquid_900.csv',
     )
 
     # Read frozen data

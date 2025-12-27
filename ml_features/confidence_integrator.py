@@ -117,12 +117,14 @@ class ConfidenceIntegrator:
         """Lazy load LSTM model."""
         if self._lstm_model is None:
             try:
-                from ml_advanced.lstm_confidence.model import LSTMConfidenceModel, TF_AVAILABLE
-                if TF_AVAILABLE:
+                # Import from package __init__ which has safe exception handling
+                from ml_advanced.lstm_confidence import LSTMConfidenceModel, LSTM_AVAILABLE
+                if LSTM_AVAILABLE and LSTMConfidenceModel is not None:
                     self._lstm_model = LSTMConfidenceModel()
                 else:
                     logger.info("TensorFlow not available, LSTM disabled")
-            except ImportError:
+            except Exception:
+                # Catch all exceptions - TensorFlow can crash on Windows
                 logger.warning("LSTM model not available")
         return self._lstm_model
 
