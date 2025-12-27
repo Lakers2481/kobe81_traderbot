@@ -100,8 +100,8 @@ class ConnorsCRSIParams:
     atr_period: int = 14
     atr_stop_mult: float = 2.0
     time_stop_bars: int = 5
-    long_entry_crsi_max: float = 10.0
-    short_entry_crsi_min: float = 90.0
+    long_entry_crsi_max: float = 10.0  # Conservative MR threshold (classic Connors)
+    short_entry_crsi_min: float = 90.0  # Conservative MR threshold
     min_price: float = 5.0
 
 
@@ -118,7 +118,7 @@ class ConnorsCRSIStrategy:
             g['rsi3'] = rsi(g['close'], self.params.rsi_period, self.params.rsi_method)
             streak = compute_streak(g['close'])
             g['streak'] = streak
-            # Use RSI of the raw streak (signed) to reflect consecutive declines vs advances
+            # Classic Connors CRSI uses RSI of signed streak (not abs)
             g['streak_rsi2'] = rsi(streak, self.params.streak_rsi_period, self.params.rsi_method)
             roc3 = g['close'].pct_change(self.params.roc_lookback)
             g['pr_roc3_100'] = percent_rank(roc3, self.params.pr_window)

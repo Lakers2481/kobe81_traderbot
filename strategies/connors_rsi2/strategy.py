@@ -70,7 +70,7 @@ class ConnorsRSI2Params:
     atr_period: int = 14
     atr_stop_mult: float = 2.0
     time_stop_bars: int = 5
-    long_entry_rsi_max: float = 10.0
+    long_entry_rsi_max: float = 5.0  # Optimized from 10 for higher WR
     short_entry_rsi_min: float = 90.0
     long_exit_rsi_min: float = 70.0
     short_exit_rsi_max: float = 30.0

@@ -1,13 +1,36 @@
 from __future__ import annotations
 
+from contextlib import redirect_stdout, redirect_stderr
 from datetime import datetime, timedelta
+from io import StringIO
 from pathlib import Path
 from typing import Optional
 import re
+import warnings
+import logging
+import os
+import sys
 
 import pandas as pd
 
 from .polygon_eod import fetch_daily_bars_polygon
+
+# Suppress noisy yfinance warnings about "possibly delisted" for market-closed dates
+logging.getLogger('yfinance').setLevel(logging.ERROR)
+
+
+class _SuppressOutput:
+    """Context manager to suppress stdout/stderr (for noisy yfinance prints)."""
+    def __enter__(self):
+        self._stdout = sys.stdout
+        self._stderr = sys.stderr
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
+        return self
+
+    def __exit__(self, *args):
+        sys.stdout = self._stdout
+        sys.stderr = self._stderr
 
 
 def _to_date_str(d: str | pd.Timestamp) -> str:
@@ -63,7 +86,10 @@ def fetch_daily_bars_yfinance(symbol: str, start: str, end: str, cache_dir: Opti
 
     tkr = yf.Ticker(_yf_symbol(symbol))
     try:
-        df = tkr.history(start=start, end=end, interval='1d', auto_adjust=True)
+        # Suppress yfinance print output for market-closed dates (holidays/weekends)
+        with _SuppressOutput(), warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            df = tkr.history(start=start, end=end, interval='1d', auto_adjust=True)
     except Exception:
         return pd.DataFrame(columns=['timestamp','symbol','open','high','low','close','volume'])
     if df is None or df.empty:

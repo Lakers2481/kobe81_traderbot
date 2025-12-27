@@ -17,8 +17,9 @@ import pandas as pd
 import sys
 sys.path.insert(0, str(_P(__file__).resolve().parents[1]))
 
-from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
-from strategies.ibs.strategy import IBSStrategy
+from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy, ConnorsRSI2Params
+from strategies.ibs.strategy import IBSStrategy, IBSParams
+from strategies.connors_crsi.strategy import ConnorsCRSIStrategy, ConnorsCRSIParams
 from backtest.engine import Backtester, BacktestConfig
 from data.universe.loader import load_universe
 from data.providers.polygon_eod import fetch_daily_bars_polygon
@@ -45,6 +46,10 @@ def main():
     ap.add_argument('--ibs-min', type=float, default=0.1)
     ap.add_argument('--ibs-max', type=float, default=0.3)
     ap.add_argument('--ibs-step', type=float, default=0.05)
+    # CRSI grid
+    ap.add_argument('--crsi-min', type=int, default=10)
+    ap.add_argument('--crsi-max', type=int, default=30)
+    ap.add_argument('--crsi-step', type=int, default=5)
     args = ap.parse_args()
 
     dotenv = _P(args.dotenv)
@@ -65,8 +70,11 @@ def main():
     ibs_thresholds = [args.ibs_min + i * args.ibs_step
                       for i in range(int((args.ibs_max - args.ibs_min) / args.ibs_step) + 1)]
 
+    crsi_thresholds = list(range(args.crsi_min, args.crsi_max + 1, args.crsi_step))
+
     print(f"RSI-2 grid: entry={rsi_entries}, exit={rsi_exits}")
     print(f"IBS grid: {ibs_thresholds}")
+    print(f"CRSI grid: {crsi_thresholds}")
 
     # Run RSI-2 optimization
     rsi_results = []
@@ -74,10 +82,8 @@ def main():
         if entry >= exit_val:
             continue  # Skip invalid combinations
 
-        strategy = ConnorsRSI2Strategy(
-            entry_threshold=entry,
-            exit_threshold=exit_val,
-        )
+        params = ConnorsRSI2Params(long_entry_rsi_max=float(entry), long_exit_rsi_min=float(exit_val))
+        strategy = ConnorsRSI2Strategy(params)
 
         def get_signals(df: pd.DataFrame) -> pd.DataFrame:
             return strategy.scan_signals_over_time(df)
@@ -101,7 +107,8 @@ def main():
     # Run IBS optimization
     ibs_results = []
     for threshold in ibs_thresholds:
-        strategy = IBSStrategy(entry_threshold=threshold)
+        params = IBSParams(ibs_long_max=float(threshold))
+        strategy = IBSStrategy(params)
 
         def get_signals(df: pd.DataFrame) -> pd.DataFrame:
             return strategy.scan_signals_over_time(df)
@@ -121,16 +128,43 @@ def main():
         })
         print(f"IBS threshold={threshold:.2f}: WR={m.get('win_rate', 0):.2%}, PF={m.get('profit_factor', 0):.2f}")
 
+    # Run CRSI optimization
+    crsi_results = []
+    for threshold in crsi_thresholds:
+        params = ConnorsCRSIParams(long_entry_crsi_max=float(threshold))
+        strategy = ConnorsCRSIStrategy(params)
+
+        def get_signals(df: pd.DataFrame) -> pd.DataFrame:
+            return strategy.scan_signals_over_time(df)
+
+        cfg = BacktestConfig(initial_cash=100_000.0)
+        bt = Backtester(cfg, get_signals, fetcher)
+        result = bt.run(symbols)
+        m = result.get('metrics', {})
+
+        crsi_results.append({
+            'threshold': threshold,
+            'trades': m.get('trades', 0),
+            'win_rate': m.get('win_rate', 0.0),
+            'profit_factor': m.get('profit_factor', 0.0),
+            'sharpe': m.get('sharpe', 0.0),
+            'max_drawdown': m.get('max_drawdown', 0.0),
+        })
+        print(f"CRSI threshold={threshold}: WR={m.get('win_rate', 0):.2%}, PF={m.get('profit_factor', 0):.2f}, trades={m.get('trades', 0)}")
+
     # Save results
     rsi_df = pd.DataFrame(rsi_results)
     ibs_df = pd.DataFrame(ibs_results)
+    crsi_df = pd.DataFrame(crsi_results)
 
     rsi_df.to_csv(outdir / 'rsi2_heatmap.csv', index=False)
     ibs_df.to_csv(outdir / 'ibs_heatmap.csv', index=False)
+    crsi_df.to_csv(outdir / 'crsi_heatmap.csv', index=False)
 
     # Find best plateau (not single spike) - look for consistent results
-    best_rsi = _find_best_plateau(rsi_df, ['entry', 'exit'], 'sharpe')
-    best_ibs = _find_best_plateau(ibs_df, ['threshold'], 'sharpe')
+    best_rsi = _find_best_plateau(rsi_df, ['entry', 'exit'], 'profit_factor')
+    best_ibs = _find_best_plateau(ibs_df, ['threshold'], 'profit_factor')
+    best_crsi = _find_best_plateau(crsi_df, ['threshold'], 'profit_factor')
 
     best_params = {
         'rsi2': {
@@ -141,17 +175,22 @@ def main():
             'best': best_ibs,
             'all_results': ibs_results,
         },
+        'crsi': {
+            'best': best_crsi,
+            'all_results': crsi_results,
+        },
     }
 
     with open(outdir / 'best_params.json', 'w') as f:
         json.dump(best_params, f, indent=2, default=str)
 
     # Generate HTML report
-    _generate_html_report(rsi_df, ibs_df, best_rsi, best_ibs, outdir)
+    _generate_html_report(rsi_df, ibs_df, crsi_df, best_rsi, best_ibs, best_crsi, outdir)
 
     print(f"\nOptimization complete. Results in {outdir}/")
     print(f"Best RSI-2: {best_rsi}")
     print(f"Best IBS: {best_ibs}")
+    print(f"Best CRSI: {best_crsi}")
 
 
 def _find_best_plateau(df: pd.DataFrame, group_cols: List[str], metric: str) -> Dict[str, Any]:
@@ -176,8 +215,10 @@ def _find_best_plateau(df: pd.DataFrame, group_cols: List[str], metric: str) -> 
 def _generate_html_report(
     rsi_df: pd.DataFrame,
     ibs_df: pd.DataFrame,
+    crsi_df: pd.DataFrame,
     best_rsi: Dict,
     best_ibs: Dict,
+    best_crsi: Dict,
     outdir: _P,
 ) -> None:
     """Generate HTML optimization report."""
@@ -192,6 +233,9 @@ def _generate_html_report(
         '<h2>IBS Optimization</h2>',
         f'<p>Best parameters: {best_ibs}</p>',
         ibs_df.to_html(index=False, classes='ibs'),
+        '<h2>CRSI Optimization</h2>',
+        f'<p>Best parameters: {best_crsi}</p>',
+        crsi_df.to_html(index=False, classes='crsi'),
         '</body></html>',
     ]
     (outdir / 'optimization_report.html').write_text('\n'.join(html), encoding='utf-8')

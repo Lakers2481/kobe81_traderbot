@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
-from typing import Callable, Iterable, List, Dict, Any
+from typing import Callable, Iterable, List, Dict, Any, Optional
 
 import pandas as pd
 
@@ -61,6 +61,7 @@ def run_walk_forward(
     splits: List[WFSplit],
     outdir: str,
     initial_cash: float = 100_000.0,
+    config_factory: Optional[Callable[[], BacktestConfig]] = None,
 ) -> List[Dict[str, Any]]:
     """
     Run walk-forward backtests over splits.
@@ -77,7 +78,7 @@ def run_walk_forward(
         def fetcher(sym: str) -> pd.DataFrame:
             return fetch_bars_for_window(sym, start_s, end_s)
 
-        cfg = BacktestConfig(initial_cash=initial_cash)
+        cfg = config_factory() if config_factory is not None else BacktestConfig(initial_cash=initial_cash)
         bt = Backtester(cfg, get_signals, fetcher)
         res = bt.run(symbols, outdir=f"{outdir}/split_{i:02d}")
         m = res.get("metrics", {})

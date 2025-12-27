@@ -50,7 +50,7 @@ class IBSParams:
     atr_period: int = 14
     atr_stop_mult: float = 2.0
     time_stop_bars: int = 5
-    ibs_long_max: float = 0.2
+    ibs_long_max: float = 0.15  # Optimized from 0.2 for higher WR
     ibs_short_min: float = 0.8
     min_price: float = 5.0
 

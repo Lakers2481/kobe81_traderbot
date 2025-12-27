@@ -20,12 +20,13 @@ from data.universe.loader import load_universe
 from data.providers.polygon_eod import fetch_daily_bars_polygon
 from data.providers.multi_source import fetch_daily_bars_multi
 from backtest.walk_forward import generate_splits, run_walk_forward, summarize_results
-from backtest.engine import BacktestConfig
+from backtest.engine import BacktestConfig, CommissionConfig
 from config.env_loader import load_env
 from config.settings_loader import (
     get_regime_filter_config, is_regime_filter_enabled,
     get_selection_config, is_selection_enabled,
     is_earnings_filter_enabled,
+    get_setting, get_commission_config,
 )
 from core.regime_filter import filter_signals_by_regime, fetch_spy_bars
 from core.earnings_filter import filter_signals_by_earnings
@@ -91,6 +92,21 @@ def main():
         selection_cfg['min_price'] = float(args.min_price)
     use_regime = args.regime_on or regime_cfg.get('enabled', False)
     use_topn = args.topn_on or selection_cfg.get('enabled', False)
+
+    # BacktestConfig factory (inject slippage/commissions from config)
+    def make_bt_cfg() -> BacktestConfig:
+        slippage_pct = float(get_setting('backtest.slippage_pct', 0.0005) or 0.0005)
+        slippage_bps = float(slippage_pct * 10000.0)
+        c = get_commission_config()
+        commissions = CommissionConfig(
+            enabled=bool(c.get('enabled', False)),
+            per_share=float(c.get('per_share', 0.0)),
+            min_per_order=float(c.get('min_per_order', 0.0)),
+            bps=float(c.get('bps', 0.0)),
+            sec_fee_per_dollar=float(c.get('sec_fee_per_dollar', 0.0000278)),
+            taf_fee_per_share=float(c.get('taf_fee_per_share', 0.000166)),
+        )
+        return BacktestConfig(initial_cash=100_000.0, slippage_bps=slippage_bps, commissions=commissions)
 
     # Load SPY bars for regime filter if enabled
     spy_bars = pd.DataFrame()
@@ -296,19 +312,19 @@ def main():
         return sigs
 
     # Run WF per strategy
-    rsi2_results = run_walk_forward(symbols, fetcher, get_rsi2, splits, outdir=str(outdir / 'rsi2'))
-    ibs_results = run_walk_forward(symbols, fetcher, get_ibs, splits, outdir=str(outdir / 'ibs'))
-    and_results = run_walk_forward(symbols, fetcher, get_and, splits, outdir=str(outdir / 'and'))
-    crsi_results = run_walk_forward(symbols, fetcher, lambda df: apply_earnings_filter(apply_regime_filter(crsi.scan_signals_over_time(df))), splits, outdir=str(outdir / 'crsi'))
+    rsi2_results = run_walk_forward(symbols, fetcher, get_rsi2, splits, outdir=str(outdir / 'rsi2'), config_factory=make_bt_cfg)
+    ibs_results = run_walk_forward(symbols, fetcher, get_ibs, splits, outdir=str(outdir / 'ibs'), config_factory=make_bt_cfg)
+    and_results = run_walk_forward(symbols, fetcher, get_and, splits, outdir=str(outdir / 'and'), config_factory=make_bt_cfg)
+    crsi_results = run_walk_forward(symbols, fetcher, lambda df: apply_earnings_filter(apply_regime_filter(crsi.scan_signals_over_time(df))), splits, outdir=str(outdir / 'crsi'), config_factory=make_bt_cfg)
     don_results = []
     if args.donchian_on:
-        don_results = run_walk_forward(symbols, fetcher, get_donchian, splits, outdir=str(outdir / 'donchian'))
+        don_results = run_walk_forward(symbols, fetcher, get_donchian, splits, outdir=str(outdir / 'donchian'), config_factory=make_bt_cfg)
 
     # TOPN variant (only if selection enabled)
     topn_results = []
     if use_topn:
         print(f'\nRunning TOPN variant (top_n={selection_cfg.get("top_n", 10)})...')
-        topn_results = run_walk_forward(symbols, fetcher, get_topn, splits, outdir=str(outdir / 'topn'))
+        topn_results = run_walk_forward(symbols, fetcher, get_topn, splits, outdir=str(outdir / 'topn'), config_factory=make_bt_cfg)
 
     # Ensure subdirs exist for CSV outputs
     (outdir / 'rsi2').mkdir(parents=True, exist_ok=True)

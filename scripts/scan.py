@@ -6,7 +6,7 @@ Scans the universe for trading signals using RSI-2, IBS, CRSI (mean-reversion),
 and Donchian breakout (trend) strategies.
 
 Features:
-- Loads universe from data/universe/optionable_liquid_final.csv
+- Loads universe from data/universe/optionable_liquid_900.csv (900 symbols)
 - Fetches latest EOD data via Polygon
 - Runs both RSI-2 and IBS strategies (or filter by --strategy)
 - Outputs signals to stdout and logs/signals.jsonl

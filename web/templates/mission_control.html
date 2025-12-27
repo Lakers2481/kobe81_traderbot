@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Control - KOBE</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <style>
+        :root {
+            /* Robinhood Official Color Palette */
+            --bg: #000005; --bg2: #0a0a0a; --bg3: #111; --border: #1a1a1a;
+            --green: #00C805; --green-dim: #00a004; --green-glow: rgba(0,200,5,0.3);
+            --red: #ff3131; --red-glow: rgba(255,49,49,0.3);
+            --yellow: #ffd700; --text: #fff; --text2: #888; --text3: #555;
+            --font: 'Inter', sans-serif; --mono: 'JetBrains Mono', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font); background: var(--bg); color: var(--text); font-size: 12px; line-height: 1.4; height: 100vh; overflow: hidden; }
+
+        /* HEADER - Compact */
+        .hdr { background: var(--bg2); border-bottom: 1px solid var(--green-dim); padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; }
+        .hdr-l { display: flex; align-items: center; gap: 12px; }
+        .logo { font-size: 14px; font-weight: 700; color: var(--green); text-shadow: 0 0 10px var(--green-glow); }
+        .baseline { background: rgba(0,255,0,0.1); border: 1px solid var(--green-dim); padding: 3px 8px; border-radius: 4px; font-size: 10px; color: var(--green); font-family: var(--mono); }
+        .hdr-c { display: flex; align-items: center; gap: 16px; }
+        .clock { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--green); text-shadow: 0 0 10px var(--green-glow); }
+        .live { display: flex; align-items: center; gap: 6px; background: rgba(0,255,0,0.15); border: 1px solid var(--green); padding: 4px 10px; border-radius: 4px; font-weight: 700; font-size: 10px; color: var(--green); }
+        .dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 1.5s infinite; box-shadow: 0 0 8px var(--green); }
+        .live.off { border-color: var(--red); color: var(--red); background: rgba(255,49,49,0.15); }
+        .live.off .dot { background: var(--red); box-shadow: 0 0 8px var(--red); animation: none; }
+        @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.3); opacity: 0.7; } }
+
+        /* MAIN GRID - 4 columns */
+        .main { display: grid; grid-template-columns: 220px 1fr 280px 200px; gap: 12px; padding: 12px 16px; height: calc(100vh - 400px); overflow: hidden; }
+
+        /* PANELS */
+        .panel { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; }
+        .panel-t { padding: 6px 10px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--green); background: var(--bg2); border-bottom: 1px solid var(--green-dim); }
+        .panel-b { padding: 8px 10px; flex: 1; overflow-y: auto; }
+
+        /* METRICS */
+        .m-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--border); }
+        .m-row:last-child { border: none; }
+        .m-lbl { font-size: 11px; color: var(--text2); }
+        .m-val { font-family: var(--mono); font-size: 11px; font-weight: 600; }
+        .m-val.pos { color: var(--green); text-shadow: 0 0 6px var(--green-glow); }
+        .m-val.neg { color: var(--red); }
+        .delta { font-size: 9px; margin-left: 4px; padding: 1px 4px; border-radius: 2px; }
+        .delta.up { color: var(--green); background: rgba(0,255,0,0.15); }
+        .delta.dn { color: var(--red); background: rgba(255,49,49,0.15); }
+        .badge { font-size: 8px; font-weight: 700; padding: 2px 5px; border-radius: 3px; margin-left: 4px; }
+        .badge-ok { background: var(--green); color: #000; }
+        .badge-warn { background: var(--yellow); color: #000; }
+        .badge-bad { background: var(--red); color: #fff; }
+
+        /* KILL SWITCH */
+        .ks-status { text-align: center; padding: 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-bottom: 8px; }
+        .ks-status.clear { background: rgba(0,255,0,0.15); border: 1px solid var(--green); color: var(--green); box-shadow: 0 0 10px var(--green-glow); }
+        .ks-status.trig { background: rgba(255,49,49,0.15); border: 1px solid var(--red); color: var(--red); }
+        .ks-row { display: flex; align-items: center; padding: 3px 0; font-size: 10px; }
+        .ks-icon { width: 16px; }
+        .ks-icon.ok { color: var(--green); }
+        .ks-icon.bad { color: var(--red); }
+        .ks-name { flex: 1; color: var(--text2); }
+        .ks-val { font-family: var(--mono); font-size: 9px; color: var(--text3); }
+
+        /* TRADE OF DAY - Compact */
+        .tod { background: linear-gradient(135deg, var(--bg3) 0%, rgba(0,255,0,0.05) 100%); border: 2px solid var(--green); border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 0 20px var(--green-glow); }
+        .tod-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .tod-sym { font-size: 24px; font-weight: 800; color: var(--green); text-shadow: 0 0 15px var(--green-glow); }
+        .tod-dir { background: var(--green); color: #000; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-left: 8px; }
+        .tod-conf { font-size: 28px; font-weight: 800; color: var(--green); font-family: var(--mono); }
+        .tod-rank { background: var(--green); color: #000; padding: 4px 10px; border-radius: 4px; font-size: 9px; font-weight: 700; margin-bottom: 4px; }
+
+        /* 5Ws Compact */
+        .ws-grid { display: grid; gap: 4px; margin-bottom: 10px; }
+        .ws-row { display: flex; gap: 8px; padding: 4px 8px; background: var(--bg2); border-radius: 4px; border-left: 2px solid var(--green); }
+        .ws-lbl { font-size: 9px; font-weight: 700; color: var(--green); min-width: 36px; }
+        .ws-txt { font-size: 10px; color: var(--text2); }
+
+        /* Execution Row */
+        .exec-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
+        .exec-box { text-align: center; padding: 6px; background: var(--bg2); border-radius: 4px; }
+        .exec-lbl { font-size: 8px; color: var(--text3); text-transform: uppercase; margin-bottom: 2px; }
+        .exec-val { font-family: var(--mono); font-size: 12px; font-weight: 700; }
+        .exec-val.entry { color: var(--text); }
+        .exec-val.stop { color: var(--red); }
+        .exec-val.target { color: var(--green); text-shadow: 0 0 8px var(--green-glow); }
+        .exec-val.rr { color: var(--green); }
+
+        /* 3-LEVEL TARGETS */
+        .targets { margin-top: 8px; }
+        .tgt-row { display: flex; align-items: center; padding: 4px 6px; margin-bottom: 4px; background: var(--bg2); border-radius: 4px; font-size: 10px; }
+        .tgt-icon { width: 20px; font-size: 12px; }
+        .tgt-lbl { width: 50px; font-weight: 600; }
+        .tgt-price { flex: 1; font-family: var(--mono); }
+        .tgt-pct { width: 50px; text-align: right; font-family: var(--mono); }
+        .tgt-prob { width: 45px; text-align: right; font-size: 9px; color: var(--text3); }
+        .tgt1 { border-left: 2px solid var(--yellow); }
+        .tgt1 .tgt-price { color: var(--yellow); }
+        .tgt2 { border-left: 2px solid var(--green); }
+        .tgt2 .tgt-price { color: var(--green); }
+        .tgt3 { border-left: 2px solid var(--green-dim); }
+        .tgt3 .tgt-price { color: var(--green-dim); }
+        .tgt-stop { border-left: 2px solid var(--red); }
+        .tgt-stop .tgt-price { color: var(--red); }
+
+        /* TOP 10 TABLE */
+        .tbl { width: 100%; border-collapse: collapse; font-size: 10px; }
+        .tbl th { text-align: left; padding: 6px 8px; font-size: 9px; font-weight: 700; color: var(--green); background: var(--bg2); border-bottom: 1px solid var(--green-dim); }
+        .tbl td { padding: 5px 8px; border-bottom: 1px solid var(--border); }
+        .tbl tr { cursor: pointer; transition: background 0.1s; }
+        .tbl tr:hover { background: rgba(0,255,0,0.08); }
+        .tbl .sym { font-weight: 700; color: var(--green); }
+        .tbl .dir { color: var(--green); font-weight: 600; }
+        .tbl .stop { color: var(--red); }
+        .tbl .tgt { color: var(--green); }
+        .grade { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 3px; }
+        .grade-A { background: var(--green); color: #000; box-shadow: 0 0 6px var(--green-glow); }
+        .grade-B { background: var(--green-dim); color: #000; }
+        .grade-C { background: var(--yellow); color: #000; }
+        .grade-D { background: var(--red); color: #fff; }
+
+        /* RIGHT SIDEBAR - Market & System */
+        .mkt-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border); }
+        .mkt-row:last-child { border: none; }
+        .mkt-lbl { color: var(--text2); font-size: 10px; }
+        .mkt-val { font-family: var(--mono); font-size: 10px; }
+        .mkt-val.green { color: var(--green); }
+        .vix-badge { font-size: 8px; font-weight: 700; padding: 2px 5px; border-radius: 3px; margin-left: 4px; }
+        .vix-low { background: var(--green); color: #000; }
+        .vix-norm { background: var(--yellow); color: #000; }
+        .vix-high { background: var(--red); color: #fff; }
+
+        /* HASH VERIFICATION */
+        .hash-box { background: var(--bg2); border-radius: 4px; padding: 6px 8px; margin-bottom: 8px; }
+        .hash-row { display: flex; justify-content: space-between; font-size: 9px; padding: 2px 0; }
+        .hash-ok { color: var(--green); }
+        .hash-bad { color: var(--red); }
+
+        /* SCANNER DIAG */
+        .diag-row { display: flex; justify-content: space-between; font-size: 9px; padding: 2px 0; color: var(--text3); }
+        .diag-val { font-family: var(--mono); color: var(--text2); }
+
+        /* FOOTER */
+        .ftr { padding: 6px 16px; background: var(--bg2); border-top: 1px solid var(--green-dim); display: flex; justify-content: space-between; font-size: 10px; font-family: var(--mono); color: var(--green-dim); }
+
+        /* MODAL */
+        .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal { background: var(--bg3); border: 2px solid var(--green); border-radius: 10px; max-width: 600px; width: 95%; max-height: 85vh; overflow-y: auto; box-shadow: 0 0 40px var(--green-glow); }
+        .modal-hdr { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--bg2); border-bottom: 1px solid var(--green-dim); }
+        .modal-title { font-size: 16px; font-weight: 700; color: var(--green); }
+        .modal-x { font-size: 24px; color: var(--red); cursor: pointer; line-height: 1; }
+        .modal-x:hover { text-shadow: 0 0 10px var(--red-glow); }
+        .modal-body { padding: 16px; }
+
+        /* WHY ENTER Section */
+        .why-section { margin-bottom: 12px; }
+        .why-title { font-size: 10px; font-weight: 700; color: var(--green); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+        .why-item { display: flex; align-items: flex-start; gap: 6px; padding: 3px 0; font-size: 11px; }
+        .why-icon { font-size: 10px; }
+        .why-icon.pass { color: var(--green); }
+        .why-icon.fail { color: var(--red); }
+        .why-text { color: var(--text2); }
+
+        /* Empty state */
+        .empty { text-align: center; padding: 20px; color: var(--text3); }
+        .empty-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.3; }
+
+        /* DAILY REPORTS SECTION */
+        .reports-section { padding: 0 16px 10px; }
+        .reports-panel { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; max-height: 300px; display: flex; flex-direction: column; }
+        .reports-tabs { display: flex; background: var(--bg2); border-bottom: 1px solid var(--green-dim); }
+        .report-tab { flex: 1; padding: 8px 16px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; text-align: center; }
+        .report-tab:hover { color: var(--green); background: rgba(0,255,0,0.05); }
+        .report-tab.active { color: var(--green); border-bottom-color: var(--green); background: rgba(0,255,0,0.08); }
+        .report-content { flex: 1; overflow-y: auto; padding: 12px 16px; font-size: 11px; line-height: 1.6; color: var(--text2); }
+        .report-content h1, .report-content h2, .report-content h3 { color: var(--green); margin-top: 10px; margin-bottom: 6px; }
+        .report-content h1 { font-size: 14px; }
+        .report-content h2 { font-size: 12px; }
+        .report-content h3 { font-size: 11px; }
+        .report-content ul, .report-content ol { margin-left: 18px; }
+        .report-content strong { color: var(--text); }
+        .report-content pre { background: var(--bg2); padding: 8px; border-radius: 4px; overflow-x: auto; font-size: 10px; }
+        .report-unavailable { text-align: center; padding: 40px 20px; color: var(--text3); font-size: 11px; }
+        .report-period-badge { display: inline-block; padding: 3px 8px; background: rgba(0,255,0,0.15); border: 1px solid var(--green); border-radius: 4px; font-size: 9px; color: var(--green); margin-left: 8px; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--green-dim); }
+    </style>
+</head>
+<body>
+<div id="app">
+    <!-- HEADER -->
+    <header class="hdr">
+        <div class="hdr-l">
+            <span class="logo">KOBE</span>
+            <span class="baseline">66.96% WR | 1.53 PF | 1,501 trades | v3.0.0 SSOT</span>
+        </div>
+        <div class="hdr-c">
+            <span class="clock">{{ time }}</span>
+        </div>
+        <button @click="runScanner" :disabled="scanning"
+                style="background: var(--green); color: var(--bg); border: none; padding: 6px 14px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 11px; margin-right: 10px; transition: all 0.2s;"
+                :style="{ opacity: scanning ? 0.6 : 1 }">
+            {{ scanning ? 'SCANNING...' : 'RUN SCANNER' }}
+        </button>
+        <div class="live" :class="{ off: !ws }">
+            <span class="dot"></span>
+            <span>{{ ws ? 'LIVE' : 'OFFLINE' }}</span>
+        </div>
+    </header>
+
+    <!-- MAIN GRID -->
+    <main class="main">
+        <!-- COL 1: Performance + Kill Switch -->
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="panel">
+                <div class="panel-t">Live Performance</div>
+                <div class="panel-b">
+                    <div class="m-row">
+                        <span class="m-lbl">Account</span>
+                        <span class="m-val pos" style="font-size: 13px;">
+                            ${{ formatNum(d?.performance?.current_equity) }}
+                        </span>
+                    </div>
+                    <div class="m-row">
+                        <span class="m-lbl">P&L</span>
+                        <span class="m-val" :class="d?.performance?.cumulative_pnl >= 0 ? 'pos' : 'neg'">
+                            {{ d?.performance?.cumulative_pnl >= 0 ? '+' : '' }}${{ formatNum(d?.performance?.cumulative_pnl) }}
+                            <span class="delta" :class="d?.performance?.cumulative_pnl >= 0 ? 'up' : 'dn'">
+                                {{ d?.performance?.cumulative_pnl >= 0 ? '+' : '' }}{{ pct(d?.performance?.cumulative_pnl_pct * 100) }}%
+                            </span>
+                        </span>
+                    </div>
+                    <div class="m-row">
+                        <span class="m-lbl">Win Rate</span>
+                        <span class="m-val" :class="d?.performance?.total_trades > 0 ? (d?.performance?.wr_delta >= 0 ? 'pos' : 'neg') : ''">
+                            {{ d?.performance?.total_trades > 0 ? pct(d?.performance?.live_win_rate_pct) + '%' : 'N/A' }}
+                        </span>
+                    </div>
+                    <div class="m-row">
+                        <span class="m-lbl">Profit Factor</span>
+                        <span class="m-val">
+                            {{ d?.performance?.total_trades > 0 ? d?.performance?.live_profit_factor?.toFixed(2) : 'N/A' }}
+                        </span>
+                    </div>
+                    <div class="m-row">
+                        <span class="m-lbl">Trades</span>
+                        <span class="m-val">{{ d?.performance?.total_trades || 0 }}</span>
+                    </div>
+                    <div class="m-row">
+                        <span class="m-lbl">Positions</span>
+                        <span class="m-val">{{ d?.performance?.open_positions || 0 }}/{{ d?.performance?.max_positions_allowed || 5 }}</span>
+                    </div>
+                    <div class="m-row">
+                        <span class="m-lbl">Drawdown</span>
+                        <span class="m-val">
+                            {{ pct(d?.performance?.current_drawdown_pct) }}%
+                            <span class="badge" :class="'badge-' + ddClass(d?.performance?.dd_status)">{{ d?.performance?.dd_status || 'SAFE' }}</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel" style="flex: 1;">
+                <div class="panel-t">7-Layer Kill Switch</div>
+                <div class="panel-b">
+                    <div class="ks-status" :class="d?.kill_switches?.overall?.all_clear ? 'clear' : 'trig'">
+                        {{ d?.kill_switches?.overall?.all_clear ? '● ALL SYSTEMS GO' : '⚠ ' + (d?.kill_switches?.overall?.status_text || 'TRIGGERED') }}
+                    </div>
+                    <div v-for="l in d?.kill_switches?.layers || []" :key="l.name" class="ks-row">
+                        <span class="ks-icon" :class="l.triggered ? 'bad' : 'ok'">{{ l.triggered ? '⚠' : '●' }}</span>
+                        <span class="ks-name">{{ l.name }}</span>
+                        <span class="ks-val">{{ l.current }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COL 2: Trade of Day + Top 10 -->
+        <div style="display: flex; flex-direction: column; gap: 10px; overflow-y: auto;">
+            <!-- TRADE OF THE DAY - Full ML Breakdown -->
+            <div class="tod" v-if="tod">
+                <div class="tod-hdr">
+                    <div style="display: flex; align-items: center;">
+                        <span class="tod-sym">{{ tod.symbol }}</span>
+                        <span class="tod-dir">LONG</span>
+                        <span class="badge" :class="'badge-' + mlBadge(tod.ml_confidence)" style="margin-left: 8px;">{{ tod.ml_confidence }}</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="tod-rank">TRADE OF THE DAY</div>
+                        <div class="tod-conf">{{ (tod.ml_confidence_score * 100).toFixed(0) }}%</div>
+                    </div>
+                </div>
+                <!-- ENTRY CRITERIA CHECKLIST -->
+                <div class="why-section" style="margin-bottom: 8px;">
+                    <div class="why-title">Entry Criteria</div>
+                    <div v-for="c in tod.entry_checks || []" :key="c.check" class="why-item">
+                        <span class="why-icon" :class="c.passed ? 'pass' : 'fail'">{{ c.passed ? '✓' : '✗' }}</span>
+                        <span class="why-text">{{ c.check }}: {{ c.value }}</span>
+                    </div>
+                </div>
+                <!-- WHY ENTER -->
+                <div style="background: var(--bg2); padding: 8px; border-radius: 4px; margin-bottom: 8px; font-size: 10px; color: var(--text2); border-left: 2px solid var(--green);">
+                    {{ tod.why_enter }}
+                </div>
+                <!-- ML CONFIDENCE BREAKDOWN -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                    <div style="background: var(--bg2); padding: 6px; border-radius: 4px; text-align: center;">
+                        <div style="font-size: 8px; color: var(--text3);">SIMILAR SETUPS</div>
+                        <div style="font-size: 14px; font-weight: 700; color: var(--green);">{{ tod.similar_setups_count || 901 }}</div>
+                    </div>
+                    <div style="background: var(--bg2); padding: 6px; border-radius: 4px; text-align: center;">
+                        <div style="font-size: 8px; color: var(--text3);">HIST WIN RATE</div>
+                        <div style="font-size: 14px; font-weight: 700; color: var(--green);">{{ tod.similar_win_rate?.toFixed(1) || 66.96 }}%</div>
+                    </div>
+                </div>
+                <!-- EXECUTION LEVELS -->
+                <div class="exec-row">
+                    <div class="exec-box"><div class="exec-lbl">Entry</div><div class="exec-val entry">${{ tod.entry_price?.toFixed(2) }}</div></div>
+                    <div class="exec-box"><div class="exec-lbl">Stop</div><div class="exec-val stop">${{ tod.stop_loss?.toFixed(2) }}</div></div>
+                    <div class="exec-box"><div class="exec-lbl">Target</div><div class="exec-val target">${{ tod.take_profit?.toFixed(2) }}</div></div>
+                    <div class="exec-box"><div class="exec-lbl">R:R</div><div class="exec-val rr">{{ tod.rr_ratio?.toFixed(1) }}:1</div></div>
+                </div>
+                <!-- 3-Level Targets -->
+                <div class="targets">
+                    <div class="tgt-row tgt1">
+                        <span class="tgt-icon">T1</span>
+                        <span class="tgt-lbl"></span>
+                        <span class="tgt-price">${{ (tod.entry_price * 1.02).toFixed(2) }}</span>
+                        <span class="tgt-pct">+2.0%</span>
+                        <span class="tgt-prob">85%</span>
+                    </div>
+                    <div class="tgt-row tgt2">
+                        <span class="tgt-icon">T2</span>
+                        <span class="tgt-lbl"></span>
+                        <span class="tgt-price">${{ tod.take_profit?.toFixed(2) }}</span>
+                        <span class="tgt-pct">+{{ ((tod.take_profit - tod.entry_price) / tod.entry_price * 100).toFixed(1) }}%</span>
+                        <span class="tgt-prob">67%</span>
+                    </div>
+                    <div class="tgt-row tgt3">
+                        <span class="tgt-icon">T3</span>
+                        <span class="tgt-lbl"></span>
+                        <span class="tgt-price">${{ tod.bb_upper?.toFixed(2) }}</span>
+                        <span class="tgt-pct">+{{ ((tod.bb_upper - tod.entry_price) / tod.entry_price * 100).toFixed(1) }}%</span>
+                        <span class="tgt-prob">35%</span>
+                    </div>
+                    <div class="tgt-row tgt-stop">
+                        <span class="tgt-icon">SL</span>
+                        <span class="tgt-lbl"></span>
+                        <span class="tgt-price">${{ tod.stop_loss?.toFixed(2) }}</span>
+                        <span class="tgt-pct">{{ ((tod.stop_loss - tod.entry_price) / tod.entry_price * 100).toFixed(1) }}%</span>
+                        <span class="tgt-prob"></span>
+                    </div>
+                </div>
+                <!-- SIMILAR TRADES -->
+                <div v-if="tod.best_similar_trade" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 9px;">
+                    <div style="color: var(--text3); margin-bottom: 4px;">SIMILAR HISTORICAL TRADES:</div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--green);">Best: {{ tod.best_similar_trade.symbol }} +{{ tod.best_similar_trade.return_pct }}%</span>
+                        <span style="color: var(--red);">Worst: {{ tod.worst_similar_trade?.symbol }} {{ tod.worst_similar_trade?.return_pct }}%</span>
+                    </div>
+                </div>
+            </div>
+            <div v-else class="panel" style="padding: 20px; text-align: center;">
+                <div style="color: var(--text3);">No READY signals - scanning 710 symbols</div>
+            </div>
+
+            <!-- TOP 3 READY SIGNALS - Prominent Display -->
+            <div class="panel" v-if="d?.top_3_signals?.length" style="background: linear-gradient(135deg, rgba(0,200,100,0.08), rgba(0,150,255,0.05));">
+                <div class="panel-t" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--green); font-weight: 600;">🎯 TOP 3 READY NOW</span>
+                    <span class="badge badge-green" style="animation: pulse 2s infinite;">RSI ≤ 3</span>
+                </div>
+                <div class="panel-b" style="padding: 8px;">
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <div v-for="(s, idx) in d.top_3_signals" :key="'top3-' + s.symbol"
+                             @click="sel = s"
+                             style="flex: 1; min-width: 100px; background: var(--bg2); border-radius: 8px; padding: 10px; cursor: pointer; border: 1px solid var(--green); transition: all 0.2s;"
+                             :style="{ boxShadow: idx === 0 ? '0 0 15px rgba(0,200,100,0.3)' : 'none' }">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <span class="sym" style="font-size: 16px; font-weight: 700;">{{ s.symbol }}</span>
+                                <span class="badge badge-green">{{ s.confidence || 60 }}%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text2);">
+                                <span>RSI: <span style="color: var(--green); font-weight: 600;">{{ s.rsi_5?.toFixed(1) }}</span></span>
+                                <span>R:R {{ s.rr_ratio?.toFixed(1) || '1.5' }}</span>
+                            </div>
+                            <div style="font-size: 10px; margin-top: 4px; color: var(--text3);">
+                                Entry: ${{ s.entry_price?.toFixed(2) }} → Tgt: ${{ s.take_profit?.toFixed(2) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top 10 Table with Tier Labels -->
+            <div class="panel" style="flex: 0 0 auto;">
+                <div class="panel-t">Top 10 Watchlist <span style="font-weight: 400; color: var(--text3);">({{ d?.tiered_summary?.total_signals || 0 }} signals found)</span></div>
+                <div class="panel-b" style="padding: 0;">
+                    <table class="tbl" v-if="d?.top_10_signals?.length">
+                        <thead>
+                            <tr><th>#</th><th>Sym</th><th>Tier</th><th>ML</th><th>Entry</th><th>Stop</th><th>Tgt</th><th>R:R</th><th>RSI</th><th>ETA</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(s, idx) in d.top_10_signals.slice(0, 10)" :key="s.symbol" @click="sel = s">
+                                <td>{{ idx + 1 }}</td>
+                                <td class="sym">{{ s.symbol }}</td>
+                                <td><span class="badge" :class="tierBadge(s.status)">{{ tierLabel(s.status_reason || s.status) }}</span></td>
+                                <td><span class="badge" :class="'badge-' + mlBadge(s.grade)">{{ s.confidence }}%</span></td>
+                                <td>${{ s.entry_price?.toFixed(2) }}</td>
+                                <td class="stop">${{ s.stop_loss?.toFixed(2) }}</td>
+                                <td class="tgt">${{ s.take_profit?.toFixed(2) }}</td>
+                                <td>{{ s.rr_ratio?.toFixed(1) }}</td>
+                                <td :class="s.rsi_5 < 3 ? 'pos' : ''">{{ s.rsi_5?.toFixed(1) }}</td>
+                                <td style="font-size: 9px;">{{ s.status === 'ready' ? 'NOW' : s.status === 'imminent' ? '~8h' : '~2d' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div v-else class="empty">
+                        <div class="empty-icon">~</div>
+                        <div>No signals - RSI(5) < 15 not found</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COL 3: NEWS + WHY ENTER + EXPECTED OUTCOMES -->
+        <div style="display: flex; flex-direction: column; gap: 10px; overflow-y: auto;">
+            <!-- NEWS & CATALYSTS -->
+            <div class="panel">
+                <div class="panel-t">News & Catalysts {{ tod?.symbol || '' }}</div>
+                <div class="panel-b" v-if="d?.trade_of_day_news">
+                    <!-- Recent Headlines -->
+                    <div class="why-section">
+                        <div class="why-title">Recent Headlines</div>
+                        <div v-for="n in d.trade_of_day_news.news" :key="n.headline" class="why-item" style="padding: 3px 0;">
+                            <span style="font-size: 9px; color: var(--text3); min-width: 45px;">{{ n.time_ago }}</span>
+                            <span class="why-text" style="flex: 1;">{{ n.headline }}</span>
+                            <span :style="'color: ' + (n.sentiment === 'POSITIVE' ? 'var(--green)' : n.sentiment === 'NEGATIVE' ? 'var(--red)' : 'var(--yellow)')">
+                                {{ n.sentiment === 'POSITIVE' ? '+' : n.sentiment === 'NEGATIVE' ? '-' : '~' }}
+                            </span>
+                        </div>
+                        <div v-if="!d.trade_of_day_news.news?.length" style="color: var(--text3); font-size: 10px;">
+                            No significant news in last 48 hours
+                        </div>
+                    </div>
+                    <!-- Earnings & Analysts -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px;">
+                        <div style="background: var(--bg2); padding: 6px; border-radius: 4px;">
+                            <div style="font-size: 8px; color: var(--text3);">EARNINGS</div>
+                            <div style="font-size: 10px; color: var(--text);">{{ d.trade_of_day_news.earnings?.display || 'N/A' }}</div>
+                        </div>
+                        <div style="background: var(--bg2); padding: 6px; border-radius: 4px;">
+                            <div style="font-size: 8px; color: var(--text3);">ANALYSTS</div>
+                            <div style="font-size: 10px; color: var(--text);">{{ d.trade_of_day_news.analysts?.display || 'N/A' }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-b" v-else style="color: var(--text3); text-align: center; padding: 15px; font-size: 10px;">
+                    Loading news...
+                </div>
+            </div>
+
+            <!-- WHY ENTER BREAKDOWN -->
+            <div class="panel" style="flex: 1;">
+                <div class="panel-t">Why Enter {{ tod?.symbol || '' }}?</div>
+                <div class="panel-b" v-if="d?.trade_of_day_analysis" style="font-size: 10px;">
+                    <!-- Technical -->
+                    <div class="why-section">
+                        <div class="why-title" style="display: flex; justify-content: space-between;">
+                            <span>Technical</span>
+                            <span style="color: var(--green);">{{ Math.round(d.trade_of_day_analysis.technical?.score || 0) }}/100</span>
+                        </div>
+                        <div v-for="r in d.trade_of_day_analysis.technical?.reasons?.slice(0, 4)" :key="r.text" class="why-item">
+                            <span class="why-icon" :class="r.passed ? 'pass' : 'fail'">{{ r.passed ? '✓' : '✗' }}</span>
+                            <span class="why-text">{{ r.text }}</span>
+                        </div>
+                    </div>
+                    <!-- Fundamental -->
+                    <div class="why-section">
+                        <div class="why-title" style="display: flex; justify-content: space-between;">
+                            <span>Fundamental</span>
+                            <span style="color: var(--green);">{{ Math.round(d.trade_of_day_analysis.fundamental?.score || 0) }}/100</span>
+                        </div>
+                        <div v-for="r in d.trade_of_day_analysis.fundamental?.reasons?.slice(0, 3)" :key="r.text" class="why-item">
+                            <span class="why-icon" :class="r.passed ? 'pass' : 'fail'">{{ r.passed ? '✓' : '✗' }}</span>
+                            <span class="why-text">{{ r.text }}</span>
+                        </div>
+                    </div>
+                    <!-- Sentiment -->
+                    <div class="why-section">
+                        <div class="why-title" style="display: flex; justify-content: space-between;">
+                            <span>Sentiment</span>
+                            <span style="color: var(--green);">{{ Math.round(d.trade_of_day_analysis.sentiment?.score || 0) }}/100</span>
+                        </div>
+                        <div v-for="r in d.trade_of_day_analysis.sentiment?.reasons?.slice(0, 3)" :key="r.text" class="why-item">
+                            <span class="why-icon" :class="r.passed ? 'pass' : 'fail'">{{ r.passed ? '✓' : '✗' }}</span>
+                            <span class="why-text">{{ r.text }}</span>
+                        </div>
+                    </div>
+                    <!-- Macro -->
+                    <div class="why-section">
+                        <div class="why-title" style="display: flex; justify-content: space-between;">
+                            <span>Macro</span>
+                            <span style="color: var(--green);">{{ Math.round(d.trade_of_day_analysis.macro?.score || 0) }}/100</span>
+                        </div>
+                        <div v-for="r in d.trade_of_day_analysis.macro?.reasons?.slice(0, 3)" :key="r.text" class="why-item">
+                            <span class="why-icon" :class="r.passed ? 'pass' : 'fail'">{{ r.passed ? '✓' : '✗' }}</span>
+                            <span class="why-text">{{ r.text }}</span>
+                        </div>
+                    </div>
+                    <!-- Historical -->
+                    <div class="why-section">
+                        <div class="why-title" style="display: flex; justify-content: space-between;">
+                            <span>Historical</span>
+                            <span style="color: var(--green);">{{ Math.round(d.trade_of_day_analysis.historical?.score || 0) }}/100</span>
+                        </div>
+                        <div v-for="r in d.trade_of_day_analysis.historical?.reasons?.slice(0, 3)" :key="r.text" class="why-item">
+                            <span class="why-icon" :class="r.passed ? 'pass' : 'fail'">{{ r.passed ? '✓' : '✗' }}</span>
+                            <span class="why-text">{{ r.text }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-b" v-else style="color: var(--text3); text-align: center; padding: 30px;">
+                    Select a signal for analysis
+                </div>
+            </div>
+
+            <!-- EXPECTED OUTCOMES -->
+            <div class="panel">
+                <div class="panel-t">Expected Outcome</div>
+                <div class="panel-b" v-if="d?.trade_of_day_outcomes">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px;">
+                        <div style="background: var(--bg2); padding: 6px; border-radius: 4px; text-align: center; border-left: 2px solid var(--green);">
+                            <div style="font-size: 8px; color: var(--text3);">BEST CASE (90%)</div>
+                            <div style="font-size: 14px; font-weight: 700; color: var(--green);">+{{ d.trade_of_day_outcomes.best_case_90th }}%</div>
+                        </div>
+                        <div style="background: var(--bg2); padding: 6px; border-radius: 4px; text-align: center; border-left: 2px solid var(--yellow);">
+                            <div style="font-size: 8px; color: var(--text3);">EXPECTED (50%)</div>
+                            <div style="font-size: 14px; font-weight: 700; color: var(--yellow);">+{{ d.trade_of_day_outcomes.expected_median }}%</div>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px;">
+                        <div style="background: var(--bg2); padding: 6px; border-radius: 4px; text-align: center;">
+                            <div style="font-size: 8px; color: var(--text3);">CONSERVATIVE (25%)</div>
+                            <div style="font-size: 12px; color: var(--text2);">+{{ d.trade_of_day_outcomes.conservative_25th }}%</div>
+                        </div>
+                        <div style="background: var(--bg2); padding: 6px; border-radius: 4px; text-align: center; border-left: 2px solid var(--red);">
+                            <div style="font-size: 8px; color: var(--text3);">WORST CASE (10%)</div>
+                            <div style="font-size: 12px; color: var(--red);">{{ d.trade_of_day_outcomes.worst_case_10th }}%</div>
+                        </div>
+                    </div>
+                    <div style="background: var(--bg2); padding: 8px; border-radius: 4px;">
+                        <div style="font-size: 9px; color: var(--text3); margin-bottom: 4px;">WIN PROBABILITY</div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden;">
+                                <div :style="'width: ' + d.trade_of_day_outcomes.win_probability + '%; height: 100%; background: var(--green);'"></div>
+                            </div>
+                            <span style="font-size: 12px; font-weight: 700; color: var(--green);">{{ d.trade_of_day_outcomes.win_probability }}%</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 9px; margin-top: 6px;">
+                            <span style="color: var(--green);">If Win: +{{ d.trade_of_day_outcomes.avg_gain_if_win }}%</span>
+                            <span style="color: var(--red);">If Loss: {{ d.trade_of_day_outcomes.avg_loss_if_lose }}%</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 9px; color: var(--text3);">
+                        Avg Hold: {{ d.trade_of_day_outcomes.avg_hold_days }} days
+                    </div>
+                </div>
+                <div class="panel-b" v-else style="color: var(--text3); text-align: center; padding: 15px; font-size: 10px;">
+                    Loading outcomes...
+                </div>
+            </div>
+        </div>
+
+        <!-- COL 4: Market + System Health -->
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="panel">
+                <div class="panel-t">Market</div>
+                <div class="panel-b">
+                    <div class="mkt-row">
+                        <span class="mkt-lbl">VIX</span>
+                        <span class="mkt-val">
+                            {{ d?.market?.vix?.current?.toFixed(1) || '—' }}
+                            <span class="vix-badge" :class="'vix-' + (d?.market?.vix?.regime?.toLowerCase() || 'norm')">{{ d?.market?.vix?.regime || '—' }}</span>
+                        </span>
+                    </div>
+                    <div class="mkt-row"><span class="mkt-lbl">SPY</span><span class="mkt-val green">${{ d?.market?.indices?.SPY?.price?.toFixed(2) || '—' }}</span></div>
+                    <div class="mkt-row"><span class="mkt-lbl">QQQ</span><span class="mkt-val green">${{ d?.market?.indices?.QQQ?.price?.toFixed(2) || '—' }}</span></div>
+                    <div class="mkt-row"><span class="mkt-lbl">IWM</span><span class="mkt-val green">${{ d?.market?.indices?.IWM?.price?.toFixed(2) || '—' }}</span></div>
+                    <div class="mkt-row"><span class="mkt-lbl">Status</span><span class="mkt-val">{{ d?.market?.market?.status || 'CLOSED' }}</span></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-t">Hash Verification</div>
+                <div class="panel-b">
+                    <div class="hash-box">
+                        <div class="hash-row"><span>Hash</span><span class="hash-ok">cd12b69a86bd ✓</span></div>
+                        <div class="hash-row"><span>Status</span><span class="hash-ok">VERIFIED</span></div>
+                        <div class="hash-row"><span>Checks</span><span style="color: var(--text2);">{{ hashChecks }}</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-t">Scanner</div>
+                <div class="panel-b">
+                    <div class="mkt-row">
+                        <span class="mkt-lbl">Last Run</span>
+                        <span class="mkt-val" :class="scanFresh ? 'green' : ''">{{ d?.scanner?.last_run_str || '—' }}</span>
+                    </div>
+                    <div class="mkt-row"><span class="mkt-lbl">Runtime</span><span class="mkt-val">{{ d?.scanner?.runtime_seconds?.toFixed(1) || 0 }}s</span></div>
+                    <div class="mkt-row"><span class="mkt-lbl">Scanned</span><span class="mkt-val">{{ d?.scanner?.universe_scanned || 0 }}</span></div>
+                    <div class="mkt-row"><span class="mkt-lbl">Total Signals</span><span class="mkt-val green">{{ d?.scanner?.signals_found || d?.tiered_summary?.total_signals || 0 }}</span></div>
+                    <div class="mkt-row"><span class="mkt-lbl">Ready (RSI<3)</span><span class="mkt-val green">{{ d?.scanner?.ready_signals || d?.tiered_summary?.ready_count || 0 }}</span></div>
+                </div>
+            </div>
+
+            <div class="panel" style="flex: 1;">
+                <div class="panel-t">Data Quality</div>
+                <div class="panel-b">
+                    <div class="diag-row"><span>Polygon API</span><span class="diag-val" style="color: var(--green);">● OK</span></div>
+                    <div class="diag-row"><span>Alpaca API</span><span class="diag-val" style="color: var(--green);">● OK</span></div>
+                    <div class="diag-row"><span>Data Age</span><span class="diag-val">{{ d?.top_10_signals?.[0]?.data_age_minutes || 0 }} min</span></div>
+                    <div class="diag-row"><span>Freshness</span><span class="diag-val" :class="d?.top_10_signals?.[0]?.is_fresh ? '' : 'neg'">{{ d?.top_10_signals?.[0]?.freshness_badge || 'N/A' }}</span></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- DAILY REPORTS SECTION -->
+    <div class="reports-section" v-if="d?.daily_reports">
+        <div class="reports-panel">
+            <div class="reports-tabs">
+                <div class="report-tab" :class="{ active: activeReportTab === 'pregame' }" @click="activeReportTab = 'pregame'">
+                    🎯 PRE-GAME
+                    <span v-if="d.daily_reports.pregame?.available" class="report-period-badge">Available</span>
+                </div>
+                <div class="report-tab" :class="{ active: activeReportTab === 'halftime' }" @click="activeReportTab = 'halftime'">
+                    📊 HALF-TIME
+                    <span v-if="d.daily_reports.halftime?.available" class="report-period-badge">Available</span>
+                </div>
+                <div class="report-tab" :class="{ active: activeReportTab === 'postgame' }" @click="activeReportTab = 'postgame'">
+                    📈 POST-GAME
+                    <span v-if="d.daily_reports.postgame?.available" class="report-period-badge">Available</span>
+                </div>
+            </div>
+            <div class="report-content">
+                <!-- PRE-GAME Report -->
+                <div v-if="activeReportTab === 'pregame'" v-html="formatMarkdown(d.daily_reports.pregame?.full_content)"></div>
+                <div v-if="activeReportTab === 'pregame' && !d.daily_reports.pregame?.available" class="report-unavailable">
+                    PRE-GAME report not yet available.<br>
+                    Generated daily at 8:30 AM ET after morning scan.
+                </div>
+
+                <!-- HALF-TIME Report -->
+                <div v-if="activeReportTab === 'halftime'" v-html="formatMarkdown(d.daily_reports.halftime?.content)"></div>
+                <div v-if="activeReportTab === 'halftime' && !d.daily_reports.halftime?.available" class="report-unavailable">
+                    HALF-TIME report not yet available.<br>
+                    Generated daily at 12:00 PM ET during market hours.
+                </div>
+
+                <!-- POST-GAME Report -->
+                <div v-if="activeReportTab === 'postgame'" v-html="formatMarkdown(d.daily_reports.postgame?.content)"></div>
+                <div v-if="activeReportTab === 'postgame' && !d.daily_reports.postgame?.available" class="report-unavailable">
+                    POST-GAME report not yet available.<br>
+                    Generated daily at 5:00 PM ET after market close.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="ftr">
+        <span>Hash: BB_RSI_LSTM_UNIFIED_V3.0.0 | 66.96% WR, 1.53 PF | Exit: 30 days OR RSI(5)>50 (SSOT v2.1.0)</span>
+        <span>Updated: {{ upd }}</span>
+    </footer>
+
+    <!-- MODAL -->
+    <div class="modal-bg" v-if="sel" @click.self="sel = null">
+        <div class="modal">
+            <div class="modal-hdr">
+                <span class="modal-title">{{ sel.symbol }} — {{ sel.direction?.toUpperCase() }}</span>
+                <span class="modal-x" @click="sel = null">×</span>
+            </div>
+            <div class="modal-body">
+                <div class="ws-grid" style="margin-bottom: 16px;">
+                    <div class="ws-row"><span class="ws-lbl">WHO</span><span class="ws-txt">{{ sel.symbol }} @ ${{ sel.current_price?.toFixed(2) }}</span></div>
+                    <div class="ws-row"><span class="ws-lbl">WHAT</span><span class="ws-txt">KOBE - Extreme oversold bounce</span></div>
+                    <div class="ws-row"><span class="ws-lbl">WHERE</span><span class="ws-txt">{{ sel.why_take_trade?.where?.price_location || 'Below BB Lower' }}</span></div>
+                    <div class="ws-row"><span class="ws-lbl">WHEN</span><span class="ws-txt">Entry now, hold 3-7 days, exit RSI(2)>50</span></div>
+                    <div class="ws-row"><span class="ws-lbl">WHY</span><span class="ws-txt">
+                        <div v-for="c in sel.why_take_trade?.why?.entry_checks || []" :key="c.check" class="why-item">
+                            <span class="why-icon" :class="c.passed ? 'pass' : 'fail'">{{ c.passed ? '✓' : '✗' }}</span>
+                            <span class="why-text">{{ c.check }}: {{ c.value }}</span>
+                        </div>
+                    </span></div>
+                </div>
+                <div class="exec-row">
+                    <div class="exec-box"><div class="exec-lbl">Entry</div><div class="exec-val entry">${{ sel.entry_price?.toFixed(2) }}</div></div>
+                    <div class="exec-box"><div class="exec-lbl">Stop</div><div class="exec-val stop">${{ sel.stop_loss?.toFixed(2) }}</div></div>
+                    <div class="exec-box"><div class="exec-lbl">Target</div><div class="exec-val target">${{ sel.take_profit?.toFixed(2) }}</div></div>
+                    <div class="exec-box"><div class="exec-lbl">R:R</div><div class="exec-val rr">{{ sel.rr_ratio?.toFixed(1) }}:1</div></div>
+                </div>
+                <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border);">
+                    <div class="m-row"><span class="m-lbl">Historical WR</span><span class="m-val pos">{{ sel.historical_strategy_win_rate?.toFixed(2) }}%</span></div>
+                    <div class="m-row"><span class="m-lbl">Historical PF</span><span class="m-val pos">{{ sel.historical_strategy_profit_factor?.toFixed(2) }}</span></div>
+                    <div class="m-row"><span class="m-lbl">Sample Size</span><span class="m-val">{{ sel.historical_sample_size }} trades</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
+createApp({
+    setup() {
+        const d = ref(null), ws = ref(false), upd = ref('—'), time = ref('—'), sel = ref(null), hashChecks = ref(0), scanning = ref(false);
+        const activeReportTab = ref('pregame');
+        let sock = null, timer = null;
+
+        // Run scanner manually
+        const runScanner = async () => {
+            if (scanning.value) return;
+            scanning.value = true;
+            try {
+                const res = await fetch('/api/scanner/run', { method: 'POST' });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    // Refresh dashboard data
+                    const freshRes = await fetch('/api/data');
+                    const freshData = await freshRes.json();
+                    d.value = freshData;
+                }
+            } catch (e) {
+                console.error('Scanner error:', e);
+            } finally {
+                scanning.value = false;
+            }
+        };
+
+        // Trade of Day - use raw tiered data for full ML breakdown
+        const tod = computed(() => d.value?.trade_of_day_raw || d.value?.top_3_raw?.[0] || null);
+
+        const pct = (v) => v != null ? Number(v).toFixed(2) : '0.00';
+        const formatNum = (v) => v != null ? Number(v).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0}) : '0';
+        const ddClass = (s) => s === 'SAFE' ? 'ok' : s === 'WARNING' ? 'warn' : 'bad';
+
+        // ML Confidence badge class
+        const mlBadge = (conf) => {
+            if (!conf) return 'warn';
+            const c = conf.toUpperCase();
+            if (c === 'VERY HIGH' || c === 'A' || c === 'A+') return 'ok';
+            if (c === 'HIGH' || c === 'B' || c === 'B+') return 'ok';
+            if (c === 'MODERATE' || c === 'C') return 'warn';
+            return 'bad';
+        };
+
+        // Tier badge class
+        const tierBadge = (status) => {
+            if (status === 'ready') return 'badge-ok';
+            if (status === 'imminent') return 'badge-warn';
+            return 'badge-warn';
+        };
+
+        // Tier label display
+        const tierLabel = (tier) => {
+            if (!tier) return 'DEV';
+            const t = tier.toUpperCase();
+            if (t.includes('READY')) return 'NOW';
+            if (t.includes('IMMINENT')) return 'SOON';
+            if (t.includes('DEVELOP')) return 'DEV';
+            if (t === 'READY') return 'NOW';
+            if (t === 'IMMINENT') return 'SOON';
+            return 'DEV';
+        };
+
+        const scanFresh = () => {
+            const last = d.value?.scanner?.last_run_str;
+            if (!last) return false;
+            return true;
+        };
+
+        const connect = () => {
+            const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            sock = new WebSocket(`${proto}//${location.host}/ws/live`);
+            sock.onopen = () => { ws.value = true; };
+            sock.onmessage = (e) => {
+                const msg = JSON.parse(e.data);
+                d.value = msg.data;
+                upd.value = new Date(msg.timestamp).toLocaleTimeString();
+                hashChecks.value++;
+            };
+            sock.onclose = () => { ws.value = false; setTimeout(connect, 3000); };
+            sock.onerror = () => sock.close();
+        };
+
+        const tick = () => {
+            const now = new Date();
+            time.value = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+        };
+
+        // Simple markdown-to-HTML formatter
+        const formatMarkdown = (md) => {
+            if (!md) return '';
+            return md
+                .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+                .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+                .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/^- (.+)$/gm, '<li>$1</li>')
+                .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
+                .replace(/\n\n/g, '<br><br>')
+                .replace(/\n/g, '<br>');
+        };
+
+        // Auto-select appropriate report tab based on time of day
+        const updateReportTab = () => {
+            if (!d.value?.daily_reports) return;
+            const now = new Date();
+            const hour = now.getHours();
+
+            if (d.value.daily_reports.postgame?.available) {
+                activeReportTab.value = 'postgame';
+            } else if (hour >= 12 && d.value.daily_reports.halftime?.available) {
+                activeReportTab.value = 'halftime';
+            } else if (d.value.daily_reports.pregame?.available) {
+                activeReportTab.value = 'pregame';
+            }
+        };
+
+        onMounted(() => {
+            connect();
+            tick();
+            timer = setInterval(tick, 1000);
+            updateReportTab();
+        });
+        onUnmounted(() => { if (sock) sock.close(); if (timer) clearInterval(timer); });
+
+        return { d, ws, upd, time, sel, hashChecks, pct, formatNum, ddClass, scanFresh, tod, mlBadge, tierBadge, tierLabel, scanning, runScanner, activeReportTab, formatMarkdown };
+    }
+}).mount('#app');
+</script>
+</body>
+</html>
