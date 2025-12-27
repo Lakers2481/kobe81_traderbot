@@ -238,10 +238,27 @@ All scripts accept `--dotenv` to specify env file location.
 | Strategies | `strategies/connors_rsi2/`, `strategies/ibs/` | Signal generation with shifted indicators |
 | Backtest | `backtest/engine.py`, `backtest/walk_forward.py` | Simulation engine, WF splits |
 | Risk | `risk/policy_gate.py` | Per-order ($75) and daily ($1k) budgets |
+| Risk Advanced | `risk/advanced/` | VaR, Kelly sizing, correlation limits |
+| ML Advanced | `ml_advanced/` | LSTM, HMM regime, ensemble, online learning |
 | OMS | `oms/order_state.py`, `oms/idempotency_store.py` | Order records, duplicate prevention |
 | Execution | `execution/broker_alpaca.py` | IOC LIMIT orders via Alpaca |
 | Core | `core/hash_chain.py`, `core/structured_log.py` | Audit chain, JSON logging |
 | Monitor | `monitor/health_endpoints.py` | Health check endpoint |
+
+### Advanced Risk Management (`risk/advanced/`)
+| Module | Purpose |
+|--------|---------|
+| `monte_carlo_var.py` | Portfolio VaR with Cholesky decomposition, stress testing |
+| `kelly_position_sizer.py` | Optimal Kelly Criterion position sizing |
+| `correlation_limits.py` | Correlation/concentration limits with sector mapping |
+
+### ML/AI Components (`ml_advanced/`)
+| Module | Purpose |
+|--------|---------|
+| `hmm_regime_detector.py` | Hidden Markov Model market regime detection |
+| `lstm_confidence/` | Multi-output LSTM for signal confidence (A/B/C grades) |
+| `ensemble/` | Multi-model ensemble predictor (XGBoost, LightGBM, LSTM) |
+| `online_learning.py` | Incremental learning with concept drift detection |
 
 ### Strategy Interface
 ```python
@@ -272,12 +289,24 @@ Output columns: `timestamp, symbol, side, entry_price, stop_loss, take_profit, r
 
 ## Key Files
 
+### Core Trading
 - `backtest/engine.py`: Backtester with equity curve, ATR/time stops, FIFO P&L
 - `strategies/connors_rsi2/strategy.py`: RSI(2)<=10 entry, SMA(200) filter, Wilder smoothing
 - `strategies/ibs/strategy.py`: IBS<0.2 entry, SMA(200) filter
 - `execution/broker_alpaca.py`: `place_ioc_limit()`, `get_best_ask()`, idempotency
 - `risk/policy_gate.py`: `PolicyGate.check()` for budget enforcement
 - `scripts/runner.py`: 24/7 scheduler with `--scan-times` and state persistence
+
+### Advanced Risk (Quant Interview Ready)
+- `risk/advanced/monte_carlo_var.py`: 10K-simulation VaR with stress testing
+- `risk/advanced/kelly_position_sizer.py`: Fractional Kelly with volatility adjustment
+- `risk/advanced/correlation_limits.py`: Sector exposure, beta, ENP checks
+
+### ML/AI Components (Quant Interview Ready)
+- `ml_advanced/hmm_regime_detector.py`: 3-state HMM regime detection (bull/bear/neutral)
+- `ml_advanced/lstm_confidence/model.py`: Multi-output LSTM (direction, magnitude, success)
+- `ml_advanced/ensemble/ensemble_predictor.py`: Weighted ensemble with confidence scoring
+- `ml_advanced/online_learning.py`: Experience replay, concept drift detection
 
 ## Quick Reference - Essential Skills
 
