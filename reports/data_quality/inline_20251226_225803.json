@@ -1,0 +1,34 @@
+{
+  "dataset_id": "inline",
+  "evaluated_at": "2025-12-26T22:58:03.725237",
+  "passed": true,
+  "quality_level": "excellent",
+  "total_symbols": 3,
+  "symbols_with_sufficient_coverage": 3,
+  "coverage_pct": 1.0,
+  "min_years_of_history": 6.99,
+  "max_gap_pct": 0.0,
+  "avg_gap_pct": 0.0,
+  "integrity_verified": false,
+  "most_recent_date": "2025-12-26",
+  "days_since_update": 0,
+  "is_stale": false,
+  "issue_count": 0,
+  "issue_counts": {
+    "insufficient_history": 0,
+    "excessive_gaps": 0,
+    "stale_data": 0,
+    "integrity_failure": 0,
+    "ohlc_violation": 0,
+    "missing_symbols": 0,
+    "low_coverage": 0,
+    "suspicious_prices": 0,
+    "volume_anomaly": 0,
+    "duplicates": 0
+  },
+  "uncertainty_level": "unknown",
+  "should_stand_down": false,
+  "recommendations": [
+    "Data quality acceptable for backtesting"
+  ]
+}

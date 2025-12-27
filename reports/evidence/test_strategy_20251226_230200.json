@@ -1,0 +1,33 @@
+{
+  "strategy_name": "test_strategy",
+  "evaluated_at": "2025-12-26T23:02:00.701327",
+  "passed": true,
+  "evidence_level": "strong",
+  "oos_trades": 150,
+  "oos_sharpe": 0.7,
+  "oos_profit_factor": 1.4,
+  "oos_win_rate": 0.52,
+  "max_drawdown": 0.18,
+  "regime_performance": {},
+  "regime_variance": 0.0,
+  "returns_t_stat": 2473.643647051271,
+  "overfitting_score": 0.30000000000000004,
+  "checks_passed": [
+    "OOS trades: 150 >= 100",
+    "OOS Sharpe: 0.70 >= 0.5",
+    "OOS Profit Factor: 1.40 >= 1.3",
+    "Win Rate: 52.0% >= 40.0%",
+    "Max Drawdown: 18.0% <= 25.0%",
+    "Overfitting: 0.30 <= 0.5",
+    "T-statistic: 2473.64 >= 2.0"
+  ],
+  "checks_failed": [],
+  "rejection_reasons": [],
+  "recommendations": [
+    "Strategy approved for live trading with standard risk limits",
+    "Recommended position size: based on 0.70 Sharpe"
+  ],
+  "uncertainty_level": "unknown",
+  "should_stand_down": false,
+  "metadata": {}
+}

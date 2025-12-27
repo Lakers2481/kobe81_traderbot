@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 from typing import Dict, Any
 import os
 
@@ -18,11 +19,23 @@ class PolicyGate:
     def __init__(self, limits: RiskLimits | None = None):
         self.limits = limits or RiskLimits()
         self._daily_notional = 0.0
+        self._last_reset_date: date = date.today()
 
     def reset_daily(self):
+        """Reset daily notional counter."""
         self._daily_notional = 0.0
+        self._last_reset_date = date.today()
+
+    def _auto_reset_if_new_day(self):
+        """Automatically reset daily budget if we're on a new trading day."""
+        today = date.today()
+        if today > self._last_reset_date:
+            self.reset_daily()
 
     def check(self, symbol: str, side: str, price: float, qty: int) -> tuple[bool, str]:
+        # Auto-reset daily budget at start of each new day
+        self._auto_reset_if_new_day()
+
         if price <= 0 or qty <= 0:
             return False, "invalid_price_or_qty"
         if price < self.limits.min_price or price > self.limits.max_price:
@@ -37,4 +50,20 @@ class PolicyGate:
         # Passed; update budget
         self._daily_notional += notional
         return True, "ok"
+
+    def get_remaining_daily_budget(self) -> float:
+        """Get remaining daily budget in USD."""
+        self._auto_reset_if_new_day()
+        return self.limits.max_daily_notional - self._daily_notional
+
+    def get_status(self) -> Dict[str, Any]:
+        """Get current PolicyGate status."""
+        self._auto_reset_if_new_day()
+        return {
+            "daily_used": round(self._daily_notional, 2),
+            "daily_limit": self.limits.max_daily_notional,
+            "daily_remaining": round(self.get_remaining_daily_budget(), 2),
+            "per_order_limit": self.limits.max_notional_per_order,
+            "last_reset": self._last_reset_date.isoformat(),
+        }
 

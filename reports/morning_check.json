@@ -1,0 +1,36 @@
+{
+  "timestamp_utc": "2025-12-27T04:30:52.389872",
+  "env": {
+    "POLYGON_API_KEY": true,
+    "ALPACA_API_KEY_ID": true,
+    "ALPACA_API_SECRET_KEY": true,
+    "ALPACA_BASE_URL": "https://paper-api.alpaca.markets"
+  },
+  "broker": {
+    "http_status": 200,
+    "ok": true
+  },
+  "polygon": {
+    "http_status": 200,
+    "ok": true
+  },
+  "files": {
+    "universe_exists": true,
+    "universe_count": 900,
+    "cache_dir": true,
+    "models_deployed": false
+  },
+  "disk": {
+    "total": 1999441489920,
+    "used": 205389041664,
+    "free": 1794052448256,
+    "free_human": "1.6 TB"
+  },
+  "backup": {
+    "last": null,
+    "age_hours": null
+  },
+  "kill_switch": {
+    "active": false
+  }
+}

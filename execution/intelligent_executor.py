@@ -298,14 +298,16 @@ class IntelligentExecutor:
         if self.policy_gate and shares > 0:
             try:
                 entry_price = signal.get('entry_price', 0)
-                risk_per_share = abs(entry_price - signal.get('stop_loss', entry_price * 0.95))
-                total_risk = risk_per_share * shares
+                side = signal.get('side', 'long')
 
-                gate_result = self.policy_gate.check(
+                # PolicyGate.check() signature: (symbol, side, price, qty) -> (bool, str)
+                allowed, reason = self.policy_gate.check(
                     symbol=symbol,
-                    risk_usd=total_risk
+                    side=side,
+                    price=entry_price,
+                    qty=shares
                 )
-                if not gate_result.allowed:
+                if not allowed:
                     return ExecutionResult(
                         symbol=symbol,
                         signal=signal,
@@ -316,7 +318,7 @@ class IntelligentExecutor:
                         ml_confidence=ml_confidence,
                         regime="unknown",
                         strategy_used=signal.get('strategy', 'unknown'),
-                        rejection_reason=f"PolicyGate blocked: {gate_result.reason}",
+                        rejection_reason=f"PolicyGate blocked: {reason}",
                     )
             except Exception as e:
                 logger.warning(f"PolicyGate check failed for {symbol}: {e}")

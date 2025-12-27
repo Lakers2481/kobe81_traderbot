@@ -127,7 +127,7 @@ class KillSwitchStatus:
 @dataclass
 class MarketContext:
     """Market context data."""
-    vix: float = 0.0
+    vix: float = 18.0  # Safe default VIX value (historical average)
     vix_regime: str = "NORMAL"
     spy_price: float = 0.0
     qqq_price: float = 0.0

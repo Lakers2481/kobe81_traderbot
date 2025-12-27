@@ -12,6 +12,7 @@ import requests
 from oms.order_state import OrderRecord, OrderStatus
 from oms.idempotency_store import IdempotencyStore
 from core.rate_limiter import with_retry
+from core.kill_switch import require_no_kill_switch, is_kill_switch_active
 from config.settings_loader import (
     is_clamp_enabled,
     get_clamp_max_pct,
@@ -264,6 +265,7 @@ def check_liquidity_for_order(
     )
 
 
+@require_no_kill_switch
 def place_ioc_limit(order: OrderRecord) -> OrderRecord:
     """Place an IOC LIMIT order via Alpaca. Returns updated OrderRecord."""
     cfg = _alpaca_cfg()
@@ -400,6 +402,7 @@ class OrderResult:
         )
 
 
+@require_no_kill_switch
 def place_order_with_liquidity_check(
     order: OrderRecord,
     strict: bool = True,
@@ -465,6 +468,7 @@ def place_order_with_liquidity_check(
     )
 
 
+@require_no_kill_switch
 def execute_signal(
     symbol: str,
     side: str,

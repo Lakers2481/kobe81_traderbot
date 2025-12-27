@@ -1,0 +1,63 @@
+{
+  "screened_at": "2025-12-26T22:59:02.944500",
+  "dataset_id": "test",
+  "alphas_tested": 2,
+  "alphas_passed": 0,
+  "multiple_testing_warning": false,
+  "data_quality_warnings": [],
+  "config": {
+    "train_days": 50,
+    "test_days": 20,
+    "min_oos_sharpe": 0.3,
+    "min_oos_trades": 30,
+    "max_drawdown": 0.3
+  },
+  "results": [
+    {
+      "alpha_name": "rsi2_oversold",
+      "category": "mean_reversion",
+      "total_trades": 14,
+      "win_rate": 0.7142857142857143,
+      "profit_factor": 11.665899046996081,
+      "sharpe_ratio": 11.727694064318014,
+      "sortino_ratio": 0.0,
+      "max_drawdown": 0.0024617332351034352,
+      "cagr": 0.0,
+      "oos_trades": 14,
+      "oos_sharpe": 11.727694064318014,
+      "oos_profit_factor": 11.665899046996081,
+      "oos_win_rate": 0.7142857142857143,
+      "regime_sharpes": {},
+      "regime_stability": 0.0,
+      "ticker_concentration": 0.0,
+      "t_stat": 2.7642440001868294,
+      "p_value": 0.016093707139510638,
+      "rank": 1,
+      "passed_gate": false,
+      "multiple_testing_warning": false
+    },
+    {
+      "alpha_name": "momentum_breakout",
+      "category": "momentum",
+      "total_trades": 0,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "sharpe_ratio": 0.0,
+      "sortino_ratio": 0.0,
+      "max_drawdown": 0.0,
+      "cagr": 0.0,
+      "oos_trades": 0,
+      "oos_sharpe": 0.0,
+      "oos_profit_factor": 0.0,
+      "oos_win_rate": 0.0,
+      "regime_sharpes": {},
+      "regime_stability": 0.0,
+      "ticker_concentration": 0.0,
+      "t_stat": 0.0,
+      "p_value": 1.0,
+      "rank": 2,
+      "passed_gate": false,
+      "multiple_testing_warning": false
+    }
+  ]
+}

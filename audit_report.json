@@ -1,0 +1,280 @@
+{
+  "audit_metadata": {
+    "system_name": "kobe81_traderbot",
+    "audit_date": "2025-12-26",
+    "auditor": "Code Auditor Agent",
+    "directories_audited": [
+      "strategies/",
+      "execution/",
+      "risk/",
+      "backtest/",
+      "scripts/",
+      "monitor/",
+      "cognitive/"
+    ],
+    "total_files_checked": 15,
+    "syntax_validation": "PASS",
+    "import_validation": "PASS"
+  },
+  "summary": {
+    "total_issues": 11,
+    "critical": 1,
+    "high": 3,
+    "medium": 4,
+    "low": 3
+  },
+  "issues": [
+    {
+      "file_path": "execution/intelligent_executor.py",
+      "line_number": 304,
+      "issue_type": "Type Mismatch / API Contract Violation",
+      "severity": "CRITICAL",
+      "description": "PolicyGate.check() called with incorrect arguments. Method signature is check(symbol, side, price, qty) but called with check(symbol, risk_usd). This will cause runtime TypeError.",
+      "code_snippet": "gate_result = self.policy_gate.check(\n    symbol=symbol,\n    risk_usd=total_risk\n)",
+      "expected_signature": "check(symbol: str, side: str, price: float, qty: int) -> tuple[bool, str]",
+      "suggested_fix": "Calculate price and qty from signal, then call:\ngate_result_tuple = self.policy_gate.check(\n    symbol=symbol,\n    side=signal.get('side', 'long'),\n    price=entry_price,\n    qty=shares\n)\nallowed, reason = gate_result_tuple\nif not allowed:\n    # Handle rejection using reason string"
+    },
+    {
+      "file_path": "execution/intelligent_executor.py",
+      "line_number": 308,
+      "issue_type": "Undefined Attribute Access",
+      "severity": "CRITICAL",
+      "description": "Attempting to access gate_result.allowed but PolicyGate.check() returns tuple[bool, str], not an object with attributes. This will cause AttributeError at runtime.",
+      "code_snippet": "if not gate_result.allowed:\n    return ExecutionResult(...)",
+      "suggested_fix": "Unpack the tuple:\nallowed, reason = gate_result\nif not allowed:\n    return ExecutionResult(\n        rejection_reason=f\"PolicyGate blocked: {reason}\",\n        ...\n    )"
+    },
+    {
+      "file_path": "web/dashboard_pro.py",
+      "line_number": 208,
+      "issue_type": "Bare except clause",
+      "severity": "HIGH",
+      "description": "Bare 'except:' clause catches all exceptions including SystemExit and KeyboardInterrupt. Should specify exception types.",
+      "code_snippet": "except:\n    pass",
+      "suggested_fix": "except Exception:\n    logger.debug('Dashboard operation failed')\n    pass"
+    },
+    {
+      "file_path": "web/dashboard_pro.py",
+      "line_number": "Multiple (360, 369, 652, 662, 689, 787, 842, 960)",
+      "issue_type": "Multiple bare except clauses",
+      "severity": "HIGH",
+      "description": "Multiple bare 'except:' clauses throughout dashboard_pro.py. These can mask critical errors and make debugging difficult.",
+      "suggested_fix": "Replace all bare except clauses with specific exception types:\nexcept (ValueError, KeyError, TypeError) as e:\n    logger.debug(f'Operation failed: {e}')"
+    },
+    {
+      "file_path": "data/lake/manifest.py",
+      "line_number": 163,
+      "issue_type": "Bare except clause",
+      "severity": "HIGH",
+      "description": "Bare 'except:' in critical data lake manifest code. Could hide data corruption issues.",
+      "suggested_fix": "except (IOError, json.JSONDecodeError) as e:\n    logger.error(f'Manifest operation failed: {e}')\n    raise"
+    },
+    {
+      "file_path": "backtest/engine.py",
+      "line_number": 143,
+      "issue_type": "Placeholder code - Empty implementation",
+      "severity": "MEDIUM",
+      "description": "Empty 'pass' statement in short entry logic. Short selling is not implemented but has placeholder code.",
+      "code_snippet": "else:  # short entry not implemented in v1 (use long puts instead)\n    pass",
+      "suggested_fix": "Either implement short selling logic or raise NotImplementedError:\nelse:\n    raise NotImplementedError('Short selling not yet implemented. Use long puts strategy instead.')"
+    },
+    {
+      "file_path": "execution/broker_alpaca.py",
+      "line_number": 267,
+      "issue_type": "Missing return type annotation",
+      "severity": "MEDIUM",
+      "description": "Function place_ioc_limit returns OrderRecord but function signature in docstring doesn't specify return type clearly for type checkers.",
+      "suggested_fix": "Add type annotation:\ndef place_ioc_limit(order: OrderRecord) -> OrderRecord:"
+    },
+    {
+      "file_path": "cognitive/knowledge_boundary.py",
+      "line_number": 229,
+      "issue_type": "Bare except with pass",
+      "severity": "MEDIUM",
+      "description": "Bare except clause in knowledge boundary assessment. Could hide logic errors in uncertainty quantification.",
+      "suggested_fix": "except (AttributeError, KeyError) as e:\n    logger.debug(f'Knowledge boundary check failed: {e}')\n    pass"
+    },
+    {
+      "file_path": "cognitive/curiosity_engine.py",
+      "line_number": 431,
+      "issue_type": "Bare except with pass",
+      "severity": "MEDIUM",
+      "description": "Bare except in hypothesis testing. Could hide important edge discovery failures.",
+      "suggested_fix": "except (ValueError, RuntimeError) as e:\n    logger.warning(f'Hypothesis test failed: {e}')\n    pass"
+    },
+    {
+      "file_path": "scripts/deploy.py",
+      "line_number": 227,
+      "issue_type": "Bare except clause",
+      "severity": "LOW",
+      "description": "Bare except in deployment script could hide critical deployment failures.",
+      "suggested_fix": "except subprocess.CalledProcessError as e:\n    logger.error(f'Deployment failed: {e}')\n    sys.exit(1)"
+    },
+    {
+      "file_path": "scripts/learn.py",
+      "line_number": "Multiple (37, 51, 84)",
+      "issue_type": "Multiple bare except clauses",
+      "severity": "LOW",
+      "description": "Multiple bare except clauses in learning script. Could hide model training errors.",
+      "suggested_fix": "Replace with specific exceptions:\nexcept (ValueError, ImportError, AttributeError) as e:\n    logger.error(f'Learning operation failed: {e}')"
+    }
+  ],
+  "code_quality_observations": [
+    {
+      "category": "Positive - No Lookahead Bias",
+      "description": "All strategy files (Donchian, Turtle Soup) correctly implement no-lookahead indicators using .shift(1) for signal generation. This ensures backtest validity.",
+      "files": [
+        "strategies/donchian/strategy.py",
+        "strategies/ict/turtle_soup.py"
+      ]
+    },
+    {
+      "category": "Positive - Comprehensive Error Handling",
+      "description": "Broker integration (broker_alpaca.py) has robust error handling for network failures, rate limits, and API errors with retry logic.",
+      "files": [
+        "execution/broker_alpaca.py"
+      ]
+    },
+    {
+      "category": "Positive - Idempotency Protection",
+      "description": "Order execution system uses IdempotencyStore to prevent duplicate order submissions, critical for production trading.",
+      "files": [
+        "execution/broker_alpaca.py",
+        "oms/idempotency_store.py"
+      ]
+    },
+    {
+      "category": "Positive - Risk Management",
+      "description": "Multiple layers of risk protection: PolicyGate budget limits, liquidity gates, position sizing, and kill switch mechanism.",
+      "files": [
+        "risk/policy_gate.py",
+        "risk/liquidity_gate.py",
+        "core/kill_switch.py"
+      ]
+    },
+    {
+      "category": "Concern - Code Duplication",
+      "description": "Multiple scripts have duplicate error handling patterns. Consider creating shared error handling utilities.",
+      "severity": "LOW"
+    },
+    {
+      "category": "Concern - Type Safety",
+      "description": "While most code uses type hints, some critical functions lack complete type annotations which could prevent early error detection.",
+      "severity": "LOW"
+    }
+  ],
+  "security_observations": [
+    {
+      "category": "PASS - No Hardcoded Secrets",
+      "description": "All API keys and secrets are loaded from environment variables. No hardcoded credentials found in code."
+    },
+    {
+      "category": "PASS - No SQL Injection Risk",
+      "description": "System uses Polygon API and Alpaca REST API with proper request formatting. No raw SQL found."
+    },
+    {
+      "category": "PASS - No Command Injection",
+      "description": "subprocess calls use list arguments rather than shell strings, preventing command injection."
+    },
+    {
+      "category": "ADVISORY - Environment File Security",
+      "description": "System relies on .env files for secrets. Ensure .env files are in .gitignore and have restricted file permissions (600).",
+      "recommendation": "Verify: .env files are gitignored, file permissions are 600 (owner read/write only)"
+    }
+  ],
+  "resource_leak_check": [
+    {
+      "category": "PASS - HTTP Requests",
+      "description": "All HTTP requests use context managers or have explicit timeout parameters. No resource leaks detected."
+    },
+    {
+      "category": "PASS - File Handling",
+      "description": "File operations use context managers (with statements) or explicit close() calls. No file descriptor leaks detected."
+    }
+  ],
+  "dead_code_analysis": [
+    {
+      "file_path": "backtest/engine.py",
+      "line_number": 143,
+      "description": "Short selling logic is placeholder (just 'pass'). Either implement or remove the else branch.",
+      "severity": "LOW"
+    }
+  ],
+  "testing_recommendations": [
+    {
+      "priority": "CRITICAL",
+      "test_case": "Test PolicyGate Integration",
+      "description": "Write integration test for intelligent_executor.py calling PolicyGate with correct arguments. Current code will fail at runtime.",
+      "file": "tests/test_intelligent_executor.py"
+    },
+    {
+      "priority": "HIGH",
+      "test_case": "Test Error Handling Paths",
+      "description": "Test all bare except clauses to ensure they don't hide critical errors. Replace with specific exception types.",
+      "file": "tests/test_error_handling.py"
+    },
+    {
+      "priority": "MEDIUM",
+      "test_case": "Test Broker Liquidity Gate",
+      "description": "Test liquidity gate rejection scenarios to ensure orders are properly blocked when liquidity is insufficient.",
+      "file": "tests/test_liquidity_gate.py"
+    }
+  ],
+  "deployment_readiness": {
+    "status": "NOT READY - CRITICAL BUGS FOUND",
+    "blockers": [
+      {
+        "issue": "PolicyGate API mismatch in intelligent_executor.py",
+        "severity": "CRITICAL",
+        "impact": "System will crash when trying to execute trades through intelligent executor",
+        "must_fix": true
+      }
+    ],
+    "warnings": [
+      {
+        "issue": "Multiple bare except clauses",
+        "severity": "HIGH",
+        "impact": "Errors may be silently swallowed, making debugging difficult in production",
+        "recommended_fix": "Replace all bare except with specific exception types"
+      }
+    ]
+  },
+  "recommendations": [
+    {
+      "priority": 1,
+      "action": "Fix PolicyGate.check() call in intelligent_executor.py",
+      "impact": "CRITICAL - System cannot execute trades without this fix",
+      "effort": "LOW - 15 minutes"
+    },
+    {
+      "priority": 2,
+      "action": "Replace bare except clauses with specific exception types",
+      "impact": "HIGH - Improves error visibility and debugging",
+      "effort": "MEDIUM - 2-3 hours to review and fix all instances"
+    },
+    {
+      "priority": 3,
+      "action": "Add integration tests for PolicyGate and IntelligentExecutor",
+      "impact": "HIGH - Prevents future API contract violations",
+      "effort": "MEDIUM - 3-4 hours"
+    },
+    {
+      "priority": 4,
+      "action": "Add type annotations to critical functions",
+      "impact": "MEDIUM - Enables static type checking",
+      "effort": "MEDIUM - 2-3 hours"
+    },
+    {
+      "priority": 5,
+      "action": "Implement or remove placeholder short selling logic",
+      "impact": "LOW - Code clarity",
+      "effort": "LOW - 30 minutes to decide and implement"
+    }
+  ],
+  "validation_summary": {
+    "syntax_check": "PASS - All Python files compile successfully",
+    "import_check": "PASS - All critical modules import without errors",
+    "execution_test": "FAIL - Runtime errors expected in IntelligentExecutor.execute_signal_intelligently()",
+    "overall_grade": "C+ (75/100)",
+    "rationale": "Code is well-structured with good architectural patterns, but has 1 critical bug that prevents production use and multiple high-severity error handling issues. Once critical bug is fixed, system should be production-ready with monitoring."
+  }
+}
