@@ -10,6 +10,9 @@ nul
 wf_outputs/
 wf_outputs_*/
 smoke_outputs/
+smoke_wf_audit/
+optimize_outputs/
+optimize_outputs_*/
 
 # Environment
 .env
@@ -22,11 +25,15 @@ smoke_outputs/
 
 # State files (runtime data, keep structure)
 state/*.json
+state/*.sqlite
 !state/.gitkeep
 
 # Log files (runtime data, keep structure)
 logs/*.jsonl
 logs/*.log
+logs/*.csv
+logs/*.json
+logs/ai_bundles/
 !logs/.gitkeep
 
 # Python
