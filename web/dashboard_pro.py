@@ -1953,7 +1953,7 @@ async def trigger_enhanced_scan():
         scan_results = {
             "scan_time": datetime.now(CT).isoformat(),
             "scan_runtime_seconds": elapsed,
-            "universe_mode": "PROVEN_950",
+            "universe_mode": "PROVEN_900",
             "total_scanned": summary.total_symbols,
             "signals_found": ready_count,
             "long_count": ready_count,
