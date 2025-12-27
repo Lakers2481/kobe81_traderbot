@@ -11,10 +11,10 @@ Components:
 
 from .policy_gate import PolicyGate
 
-# Import advanced submodule for explicit access
-from . import advanced
+# Note: advanced submodule is available but not auto-imported
+# to avoid dependency issues. Import explicitly:
+#   from risk.advanced import MonteCarloVaR, KellyPositionSizer
 
 __all__ = [
     'PolicyGate',
-    'advanced',
 ]

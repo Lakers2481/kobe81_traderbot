@@ -11,41 +11,20 @@ Modules:
 - online_learning: Incremental learning with concept drift detection
 
 MERGED FROM GAME_PLAN_2K28 - Production Ready
+
+Usage:
+    from ml_advanced.hmm_regime_detector import HMMRegimeDetector
+    from ml_advanced.lstm_confidence import LSTMConfidenceModel
+    from ml_advanced.ensemble import EnsemblePredictor
+    from ml_advanced.online_learning import OnlineLearningManager
 """
 
-from .hmm_regime_detector import (
-    HMMRegimeDetector,
-    AdaptiveRegimeDetector,
-    RegimeState,
-    create_regime_detector,
-    HMM_AVAILABLE
-)
+# Lazy imports to avoid dependency issues in CI
+# Import modules explicitly when needed
 
-from .online_learning import (
-    OnlineLearningManager,
-    ExperienceReplayBuffer,
-    ConceptDriftDetector,
-    TradeOutcome,
-    create_online_learning_manager
-)
-
-# Conditional imports for optional dependencies
 __all__ = [
-    # HMM Regime Detection
-    'HMMRegimeDetector',
-    'AdaptiveRegimeDetector',
-    'RegimeState',
-    'create_regime_detector',
-    'HMM_AVAILABLE',
-
-    # Online Learning
-    'OnlineLearningManager',
-    'ExperienceReplayBuffer',
-    'ConceptDriftDetector',
-    'TradeOutcome',
-    'create_online_learning_manager',
+    'hmm_regime_detector',
+    'lstm_confidence',
+    'ensemble',
+    'online_learning',
 ]
-
-# Import submodules for explicit access
-from . import lstm_confidence
-from . import ensemble
