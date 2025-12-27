@@ -1,0 +1,26 @@
+{
+  "performance": {
+    "turtle_soup|BEAR": {
+      "strategy": "turtle_soup",
+      "regime": "BEAR",
+      "total_trades": 2,
+      "winning_trades": 2,
+      "losing_trades": 0,
+      "total_pnl": 600.0,
+      "avg_r_multiple": 1.5,
+      "max_drawdown": 0.0,
+      "last_updated": "2025-12-26T21:55:41.001306",
+      "notes": [
+        "Reflected on winning trade. Key lesson: REPEAT: Trade turtle_soup in BEAR + turtle_soup Positive: Trade won with 1.5R profit",
+        "Reflected on winning trade. Key lesson: REPEAT: Trade turtle_soup in BEAR + turtle_soup Positive: Trade won with 1.5R profit"
+      ],
+      "win_rate": 1.0,
+      "capability": "unknown"
+    }
+  },
+  "limitations": [],
+  "calibration": {},
+  "recent_errors": [],
+  "self_description": "I am Kobe, a trading robot with the following self-knowledge:\n\nTotal trades analyzed: 2",
+  "saved_at": "2025-12-26T21:55:41.001306"
+}
