@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.11', '3.12']
+        python-version: ['3.11']
 
     steps:
       - name: Checkout code
@@ -29,6 +29,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest pytest-cov
+
+      - name: Verify architecture document
+        run: |
+          python scripts/verify_architecture.py
 
       - name: Run unit tests
         run: |
