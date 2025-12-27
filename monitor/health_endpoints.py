@@ -17,6 +17,11 @@ _metrics: Dict[str, Any] = {
         "orders_submitted": 0,
         "orders_rejected": 0,
         "orders_filled": 0,
+        # IOC-specific counters for fill visibility
+        "ioc_submitted": 0,
+        "ioc_filled": 0,
+        "ioc_cancelled": 0,
+        "liquidity_blocked": 0,
     },
     "performance": {
         "win_rate": None,
@@ -28,6 +33,11 @@ _metrics: Dict[str, Any] = {
         "start_time": time.time(),
         "uptime_seconds": 0,
     },
+    "timestamps": {
+        "last_submit_ts": None,
+        "last_fill_ts": None,
+        "last_trade_event_ts": None,
+    },
 }
 
 
@@ -36,6 +46,31 @@ def update_request_counter(counter_name: str, increment: int = 1) -> None:
     if counter_name in _metrics["requests"]:
         _metrics["requests"][counter_name] += increment
     _metrics["requests"]["total"] += increment
+
+
+def update_trade_event(kind: str) -> None:
+    """
+    Update metrics for a trade event.
+
+    Args:
+        kind: One of "ioc_submitted", "ioc_filled", "ioc_cancelled", "liquidity_blocked"
+    """
+    now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    _metrics["timestamps"]["last_trade_event_ts"] = now
+
+    if kind in _metrics["requests"]:
+        _metrics["requests"][kind] += 1
+        _metrics["requests"]["total"] += 1
+
+    # Update specific timestamps
+    if kind == "ioc_submitted":
+        _metrics["timestamps"]["last_submit_ts"] = now
+        _metrics["requests"]["orders_submitted"] += 1
+    elif kind == "ioc_filled":
+        _metrics["timestamps"]["last_fill_ts"] = now
+        _metrics["requests"]["orders_filled"] += 1
+    elif kind == "ioc_cancelled":
+        _metrics["requests"]["orders_rejected"] += 1
 
 
 def update_performance_metrics(
@@ -83,6 +118,9 @@ def get_metrics() -> Dict[str, Any]:
 
     if cfg.get("include_performance", True):
         metrics["performance"] = _metrics["performance"].copy()
+
+    # Always include timestamps for trade events
+    metrics["timestamps"] = _metrics["timestamps"].copy()
 
     return metrics
 
@@ -145,6 +183,10 @@ def reset_metrics() -> None:
             "orders_submitted": 0,
             "orders_rejected": 0,
             "orders_filled": 0,
+            "ioc_submitted": 0,
+            "ioc_filled": 0,
+            "ioc_cancelled": 0,
+            "liquidity_blocked": 0,
         },
         "performance": {
             "win_rate": None,
@@ -155,6 +197,11 @@ def reset_metrics() -> None:
         "system": {
             "start_time": time.time(),
             "uptime_seconds": 0,
+        },
+        "timestamps": {
+            "last_submit_ts": None,
+            "last_fill_ts": None,
+            "last_trade_event_ts": None,
         },
     }
 

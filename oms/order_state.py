@@ -33,4 +33,6 @@ class OrderRecord:
     broker_order_id: Optional[str] = None
     last_update: Optional[datetime] = None
     notes: Optional[str] = None
+    fill_price: Optional[float] = None  # Actual fill price from broker
+    filled_qty: Optional[int] = None    # Number of shares filled
 

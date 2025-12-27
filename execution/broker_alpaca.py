@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import os
+import json
 import logging
-from dataclasses import dataclass
+import time
+from dataclasses import dataclass, asdict
 from datetime import datetime
+from pathlib import Path
 from typing import Optional, Dict, Any, Tuple
 import uuid
 
@@ -13,6 +16,7 @@ from oms.order_state import OrderRecord, OrderStatus
 from oms.idempotency_store import IdempotencyStore
 from core.rate_limiter import with_retry
 from core.kill_switch import require_no_kill_switch, is_kill_switch_active
+from monitor.health_endpoints import update_trade_event
 from config.settings_loader import (
     is_clamp_enabled,
     get_clamp_max_pct,
@@ -57,11 +61,25 @@ def _auth_headers(cfg: AlpacaConfig) -> Dict[str, str]:
     }
 
 
+def _data_api_base(cfg: AlpacaConfig) -> str:
+    """Return the Alpaca Data API base URL regardless of trading base.
+
+    Ensures we hit https://data.alpaca.markets for market data endpoints
+    even if ALPACA_BASE_URL points at paper or live trading.
+    """
+    data_base = cfg.base_url.replace("paper-api", "data").replace("api.", "data.")
+    if "data.alpaca.markets" not in data_base:
+        data_base = "https://data.alpaca.markets"
+    return data_base.rstrip("/")
+
+
 def _fetch_quotes(symbol: str, timeout: int = 5) -> Optional[Dict[str, Any]]:
     cfg = _alpaca_cfg()
     if not cfg.key_id or not cfg.secret:
         return None
-    url = f"{cfg.base_url}{ALPACA_QUOTES_URL}?symbols={symbol.upper()}"
+    # Use the data API domain for quotes
+    data_base = _data_api_base(cfg)
+    url = f"{data_base}{ALPACA_QUOTES_URL}?symbols={symbol.upper()}"
     try:
         r = requests.get(url, headers=_auth_headers(cfg), timeout=timeout)
         if r.status_code != 200:
@@ -265,15 +283,188 @@ def check_liquidity_for_order(
     )
 
 
+# ============================================================================
+# Order Status Resolution & Trade Logging
+# ============================================================================
+
+TRADES_LOG_PATH = Path("logs/trades.jsonl")
+
+
+def get_order_by_id(order_id: str, timeout: int = 5) -> Optional[Dict[str, Any]]:
+    """
+    Fetch order details by broker order ID.
+
+    Args:
+        order_id: The Alpaca order ID
+        timeout: Request timeout in seconds
+
+    Returns:
+        Order data dict or None if not found
+    """
+    cfg = _alpaca_cfg()
+    if not cfg.key_id or not cfg.secret:
+        return None
+
+    url = f"{cfg.base_url}{ALPACA_ORDERS_URL}/{order_id}"
+    try:
+        r = requests.get(url, headers=_auth_headers(cfg), timeout=timeout)
+        if r.status_code != 200:
+            logger.debug(f"Order {order_id} fetch failed: HTTP {r.status_code}")
+            return None
+        return r.json()
+    except Exception as e:
+        logger.debug(f"Order {order_id} fetch exception: {e}")
+        return None
+
+
+def get_order_by_client_id(client_order_id: str, timeout: int = 5) -> Optional[Dict[str, Any]]:
+    """
+    Fetch order details by client order ID (idempotency key).
+
+    Args:
+        client_order_id: The client order ID used when placing the order
+        timeout: Request timeout in seconds
+
+    Returns:
+        Order data dict or None if not found
+    """
+    cfg = _alpaca_cfg()
+    if not cfg.key_id or not cfg.secret:
+        return None
+
+    url = f"{cfg.base_url}{ALPACA_ORDERS_URL}:by_client_order_id"
+    params = {"client_order_id": client_order_id}
+    try:
+        r = requests.get(url, params=params, headers=_auth_headers(cfg), timeout=timeout)
+        if r.status_code != 200:
+            logger.debug(f"Order by client_id {client_order_id} fetch failed: HTTP {r.status_code}")
+            return None
+        return r.json()
+    except Exception as e:
+        logger.debug(f"Order by client_id {client_order_id} fetch exception: {e}")
+        return None
+
+
+def resolve_ioc_status(
+    order: OrderRecord,
+    timeout_s: float = 3.0,
+    interval_s: float = 0.3,
+) -> OrderRecord:
+    """
+    Poll Alpaca until IOC order reaches terminal state (FILLED/CANCELLED/EXPIRED).
+
+    IOC orders settle quickly, so we poll up to timeout_s to get final status.
+    Updates the OrderRecord in-place with final status, fill price, and filled qty.
+
+    Args:
+        order: OrderRecord with broker_order_id set
+        timeout_s: Maximum time to poll (default 3s)
+        interval_s: Polling interval (default 0.3s)
+
+    Returns:
+        Updated OrderRecord with final status
+    """
+    if not order.broker_order_id:
+        logger.warning(f"Cannot resolve status: no broker_order_id for {order.decision_id}")
+        return order
+
+    start_time = time.time()
+    terminal_states = {"filled", "cancelled", "expired", "rejected"}
+
+    while (time.time() - start_time) < timeout_s:
+        data = get_order_by_id(order.broker_order_id)
+        if data is None:
+            time.sleep(interval_s)
+            continue
+
+        alpaca_status = data.get("status", "").lower()
+        order.last_update = datetime.utcnow()
+
+        if alpaca_status in terminal_states:
+            # Map Alpaca status to our OrderStatus
+            if alpaca_status == "filled":
+                order.status = OrderStatus.FILLED
+                # Extract fill details
+                fill_price = data.get("filled_avg_price")
+                filled_qty = data.get("filled_qty")
+                if fill_price is not None:
+                    order.fill_price = float(fill_price)
+                if filled_qty is not None:
+                    order.filled_qty = int(float(filled_qty))
+                logger.info(
+                    f"Order {order.symbol} FILLED: {order.filled_qty} @ ${order.fill_price:.2f}"
+                )
+                update_trade_event("ioc_filled")
+            elif alpaca_status in ("cancelled", "expired"):
+                order.status = OrderStatus.CANCELLED
+                order.notes = f"alpaca_{alpaca_status}"
+                logger.info(f"Order {order.symbol} {alpaca_status.upper()}")
+                update_trade_event("ioc_cancelled")
+            elif alpaca_status == "rejected":
+                order.status = OrderStatus.REJECTED
+                order.notes = f"alpaca_rejected:{data.get('reject_reason', 'unknown')}"
+                logger.warning(f"Order {order.symbol} REJECTED: {order.notes}")
+                update_trade_event("ioc_cancelled")
+            return order
+
+        time.sleep(interval_s)
+
+    # Timeout - order still in non-terminal state
+    logger.warning(f"Order {order.decision_id} resolution timeout after {timeout_s}s")
+    order.notes = (order.notes or "") + ";resolution_timeout"
+    return order
+
+
+def log_trade_event(order: OrderRecord) -> None:
+    """
+    Log trade event to logs/trades.jsonl for audit and analysis.
+
+    Each line is a JSON object with order details and timestamps.
+    Creates logs/ directory if it doesn't exist.
+    """
+    TRADES_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    event = {
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "decision_id": order.decision_id,
+        "symbol": order.symbol,
+        "side": order.side,
+        "qty": order.qty,
+        "limit_price": order.limit_price,
+        "status": order.status.value if hasattr(order.status, "value") else str(order.status),
+        "broker_order_id": order.broker_order_id,
+        "fill_price": order.fill_price,
+        "filled_qty": order.filled_qty,
+        "notes": order.notes,
+    }
+
+    try:
+        with open(TRADES_LOG_PATH, "a", encoding="utf-8") as f:
+            f.write(json.dumps(event) + "\n")
+        logger.debug(f"Logged trade event: {order.symbol} {order.status}")
+    except Exception as e:
+        logger.error(f"Failed to log trade event: {e}")
+
+
 @require_no_kill_switch
-def place_ioc_limit(order: OrderRecord) -> OrderRecord:
-    """Place an IOC LIMIT order via Alpaca. Returns updated OrderRecord."""
+def place_ioc_limit(order: OrderRecord, resolve_status: bool = True) -> OrderRecord:
+    """
+    Place an IOC LIMIT order via Alpaca. Returns updated OrderRecord.
+
+    Args:
+        order: The order to place
+        resolve_status: If True, poll for final status and log trade event (default: True)
+
+    Returns:
+        Updated OrderRecord with final status if resolve_status=True
+    """
     cfg = _alpaca_cfg()
     store = IdempotencyStore()
     # Idempotency guard
     if store.exists(order.decision_id):
         order.status = OrderStatus.CLOSED
         order.notes = "duplicate_decision_id"
+        log_trade_event(order)
         return order
 
     url = f"{cfg.base_url}{ALPACA_ORDERS_URL}"
@@ -295,15 +486,24 @@ def place_ioc_limit(order: OrderRecord) -> OrderRecord:
         if r.status_code not in (200, 201):
             order.status = OrderStatus.REJECTED
             order.notes = f"alpaca_http_{r.status_code}"
+            log_trade_event(order)
             return order
         data = r.json()
         order.broker_order_id = data.get("id")
         order.status = OrderStatus.SUBMITTED
         store.put(order.decision_id, order.idempotency_key)
+        update_trade_event("ioc_submitted")
+
+        # Resolve IOC status and log trade event
+        if resolve_status and order.broker_order_id:
+            order = resolve_ioc_status(order)
+        log_trade_event(order)
+
         return order
     except Exception as e:
         order.status = OrderStatus.REJECTED
         order.notes = f"exception:{e}"
+        log_trade_event(order)
         return order
 
 
@@ -452,6 +652,7 @@ def place_order_with_liquidity_check(
         # Reject the order
         order.status = OrderStatus.REJECTED
         order.notes = f"liquidity_gate:{liq_check.reason}"
+        update_trade_event("liquidity_blocked")
         return OrderResult(
             order=order,
             liquidity_check=liq_check,

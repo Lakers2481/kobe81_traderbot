@@ -4,12 +4,20 @@ Kobe 24/7 Runner - Scheduled trading execution.
 
 Runs paper or live trading at configurable times throughout the trading day.
 Includes position reconciliation on startup and periodic health checks.
+
+Features:
+- Single-instance enforcement via file locking
+- Heartbeat tracking for process monitoring
+- Graceful shutdown on SIGTERM/SIGINT
+- Kill switch integration
 """
 from __future__ import annotations
 
 import argparse
+import atexit
 import json
 import os
+import signal
 from pathlib import Path
 from datetime import datetime, timedelta, time as dtime
 import subprocess
@@ -22,13 +30,56 @@ sys.path.insert(0, str(ROOT / 'scripts'))
 
 from core.structured_log import jlog
 from monitor.health_endpoints import start_health_server, update_request_counter
+from monitor.heartbeat import HeartbeatWriter, update_global_heartbeat
+from ops.locks import FileLock, LockError, is_another_instance_running
 from market_calendar import is_market_closed, get_market_hours
 from core.alerts import send_telegram
 from core.kill_switch import is_kill_switch_active, get_kill_switch_info
 from config.env_loader import load_env
 
+# Global shutdown flag
+_shutdown_requested = False
+
+# Global lock and heartbeat instances
+_lock: FileLock | None = None
+_heartbeat: HeartbeatWriter | None = None
+
 
 STATE_FILE = ROOT / 'state' / 'runner_last.json'
+LOCK_FILE = ROOT / 'state' / 'kobe_runner.lock'
+
+
+def _signal_handler(signum, frame):
+    """Handle shutdown signals gracefully."""
+    global _shutdown_requested
+    sig_name = signal.Signals(signum).name if hasattr(signal, 'Signals') else str(signum)
+    jlog('runner_signal_received', level='INFO', signal=sig_name)
+    _shutdown_requested = True
+
+
+def _cleanup():
+    """Cleanup on shutdown."""
+    global _lock, _heartbeat
+    jlog('runner_cleanup', level='INFO')
+
+    if _heartbeat:
+        _heartbeat.update("shutting_down")
+        _heartbeat.stop()
+        _heartbeat = None
+
+    if _lock:
+        _lock.release()
+        _lock = None
+
+
+def _setup_signal_handlers():
+    """Register signal handlers for graceful shutdown."""
+    # SIGINT (Ctrl+C) and SIGTERM (termination request)
+    signal.signal(signal.SIGINT, _signal_handler)
+    signal.signal(signal.SIGTERM, _signal_handler)
+
+    # Register cleanup on exit
+    atexit.register(_cleanup)
 
 
 def parse_times(csv: str) -> list[dtime]:
@@ -161,6 +212,8 @@ def run_submit(mode: str, universe: Path, cap: int, start_days: int, dotenv: Pat
 
 
 def main():
+    global _lock, _heartbeat, _shutdown_requested
+
     ap = argparse.ArgumentParser(description='Kobe 24/7 Runner (submit on schedule)')
     ap.add_argument('--mode', type=str, choices=['paper','live'], default='paper')
     ap.add_argument('--universe', type=str, required=True)
@@ -170,6 +223,7 @@ def main():
     ap.add_argument('--dotenv', type=str, default='./.env')
     ap.add_argument('--once', action='store_true', help='Run once immediately and exit')
     ap.add_argument('--skip-reconcile', action='store_true', help='Skip position reconciliation on startup')
+    ap.add_argument('--skip-lock', action='store_true', help='Skip single-instance lock (for debugging)')
     args = ap.parse_args()
 
     dotenv = Path(args.dotenv)
@@ -178,6 +232,34 @@ def main():
 
     universe = Path(args.universe)
     times = parse_times(args.scan_times)
+
+    # Setup signal handlers for graceful shutdown
+    _setup_signal_handlers()
+
+    # Single-instance lock (unless skipped)
+    if not args.skip_lock:
+        if is_another_instance_running(LOCK_FILE):
+            jlog('runner_already_running', level='ERROR')
+            print("ERROR: Another runner instance is already running.")
+            print(f"Lock file: {LOCK_FILE}")
+            sys.exit(1)
+
+        try:
+            _lock = FileLock(LOCK_FILE)
+            _lock.acquire(blocking=False)
+            jlog('runner_lock_acquired', lock_file=str(LOCK_FILE))
+        except LockError as e:
+            jlog('runner_lock_failed', level='ERROR', error=str(e))
+            print(f"ERROR: Could not acquire lock: {e}")
+            sys.exit(1)
+
+    # Start heartbeat writer
+    _heartbeat = HeartbeatWriter(
+        heartbeat_path=ROOT / 'state' / 'heartbeat.json',
+        interval=60,
+        mode=args.mode,
+    )
+    _heartbeat.start()
 
     # Start health server (if enabled in config/base.yaml)
     try:
@@ -192,6 +274,7 @@ def main():
     # Position reconciliation on startup
     if not args.skip_reconcile:
         jlog('runner_startup_reconcile', level='INFO')
+        _heartbeat.update("reconciling_positions")
         reconcile_result = reconcile_positions(dotenv)
         if reconcile_result.get('discrepancies'):
             jlog('runner_reconcile_discrepancies', level='WARNING',
@@ -209,29 +292,42 @@ def main():
         send_telegram(f"Kobe halted by kill switch: {info.get('reason') if info else 'Unknown'}")
         print(f"Reason: {info.get('reason') if info else 'Unknown'}")
         print("Use /resume skill to deactivate after investigation.")
+        _cleanup()
         return
 
     if args.once:
+        _heartbeat.update("running_once")
         run_submit(args.mode, universe, args.cap, args.lookback_days, dotenv)
+        _cleanup()
         return
 
     jlog('runner_start', mode=args.mode, scan_times=args.scan_times, universe=str(universe))
+    _heartbeat.update("started")
     last_reconcile_date = datetime.now().date()
 
-    while True:
+    while not _shutdown_requested:
         now = datetime.now()
+
+        # Update heartbeat
+        _heartbeat.update(f"monitoring_{now.strftime('%H:%M')}")
+
+        # Touch lock to prevent stale detection
+        if _lock:
+            _lock.touch()
 
         # Check kill switch periodically
         if is_kill_switch_active():
             info = get_kill_switch_info()
             jlog('runner_halted_by_kill_switch', level='WARNING',
                  reason=info.get('reason') if info else 'Unknown')
+            _heartbeat.update("halted_by_kill_switch")
             time.sleep(60)  # Check again in 1 minute
             continue
 
         # Daily reconciliation (run once per day at start)
         if now.date() != last_reconcile_date and within_market_day(now):
             jlog('runner_daily_reconcile', level='INFO')
+            _heartbeat.update("daily_reconcile")
             reconcile_positions(dotenv)
             last_reconcile_date = now.date()
 
@@ -240,17 +336,29 @@ def main():
             # Respect early close: skip schedule items after close
             _open, early_close = get_market_hours(now)
             for t in times:
+                if _shutdown_requested:
+                    break
                 tag = f"{args.mode}_{t.strftime('%H%M')}"
                 target_dt = datetime.combine(now.date(), t)
                 if early_close and t > early_close:
                     continue
                 if now >= target_dt and not already_ran(tag, today_str):
+                    _heartbeat.update(f"running_{tag}")
                     rc = run_submit(args.mode, universe, args.cap, args.lookback_days, dotenv)
                     update_request_counter('total', 1)
                     mark_ran(tag, today_str)
                     jlog('runner_done', mode=args.mode, schedule=tag, returncode=rc)
                     send_telegram(f"Kobe run {tag} completed rc={rc}")
-        time.sleep(30)
+
+        # Sleep in small intervals for faster shutdown response
+        for _ in range(30):
+            if _shutdown_requested:
+                break
+            time.sleep(1)
+
+    # Graceful shutdown
+    jlog('runner_shutdown', level='INFO')
+    _cleanup()
 
 
 if __name__ == '__main__':
