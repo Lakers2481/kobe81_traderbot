@@ -400,5 +400,64 @@ class TestIntegration:
         assert EpisodicMemory is not None
 
 
+class TestSignalProcessor:
+    """Tests for CognitiveSignalProcessor."""
+
+    def test_import(self):
+        from cognitive.signal_processor import CognitiveSignalProcessor, get_signal_processor
+        assert CognitiveSignalProcessor is not None
+        assert get_signal_processor is not None
+
+    def test_create_processor(self):
+        from cognitive.signal_processor import CognitiveSignalProcessor
+
+        processor = CognitiveSignalProcessor(min_confidence=0.6)
+        assert processor.min_confidence == 0.6
+        assert processor.brain is not None
+
+    def test_evaluate_signals(self):
+        import pandas as pd
+        from cognitive.signal_processor import CognitiveSignalProcessor
+
+        processor = CognitiveSignalProcessor(min_confidence=0.3)
+
+        # Create test signals
+        signals = pd.DataFrame([
+            {
+                'symbol': 'AAPL',
+                'strategy': 'donchian',
+                'side': 'long',
+                'entry_price': 150.0,
+                'stop_loss': 145.0,
+                'take_profit': 160.0,
+            },
+            {
+                'symbol': 'MSFT',
+                'strategy': 'turtle_soup',
+                'side': 'long',
+                'entry_price': 380.0,
+                'stop_loss': 370.0,
+                'take_profit': 400.0,
+            },
+        ])
+
+        # Evaluate signals
+        approved_df, evaluated = processor.evaluate_signals(signals)
+
+        assert len(evaluated) == 2
+        assert all(ev.episode_id for ev in evaluated)
+        assert all(len(ev.reasoning_trace) > 0 for ev in evaluated)
+
+    def test_get_cognitive_status(self):
+        from cognitive.signal_processor import CognitiveSignalProcessor
+
+        processor = CognitiveSignalProcessor()
+        status = processor.get_cognitive_status()
+
+        assert 'processor_active' in status
+        assert 'brain_status' in status
+        assert status['processor_active'] == True
+
+
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])

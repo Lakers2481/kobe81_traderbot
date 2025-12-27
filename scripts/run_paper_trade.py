@@ -29,6 +29,13 @@ from core.structured_log import jlog
 from monitor.health_endpoints import update_request_counter
 from core.config_pin import sha256_file
 
+# Cognitive system (optional)
+try:
+    from cognitive.signal_processor import get_signal_processor
+    COGNITIVE_AVAILABLE = True
+except ImportError:
+    COGNITIVE_AVAILABLE = False
+
 
 def main():
     ap = argparse.ArgumentParser(description='Kobe paper trading runner (IOC LIMIT only)')
@@ -39,6 +46,8 @@ def main():
     ap.add_argument('--dotenv', type=str, default='./.env')
     ap.add_argument('--cache', type=str, default='data/cache')
     ap.add_argument('--kill-switch', type=str, default='state/KILL_SWITCH')
+    ap.add_argument('--cognitive', action='store_true', help='Enable cognitive brain for smarter trading decisions')
+    ap.add_argument('--cognitive-min-conf', type=float, default=0.5, help='Min cognitive confidence to trade')
     args = ap.parse_args()
 
     # Env
@@ -91,6 +100,51 @@ def main():
     if not todays.empty and is_earnings_filter_enabled():
         todays = pd.DataFrame(filter_signals_by_earnings(todays.to_dict('records')))
 
+    # Cognitive brain evaluation (optional)
+    cognitive_processor = None
+    cognitive_decisions = {}  # symbol -> (episode_id, size_multiplier)
+    if args.cognitive and COGNITIVE_AVAILABLE and not todays.empty:
+        jlog('cognitive_eval_start', count=len(todays))
+        print(f"Running cognitive brain evaluation on {len(todays)} signals...")
+        try:
+            cognitive_processor = get_signal_processor()
+            cognitive_processor.min_confidence = args.cognitive_min_conf
+
+            # Evaluate signals through cognitive system
+            approved_df, evaluated = cognitive_processor.evaluate_signals(
+                signals=todays,
+                market_data=data,
+            )
+
+            # Track cognitive decisions for outcome learning
+            for ev in evaluated:
+                sym = ev.original_signal.get('symbol', '')
+                strat = ev.original_signal.get('strategy', '')
+                if ev.approved:
+                    decision_id = f"{sym}_{strat}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+                    cognitive_decisions[sym] = {
+                        'episode_id': ev.episode_id,
+                        'decision_id': decision_id,
+                        'size_multiplier': ev.size_multiplier,
+                        'confidence': ev.cognitive_confidence,
+                    }
+
+            # Filter to only approved signals
+            if not approved_df.empty:
+                todays = approved_df
+                jlog('cognitive_eval_complete', approved=len(approved_df), total=len(evaluated))
+                print(f"  Cognitive: {len(evaluated)} evaluated -> {len(approved_df)} approved")
+            else:
+                jlog('cognitive_all_rejected', total=len(evaluated))
+                print("  Cognitive: All signals rejected (low confidence)")
+                todays = pd.DataFrame()
+
+        except Exception as e:
+            jlog('cognitive_eval_error', error=str(e), level='WARN')
+            print(f"  [WARN] Cognitive evaluation failed: {e}")
+    elif args.cognitive and not COGNITIVE_AVAILABLE:
+        print("  [WARN] Cognitive system not available")
+
     # Kill switch check
     if Path(args.kill_switch).exists():
         jlog('kill_switch_active', level='WARN', path=str(args.kill_switch))
@@ -111,7 +165,16 @@ def main():
             continue
         # Sizing: fit under per-order budget
         limit_px = round(ask * 1.001, 2)
-        max_qty = max(1, int(75.0 // limit_px))
+        base_qty = max(1, int(75.0 // limit_px))
+
+        # Apply cognitive size multiplier if available
+        size_multiplier = 1.0
+        cognitive_conf = None
+        if sym in cognitive_decisions:
+            cog = cognitive_decisions[sym]
+            size_multiplier = cog.get('size_multiplier', 1.0)
+            cognitive_conf = cog.get('confidence')
+        max_qty = max(1, int(base_qty * size_multiplier))
         ok, reason = policy.check(sym, 'long' if side=='BUY' else 'short', limit_px, max_qty)
         if not ok:
             jlog('policy_veto', symbol=sym, reason=reason, price=limit_px, qty=max_qty)
@@ -119,8 +182,8 @@ def main():
             continue
         decision = construct_decision(sym, 'long' if side=='BUY' else 'short', max_qty, ask)
         rec = place_ioc_limit(decision)
-        # Audit block
-        append_block({
+        # Build audit block with cognitive data if available
+        audit_data = {
             'decision_id': rec.decision_id,
             'symbol': sym,
             'side': side,
@@ -129,9 +192,20 @@ def main():
             'config_pin': config_pin,
             'status': str(rec.status),
             'notes': rec.notes,
-        })
-        jlog('order_submit', symbol=sym, status=str(rec.status), qty=max_qty, price=limit_px, decision_id=rec.decision_id)
-        print(f"{sym} -> {rec.status} @ {limit_px} qty {max_qty} note={rec.notes}")
+        }
+        if cognitive_conf is not None:
+            audit_data['cognitive_confidence'] = cognitive_conf
+            audit_data['cognitive_size_mult'] = size_multiplier
+            if sym in cognitive_decisions:
+                audit_data['cognitive_episode_id'] = cognitive_decisions[sym].get('episode_id')
+
+        append_block(audit_data)
+        jlog('order_submit', symbol=sym, status=str(rec.status), qty=max_qty, price=limit_px,
+             decision_id=rec.decision_id, cognitive_conf=cognitive_conf)
+
+        # Display with cognitive info if available
+        cog_info = f" cog={cognitive_conf:.2f}" if cognitive_conf is not None else ""
+        print(f"{sym} -> {rec.status} @ {limit_px} qty {max_qty}{cog_info} note={rec.notes}")
         if str(rec.status).upper().endswith('SUBMITTED'):
             update_request_counter('orders_submitted', 1)
         elif str(rec.status).upper().endswith('REJECTED'):

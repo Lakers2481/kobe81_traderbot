@@ -44,6 +44,7 @@ from cognitive.reflection_engine import ReflectionEngine
 from cognitive.knowledge_boundary import KnowledgeBoundary
 from cognitive.curiosity_engine import CuriosityEngine
 from cognitive.cognitive_brain import CognitiveBrain, get_cognitive_brain
+from cognitive.signal_processor import CognitiveSignalProcessor, get_signal_processor
 
 __all__ = [
     'GlobalWorkspace',
@@ -55,9 +56,11 @@ __all__ = [
     'KnowledgeBoundary',
     'CuriosityEngine',
     'CognitiveBrain',
+    'CognitiveSignalProcessor',
     'get_workspace',
     'get_self_model',
     'get_episodic_memory',
     'get_semantic_memory',
     'get_cognitive_brain',
+    'get_signal_processor',
 ]
