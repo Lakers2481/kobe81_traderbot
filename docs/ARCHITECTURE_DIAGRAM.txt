@@ -1,558 +1,139 @@
-# KOBE81 TRADERBOT - SYSTEM ARCHITECTURE DIAGRAM
-# Visual representation of 10-layer architecture and data flow
+KOBE81 TRADERBOT — TWO‑STRATEGY SYSTEM ARCHITECTURE (ASCII)
+===========================================================
 
-================================================================================
-                         KOBE81 TRADING SYSTEM
-                    10-Layer Institutional Architecture
-================================================================================
+Legend: [module] files | (service) endpoints | {data} artifacts
 
-┌──────────────────────────────────────────────────────────────────────────┐
-│                          LAYER 10: RUNNER                                │
-│                    Main Loop & Scheduling Control                        │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  scripts/runner.py                                             │     │
-│  │  - 24/7 scheduler with scan times (09:35, 10:30, 15:55)        │     │
-│  │  - State persistence (runner_last.json)                        │     │
-│  │  - Weekday filter, duplicate prevention                        │     │
-│  │  - Calls run_paper_trade.py or run_live_trade_micro.py        │     │
-│  └────────────────────────────────────────────────────────────────┘     │
-│                                                                          │
-│  Entry Points:                                                           │
-│  • scripts/preflight.py - Pre-flight safety checks                      │
-│  • scripts/run_paper_trade.py - Paper trading execution                 │
-│  • scripts/run_live_trade_micro.py - Live micro trading                 │
-│  • scripts/run_backtest_polygon.py - Historical simulation              │
-│  • scripts/run_wf_polygon.py - Walk-forward validation                  │
-│                                                                          │
-└──────────────────────────────────────────────────────────────────────────┘
-                                    ↓
-┌──────────────────────────────────────────────────────────────────────────┐
-│                       LAYER 9: MONITOR                                   │
-│                  Health Checks & System Status                           │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌──────────────────────┐  ┌──────────────────────┐                     │
-│  │ monitor/             │  │ scripts/             │                     │
-│  │ health_endpoints.py  │  │ reconcile_alpaca.py  │                     │
-│  │                      │  │ metrics.py           │                     │
-│  │ GET /liveness        │  │ benchmark.py         │                     │
-│  │ GET /readiness       │  │ quant_dashboard.py   │                     │
-│  └──────────────────────┘  └──────────────────────┘                     │
-│                                                                          │
-└──────────────────────────────────────────────────────────────────────────┘
-                                    ↓
-┌──────────────────────────────────────────────────────────────────────────┐
-│                        LAYER 8: CORE                                     │
-│              Logging, Audit, Configuration Management                    │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  core/structured_log.py                                        │     │
-│  │  • jlog(event, level, **fields)                                │     │
-│  │  • Writes to logs/events.jsonl                                 │     │
-│  │  • Format: {"ts": "...", "level": "INFO", "event": "..."}      │     │
-│  └────────────────────────────────────────────────────────────────┘     │
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  core/hash_chain.py                                            │     │
-│  │  • append_block(record) -> SHA256 hash                         │     │
-│  │  • verify_chain() -> bool                                      │     │
-│  │  • Tamper-proof audit trail (blockchain-style)                 │     │
-│  │  • File: state/hash_chain.jsonl                                │     │
-│  └────────────────────────────────────────────────────────────────┘     │
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  core/config_pin.py                                            │     │
-│  │  • sha256_file(config/settings.json) -> hash                   │     │
-│  │  • Detects unauthorized config changes                         │     │
-│  └────────────────────────────────────────────────────────────────┘     │
-│                                                                          │
-└──────────────────────────────────────────────────────────────────────────┘
-                                    ↓
-┌──────────────────────────────────────────────────────────────────────────┐
-│                      LAYER 7: EXECUTION                                  │
-│                   Broker Integration (Alpaca)                            │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  execution/broker_alpaca.py                                    │     │
-│  │                                                                │     │
-│  │  get_best_ask(symbol) -> float                                 │     │
-│  │    ├─ GET /v2/stocks/quotes?symbols={symbol}                   │     │
-│  │    └─ Returns current ask price                                │     │
-│  │                                                                │     │
-│  │  construct_decision(symbol, side, qty, best_ask) -> OrderRecord│     │
-│  │    ├─ decision_id = DEC_YYYYMMDD_HHMMSS_SYMBOL_RANDOM          │     │
-│  │    ├─ limit_price = best_ask × 1.001                           │     │
-│  │    └─ idempotency_key = decision_id                            │     │
-│  │                                                                │     │
-│  │  place_ioc_limit(order: OrderRecord) -> OrderRecord            │     │
-│  │    ├─ Check idempotency store                                  │     │
-│  │    ├─ POST /v2/orders                                          │     │
-│  │    │   {                                                       │     │
-│  │    │     "symbol": "AAPL",                                     │     │
-│  │    │     "qty": 10,                                            │     │
-│  │    │     "side": "buy",                                        │     │
-│  │    │     "type": "limit",                                      │     │
-│  │    │     "time_in_force": "ioc",                               │     │
-│  │    │     "limit_price": 150.15,                                │     │
-│  │    │     "client_order_id": "DEC_..."                          │     │
-│  │    │   }                                                       │     │
-│  │    └─ Update order status (SUBMITTED/REJECTED)                 │     │
-│  └────────────────────────────────────────────────────────────────┘     │
-│                                                                          │
-│  Endpoints:                                                              │
-│  • Paper: https://paper-api.alpaca.markets                              │
-│  • Live:  https://api.alpaca.markets                                    │
-│                                                                          │
-└──────────────────────────────────────────────────────────────────────────┘
-                                    ↑
-┌──────────────────────────────────────────────────────────────────────────┐
-│                         LAYER 6: OMS                                     │
-│              Order Management & Idempotency Control                      │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  oms/order_state.py                                            │     │
-│  │                                                                │     │
-│  │  OrderStatus Enum:                                             │     │
-│  │    PENDING → APPROVED → SUBMITTED → FILLED                     │     │
-│  │                       ↓                                        │     │
-│  │                    REJECTED / VETOED / CANCELLED               │     │
-│  │                                                                │     │
-│  │  OrderRecord dataclass:                                        │     │
-│  │    • decision_id, signal_id, symbol, side, qty                 │     │
-│  │    • limit_price, tif, order_type                              │     │
-│  │    • idempotency_key, created_at, status                       │     │
-│  │    • broker_order_id, last_update, notes                       │     │
-│  └────────────────────────────────────────────────────────────────┘     │
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  oms/idempotency_store.py                                      │     │
-│  │                                                                │     │
-│  │  SQLite Database: state/idempotency.sqlite                     │     │
-│  │                                                                │     │
-│  │  exists(decision_id) -> bool                                   │     │
-│  │  put(decision_id, idempotency_key)                             │     │
-│  │  get(decision_id) -> Optional[str]                             │     │
-│  │                                                                │     │
-│  │  Prevents duplicate submissions from network retries           │     │
-│  └────────────────────────────────────────────────────────────────┘     │
-│                                                                          │
-└──────────────────────────────────────────────────────────────────────────┘
-                                    ↑
-┌──────────────────────────────────────────────────────────────────────────┐
-│                        LAYER 5: RISK                                     │
-│                  Policy Gate & Budget Enforcement                        │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  risk/policy_gate.py                                           │     │
-│  │                                                                │     │
-│  │  RiskLimits:                                                   │     │
-│  │    max_notional_per_order: $75    (canary budget)              │     │
-│  │    max_daily_notional:     $1,000 (daily cap)                  │     │
-│  │    min_price:              $3.00  (avoid penny stocks)         │     │
-│  │    max_price:              $1,000 (sanity check)               │     │
-│  │    allow_shorts:           False  (disabled by default)        │     │
-│  │                                                                │     │
-│  │  PolicyGate.check(symbol, side, price, qty) -> (ok, reason)    │     │
-│  │    ✓ PASS: (True, "ok")                                        │     │
-│  │    ✗ VETO: (False, "exceeds_per_order_budget")                 │     │
-│  │                                                                │     │
-│  │  Budget tracking:                                              │     │
-│  │    _daily_notional += (price × qty)  [on approval]             │     │
-│  └────────────────────────────────────────────────────────────────┘     │
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  KILL SWITCH: state/KILL_SWITCH                                │     │
-│  │                                                                │     │
-│  │  if Path('state/KILL_SWITCH').exists():                        │     │
-│  │      ABORT all trading operations                              │     │
-│  │                                                                │     │
-│  │  Activation:  touch state/KILL_SWITCH  (or /kill skill)        │     │
-│  │  Deactivation: rm state/KILL_SWITCH    (or /resume skill)      │     │
-│  └────────────────────────────────────────────────────────────────┘     │
-│                                                                          │
-└──────────────────────────────────────────────────────────────────────────┘
-                                    ↑
-┌──────────────────────────────────────────────────────────────────────────┐
-│                      LAYER 4: BACKTEST                                   │
-│                Historical Simulation & Walk-Forward                      │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  backtest/engine.py                                            │     │
-│  │                                                                │     │
-│  │  Backtester class:                                             │     │
-│  │    1. Load data for symbols                                    │     │
-│  │    2. Generate signals via strategy                            │     │
-│  │    3. Simulate entries at next bar open                        │     │
-│  │    4. Apply slippage (5 bps default)                           │     │
-│  │    5. Track exits (ATR stop + time stop)                       │     │
-│  │    6. Compute P&L with FIFO accounting                         │     │
-│  │    7. Build daily equity curve                                 │     │
-│  │    8. Calculate metrics (Sharpe, win rate, max DD)             │     │
-│  │                                                                │     │
-│  │  Position sizing: 0.7% of cash per trade                       │     │
-│  │  Exits: ATR(14) × 2.0 stop OR 5-bar time stop                  │     │
-│  └────────────────────────────────────────────────────────────────┘     │
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  backtest/walk_forward.py                                      │     │
-│  │                                                                │     │
-│  │  generate_splits(start, end, train_days=252, test_days=63)     │     │
-│  │    ├─ Split 1: Train [2015-01-01 to 2016-01-01]                │     │
-│  │    │           Test  [2016-01-02 to 2016-04-02]                │     │
-│  │    ├─ Split 2: Train [2016-01-02 to 2017-01-02]                │     │
-│  │    │           Test  [2017-01-03 to 2017-04-03]                │     │
-│  │    └─ ...                                                      │     │
-│  │                                                                │     │
-│  │  run_walk_forward(symbols, splits, get_signals, fetch_bars)    │     │
-│  │    └─ Returns per-split metrics for stability analysis         │     │
-│  └────────────────────────────────────────────────────────────────┘     │
-│                                                                          │
-└──────────────────────────────────────────────────────────────────────────┘
-                                    ↑
-┌──────────────────────────────────────────────────────────────────────────┐
-│                      LAYER 3: STRATEGY                                   │
-│                 Signal Generation with Indicators                        │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌──────────────────────────────────────────┐                           │
-│  │  strategies/connors_rsi2/strategy.py     │                           │
-│  │                                          │                           │
-│  │  ConnorsRSI2Strategy:                    │                           │
-│  │    Indicators:                           │                           │
-│  │      • RSI(2) with Wilder smoothing      │                           │
-│  │      • SMA(200) trend filter             │                           │
-│  │      • ATR(14) for stop loss             │                           │
-│  │                                          │                           │
-│  │    Entry Conditions:                     │                           │
-│  │      Long:  RSI(2) ≤ 10 AND Close > SMA(200)                         │
-│  │      Short: RSI(2) ≥ 90 AND Close < SMA(200)                         │
-│  │                                          │                           │
-│  │    Exit Conditions:                      │                           │
-│  │      • Stop Loss: Entry ± ATR(14) × 2.0  │                           │
-│  │      • Time Stop: 5 bars                 │                           │
-│  │      • Signal Exit: RSI(2) ≥ 70 (long)   │                           │
-│  │                                          │                           │
-│  │    Lookahead Prevention:                 │                           │
-│  │      df['rsi2_sig'] = df['rsi2'].shift(1)                            │
-│  │      df['sma200_sig'] = df['sma200'].shift(1)                        │
-│  │                                          │                           │
-│  │    Methods:                              │                           │
-│  │      • generate_signals(df) -> DataFrame (live)                      │
-│  │      • scan_signals_over_time(df) -> DataFrame (backtest)            │
-│  └──────────────────────────────────────────┘                           │
-│                                                                          │
-│  ┌──────────────────────────────────────────┐                           │
-│  │  strategies/ibs/strategy.py              │                           │
-│  │                                          │                           │
-│  │  IBSStrategy:                            │                           │
-│  │    Indicators:                           │                           │
-│  │      • IBS = (Close - Low) / (High - Low)│                           │
-│  │      • SMA(200) trend filter             │                           │
-│  │      • ATR(14) for stop loss             │                           │
-│  │                                          │                           │
-│  │    Entry Conditions:                     │                           │
-│  │      Long:  IBS < 0.2 AND Close > SMA(200)                           │
-│  │      Short: IBS > 0.8 AND Close < SMA(200)                           │
-│  │                                          │                           │
-│  │    Exit Conditions: Same as RSI-2        │                           │
-│  │                                          │                           │
-│  │    Lookahead Prevention: Same as RSI-2   │                           │
-│  └──────────────────────────────────────────┘                           │
-│                                                                          │
-│  ┌──────────────────────────────────────────────────────────────┐       │
-│  │  AND Filter (Combined Strategy)                             │       │
-│  │                                                              │       │
-│  │  rsi2_sigs = rsi2_strategy.scan_signals_over_time(data)     │       │
-│  │  ibs_sigs = ibs_strategy.scan_signals_over_time(data)       │       │
-│  │                                                              │       │
-│  │  and_sigs = pd.merge(                                        │       │
-│  │      rsi2_sigs, ibs_sigs,                                    │       │
-│  │      on=['timestamp', 'symbol', 'side'],                     │       │
-│  │      suffixes=('_rsi2', '_ibs')                              │       │
-│  │  )                                                           │       │
-│  │                                                              │       │
-│  │  Result: Only signals where BOTH strategies agree           │       │
-│  └──────────────────────────────────────────────────────────────┘       │
-│                                                                          │
-└──────────────────────────────────────────────────────────────────────────┘
-                                    ↑
-┌──────────────────────────────────────────────────────────────────────────┐
-│                     LAYER 2: UNIVERSE                                    │
-│                  Stock Universe Management                               │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  data/universe/loader.py                                       │     │
-│  │                                                                │     │
-│  │  load_universe(path, cap=None) -> List[str]                    │     │
-│  │    1. Read CSV (expects 'symbol' column)                       │     │
-│  │    2. Uppercase, strip whitespace                              │     │
-│  │    3. Deduplicate (preserve order)                             │     │
-│  │    4. Apply cap (e.g., 950 stocks)                             │     │
-│  │    5. Return list of symbols                                   │     │
-│  └────────────────────────────────────────────────────────────────┘     │
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  Universe File: data/universe/optionable_liquid_final.csv      │     │
-│  │                                                                │     │
-│  │  Criteria:                                                     │     │
-│  │    ✓ 950 stocks                                                │     │
-│  │    ✓ Listed options (verified via Polygon API)                 │     │
-│  │    ✓ 10+ years of history (2015-01-01 to 2024-12-31)           │     │
-│  │    ✓ Minimum price > $5                                        │     │
-│  │    ✓ Liquid (high average daily volume)                        │     │
-│  │                                                                │     │
-│  │  Builder: scripts/build_universe_polygon.py                    │     │
-│  │  Validator: scripts/validate_universe_coverage.py              │     │
-│  └────────────────────────────────────────────────────────────────┘     │
-│                                                                          │
-└──────────────────────────────────────────────────────────────────────────┘
-                                    ↑
-┌──────────────────────────────────────────────────────────────────────────┐
-│                       LAYER 1: DATA                                      │
-│                  Data Ingestion & Caching                                │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  data/providers/polygon_eod.py                                 │     │
-│  │                                                                │     │
-│  │  fetch_daily_bars_polygon(symbol, start, end, cache_dir, cfg)  │     │
-│  │    → DataFrame[timestamp, symbol, open, high, low, close, vol] │     │
-│  │                                                                │     │
-│  │  Features:                                                     │     │
-│  │    1. Check CSV cache first                                    │     │
-│  │       data/cache/{SYMBOL}_{START}_{END}.csv                    │     │
-│  │                                                                │     │
-│  │    2. Detect superset cached files (wider date range)          │     │
-│  │       e.g., Use AAPL_2010-01-01_2025-12-31.csv                 │     │
-│  │            for AAPL_2020-01-01_2024-12-31.csv request          │     │
-│  │                                                                │     │
-│  │    3. Fetch from Polygon if cache miss                         │     │
-│  │       GET https://api.polygon.io/v2/aggs/ticker/{SYMBOL}/...   │     │
-│  │                                                                │     │
-│  │    4. Rate limiting: 0.30s sleep between requests              │     │
-│  │                                                                │     │
-│  │    5. Retry logic: 3 attempts with exponential backoff         │     │
-│  │                                                                │     │
-│  │    6. Write to cache on success                                │     │
-│  │                                                                │     │
-│  │  has_options_polygon(symbol, api_key) -> bool                  │     │
-│  │    GET /v3/reference/options/contracts?underlying_ticker=...   │     │
-│  └────────────────────────────────────────────────────────────────┘     │
-│                                                                          │
-│  Prefetch: scripts/prefetch_polygon_universe.py                         │
-│    └─ Downloads all bars for universe (speeds up backtests)             │
-│                                                                          │
-└──────────────────────────────────────────────────────────────────────────┘
-                                    ↑
-┌──────────────────────────────────────────────────────────────────────────┐
-│                      LAYER 0: EXTERNAL                                   │
-│                    Vendor APIs & Configuration                           │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌──────────────────────────┐   ┌──────────────────────────┐            │
-│  │  Polygon.io API          │   │  Alpaca API              │            │
-│  │  (Market Data)           │   │  (Broker Execution)      │            │
-│  │                          │   │                          │            │
-│  │  Daily OHLCV bars        │   │  Order submission        │            │
-│  │  Options contracts       │   │  Market data quotes      │            │
-│  │  Adjusted prices         │   │  Account info            │            │
-│  │                          │   │  Positions               │            │
-│  │  Rate limit: 5 req/min   │   │  Rate limit: 200/min     │            │
-│  │  (Starter plan)          │   │  (Paper/Live)            │            │
-│  └──────────────────────────┘   └──────────────────────────┘            │
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  config/env_loader.py                                          │     │
-│  │    Loads .env file with API credentials:                       │     │
-│  │      POLYGON_API_KEY=...                                       │     │
-│  │      ALPACA_API_KEY_ID=...                                     │     │
-│  │      ALPACA_API_SECRET_KEY=...                                 │     │
-│  │      ALPACA_BASE_URL=https://paper-api.alpaca.markets (or live)│     │
-│  └────────────────────────────────────────────────────────────────┘     │
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────┐     │
-│  │  config/settings.json                                          │     │
-│  │    {                                                           │     │
-│  │      "polygon": {                                              │     │
-│  │        "base_url": "https://api.polygon.io",                   │     │
-│  │        "adjusted": true,                                       │     │
-│  │        "sort": "asc",                                          │     │
-│  │        "limit": 50000                                          │     │
-│  │      },                                                        │     │
-│  │      "backtest": {                                             │     │
-│  │        "initial_cash": 100000,                                 │     │
-│  │        "slippage_bps": 5                                       │     │
-│  │      }                                                         │     │
-│  │    }                                                           │     │
-│  └────────────────────────────────────────────────────────────────┘     │
-│                                                                          │
-└──────────────────────────────────────────────────────────────────────────┘
+                                     ┌──────────────────────────────────────────────────────────────┐
+                                     │                          SCHEDULER                          │
+                                     │  scripts/scheduler_kobe.py (ET plan: pregame → scans → EOD) │
+                                     │  ops/windows/kobe_scheduler_task.xml (boot/logon)           │
+                                     └───────────────┬───────────────────────────────┬──────────────┘
+                                                     │                               │
+                                                     │                               │
+                                                (Morning)                      (Daily Pipeline)
+                                           ┌───────▼────────┐               ┌───────▼────────────┐
+                                           │ MORNING REPORT │               │ DAILY ML+SCAN+TOTD │
+                                           │ scripts/morning│               │ scripts/run_daily_ │
+                                           │ _report.py     │               │ pipeline.py        │
+                                           └───────┬────────┘               └────────┬───────────┘
+                                                   │                                 │
+                                                   │                                 │
+                                      ┌────────────▼────────────┐          ┌──────────▼───────────┐
+ DATA PROVIDERS                       │ SENTIMENT (NEWS, VADER) │          │     SCANNER          │
+ ┌──────────────────────────┐         │  altdata/sentiment.py   │          │  scripts/scan.py     │
+ │ Polygon EOD OHLCV       │         └──────────┬──────────────┘          │  (Top‑3, TOTD)       │
+ │ data/providers/polygon_ │                    │                         └──────────┬───────────┘
+ │  _eod.py, multi_source  │                    │                                 ML + sentiment
+ └───────────┬──────────────┘                    │                               confidence blend
+             │                                   │                                        │
+             │                              ┌────▼────┐                                   │
+             │                              │  ML     │                                   │
+             │  OHLCV                       │ META    │                                   │
+             │  Data                        │ MODELS  │                                   │
+             │                              │ ml_meta │                                   │
+             │                              │ /model  │                                   │
+             │                              └────┬────┘                                   │
+             │                                   │                                        │
+             │         FEATURES                   │ proba                                 │
+             │   ml_meta/features.py              │                                      │
+             │        (ATR, Donchian pos, etc.)   │                                      │
+             │                                   │                                        │
+             │                                   ▼                                        ▼
+             │                        ┌────────────────┐                        ┌────────────────────┐
+             │                        │   STRATEGIES   │                        │  RANK + TOP‑3/TOTD │
+             │                        │  (two only)    │                        │  scan.py           │
+             │                        │                │                        │  - 2×ICT + 1×DON   │
+             │                        │  Donchian      │                        │  - ML+sent blend   │
+             │                        │   strategies/  │                        │  - liquidity/ADV   │
+             │                        │   donchian/    │                        │  - ensure‑top3     │
+             │                        │   strategy.py  │                        └──────────┬─────────┘
+             │                        │                │                                   │
+             │                        │  ICT Turtle    │                                   │
+             │                        │   Soup         │                                   │
+             │                        │   strategies/  │                                 {logs}
+             │                        │   ict/turtle_  │                         logs/daily_picks.csv
+             │                        │   soup.py      │                         logs/trade_of_day.csv
+             │                        └──────┬─────────┘                                   │
+             │                               │                                             │
+             │                      ┌────────▼────────┐                      ┌─────────────▼────────────┐
+             │                      │  FILTERS (CFG)  │                      │   SUBMIT TOTD (IOC)      │
+             │                      │  core/regime_   │                      │  scripts/submit_totd.py  │
+             │                      │  filter.py (SPY)│                      │  + spread gate (--max %) │
+             │                      │  core/earnings_ │                      │  + PolicyGate budgets     │
+             │                      │  filter.py      │                      └─────────────┬────────────┘
+             │                      └────────┬────────┘                                    │
+             │                               │                                             │
+             │                               │                                   EXECUTION (Alpaca)
+             │                               │                         ┌──────────────────┴──────────────────┐
+             │                               │                         │ execution/broker_alpaca.py           │
+             │                               │                         │ - quotes (bid/ask)                   │
+             │                               │                         │ - IOC LIMIT submit                  │
+             │                               │                         │ - clamp (config‑gated)              │
+             │                               │                         └───────────────┬──────────────────────┘
+             │                               │                                         │
+             │                               │                                         │
+             │                         ┌──────▼──────┐                         ┌────────▼────────┐
+             │                         │  RISK/OPS   │                         │      OMS        │
+             │                         │  PolicyGate │                         │  oms/order_*    │
+             │                         │  risk/policy│                         │  idempotency    │
+             │                         │  _gate.py   │                         │  store          │
+             │                         └──────┬──────┘                         └────────┬────────┘
+             │                                │                                     audit log
+             │                                │                                     + status
+             │                         ┌──────▼────────┐                    ┌────────▼──────────┐
+             │                         │     AUDIT     │                    │   MONITOR/HEALTH  │
+             │                         │ core/hash_    │                    │ monitor/health_   │
+             │                         │ chain.py      │                    │ endpoints.py      │
+             │                         └──────┬────────┘                    └────────┬──────────┘
+             │                                │                                      │
+             │                                │                                      │
+             │         JOURNAL/STATUS          │                         REPORTS/OPS  │
+             │  core/journal.py → {state/journal.jsonl}                 scripts/morning_check.py
+             │  scripts/update_status_md.py → {docs/STATUS.md}           scripts/eod_report.py
+             │  ops/windows/watch_status.ps1 (auto‑update)               scripts/backup_state.py
+             │
+             │
+             │  WEEKLY SELF‑LEARNING (FRI)
+             └─────────────────────────────────────────────────────────────────────────────────────────────┐
+                                                                                                           │
+   wf_outputs (datasets)            ┌────────────────────┐    {dataset.parquet}     ┌──────────────────┐    │
+   scripts/run_wf_polygon.py  ───►  │ build_signal_      │  ───────────────────►    │ train_meta.py    │    │
+   scripts/aggregate_wf_report.py   │ dataset.py         │                          │ (calibrated LR)  │    │
+                                    └─────────┬──────────┘                          └─────────┬────────┘    │
+                                              │                                         candidates          │
+                                              │                                         (state/models/…)    │
+                                              ▼                                                          │
+                                    ┌────────────────────┐  gates (Δacc, WR/PF)  ┌──────────────────┐    │
+                                    │ promote_models.py  │  ───────────────────► │ deployed models  │    │
+                                    │ (audit, journaling)│                      │ state/models/…   │    │
+                                    └────────────────────┘                      └──────────────────┘    │
+                                                                                                           │
+                                                                                                           └────────
 
-================================================================================
-                           DATA FLOW SUMMARY
-================================================================================
 
-SIGNAL TO EXECUTION FLOW:
+UNIVERSE (900 SYMBOLS)
+──────────────────────
+{data/universe/optionable_liquid_900.csv}  ← loader: data/universe/loader.py
 
-1. INGESTION
-   Polygon API → CSV Cache → Pandas DataFrame
 
-2. UNIVERSE FILTER
-   Load 950 stocks from optionable_liquid_final.csv
+RUN ENTRY POINTS
+────────────────
+- Walk‑Forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 
-3. STRATEGY ENGINE
-   RSI-2 Strategy → Signals
-   IBS Strategy → Signals
-   AND Filter → Combined Signals
+- Daily pipeline (Top‑3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 
-4. KILL SWITCH CHECK
-   if state/KILL_SWITCH exists → ABORT
+- Live/Paper (IOC LIMIT) with spread gate:
+  python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --cap 50 --dotenv ./.env --max-spread-pct 0.02
+  python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_900.csv --cap 10 --dotenv ./.env --max-spread-pct 0.02
 
-5. RISK MANAGEMENT
-   For each signal:
-     Get best ask → PolicyGate.check() → PASS or VETO
 
-6. ORDER CONSTRUCTION
-   construct_decision() → OrderRecord with limit price
+NOTES
+─────
+- Strategies: exactly two — Donchian Breakout (trend) and ICT Turtle Soup (mean reversion)
+- Confidence: ML meta‑model scores blended with sentiment (configurable weights)
+- Filters: regime (SPY SMA/vol) and earnings proximity (config‑gated)
+- Gates: liquidity (ADV USD), spread %, PolicyGate budgets, optional LULD/ATR clamp
+- Audit/Status: hash‑chained records and live STATUS.md snapshots; journaling tags include day/season awareness
 
-7. IDEMPOTENCY CHECK
-   IdempotencyStore.exists() → Skip if duplicate
-
-8. BROKER SUBMISSION
-   place_ioc_limit() → POST /v2/orders → SUBMITTED or REJECTED
-
-9. AUDIT TRAIL
-   append_block(hash_chain.jsonl)
-   jlog(events.jsonl)
-   IdempotencyStore.put()
-
-BACKTEST FLOW:
-
-1. Load data for symbols (via Polygon + cache)
-2. Generate all historical signals (scan_signals_over_time)
-3. For each signal:
-   - Fill at next bar open
-   - Apply slippage
-   - Track position with ATR stop + time stop
-   - Close on exit condition
-4. Compute P&L (FIFO accounting)
-5. Build equity curve (daily mark-to-market)
-6. Calculate metrics (Sharpe, win rate, max DD)
-7. Write outputs (trade_list.csv, equity_curve.csv, summary.json)
-
-WALK-FORWARD FLOW:
-
-1. Generate splits (train: 252 days, test: 63 days)
-2. For each split:
-   - Fetch data for window
-   - Run backtest on test period
-   - Record metrics
-3. Aggregate metrics across splits
-4. Generate HTML report with stability analysis
-
-================================================================================
-                         SAFETY MECHANISMS
-================================================================================
-
-1. KILL SWITCH (Emergency Stop)
-   File: state/KILL_SWITCH
-   Check: Before every order submission
-   Effect: Immediate abort of all trading
-
-2. POLICY GATE (Budget Enforcement)
-   Per-order: $75 max notional
-   Daily: $1,000 max notional
-   Price bounds: $3 - $1,000
-   Shorts: Disabled by default
-
-3. IDEMPOTENCY (Duplicate Prevention)
-   SQLite store: state/idempotency.sqlite
-   Check: Before broker submission
-   Effect: Skip duplicate decision_id
-
-4. HASH CHAIN (Tamper-Proof Audit)
-   File: state/hash_chain.jsonl
-   Format: Blockchain-style SHA256 linkage
-   Verification: scripts/verify_hash_chain.py
-
-5. LOOKAHEAD PREVENTION (No Future Data)
-   Strategy level: All indicators .shift(1)
-   Fill timing: Signal at close(t), fill at open(t+1)
-   Enforcement: Unit tests
-
-6. CONFIG PINNING (Parameter Drift Detection)
-   Hash: SHA256(config/settings.json)
-   Storage: In every audit block
-   Detection: Compare hashes across blocks
-
-================================================================================
-                      DEPLOYMENT PIPELINE
-================================================================================
-
-STAGE 1: SHADOW (Backtesting)
-  ↓ scripts/run_backtest_polygon.py
-  ↓ scripts/run_wf_polygon.py
-  ↓ 10-year walk-forward validation
-
-STAGE 2: PAPER VALIDATION (30+ days)
-  ↓ scripts/run_paper_trade.py
-  ↓ Daily reconciliation
-  ↓ Monitor logs/metrics
-
-STAGE 3: LIVE DRY-RUN (Micro budgets)
-  ↓ scripts/run_live_trade_micro.py
-  ↓ Cap 10 stocks, $75/order, $1,000/day
-  ↓ 90 days clean operation
-
-STAGE 4: LIVE NORMAL (Scale up)
-  ↓ Increase universe cap
-  ↓ Increase budgets gradually
-  ↓ Continuous monitoring
-
-================================================================================
-                         MONITORING TOOLS
-================================================================================
-
-Health Checks:
-  • GET http://localhost:8000/liveness
-  • GET http://localhost:8000/readiness
-
-Logs:
-  • tail -f logs/events.jsonl
-  • grep "ERROR" logs/events.jsonl
-
-Metrics:
-  • python scripts/metrics.py
-  • python scripts/benchmark.py --symbol SPY
-  • python scripts/quant_dashboard.py
-
-Reconciliation:
-  • python scripts/reconcile_alpaca.py
-
-Audit:
-  • python scripts/verify_hash_chain.py
-
-Positions:
-  • python scripts/positions.py
-
-Orders:
-  • python scripts/orders.py --recent 10
-
-P&L:
-  • python scripts/pnl.py --period daily
-
-================================================================================
-END OF ARCHITECTURE DIAGRAM
-Generated: 2025-12-26
-System: Kobe81 Traderbot v1.0
-Total Python Modules: 112
-Total Lines of Code: ~8,500
-================================================================================

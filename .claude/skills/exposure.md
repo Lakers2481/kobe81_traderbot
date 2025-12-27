@@ -1,4 +1,4 @@
-# /exposure
+﻿# /exposure
 
 Analyze portfolio exposure by sector, market cap, and factor.
 
@@ -22,7 +22,7 @@ python scripts/analyze_exposure.py --dotenv C:/Users/Owner/OneDrive/Desktop/GAME
 python scripts/analyze_exposure.py --detail --output exposure_report.html
 
 # Check universe exposure (before trading)
-python scripts/analyze_exposure.py --universe data/universe/optionable_liquid_final.csv
+python scripts/analyze_exposure.py --universe data/universe/optionable_liquid_900.csv
 ```
 
 ## Output Metrics
@@ -56,3 +56,5 @@ python scripts/analyze_exposure.py --universe data/universe/optionable_liquid_fi
 - Checked by PolicyGate before new entries
 - Daily exposure report in logs
 - Telegram alert on limit breach
+
+

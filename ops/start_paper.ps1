@@ -1,6 +1,6 @@
 param(
-  [string]$DotEnv = "C:\Users\Owner\OneDrive\Desktop\GAME_PLAN_2K28\.env",
-  [string]$Universe = "data\universe\optionable_liquid_final.csv",
+  [string]$DotEnv = ".\\.env",
+  [string]$Universe = "data\universe\optionable_liquid_900.csv",
   [int]$Cap = 50,
   [string]$ScanTimes = "09:35,10:30,15:55",
   [int]$LookbackDays = 540,
@@ -20,4 +20,3 @@ Write-Host "Starting Kobe runner (paper) with cap=$Cap, scan-times=$ScanTimes...
 Start-Process -WindowStyle Minimized -FilePath python -ArgumentList @('scripts/runner.py','--mode','paper','--universe',"$Universe",'--cap',"$Cap",'--scan-times',"$ScanTimes",'--lookback-days',"$LookbackDays",'--dotenv',"$DotEnv")
 
 Write-Host "Launched. Use Task Scheduler for auto-start at boot (see docs/RUN_24x7.md)."
-

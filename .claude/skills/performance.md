@@ -1,4 +1,4 @@
-# /performance
+﻿# /performance
 
 Real-time system performance monitoring.
 
@@ -113,3 +113,5 @@ RECOMMENDATION:
 - Alerts via /telegram
 - Logs to logs/performance.jsonl
 - Grafana-compatible metrics export
+
+

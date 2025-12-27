@@ -1,4 +1,4 @@
-# /broker
+﻿# /broker
 
 Check broker connection status and account details.
 
@@ -31,7 +31,7 @@ key_id = os.getenv('ALPACA_API_KEY_ID', '')
 secret = os.getenv('ALPACA_API_SECRET_KEY', '')
 
 if not key_id or not secret:
-    print('❌ Alpaca credentials not configured')
+    print('âŒ Alpaca credentials not configured')
     exit(1)
 
 headers = {
@@ -50,7 +50,7 @@ try:
     r = requests.get(f'{base}/v2/account', headers=headers, timeout=5)
     if r.status_code == 200:
         acc = r.json()
-        print('✅ Connection OK')
+        print('âœ… Connection OK')
         print()
         print('Account:')
         print(f\"  ID: {acc.get('id', 'N/A')}\")
@@ -61,10 +61,10 @@ try:
         print(f\"  Day Trades: {acc.get('daytrade_count', 0)}\")
         print(f\"  PDT Blocked: {acc.get('pattern_day_trader', False)}\")
     else:
-        print(f'❌ Account error: {r.status_code}')
+        print(f'âŒ Account error: {r.status_code}')
         print(r.text[:200])
 except Exception as e:
-    print(f'❌ Connection error: {e}')
+    print(f'âŒ Connection error: {e}')
 "
 
 # Check open orders
@@ -143,3 +143,5 @@ else:
 - 200 requests/minute for most endpoints
 - Burst of 400 allowed
 - Monitor via response headers
+
+

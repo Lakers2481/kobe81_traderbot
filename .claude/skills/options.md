@@ -1,4 +1,4 @@
-# /options
+﻿# /options
 
 Options chain lookup with IV and Greeks.
 
@@ -52,3 +52,5 @@ python scripts/options_chain.py --symbol AAPL --iv-stats
 ## Data Source
 - Polygon.io Options API
 - Requires options-enabled API key
+
+

@@ -1,4 +1,4 @@
-# /explain
+﻿# /explain
 
 Explain why a signal was generated or rejected.
 
@@ -31,7 +31,7 @@ python scripts/explain_signal.py --scan-date 2024-12-25
 ## Output Example
 ```
 SIGNAL EXPLANATION: SIG_20241225_AAPL_ABC123
-Strategy: Connors RSI-2
+Strategy:  Donchian/ICT
 Symbol: AAPL
 Date: 2024-12-25
 
@@ -48,7 +48,7 @@ CALCULATED VALUES:
 
 CONFIDENCE: HIGH
   - Strong trend (close 4% above SMA200)
-  - Deep oversold (RSI2 in bottom 10%)
+  - Deep oversold (donchian in bottom 10%)
   - Adequate liquidity (ADV $50M+)
 ```
 
@@ -66,3 +66,5 @@ WHY NO SIGNAL: MSFT on 2024-12-25
 - Understand rejection reasons
 - Validate strategy logic
 - Learning and journaling
+
+

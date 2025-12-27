@@ -31,7 +31,7 @@ HEALTH_PID_FILE = PID_DIR / "health.pid"
 RUNNER_PID_FILE = PID_DIR / "runner.pid"
 KILL_SWITCH_FILE = STATE_DIR / "KILL_SWITCH"
 
-DEFAULT_UNIVERSE = ROOT / "data" / "universe" / "optionable_liquid_final.csv"
+DEFAULT_UNIVERSE = ROOT / "data" / "universe" / "optionable_liquid_900.csv"
 DEFAULT_CAP = 50
 
 

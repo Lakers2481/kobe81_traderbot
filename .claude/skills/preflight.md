@@ -1,4 +1,4 @@
-# /preflight
+﻿# /preflight
 
 Run Kobe's 10 preflight checks before any trading session.
 
@@ -34,3 +34,5 @@ If any check fails:
 1. Review the specific failure message
 2. Fix the underlying issue
 3. Re-run preflight before trading
+
+

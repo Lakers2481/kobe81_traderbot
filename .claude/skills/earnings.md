@@ -1,4 +1,4 @@
-# /earnings
+﻿# /earnings
 
 Earnings calendar and earnings-aware trading.
 
@@ -22,7 +22,7 @@ python scripts/earnings_calendar.py --days 7 --dotenv C:/Users/Owner/OneDrive/De
 python scripts/earnings_calendar.py --symbol AAPL
 
 # Flag universe for earnings
-python scripts/earnings_calendar.py --universe data/universe/optionable_liquid_final.csv --days 5
+python scripts/earnings_calendar.py --universe data/universe/optionable_liquid_900.csv --days 5
 
 # Show historical earnings moves
 python scripts/earnings_calendar.py --symbol AAPL --history
@@ -56,3 +56,5 @@ POSITIONS AT RISK:
 ## Data Source
 - Polygon.io reference data
 - Earnings dates updated daily
+
+

@@ -1,4 +1,4 @@
-# /kill
+﻿# /kill
 
 **EMERGENCY KILL SWITCH** - Immediately halt all trading.
 
@@ -46,3 +46,5 @@ Use `/resume` skill after resolving the issue.
 - Works even if main process is frozen
 - Survives restarts
 - Always document reason for audit trail
+
+

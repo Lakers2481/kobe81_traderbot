@@ -1,4 +1,4 @@
-# /logs
+﻿# /logs
 
 View Kobe's recent event logs and system activity.
 
@@ -68,3 +68,5 @@ grep -E 'HEALTH|PREFLIGHT|HEARTBEAT' logs/events.jsonl | tail -10
 - Events: 30 days
 - Trades: Indefinite (audit requirement)
 - Errors: 7 days
+
+

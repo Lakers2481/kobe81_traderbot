@@ -1,4 +1,4 @@
-# /benchmark
+﻿# /benchmark
 
 Compare Kobe's performance against SPY benchmark.
 
@@ -93,9 +93,9 @@ if key:
             print(f'Correlation: {correlation:.2f}')
             print()
             if kobe_total > spy_total:
-                print(f'🏆 Kobe beats SPY by {(kobe_total - spy_total)*100:.1f}%')
+                print(f'ðŸ† Kobe beats SPY by {(kobe_total - spy_total)*100:.1f}%')
             else:
-                print(f'📉 SPY beats Kobe by {(spy_total - kobe_total)*100:.1f}%')
+                print(f'ðŸ“‰ SPY beats Kobe by {(spy_total - kobe_total)*100:.1f}%')
 else:
     print('POLYGON_API_KEY not set - cannot fetch SPY data')
 "
@@ -153,5 +153,7 @@ Max Drawdown       -8.2%      -13.1%
 
 Alpha: +6.2% annually
 Beta: 0.45
-🏆 Kobe outperforms with lower risk
+ðŸ† Kobe outperforms with lower risk
 ```
+
+

@@ -1,4 +1,4 @@
-# /live
+﻿# /live
 
 Start live trading mode (REAL MONEY - USE WITH CAUTION).
 
@@ -13,7 +13,7 @@ Start live trading mode (REAL MONEY - USE WITH CAUTION).
 3. Starts live trading with real money
 4. Enforces strict risk limits
 
-## ⚠️ WARNINGS
+## âš ï¸ WARNINGS
 - **REAL MONEY**: Live mode uses your actual brokerage account
 - **VERIFY FIRST**: Always run /preflight and /paper first
 - **KILL SWITCH READY**: Know how to use /kill immediately
@@ -69,28 +69,28 @@ checks.append(('Config pinned', pin, 'Pinned' if pin else 'Not pinned'))
 # Print
 all_pass = True
 for name, ok, detail in checks:
-    status = '✅' if ok else '❌'
+    status = 'âœ…' if ok else 'âŒ'
     print(f'{status} {name}: {detail}')
     if not ok:
         all_pass = False
 
 print()
 if all_pass:
-    print('🟢 READY FOR LIVE TRADING')
+    print('ðŸŸ¢ READY FOR LIVE TRADING')
 else:
-    print('🔴 NOT READY - Fix issues above')
+    print('ðŸ”´ NOT READY - Fix issues above')
 "
 
 # Start live trading (MICRO BUDGET)
 python scripts/run_live_trade_micro.py \
-    --universe data/universe/optionable_liquid_final.csv \
+    --universe data/universe/optionable_liquid_900.csv \
     --cap 10 \
     --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
 
 # Start live runner (24/7)
 python scripts/runner.py \
     --mode live \
-    --universe data/universe/optionable_liquid_final.csv \
+    --universe data/universe/optionable_liquid_900.csv \
     --cap 10 \
     --scan-times 09:35,10:30,15:55 \
     --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
@@ -119,3 +119,5 @@ python scripts/runner.py \
 | Broker URL | paper-api.* | api.* |
 | Risk | None | Your capital |
 | Recommendation | Test first | After validation |
+
+

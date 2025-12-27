@@ -1,4 +1,4 @@
-# /resume
+﻿# /resume
 
 Deactivate kill switch and resume trading operations.
 
@@ -44,3 +44,5 @@ log_event('KILL_SWITCH_DEACTIVATED', {'reason': 'manual_resume', 'operator': 'cl
 - Always run preflight first
 - Monitor closely for 15 minutes after resuming
 - Consider reduce-only mode initially
+
+

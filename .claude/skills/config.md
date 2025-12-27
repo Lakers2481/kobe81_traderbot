@@ -1,4 +1,4 @@
-# /config
+﻿# /config
 
 View and manage configuration with signature tracking.
 
@@ -50,9 +50,9 @@ if pin_file.exists():
     saved_hash = pin_file.read_text().strip()
     print(f'Saved pin:          {saved_hash[:16]}...')
     if current_hash == saved_hash:
-        print('✅ Config unchanged')
+        print('âœ… Config unchanged')
     else:
-        print('⚠️ CONFIG HAS CHANGED since last pin!')
+        print('âš ï¸ CONFIG HAS CHANGED since last pin!')
 else:
     print('No saved pin found')
 "
@@ -115,3 +115,5 @@ print('New config signature saved to state/config_pin.txt')
 - **Drift detection**: Alert if config changes unexpectedly
 - **Rollback**: Restore to known-good configuration
 - **Compliance**: Document configuration history
+
+

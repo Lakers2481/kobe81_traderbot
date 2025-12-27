@@ -1,4 +1,4 @@
-# /env
+﻿# /env
 
 Manage environment variables and configuration.
 
@@ -80,9 +80,9 @@ all_ok = True
 for var, desc in required:
     val = os.getenv(var, '')
     if val:
-        print(f'✅ {var}')
+        print(f'âœ… {var}')
     else:
-        print(f'❌ {var} - REQUIRED ({desc})')
+        print(f'âŒ {var} - REQUIRED ({desc})')
         all_ok = False
 
 print()
@@ -90,15 +90,15 @@ print('Optional:')
 for var, desc in optional:
     val = os.getenv(var, '')
     if val:
-        print(f'✅ {var}')
+        print(f'âœ… {var}')
     else:
-        print(f'⚪ {var} - optional ({desc})')
+        print(f'âšª {var} - optional ({desc})')
 
 print()
 if all_ok:
-    print('✅ All required variables set')
+    print('âœ… All required variables set')
 else:
-    print('❌ Missing required variables')
+    print('âŒ Missing required variables')
 "
 
 # Generate .env template
@@ -145,7 +145,7 @@ env_path = Path('C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env')
 
 print('=== ENV FILE STATUS ===')
 if env_path.exists():
-    print(f'✅ File exists: {env_path}')
+    print(f'âœ… File exists: {env_path}')
 
     # Check it's not empty
     content = env_path.read_text()
@@ -160,7 +160,7 @@ if env_path.exists():
     except:
         print('   Readable: No')
 else:
-    print(f'❌ File not found: {env_path}')
+    print(f'âŒ File not found: {env_path}')
     print('   Run: /env --template > .env')
 "
 ```
@@ -185,3 +185,5 @@ C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
 - Add .env to .gitignore
 - Use separate keys for paper vs live
 - Rotate keys periodically
+
+

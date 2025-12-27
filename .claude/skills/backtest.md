@@ -1,4 +1,4 @@
-# /backtest
+﻿# /backtest
 
 Run a simple backtest (not walk-forward) for quick validation.
 
@@ -20,12 +20,12 @@ python scripts/run_backtest_polygon.py \
     --symbols AAPL,MSFT,GOOGL,AMZN,META \
     --start 2022-01-01 \
     --end 2024-12-31 \
-    --strategy connors_rsi2 \
+    --strategy _rsi2 \
     --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
 
 # Full universe backtest
 python scripts/run_backtest_polygon.py \
-    --universe data/universe/optionable_liquid_final.csv \
+    --universe data/universe/optionable_liquid_900.csv \
     --start 2020-01-01 \
     --end 2024-12-31 \
     --cap 100 \
@@ -77,10 +77,10 @@ if trades_file.exists():
 ## Output Files
 ```
 backtest/bt_YYYYMMDD_HHMMSS/
-├── summary.json      # Performance metrics
-├── trade_list.csv    # All trades
-├── equity_curve.csv  # Daily equity
-└── config.json       # Parameters used
+â”œâ”€â”€ summary.json      # Performance metrics
+â”œâ”€â”€ trade_list.csv    # All trades
+â”œâ”€â”€ equity_curve.csv  # Daily equity
+â””â”€â”€ config.json       # Parameters used
 ```
 
 ## Key Metrics Explained
@@ -90,3 +90,5 @@ backtest/bt_YYYYMMDD_HHMMSS/
 | Profit Factor | >1.5 | Gross win / gross loss |
 | Sharpe | >1.0 | Risk-adjusted return |
 | Max Drawdown | <15% | Worst peak-to-trough |
+
+

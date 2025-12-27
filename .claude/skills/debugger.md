@@ -1,4 +1,4 @@
-# /debugger
+﻿# /debugger
 
 Advanced code debugging and error diagnosis.
 
@@ -50,7 +50,7 @@ Type: KeyError
 Message: 'close' not in dataframe
 
 STACK TRACE:
-  File strategies/connors_rsi2/strategy.py, line 86
+  File strategies/_rsi2/strategy.py, line 86
     close = float(row['close'])
   File backtest/engine.py, line 52
     signals = self.get_signals(merged)
@@ -86,7 +86,7 @@ Step 2: Indicator Calculation
 
 Step 3: Signal Logic
   Close (175.20) > SMA200 (168.30)? YES
-  RSI2 (8.45) <= 10? YES
+  donchian (8.45) <= 10? YES
   Price >= $5? YES
   [SIGNAL GENERATED]
 
@@ -133,7 +133,7 @@ BREAKPOINT: strategy.py:86
 Local variables:
   sym = 'AAPL'
   row = Series(timestamp=2024-12-25, close=175.20, ...)
-  rsi2 = 8.45
+  donchian = 8.45
   sma200 = 168.30
   atrv = 3.25
 
@@ -194,3 +194,5 @@ python scripts/debugger.py --trace-pnl --trade-id TRD_123
 - Telegram alert with error ID
 - Links to /logs for context
 - Creates reproducible test cases
+
+

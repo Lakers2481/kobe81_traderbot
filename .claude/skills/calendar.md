@@ -1,4 +1,4 @@
-# /calendar
+﻿# /calendar
 
 Check market calendar - trading days, holidays, early closes.
 
@@ -33,14 +33,14 @@ print()
 
 if is_trading_day(today):
     hours = get_market_hours(today)
-    print(f'✅ TRADING DAY')
+    print(f'âœ… TRADING DAY')
     print(f'   Open: {hours[\"open\"]}')
     print(f'   Close: {hours[\"close\"]}')
     if hours.get('early_close'):
-        print(f'   ⚠️ EARLY CLOSE: {hours[\"close\"]}')
+        print(f'   âš ï¸ EARLY CLOSE: {hours[\"close\"]}')
 else:
     next_day = get_next_trading_day(today)
-    print(f'❌ MARKET CLOSED')
+    print(f'âŒ MARKET CLOSED')
     print(f'   Next trading day: {next_day}')
 "
 
@@ -100,3 +100,5 @@ for h in upcoming:
 - Sep 1: Labor Day
 - Nov 27: Thanksgiving
 - Dec 25: Christmas
+
+

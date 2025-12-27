@@ -1,4 +1,4 @@
-# /validate
+﻿# /validate
 
 Run Kobe's full validation suite - tests, type checks, and code quality.
 
@@ -22,7 +22,7 @@ python -m pytest tests/ -v --tb=short
 python -m pytest tests/ -q --tb=line
 
 # Check imports work
-python -c "from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy; print('OK')"
+python -c "from strategies._rsi2.strategy import RSI2Strategy; print('OK')"
 python -c "from execution.broker_alpaca import BrokerAlpaca; print('OK')"
 ```
 
@@ -35,3 +35,5 @@ python -c "from execution.broker_alpaca import BrokerAlpaca; print('OK')"
 1. Check test output for specific failures
 2. Fix code issues
 3. Re-run validation
+
+

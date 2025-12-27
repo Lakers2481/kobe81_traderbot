@@ -1,4 +1,4 @@
-# /dashboard
+﻿# /dashboard
 
 Launch and manage the Kobe trading dashboard.
 
@@ -129,3 +129,5 @@ python scripts/dashboard.py --refresh-interval 30
 - Stops with /stop
 - Health endpoint: /health includes dashboard status
 - Logs to logs/dashboard.log
+
+

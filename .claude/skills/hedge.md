@@ -1,4 +1,4 @@
-# /hedge
+﻿# /hedge
 
 Suggest protective puts for open positions.
 
@@ -57,3 +57,5 @@ Suggested Hedge:
 - Hedging has cost - use selectively
 - Consider portfolio-level hedges (SPY puts)
 - Check IV before buying protection
+
+

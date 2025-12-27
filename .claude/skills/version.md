@@ -1,4 +1,4 @@
-# /version
+﻿# /version
 
 Show Kobe system version and update history.
 
@@ -40,7 +40,7 @@ COMPONENTS:
   Execution: 1.0.3
 
 LAST UPDATE: 2024-12-20
-  - Added IBS strategy
+  - Added ICT strategy
   - Fixed ATR calculation
   - Improved caching
 
@@ -61,7 +61,7 @@ Located at `VERSION.json`:
     "strategies": "1.1.0"
   },
   "changelog": [
-    {"version": "1.2.0", "date": "2024-12-20", "changes": ["Added IBS"]}
+    {"version": "1.2.0", "date": "2024-12-20", "changes": ["Added ICT"]}
   ]
 }
 ```
@@ -70,3 +70,5 @@ Located at `VERSION.json`:
 - Displayed in /status header
 - Logged at startup
 - Included in error reports
+
+

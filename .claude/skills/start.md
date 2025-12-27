@@ -1,4 +1,4 @@
-# /start
+﻿# /start
 
 Start the Kobe trading system.
 
@@ -22,14 +22,14 @@ echo "=== KOBE STARTUP SEQUENCE ==="
 echo "Step 1: Preflight checks..."
 python scripts/preflight.py --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
 if [ $? -ne 0 ]; then
-    echo "❌ Preflight failed. Aborting."
+    echo "âŒ Preflight failed. Aborting."
     exit 1
 fi
 
 # 2. Check kill switch
 echo "Step 2: Kill switch check..."
 if [ -f state/KILL_SWITCH ]; then
-    echo "❌ Kill switch is ACTIVE. Remove with /resume"
+    echo "âŒ Kill switch is ACTIVE. Remove with /resume"
     exit 1
 fi
 
@@ -38,23 +38,23 @@ echo "Step 3: Smoke test..."
 python -c "
 import sys
 sys.path.insert(0, '.')
-from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
+from strategies._rsi2.strategy import RSI2Strategy
 from risk.policy_gate import PolicyGate
-print('✅ Core imports OK')
+print('âœ… Core imports OK')
 "
 
 # 4. Start runner
 echo "Step 4: Starting runner..."
 nohup python scripts/runner.py \
     --mode paper \
-    --universe data/universe/optionable_liquid_final.csv \
+    --universe data/universe/optionable_liquid_900.csv \
     --cap 50 \
     --scan-times 09:35,10:30,15:55 \
     --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env \
     > logs/runner.log 2>&1 &
 
 echo $! > state/runner.pid
-echo "✅ Runner started (PID $(cat state/runner.pid))"
+echo "âœ… Runner started (PID $(cat state/runner.pid))"
 
 # 5. Verify running
 sleep 2
@@ -64,15 +64,15 @@ import psutil
 pid = int(Path('state/runner.pid').read_text())
 try:
     p = psutil.Process(pid)
-    print(f'✅ Verified: Runner is running (PID {pid})')
+    print(f'âœ… Verified: Runner is running (PID {pid})')
 except:
-    print('❌ Runner failed to start')
+    print('âŒ Runner failed to start')
 "
 
 echo "=== STARTUP COMPLETE ==="
 
 # Quick start (one-liner)
-python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_final.csv --cap 50 --once --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
+python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv --cap 50 --once --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
 
 # Start with minimal validation
 python -c "
@@ -82,21 +82,21 @@ from pathlib import Path
 
 # Quick checks
 if Path('state/KILL_SWITCH').exists():
-    print('❌ Kill switch active')
+    print('âŒ Kill switch active')
     sys.exit(1)
 
 # Start
 cmd = [
     sys.executable, 'scripts/runner.py',
     '--mode', 'paper',
-    '--universe', 'data/universe/optionable_liquid_final.csv',
+    '--universe', 'data/universe/optionable_liquid_900.csv',
     '--cap', '50',
     '--scan-times', '09:35,10:30,15:55',
     '--dotenv', 'C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env'
 ]
 print('Starting Kobe...')
 subprocess.Popen(cmd, stdout=open('logs/runner.log', 'w'), stderr=subprocess.STDOUT)
-print('✅ Kobe started')
+print('âœ… Kobe started')
 "
 ```
 
@@ -130,3 +130,5 @@ print('✅ Kobe started')
 | Exits immediately | Check `logs/runner.log` |
 | No trades | Verify `/signals` generation |
 | Connection errors | Check `/broker` |
+
+

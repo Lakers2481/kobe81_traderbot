@@ -1,6 +1,6 @@
-# Kobe81 Traderbot - Technical Architecture Documentation
+﻿# Kobe81 Traderbot - Technical Architecture Documentation
 
-> Note: Strategy set is standardized to Donchian Breakout + ICT Turtle Soup and universe size is 900. Any mentions of RSI2/IBS or 950 symbols are legacy and will be updated. See `README.md` for the canonical setup.
+> Note: Strategy set is standardized to Donchian Breakout + ICT Turtle Soup and universe size is 900. Any mentions of RSI2/ICT or 950 symbols are legacy and will be updated. See `README.md` for the canonical setup.
 
 **Version:** 1.0
 **Last Updated:** 2025-12-26
@@ -25,14 +25,14 @@
 
 ## Executive Summary
 
-Kobe81 is a production-grade quantitative trading system implementing canonical mean-reversion strategies (Connors RSI-2, IBS) with institutional-level risk management, compliance, and audit capabilities. The system supports backtesting, walk-forward validation, paper trading, and live execution with micro-budgets.
+Kobe81 is a production-grade quantitative trading system implementing canonical two complementary strategies: Donchian Breakout (trend) and ICT Turtle Soup (mean reversion) with institutional-level risk management, compliance, and audit capabilities. The system supports backtesting, walk-forward validation, paper trading, and live execution with micro-budgets.
 
 **Core Characteristics:**
 - **Language:** Python 3.11+
 - **Architecture:** 10-layer modular design with clear separation of concerns
 - **Execution:** IOC LIMIT orders via Alpaca broker (paper/live)
 - **Data:** Polygon.io EOD OHLCV with local CSV caching
-- **Universe:** 950 optionable, liquid stocks with 10+ years of coverage
+- **Universe:** 900 optionable, liquid stocks with 10+ years of coverage
 - **Risk Controls:** Kill switch, PolicyGate budgets, idempotency, tamper-proof audit chain
 - **No Lookahead:** All indicators shifted 1 bar; signals at close(t), fills at open(t+1)
 
@@ -110,8 +110,8 @@ timestamp | symbol | open | high | low | close | volume
 
 **Module:** `data/universe/loader.py`
 
-**Universe File:** `data/universe/optionable_liquid_final.csv`
-- **Size:** 950 stocks
+**Universe File:** `data/universe/optionable_liquid_900.csv`
+- **Size:** 900 stocks
 - **Criteria:**
   - Listed options contracts (verified via Polygon)
   - Average daily volume > threshold
@@ -124,7 +124,7 @@ load_universe(path: Path, cap: int = None) -> List[str]
 ```
 
 **Builder Scripts:**
-- `scripts/build_universe_polygon.py` - Constructs 950-stock universe with proofs
+- `scripts/build_universe_polygon.py` - Constructs 900-stock universe with proofs
 - `scripts/validate_universe_coverage.py` - Asserts coverage requirements
 - `scripts/check_polygon_earliest_universe.py` - Verifies data availability
 
@@ -135,12 +135,11 @@ load_universe(path: Path, cap: int = None) -> List[str]
 
 **Implemented Strategies:**
 
-#### 1. Connors RSI-2 (`strategies/connors_rsi2/strategy.py`)
+#### Strategies (Donchian + ICT)
 **Parameters:**
 ```python
 @dataclass
-class ConnorsRSI2Params:
-    rsi_period: int = 2
+class     rsi_period: int = 2
     rsi_method: str = "wilder"          # Wilder smoothing
     sma_period: int = 200               # Trend filter
     atr_period: int = 14                # Stop calculation
@@ -158,11 +157,11 @@ class ConnorsRSI2Params:
 - **Short:** RSI(2) >= 90 AND Close < SMA(200)
 
 **Exit Logic:**
-- **Stop Loss:** Entry ± ATR(14) × 2.0
+- **Stop Loss:** Entry Â± ATR(14) Ã— 2.0
 - **Time Stop:** Close position after 5 bars
 - **Signal Exit:** Long when RSI >= 70; Short when RSI <= 30
 
-#### 2. IBS (Internal Bar Strength) (`strategies/ibs/strategy.py`)
+#### 2. ICT (Internal Bar Strength) (`strategies/ICT/strategy.py`)
 **Parameters:**
 ```python
 @dataclass
@@ -176,19 +175,19 @@ class IBSParams:
     min_price: float = 5.0
 ```
 
-**IBS Calculation:**
+**ICT Calculation:**
 ```python
-IBS = (Close - Low) / (High - Low)
+ICT = (Close - Low) / (High - Low)
 ```
 
 **Entry Logic:**
-- **Long:** IBS < 0.2 AND Close > SMA(200)
-- **Short:** IBS > 0.8 AND Close < SMA(200)
+- **Long:** ICT < 0.2 AND Close > SMA(200)
+- **Short:** ICT > 0.8 AND Close < SMA(200)
 
-**Exit Logic:** Same as RSI-2 (ATR stop + time stop)
+**Exit Logic:** Same as Donchian/ICT (ATR stop + time stop)
 
 #### 3. AND Filter (Combined Strategy)
-**Implementation:** Merge RSI-2 and IBS signals on same timestamp/symbol/side
+**Implementation:** Merge Donchian/ICT and ICT signals on same timestamp/symbol/side
 ```python
 # In run_paper_trade.py and backtest scripts:
 rsi2_signals = rsi2_strategy.scan_signals_over_time(data)
@@ -270,7 +269,7 @@ class Backtester:
 
 **Simulation Logic:**
 1. **Signal Generation:** Call strategy's `scan_signals_over_time()`
-2. **Entry Fill:** Next bar open after signal timestamp
+2. **Entry Fill:** next-bar open after signal timestamp
 3. **Slippage:** 5 bps default (configurable)
 4. **Position Sizing:** 0.7% of current cash per trade
 5. **Exit Triggers:**
@@ -284,7 +283,7 @@ class Backtester:
 - `equity_curve.csv` - Daily portfolio values
 - `summary.json` - Win rate, Sharpe, max DD, profit factor
 
-**Walk-Forward Module:** `backtest/walk_forward.py`
+**walk-forward Module:** `backtest/walk-forward.py`
 - Splits data into rolling train/test windows
 - Default: 252 trading days train, 63 days test
 - Outputs per-split metrics for stability analysis
@@ -328,11 +327,11 @@ store.put(decision_id, idempotency_key)
 ```
 DEC_20251226_143022_AAPL_A3F91C
     ^     ^       ^     ^    ^
-    |     |       |     |    └─ Random hex (6 chars)
-    |     |       |     └────── Symbol
-    |     |       └──────────── Time (HH:MM:SS)
-    |     └──────────────────── Date (YYYYMMDD)
-    └────────────────────────── Prefix
+    |     |       |     |    â””â”€ Random hex (6 chars)
+    |     |       |     â””â”€â”€â”€â”€â”€â”€ Symbol
+    |     |       â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Time (HH:MM:SS)
+    |     â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Date (YYYYMMDD)
+    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Prefix
 ```
 
 **Idempotency Key:** Same as decision_id (deterministic)
@@ -360,7 +359,7 @@ construct_decision(
     qty: int,
     best_ask: float
 ) -> OrderRecord
-# Creates OrderRecord with limit = best_ask × 1.001
+# Creates OrderRecord with limit = best_ask Ã— 1.001
 ```
 
 3. **Place IOC Limit:**
@@ -371,15 +370,15 @@ place_ioc_limit(order: OrderRecord) -> OrderRecord
 ```
 
 **IOC LIMIT Logic:**
-- **Limit Price:** Best ask × 1.001 (0.1% premium)
+- **Limit Price:** Best ask Ã— 1.001 (0.1% premium)
 - **Time in Force:** Immediate-or-Cancel
 - **Extended Hours:** Disabled
 - **Client Order ID:** Passed as idempotency_key
 
 **Error Handling:**
 - HTTP 429: Rate limit (no retry in v1)
-- HTTP 403: Insufficient buying power → REJECTED
-- HTTP 422: Invalid order → REJECTED
+- HTTP 403: Insufficient buying power â†’ REJECTED
+- HTTP 422: Invalid order â†’ REJECTED
 - Network error: Logged, order marked REJECTED
 
 ---
@@ -450,8 +449,8 @@ start_health_server(port: int = 8000) -> HTTPServer
 ```
 
 **Endpoints:**
-- `GET /readiness` → `{"ready": true}`
-- `GET /liveness` → `{"alive": true}`
+- `GET /readiness` â†’ `{"ready": true}`
+- `GET /liveness` â†’ `{"alive": true}`
 
 **Operational Scripts:**
 - `scripts/start_health.py` - Launch health server
@@ -490,7 +489,7 @@ python scripts/preflight.py --dotenv /path/to/.env
 ### 2. Build Universe
 **Script:** `scripts/build_universe_polygon.py`
 
-**Purpose:** Construct 950-stock universe with coverage proofs
+**Purpose:** Construct 900-stock universe with coverage proofs
 
 **Process:**
 1. Load candidate symbols from CSV
@@ -499,20 +498,20 @@ python scripts/preflight.py --dotenv /path/to/.env
    - Fetch earliest/latest bars
    - Compute coverage years
 3. Sort by coverage descending
-4. Cap at 950 symbols
-5. Write `optionable_liquid_final.csv` and `.full.csv`
+4. Cap at 900 symbols
+5. Write `optionable_liquid_900.csv` and `.full.csv`
 
 **Usage:**
 ```bash
 python scripts/build_universe_polygon.py \
   --candidates data/universe/optionable_liquid_candidates.csv \
   --start 2015-01-01 --end 2024-12-31 \
-  --min-years 10 --cap 950 \
+  --min-years 10 --cap 900 \
   --cache data/cache --concurrency 3
 ```
 
 **Output:**
-- `data/universe/optionable_liquid_final.csv` (950 symbols)
+- `data/universe/optionable_liquid_900.csv` (900 symbols)
 - `data/universe/optionable_liquid_final.full.csv` (coverage metadata)
 
 ---
@@ -525,7 +524,7 @@ python scripts/build_universe_polygon.py \
 **Usage:**
 ```bash
 python scripts/prefetch_polygon_universe.py \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --start 2015-01-01 --end 2024-12-31 \
   --cache data/cache --concurrency 3
 ```
@@ -534,7 +533,7 @@ python scripts/prefetch_polygon_universe.py \
 
 ---
 
-### 4. Walk-Forward Backtest
+### 4. walk-forward Backtest
 **Script:** `scripts/run_wf_polygon.py`
 
 **Purpose:** Rolling window validation of strategies
@@ -542,18 +541,18 @@ python scripts/prefetch_polygon_universe.py \
 **Parameters:**
 - `--train-days 252` (1 year training)
 - `--test-days 63` (1 quarter testing)
-- `--strategies rsi2,ibs,and` (comma-separated)
+- `--strategies rsi2,ICT,and` (comma-separated)
 
 **Output Structure:**
 ```
 wf_outputs/
-├── rsi2/
-│   ├── split_02/{trade_list.csv, equity_curve.csv, summary.json}
-│   ├── split_03/...
-│   └── split_25/
-├── ibs/...
-├── and/...
-└── wf_summary_compare.csv
+â”œâ”€â”€ rsi2/
+â”‚   â”œâ”€â”€ split_02/{trade_list.csv, equity_curve.csv, summary.json}
+â”‚   â”œâ”€â”€ split_03/...
+â”‚   â””â”€â”€ split_25/
+â”œâ”€â”€ ICT/...
+â”œâ”€â”€ and/...
+â””â”€â”€ wf_summary_compare.csv
 ```
 
 **Report Generation:**
@@ -572,7 +571,7 @@ python scripts/aggregate_wf_report.py \
 **Flow:**
 1. Load universe (capped at 50 for paper)
 2. Fetch latest bars (lookback: 540 days default)
-3. Generate RSI-2 and IBS signals
+3. Generate Donchian/ICT and ICT signals
 4. Filter to AND signals on most recent bar
 5. Check kill switch (`state/KILL_SWITCH`)
 6. For each signal:
@@ -586,7 +585,7 @@ python scripts/aggregate_wf_report.py \
 **Usage:**
 ```bash
 python scripts/run_paper_trade.py \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --start 2024-06-01 --end 2025-12-26 --cap 50
 ```
 
@@ -607,7 +606,7 @@ python scripts/run_paper_trade.py \
 ```bash
 # DANGER: REAL MONEY
 python scripts/run_live_trade_micro.py \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --cap 10
 ```
 
@@ -629,7 +628,7 @@ python scripts/run_live_trade_micro.py \
 ```bash
 python scripts/runner.py \
   --mode paper \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --cap 50 \
   --scan-times 09:35,10:30,15:55 \
   --lookback-days 540
@@ -639,7 +638,7 @@ python scripts/runner.py \
 ```bash
 python scripts/runner.py \
   --mode live \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --cap 10 \
   --scan-times 09:35,10:30,15:55
 ```
@@ -653,147 +652,147 @@ python scripts/runner.py \
 ### Signal to Execution Lifecycle
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│ 1. DATA INGESTION                                               │
-│    ┌──────────────┐                                             │
-│    │ Polygon API  │ ──fetch_daily_bars_polygon()──>             │
-│    └──────────────┘                                             │
-│           │                                                      │
-│           ▼                                                      │
-│    ┌──────────────┐                                             │
-│    │ CSV Cache    │ data/cache/{symbol}_{start}_{end}.csv       │
-│    └──────────────┘                                             │
-└─────────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 2. UNIVERSE FILTERING                                           │
-│    ┌──────────────────────┐                                     │
-│    │ load_universe()      │ ── 950 symbols ──>                  │
-│    └──────────────────────┘                                     │
-└─────────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 3. STRATEGY ENGINE                                              │
-│    ┌──────────────────────────────────────────┐                 │
-│    │ RSI-2 Strategy                           │                 │
-│    │  - Compute RSI(2), SMA(200), ATR(14)     │                 │
-│    │  - Shift indicators by 1 bar             │                 │
-│    │  - Generate signals where conditions met │                 │
-│    └──────────────────────────────────────────┘                 │
-│                           │                                      │
-│                           ▼                                      │
-│    ┌──────────────────────────────────────────┐                 │
-│    │ IBS Strategy                             │                 │
-│    │  - Compute IBS, SMA(200), ATR(14)        │                 │
-│    │  - Shift indicators by 1 bar             │                 │
-│    │  - Generate signals where conditions met │                 │
-│    └──────────────────────────────────────────┘                 │
-│                           │                                      │
-│                           ▼                                      │
-│    ┌──────────────────────────────────────────┐                 │
-│    │ AND Filter (merge on timestamp/symbol)   │                 │
-│    └──────────────────────────────────────────┘                 │
-│                           │                                      │
-│                           ▼                                      │
-│              [List of signals for today]                        │
-└─────────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 4. KILL SWITCH CHECK                                            │
-│    if state/KILL_SWITCH exists:                                 │
-│        ABORT (log warning, exit)                                │
-└─────────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 5. RISK MANAGEMENT (per signal)                                 │
-│    ┌──────────────────────┐                                     │
-│    │ get_best_ask()       │ ─── Alpaca quote API ──>            │
-│    └──────────────────────┘                                     │
-│              │                                                   │
-│              ▼                                                   │
-│    ┌──────────────────────────────────────────┐                 │
-│    │ PolicyGate.check()                       │                 │
-│    │  - Notional < $75 per order?             │                 │
-│    │  - Daily total < $1,000?                 │                 │
-│    │  - Price in [$3, $1000]?                 │                 │
-│    │  - Shorts allowed?                       │                 │
-│    └──────────────────────────────────────────┘                 │
-│              │                                                   │
-│         ┌────┴─────┐                                            │
-│         ▼          ▼                                            │
-│      [OK]      [VETO] ──> Log veto, skip                        │
-└─────────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 6. ORDER CONSTRUCTION                                           │
-│    ┌────────────────────────────────────────────┐               │
-│    │ construct_decision()                       │               │
-│    │  - decision_id = DEC_YYYYMMDD_HHMMSS_SYM_XXX │            │
-│    │  - limit_price = best_ask × 1.001          │               │
-│    │  - qty = floor($75 / limit_price)          │               │
-│    └────────────────────────────────────────────┘               │
-└─────────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 7. IDEMPOTENCY CHECK                                            │
-│    ┌──────────────────────────────────────────┐                 │
-│    │ IdempotencyStore.exists(decision_id)?    │                 │
-│    │  YES: Skip (duplicate)                   │                 │
-│    │  NO: Proceed                             │                 │
-│    └──────────────────────────────────────────┘                 │
-└─────────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 8. BROKER SUBMISSION                                            │
-│    ┌──────────────────────────────────────────┐                 │
-│    │ place_ioc_limit()                        │                 │
-│    │  POST /v2/orders                         │                 │
-│    │  {                                       │                 │
-│    │    "symbol": "AAPL",                     │                 │
-│    │    "qty": 10,                            │                 │
-│    │    "side": "buy",                        │                 │
-│    │    "type": "limit",                      │                 │
-│    │    "time_in_force": "ioc",               │                 │
-│    │    "limit_price": 150.15,                │                 │
-│    │    "client_order_id": "DEC_..."          │                 │
-│    │  }                                       │                 │
-│    └──────────────────────────────────────────┘                 │
-│              │                                                   │
-│         ┌────┴─────┐                                            │
-│         ▼          ▼                                            │
-│   [SUBMITTED]  [REJECTED]                                       │
-└─────────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 9. AUDIT TRAIL                                                  │
-│    ┌──────────────────────────────────────────┐                 │
-│    │ append_block(hash_chain.jsonl)           │                 │
-│    │  - decision_id, symbol, qty, price       │                 │
-│    │  - config_pin (SHA256 of settings.json)  │                 │
-│    │  - status, notes                         │                 │
-│    └──────────────────────────────────────────┘                 │
-│                           │                                      │
-│                           ▼                                      │
-│    ┌──────────────────────────────────────────┐                 │
-│    │ jlog(events.jsonl)                       │                 │
-│    │  - Structured JSON log entry             │                 │
-│    └──────────────────────────────────────────┘                 │
-│                           │                                      │
-│                           ▼                                      │
-│    ┌──────────────────────────────────────────┐                 │
-│    │ IdempotencyStore.put(decision_id)        │                 │
-│    └──────────────────────────────────────────┘                 │
-└─────────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ 1. DATA INGESTION                                               â”‚
+â”‚    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                                             â”‚
+â”‚    â”‚ Polygon API  â”‚ â”€â”€fetch_daily_bars_polygon()â”€â”€>             â”‚
+â”‚    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                                             â”‚
+â”‚           â”‚                                                      â”‚
+â”‚           â–¼                                                      â”‚
+â”‚    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                                             â”‚
+â”‚    â”‚ CSV Cache    â”‚ data/cache/{symbol}_{start}_{end}.csv       â”‚
+â”‚    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                                             â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                           â”‚
+                           â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ 2. UNIVERSE FILTERING                                           â”‚
+â”‚    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                                     â”‚
+â”‚    â”‚ load_universe()      â”‚ â”€â”€ 900 symbols â”€â”€>                  â”‚
+â”‚    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                                     â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                           â”‚
+                           â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ 3. STRATEGY ENGINE                                              â”‚
+â”‚    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                 â”‚
+â”‚    â”‚ Donchian/ICT Strategy                           â”‚                 â”‚
+â”‚    â”‚  - Compute RSI(2), SMA(200), ATR(14)     â”‚                 â”‚
+â”‚    â”‚  - Shift indicators by 1 bar             â”‚                 â”‚
+â”‚    â”‚  - Generate signals where conditions met â”‚                 â”‚
+â”‚    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                 â”‚
+â”‚                           â”‚                                      â”‚
+â”‚                           â–¼                                      â”‚
+â”‚    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                 â”‚
+â”‚    â”‚ ICT Strategy                             â”‚                 â”‚
+â”‚    â”‚  - Compute ICT, SMA(200), ATR(14)        â”‚                 â”‚
+â”‚    â”‚  - Shift indicators by 1 bar             â”‚                 â”‚
+â”‚    â”‚  - Generate signals where conditions met â”‚                 â”‚
+â”‚    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                 â”‚
+â”‚                           â”‚                                      â”‚
+â”‚                           â–¼                                      â”‚
+â”‚    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                 â”‚
+â”‚    â”‚ AND Filter (merge on timestamp/symbol)   â”‚                 â”‚
+â”‚    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                 â”‚
+â”‚                           â”‚                                      â”‚
+â”‚                           â–¼                                      â”‚
+â”‚              [List of signals for today]                        â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                           â”‚
+                           â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ 4. KILL SWITCH CHECK                                            â”‚
+â”‚    if state/KILL_SWITCH exists:                                 â”‚
+â”‚        ABORT (log warning, exit)                                â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                           â”‚
+                           â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ 5. RISK MANAGEMENT (per signal)                                 â”‚
+â”‚    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                                     â”‚
+â”‚    â”‚ get_best_ask()       â”‚ â”€â”€â”€ Alpaca quote API â”€â”€>            â”‚
+â”‚    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                                     â”‚
+â”‚              â”‚                                                   â”‚
+â”‚              â–¼                                                   â”‚
+â”‚    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                 â”‚
+â”‚    â”‚ PolicyGate.check()                       â”‚                 â”‚
+â”‚    â”‚  - Notional < $75 per order?             â”‚                 â”‚
+â”‚    â”‚  - Daily total < $1,000?                 â”‚                 â”‚
+â”‚    â”‚  - Price in [$3, $1000]?                 â”‚                 â”‚
+â”‚    â”‚  - Shorts allowed?                       â”‚                 â”‚
+â”‚    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                 â”‚
+â”‚              â”‚                                                   â”‚
+â”‚         â”Œâ”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”                                            â”‚
+â”‚         â–¼          â–¼                                            â”‚
+â”‚      [OK]      [VETO] â”€â”€> Log veto, skip                        â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                           â”‚
+                           â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ 6. ORDER CONSTRUCTION                                           â”‚
+â”‚    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”               â”‚
+â”‚    â”‚ construct_decision()                       â”‚               â”‚
+â”‚    â”‚  - decision_id = DEC_YYYYMMDD_HHMMSS_SYM_XXX â”‚            â”‚
+â”‚    â”‚  - limit_price = best_ask Ã— 1.001          â”‚               â”‚
+â”‚    â”‚  - qty = floor($75 / limit_price)          â”‚               â”‚
+â”‚    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜               â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                           â”‚
+                           â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ 7. IDEMPOTENCY CHECK                                            â”‚
+â”‚    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                 â”‚
+â”‚    â”‚ IdempotencyStore.exists(decision_id)?    â”‚                 â”‚
+â”‚    â”‚  YES: Skip (duplicate)                   â”‚                 â”‚
+â”‚    â”‚  NO: Proceed                             â”‚                 â”‚
+â”‚    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                 â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                           â”‚
+                           â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ 8. BROKER SUBMISSION                                            â”‚
+â”‚    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                 â”‚
+â”‚    â”‚ place_ioc_limit()                        â”‚                 â”‚
+â”‚    â”‚  POST /v2/orders                         â”‚                 â”‚
+â”‚    â”‚  {                                       â”‚                 â”‚
+â”‚    â”‚    "symbol": "AAPL",                     â”‚                 â”‚
+â”‚    â”‚    "qty": 10,                            â”‚                 â”‚
+â”‚    â”‚    "side": "buy",                        â”‚                 â”‚
+â”‚    â”‚    "type": "limit",                      â”‚                 â”‚
+â”‚    â”‚    "time_in_force": "ioc",               â”‚                 â”‚
+â”‚    â”‚    "limit_price": 150.15,                â”‚                 â”‚
+â”‚    â”‚    "client_order_id": "DEC_..."          â”‚                 â”‚
+â”‚    â”‚  }                                       â”‚                 â”‚
+â”‚    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                 â”‚
+â”‚              â”‚                                                   â”‚
+â”‚         â”Œâ”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”                                            â”‚
+â”‚         â–¼          â–¼                                            â”‚
+â”‚   [SUBMITTED]  [REJECTED]                                       â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                           â”‚
+                           â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ 9. AUDIT TRAIL                                                  â”‚
+â”‚    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                 â”‚
+â”‚    â”‚ append_block(hash_chain.jsonl)           â”‚                 â”‚
+â”‚    â”‚  - decision_id, symbol, qty, price       â”‚                 â”‚
+â”‚    â”‚  - config_pin (SHA256 of settings.json)  â”‚                 â”‚
+â”‚    â”‚  - status, notes                         â”‚                 â”‚
+â”‚    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                 â”‚
+â”‚                           â”‚                                      â”‚
+â”‚                           â–¼                                      â”‚
+â”‚    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                 â”‚
+â”‚    â”‚ jlog(events.jsonl)                       â”‚                 â”‚
+â”‚    â”‚  - Structured JSON log entry             â”‚                 â”‚
+â”‚    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                 â”‚
+â”‚                           â”‚                                      â”‚
+â”‚                           â–¼                                      â”‚
+â”‚    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                 â”‚
+â”‚    â”‚ IdempotencyStore.put(decision_id)        â”‚                 â”‚
+â”‚    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                 â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                           â”‚
+                           â–¼
                      [Order Complete]
 ```
 
@@ -924,7 +923,7 @@ python scripts/verify_hash_chain.py
 ### 5. Lookahead Prevention
 **Strategy Level:** All indicators shifted by 1 bar
 
-**Example (RSI-2):**
+**Example (Donchian/ICT):**
 ```python
 # WRONG (lookahead bias):
 df['rsi2'] = rsi(df['close'], period=2)
@@ -973,59 +972,8 @@ grep config_pin state/hash_chain.jsonl | sort -u
 
 ## Trading Strategies
 
-### Current Implementation
-
-| Strategy | Entry Signal | Exit Signal | Trend Filter | Stop Loss |
-|----------|-------------|-------------|--------------|-----------|
-| **RSI-2** | RSI(2) ≤ 10 | RSI(2) ≥ 70 | Close > SMA(200) | ATR(14) × 2 |
-| **IBS** | IBS < 0.2 | Time/Stop | Close > SMA(200) | ATR(14) × 2 |
-| **AND** | Both above | Both above | SMA(200) | ATR(14) × 2 |
-
-### Walk-Forward Performance (10-Year Backtest)
-
-**RSI-2 Strategy:**
-- Win Rate: ~58-62%
-- Sharpe Ratio: 1.2-1.8
-- Max Drawdown: 12-18%
-- Avg Trade Duration: 3-5 days
-
-**IBS Strategy:**
-- Win Rate: ~54-58%
-- Sharpe Ratio: 1.0-1.5
-- Max Drawdown: 15-20%
-- Avg Trade Duration: 3-5 days
-
-**AND Strategy:**
-- Win Rate: ~60-65% (higher selectivity)
-- Sharpe Ratio: 1.5-2.2
-- Max Drawdown: 10-15%
-- Trade Frequency: 50-70% lower than individual strategies
-
-### Future Strategies (Planned)
-
-**Location:** `config/strategies/` (JSON parameter files)
-
-**Candidates:**
-- Mean reversion: Bollinger Band reversals
-- Momentum: 52-week high breakouts
-- Sector rotation: Relative strength
-- Volatility: VIX regime filters
-
-**Plug-in Architecture:**
-```python
-# strategies/{name}/strategy.py
-class CustomStrategy:
-    def __init__(self, params: CustomParams):
-        ...
-
-    def generate_signals(self, df: pd.DataFrame) -> pd.DataFrame:
-        ...
-
-    def scan_signals_over_time(self, df: pd.DataFrame) -> pd.DataFrame:
-        ...
-```
-
----
+- Donchian Breakout (trend): channel breakout with ATR-based stop, time stop, optional R-multiple take profit. See strategies/donchian/strategy.py
+- ICT Turtle Soup (mean reversion): failed breakout (liquidity sweep) with ATR/time stops and R-multiple. See strategies/ict/turtle_soup.py
 
 ## System Components
 
@@ -1033,84 +981,84 @@ class CustomStrategy:
 
 ```
 kobe81_traderbot/
-├── backtest/
-│   ├── engine.py              # Backtester core
-│   └── walk_forward.py        # Rolling window validation
-├── config/
-│   ├── env_loader.py          # .env file parser
-│   ├── settings.json          # System parameters
-│   └── strategies/            # Strategy configs (future)
-├── core/
-│   ├── config_pin.py          # SHA256 file hashing
-│   ├── hash_chain.py          # Audit blockchain
-│   └── structured_log.py      # JSON logging
-├── data/
-│   ├── cache/                 # CSV cache for Polygon bars
-│   ├── providers/
-│   │   ├── polygon_eod.py     # Polygon daily bars API
-│   │   └── multi_source.py    # Future: yfinance fallback
-│   └── universe/
-│       ├── loader.py          # Symbol list management
-│       └── optionable_liquid_final.csv  # 950 stocks
-├── docs/
-│   ├── README.md              # Quick start
-│   ├── RUN_24x7.md            # Scheduler setup
-│   ├── COMPLETE_ROBOT_ARCHITECTURE.md  # Layer mapping
-│   └── TECHNICAL_ARCHITECTURE.md  # This file
-├── execution/
-│   └── broker_alpaca.py       # Alpaca REST API
-├── logs/
-│   └── events.jsonl           # Structured logs
-├── monitor/
-│   └── health_endpoints.py    # HTTP health server
-├── oms/
-│   ├── order_state.py         # Order record enums
-│   └── idempotency_store.py   # SQLite duplicate prevention
-├── risk/
-│   └── policy_gate.py         # Budget enforcement
-├── scripts/                   # 80+ operational scripts
-│   ├── preflight.py           # Pre-trade checks
-│   ├── build_universe_polygon.py  # Universe builder
-│   ├── prefetch_polygon_universe.py  # Data prefetch
-│   ├── run_wf_polygon.py      # Walk-forward backtest
-│   ├── run_backtest_polygon.py  # Single backtest
-│   ├── run_paper_trade.py     # Paper trading
-│   ├── run_live_trade_micro.py  # Live micro trading
-│   ├── runner.py              # 24/7 scheduler
-│   ├── reconcile_alpaca.py    # Broker reconciliation
-│   ├── verify_hash_chain.py   # Audit verification
-│   └── [70+ more scripts...]
-├── state/
-│   ├── hash_chain.jsonl       # Audit blocks
-│   ├── idempotency.sqlite     # Duplicate tracking
-│   ├── runner_last.json       # Scheduler state
-│   └── KILL_SWITCH            # Emergency stop (if exists)
-├── strategies/
-│   ├── connors_rsi2/
-│   │   ├── strategy.py        # RSI-2 implementation
-│   │   └── indicators.py      # RSI, SMA, ATR
-│   └── ibs/
-│       ├── strategy.py        # IBS implementation
-│       └── indicators.py      # IBS, SMA, ATR
-├── tests/
-│   ├── unit/
-│   │   ├── test_strategies.py
-│   │   ├── test_backtest.py
-│   │   ├── test_core.py
-│   │   ├── test_risk.py
-│   │   └── test_data.py
-│   ├── integration/
-│   │   └── test_workflow.py
-│   └── conftest.py            # pytest fixtures
-├── wf_outputs/                # Walk-forward results
-│   ├── rsi2/split_NN/
-│   ├── ibs/split_NN/
-│   └── and/split_NN/
-├── .env                       # Environment variables (gitignored)
-├── .env.template              # Template for .env
-├── CLAUDE.md                  # Claude Code guidance
-├── README.md                  # Project overview
-└── requirements.txt           # Python dependencies
+â”œâ”€â”€ backtest/
+â”‚   â”œâ”€â”€ engine.py              # Backtester core
+â”‚   â””â”€â”€ walk-forward.py        # Rolling window validation
+â”œâ”€â”€ config/
+â”‚   â”œâ”€â”€ env_loader.py          # .env file parser
+â”‚   â”œâ”€â”€ settings.json          # System parameters
+â”‚   â””â”€â”€ strategies/            # Strategy configs (future)
+â”œâ”€â”€ core/
+â”‚   â”œâ”€â”€ config_pin.py          # SHA256 file hashing
+â”‚   â”œâ”€â”€ hash_chain.py          # Audit blockchain
+â”‚   â””â”€â”€ structured_log.py      # JSON logging
+â”œâ”€â”€ data/
+â”‚   â”œâ”€â”€ cache/                 # CSV cache for Polygon bars
+â”‚   â”œâ”€â”€ providers/
+â”‚   â”‚   â”œâ”€â”€ polygon_eod.py     # Polygon daily bars API
+â”‚   â”‚   â””â”€â”€ multi_source.py    # Future: yfinance fallback
+â”‚   â””â”€â”€ universe/
+â”‚       â”œâ”€â”€ loader.py          # Symbol list management
+â”‚       â””â”€â”€ optionable_liquid_900.csv  # 900 stocks
+â”œâ”€â”€ docs/
+â”‚   â”œâ”€â”€ README.md              # Quick start
+â”‚   â”œâ”€â”€ RUN_24x7.md            # Scheduler setup
+â”‚   â”œâ”€â”€ COMPLETE_ROBOT_ARCHITECTURE.md  # Layer mapping
+â”‚   â””â”€â”€ TECHNICAL_ARCHITECTURE.md  # This file
+â”œâ”€â”€ execution/
+â”‚   â””â”€â”€ broker_alpaca.py       # Alpaca REST API
+â”œâ”€â”€ logs/
+â”‚   â””â”€â”€ events.jsonl           # Structured logs
+â”œâ”€â”€ monitor/
+â”‚   â””â”€â”€ health_endpoints.py    # HTTP health server
+â”œâ”€â”€ oms/
+â”‚   â”œâ”€â”€ order_state.py         # Order record enums
+â”‚   â””â”€â”€ idempotency_store.py   # SQLite duplicate prevention
+â”œâ”€â”€ risk/
+â”‚   â””â”€â”€ policy_gate.py         # Budget enforcement
+â”œâ”€â”€ scripts/                   # 80+ operational scripts
+â”‚   â”œâ”€â”€ preflight.py           # Pre-trade checks
+â”‚   â”œâ”€â”€ build_universe_polygon.py  # Universe builder
+â”‚   â”œâ”€â”€ prefetch_polygon_universe.py  # Data prefetch
+â”‚   â”œâ”€â”€ run_wf_polygon.py      # walk-forward backtest
+â”‚   â”œâ”€â”€ run_backtest_polygon.py  # Single backtest
+â”‚   â”œâ”€â”€ run_paper_trade.py     # Paper trading
+â”‚   â”œâ”€â”€ run_live_trade_micro.py  # Live micro trading
+â”‚   â”œâ”€â”€ runner.py              # 24/7 scheduler
+â”‚   â”œâ”€â”€ reconcile_alpaca.py    # Broker reconciliation
+â”‚   â”œâ”€â”€ verify_hash_chain.py   # Audit verification
+â”‚   â””â”€â”€ [70+ more scripts...]
+â”œâ”€â”€ state/
+â”‚   â”œâ”€â”€ hash_chain.jsonl       # Audit blocks
+â”‚   â”œâ”€â”€ idempotency.sqlite     # Duplicate tracking
+â”‚   â”œâ”€â”€ runner_last.json       # Scheduler state
+â”‚   â””â”€â”€ KILL_SWITCH            # Emergency stop (if exists)
+â”œâ”€â”€ strategies/
+â”‚   â”œâ”€â”€ donchian/
+â”‚   â”‚   â”œâ”€â”€ strategy.py        # Donchian/ICT implementation
+â”‚   â”‚   â””â”€â”€ indicators.py      # RSI, SMA, ATR
+â”‚   â””â”€â”€ ICT/
+â”‚       â”œâ”€â”€ strategy.py        # ICT implementation
+â”‚       â””â”€â”€ indicators.py      # ICT, SMA, ATR
+â”œâ”€â”€ tests/
+â”‚   â”œâ”€â”€ unit/
+â”‚   â”‚   â”œâ”€â”€ test_strategies.py
+â”‚   â”‚   â”œâ”€â”€ test_backtest.py
+â”‚   â”‚   â”œâ”€â”€ test_core.py
+â”‚   â”‚   â”œâ”€â”€ test_risk.py
+â”‚   â”‚   â””â”€â”€ test_data.py
+â”‚   â”œâ”€â”€ integration/
+â”‚   â”‚   â””â”€â”€ test_workflow.py
+â”‚   â””â”€â”€ conftest.py            # pytest fixtures
+â”œâ”€â”€ wf_outputs/                # walk-forward results
+â”‚   â”œâ”€â”€ rsi2/split_NN/
+â”‚   â”œâ”€â”€ ICT/split_NN/
+â”‚   â””â”€â”€ and/split_NN/
+â”œâ”€â”€ .env                       # Environment variables (gitignored)
+â”œâ”€â”€ .env.template              # Template for .env
+â”œâ”€â”€ CLAUDE.md                  # Claude Code guidance
+â”œâ”€â”€ README.md                  # Project overview
+â””â”€â”€ requirements.txt           # Python dependencies
 ```
 
 ---
@@ -1126,9 +1074,9 @@ kobe81_traderbot/
 ```bash
 python scripts/run_backtest_polygon.py \
   --strategy rsi2 \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --start 2020-01-01 --end 2024-12-31 \
-  --cap 950 \
+  --cap 900 \
   --outdir backtest_outputs
 ```
 
@@ -1146,7 +1094,7 @@ python scripts/run_backtest_polygon.py \
 
 ---
 
-### Mode 2: Walk-Forward Validation
+### Mode 2: walk-forward Validation
 **Purpose:** Rolling out-of-sample testing
 
 **Script:** `scripts/run_wf_polygon.py`
@@ -1168,10 +1116,10 @@ python scripts/run_backtest_polygon.py \
 **Usage:**
 ```bash
 python scripts/run_wf_polygon.py \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --start 2015-01-01 --end 2024-12-31 \
   --train-days 252 --test-days 63 \
-  --strategies rsi2,ibs,and \
+  --strategies rsi2,ICT,and \
   --outdir wf_outputs
 
 python scripts/aggregate_wf_report.py \
@@ -1236,7 +1184,7 @@ python scripts/positions.py
 
 **Pre-Live Checklist:**
 1. Paper trading successful for 30+ days
-2. Walk-forward validation passed
+2. walk-forward validation passed
 3. Reconciliation clean (no discrepancies)
 4. Kill switch tested
 5. Monitoring alerts configured
@@ -1249,7 +1197,7 @@ ALPACA_BASE_URL=https://api.alpaca.markets
 
 # Run live script
 python scripts/run_live_trade_micro.py \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --cap 10
 ```
 
@@ -1282,7 +1230,7 @@ while True:
 ```
 Action: Start program
 Program: python.exe
-Arguments: scripts/runner.py --mode paper --universe data/universe/optionable_liquid_final.csv
+Arguments: scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv
 Start in: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot
 Trigger: At system startup
 Conditions: Only if computer is on AC power
@@ -1299,7 +1247,7 @@ Conditions: Only if computer is on AC power
 
 ### Artifacts Generated
 
-#### 1. Walk-Forward Outputs
+#### 1. walk-forward Outputs
 **Location:** `wf_outputs/{strategy}/split_{NN}/`
 
 **Files:**
@@ -1308,7 +1256,7 @@ Conditions: Only if computer is on AC power
 - `summary.json` - Aggregate metrics
 
 **Aggregated:**
-- `wf_outputs/wf_summary_compare.csv` - Side-by-side strategy comparison
+- `wf_outputs/wf_summary_compare.csv` - side-by-side strategy comparison
 - `wf_outputs/wf_report.html` - Interactive HTML report
 
 #### 2. Structured Logs
@@ -1398,8 +1346,8 @@ ORDER BY created_at DESC;
 **Validation:**
 ```bash
 python scripts/validate_universe_coverage.py \
-  --universe data/universe/optionable_liquid_final.csv \
-  --min-symbols 950 --min-years 10
+  --universe data/universe/optionable_liquid_900.csv \
+  --min-symbols 900 --min-years 10
 # Output: PASS or FAIL with details
 ```
 
@@ -1447,9 +1395,9 @@ pytest tests/integration/
 ```bash
 # Full 10-year walk-forward
 python scripts/run_wf_polygon.py \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --start 2015-01-01 --end 2024-12-31 \
-  --strategies rsi2,ibs,and
+  --strategies rsi2,ICT,and
 
 # Review metrics
 python scripts/aggregate_wf_report.py --wfdir wf_outputs
@@ -1480,9 +1428,9 @@ tail -f logs/events.jsonl
 ```
 
 **Scale-Up (After 90 Days Clean):**
-- Increase universe cap: 10 → 25 → 50
-- Increase order budget: $75 → $150 → $300
-- Increase daily budget: $1,000 → $2,500 → $5,000
+- Increase universe cap: 10 â†’ 25 â†’ 50
+- Increase order budget: $75 â†’ $150 â†’ $300
+- Increase daily budget: $1,000 â†’ $2,500 â†’ $5,000
 - Update `RiskLimits` in script or config file
 
 ---
@@ -1502,7 +1450,7 @@ tail -f logs/events.jsonl
 
 **Strategy & Analysis:**
 - `/backtest` - Run historical simulation
-- `/wf` - Walk-forward validation
+- `/wf` - walk-forward validation
 - `/showdown` - Strategy comparison
 - `/signals` - View generated signals
 
@@ -1604,16 +1552,16 @@ pytest>=7.2.0
 ### Glossary
 
 **Terms:**
-- **AND Filter:** Requires both RSI-2 AND IBS signals on same bar
+- **AND Filter:** Requires both Donchian/ICT AND ICT signals on same bar
 - **ATR:** Average True Range (volatility measure)
 - **Canary Budget:** Small test allocation ($75/order) for risk mitigation
 - **Hash Chain:** Blockchain-style audit trail with SHA256 linkage
-- **IBS:** Internal Bar Strength = (Close - Low) / (High - Low)
+- **ICT:** Internal Bar Strength = (Close - Low) / (High - Low)
 - **Idempotency:** Property ensuring duplicate submissions have no effect
 - **IOC:** Immediate-or-Cancel (order type)
 - **Lookahead Bias:** Using future data in backtests (avoided via shift)
 - **PolicyGate:** Risk management layer enforcing budgets
-- **Walk-Forward:** Rolling out-of-sample validation method
+- **walk-forward:** Rolling out-of-sample validation method
 
 ---
 
@@ -1643,3 +1591,9 @@ pytest>=7.2.0
 *System Version: Kobe81 v1.0*
 *Total Python Modules: 112*
 *Total Lines of Code: ~8,500*
+
+
+
+
+
+

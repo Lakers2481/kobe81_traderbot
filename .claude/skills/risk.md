@@ -1,4 +1,4 @@
-# /risk
+﻿# /risk
 
 Check Kobe's risk limits and current exposure.
 
@@ -71,11 +71,11 @@ print(f'Daily remaining: \${daily_remaining:,.2f}')
 print()
 
 if daily_remaining <= 0:
-    print('⚠️  DAILY LIMIT REACHED - No new entries allowed')
+    print('âš ï¸  DAILY LIMIT REACHED - No new entries allowed')
 elif daily_remaining < 150:
-    print('⚠️  LOW DAILY BUDGET - Approaching limit')
+    print('âš ï¸  LOW DAILY BUDGET - Approaching limit')
 else:
-    print('✅ Risk limits OK')
+    print('âœ… Risk limits OK')
 "
 ```
 
@@ -91,3 +91,5 @@ else:
 - Order size > $75: Rejected
 - Daily > $1,000: No new entries
 - Exposure > limits: REDUCE_ONLY mode
+
+

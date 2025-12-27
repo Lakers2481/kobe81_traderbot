@@ -1,4 +1,4 @@
-# /positions
+﻿# /positions
 
 Show Kobe's current open positions from Alpaca.
 
@@ -61,3 +61,5 @@ else:
 - Uses Alpaca paper/live based on ALPACA_BASE_URL
 - Positions are from broker (source of truth)
 - For reconciliation, use `/reconcile`
+
+

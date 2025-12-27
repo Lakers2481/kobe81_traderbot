@@ -1,4 +1,4 @@
-# /suggest
+﻿# /suggest
 
 AI suggests next actions based on current system state.
 
@@ -64,3 +64,5 @@ MARKET CONTEXT:
 - Checks state/, logs/, positions
 - Uses structured log patterns
 - Respects kill switch state
+
+

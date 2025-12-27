@@ -1,4 +1,4 @@
-# /prefetch
+﻿# /prefetch
 
 Prefetch EOD bars for the universe to speed up backtesting and scanning.
 
@@ -17,14 +17,14 @@ Prefetch EOD bars for the universe to speed up backtesting and scanning.
 ```bash
 # Prefetch full universe (default: last 10 years)
 python scripts/prefetch_polygon_universe.py \
-    --universe data/universe/optionable_liquid_final.csv \
+    --universe data/universe/optionable_liquid_900.csv \
     --start 2015-01-01 \
     --end $(date +%Y-%m-%d) \
     --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
 
 # Quick prefetch (last 2 years only)
 python scripts/prefetch_polygon_universe.py \
-    --universe data/universe/optionable_liquid_final.csv \
+    --universe data/universe/optionable_liquid_900.csv \
     --start $(date -d '-2 years' +%Y-%m-%d) \
     --end $(date +%Y-%m-%d) \
     --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
@@ -34,7 +34,7 @@ python -c "
 from pathlib import Path
 import pandas as pd
 
-universe = Path('data/universe/optionable_liquid_final.csv')
+universe = Path('data/universe/optionable_liquid_900.csv')
 cache = Path('data/cache')
 
 if universe.exists():
@@ -56,7 +56,7 @@ else:
 ## Parameters
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `--universe` | optionable_liquid_final.csv | Universe CSV file |
+| `--universe` | optionable_liquid_900.csv | Universe CSV file |
 | `--start` | 2015-01-01 | Start date for data |
 | `--end` | today | End date for data |
 | `--concurrency` | 3 | Parallel API requests |
@@ -71,4 +71,6 @@ else:
 |---------------|------------------|------------------|
 | 100 symbols | ~20 min | ~2 min |
 | 500 symbols | ~100 min | ~10 min |
-| 950 symbols | ~190 min | ~20 min |
+| 900 symbols | ~190 min | ~20 min |
+
+

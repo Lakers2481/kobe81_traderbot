@@ -18,7 +18,7 @@ from data.universe.loader import load_universe
 from data.providers.polygon_eod import fetch_daily_bars_polygon
 from strategies.donchian.strategy import DonchianBreakoutStrategy
 from strategies.ict.turtle_soup import TurtleSoupStrategy
-from execution.broker_alpaca import get_best_ask, construct_decision, place_ioc_limit
+from execution.broker_alpaca import get_best_ask, get_best_bid, construct_decision, place_ioc_limit
 from risk.policy_gate import PolicyGate, RiskLimits
 from core.hash_chain import append_block
 from core.structured_log import jlog
@@ -34,6 +34,7 @@ def main():
     ap.add_argument('--cap', type=int, default=10)
     ap.add_argument('--dotenv', type=str, default='./.env')
     ap.add_argument('--cache', type=str, default='data/cache')
+    ap.add_argument('--max-spread-pct', type=float, default=0.02, help='Max bid/ask spread as fraction of mid (default 2%)')
     args = ap.parse_args()
 
     # Env
@@ -84,9 +85,16 @@ def main():
     for _, row in todays.iterrows():
         sym = row['symbol']
         ask = get_best_ask(sym)
-        if ask is None:
-            jlog('skip_no_best_ask', symbol=sym)
-            print(f'Skip {sym}: no best ask')
+        bid = get_best_bid(sym)
+        if ask is None or bid is None or ask <= 0 or bid <= 0:
+            jlog('skip_no_best_quote', symbol=sym)
+            print(f'Skip {sym}: no valid bid/ask')
+            continue
+        mid = (ask + bid) / 2.0
+        spread = (ask - bid) / mid if mid > 0 else 1.0
+        if spread > float(args.max_spread_pct):
+            jlog('skip_wide_spread', symbol=sym, spread=spread)
+            print(f'Skip {sym}: spread {spread:.2%} > max {args.max_spread_pct:.2%}')
             continue
         limit_px = round(ask * 1.001, 2)
         qty = max(1, int(75.0 // limit_px))
@@ -119,3 +127,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+

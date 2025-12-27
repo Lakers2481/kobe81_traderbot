@@ -1,4 +1,4 @@
-# /runner
+﻿# /runner
 
 Control the 24/7 trading runner (scheduler).
 
@@ -18,7 +18,7 @@ Control the 24/7 trading runner (scheduler).
 # Start runner (paper mode)
 python scripts/runner.py \
     --mode paper \
-    --universe data/universe/optionable_liquid_final.csv \
+    --universe data/universe/optionable_liquid_900.csv \
     --cap 50 \
     --scan-times 09:35,10:30,15:55 \
     --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
@@ -26,7 +26,7 @@ python scripts/runner.py \
 # Start runner in background
 nohup python scripts/runner.py \
     --mode paper \
-    --universe data/universe/optionable_liquid_final.csv \
+    --universe data/universe/optionable_liquid_900.csv \
     --cap 50 \
     --scan-times 09:35,10:30,15:55 \
     --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env \
@@ -38,7 +38,7 @@ echo "Runner started with PID $(cat state/runner.pid)"
 # Run once and exit (for testing)
 python scripts/runner.py \
     --mode paper \
-    --universe data/universe/optionable_liquid_final.csv \
+    --universe data/universe/optionable_liquid_900.csv \
     --cap 50 \
     --once \
     --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
@@ -57,14 +57,14 @@ if pid_file.exists():
     pid = int(pid_file.read_text().strip())
     try:
         proc = psutil.Process(pid)
-        print(f'✅ Runner running (PID {pid})')
+        print(f'âœ… Runner running (PID {pid})')
         print(f'   CPU: {proc.cpu_percent()}%')
         print(f'   Memory: {proc.memory_info().rss / 1024 / 1024:.1f} MB')
         print(f'   Started: {proc.create_time()}')
     except psutil.NoSuchProcess:
-        print(f'❌ Runner not running (stale PID {pid})')
+        print(f'âŒ Runner not running (stale PID {pid})')
 else:
-    print('❌ No runner PID file found')
+    print('âŒ No runner PID file found')
 
 # Check last run state
 state_file = Path('state/runner_last.json')
@@ -124,3 +124,5 @@ tail -100 logs/runner.log 2>/dev/null || echo "No runner log found"
 | `--scan-times` | 09:35,10:30,15:55 | Comma-separated times |
 | `--lookback-days` | 540 | Days of data to fetch |
 | `--once` | false | Run once and exit |
+
+

@@ -1,4 +1,4 @@
-# /data
+﻿# /data
 
 Check data fetch status, cache health, and validate data integrity.
 
@@ -94,18 +94,18 @@ try:
     r = requests.get(url, timeout=5)
     print(f'Polygon API: {r.status_code}')
     if r.status_code == 200:
-        print('✅ Polygon connection OK')
+        print('âœ… Polygon connection OK')
     else:
-        print(f'❌ Polygon error: {r.text[:100]}')
+        print(f'âŒ Polygon error: {r.text[:100]}')
 except Exception as e:
-    print(f'❌ Polygon error: {e}')
+    print(f'âŒ Polygon error: {e}')
 "
 ```
 
 ## Data Quality Checks
 | Check | Pass Criteria |
 |-------|---------------|
-| Completeness | All 950 symbols have data |
+| Completeness | All 900 symbols have data |
 | Freshness | Last bar within 24h (trading days) |
 | OHLCV Valid | high >= low, prices > 0 |
 | No Gaps | Max 5 consecutive missing days |
@@ -114,8 +114,10 @@ except Exception as e:
 ## Cache Structure
 ```
 data/cache/
-├── AAPL.csv      # Symbol-level CSV files
-├── MSFT.csv
-├── ...
-└── metadata.json # Cache metadata
+â”œâ”€â”€ AAPL.csv      # Symbol-level CSV files
+â”œâ”€â”€ MSFT.csv
+â”œâ”€â”€ ...
+â””â”€â”€ metadata.json # Cache metadata
 ```
+
+

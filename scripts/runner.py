@@ -167,7 +167,7 @@ def main():
     ap.add_argument('--cap', type=int, default=50)
     ap.add_argument('--scan-times', type=str, default='09:35,10:30,15:55', help='Local HH:MM times, comma separated')
     ap.add_argument('--lookback-days', type=int, default=540)
-    ap.add_argument('--dotenv', type=str, default='C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env')
+    ap.add_argument('--dotenv', type=str, default='./.env')
     ap.add_argument('--once', action='store_true', help='Run once immediately and exit')
     ap.add_argument('--skip-reconcile', action='store_true', help='Skip position reconciliation on startup')
     args = ap.parse_args()

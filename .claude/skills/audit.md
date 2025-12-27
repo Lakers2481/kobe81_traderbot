@@ -1,4 +1,4 @@
-# /audit
+﻿# /audit
 
 Verify Kobe's hash chain integrity (tamper detection).
 
@@ -27,16 +27,16 @@ chain = HashChain()
 result = chain.verify()
 
 if result['valid']:
-    print('✅ HASH CHAIN VERIFIED')
+    print('âœ… HASH CHAIN VERIFIED')
     print(f'   Blocks: {result[\"block_count\"]}')
     print(f'   First: {result[\"first_timestamp\"]}')
     print(f'   Last: {result[\"last_timestamp\"]}')
 else:
-    print('❌ CHAIN INTEGRITY FAILURE')
+    print('âŒ CHAIN INTEGRITY FAILURE')
     print(f'   Error: {result[\"error\"]}')
     print(f'   Block: {result.get(\"failed_block\", \"unknown\")}')
     print()
-    print('⚠️  CRITICAL: Possible tampering detected!')
+    print('âš ï¸  CRITICAL: Possible tampering detected!')
     print('   1. Stop all trading immediately (/kill)')
     print('   2. Investigate the discrepancy')
     print('   3. Restore from backup if needed')
@@ -66,3 +66,5 @@ If chain verification fails:
 3. Identify tampered entries
 4. Investigate root cause
 5. Restore from last known good state
+
+

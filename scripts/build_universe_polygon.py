@@ -53,7 +53,7 @@ def main():
     ap.add_argument('--cap', type=int, default=900)
     ap.add_argument('--concurrency', type=int, default=3)
     ap.add_argument('--cache', type=str, default='data/cache')
-    ap.add_argument('--out', type=str, default='data/universe/optionable_liquid_final.csv')
+    ap.add_argument('--out', type=str, default='data/universe/optionable_liquid_900.csv')
     ap.add_argument('--dotenv', type=str, default='./.env')
     ap.add_argument('--fallback-free', action='store_true', default=False, help='Backfill pre-Polygon coverage with Yahoo Finance')
     args = ap.parse_args()

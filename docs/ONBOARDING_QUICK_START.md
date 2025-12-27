@@ -1,14 +1,24 @@
-# Kobe81 Traderbot - Onboarding Quick Start
+﻿# Kobe81 Traderbot - Onboarding Quick Start
 
-> Note: This guide contains references to legacy RSI2/IBS content and a 950-stock universe. The system is now standardized to two strategies (Donchian Breakout + ICT Turtle Soup) and a 900-stock universe. For up-to-date commands, see `README.md` and the scripts in `scripts/`.
+> Note: This guide contains references to legacy RSI2/ICT content and a 900-stock universe. The system is now standardized to two strategies (Donchian Breakout + ICT Turtle Soup) and a 900-stock universe. For up-to-date commands, see `README.md` and the scripts in `scripts/`.
 
 **Target Audience:** New developers, operators, quantitative analysts
 **Prerequisites:** Basic Python, understanding of trading concepts
 **Time Required:** 30-60 minutes
 
----
+---`n## Canonical Setup (Two Strategies + 900 Universe)
 
-## Table of Contents
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n## Table of Contents
 
 1. [System Overview](#system-overview)
 2. [First 5 Minutes](#first-5-minutes)
@@ -19,40 +29,120 @@
 7. [Common Tasks](#common-tasks)
 8. [Troubleshooting](#troubleshooting)
 
----
+---`n## Canonical Setup (Two Strategies + 900 Universe)
 
-## System Overview
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n## System Overview
 
 ### What is Kobe81?
 
 Kobe81 is an **institutional-grade quantitative trading system** that:
-- Implements proven mean-reversion strategies (RSI-2, IBS)
-- Backtests with 10 years of historical data (950 stocks)
+- Implements proven mean-reversion strategies (Donchian Breakout + ICT Turtle Soup)
+- Backtests with 10 years of historical data (900 stocks)
 - Executes trades automatically via Alpaca broker
 - Enforces strict risk controls (kill switch, budgets, audit trail)
 - Prevents common pitfalls (lookahead bias, overfitting, duplicate orders)
 
 ### Architecture in One Sentence
 
-**10 layers** from data ingestion (Polygon API) → strategy signals → risk checks → broker execution → audit logging, all with safety mechanisms at every step.
+**10 layers** from data ingestion (Polygon API) â†’ strategy signals â†’ risk checks â†’ broker execution â†’ audit logging, all with safety mechanisms at every step.
 
 ### Key Files You Need to Know
 
 | File | Purpose |
-|------|---------|
+|---`n## Canonical Setup (Two Strategies + 900 Universe)
+
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n---`n## Canonical Setup (Two Strategies + 900 Universe)
+
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n|---`n## Canonical Setup (Two Strategies + 900 Universe)
+
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n---`n## Canonical Setup (Two Strategies + 900 Universe)
+
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n---`n## Canonical Setup (Two Strategies + 900 Universe)
+
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n|
 | `scripts/runner.py` | 24/7 scheduler - main entry point |
 | `scripts/run_paper_trade.py` | Paper trading execution |
 | `scripts/run_backtest_polygon.py` | Historical simulation |
-| `strategies/connors_rsi2/strategy.py` | RSI-2 strategy implementation |
+| `strategies/donchian/strategy.py` | Donchian Breakout implementation |
 | `risk/policy_gate.py` | Budget enforcement |
 | `execution/broker_alpaca.py` | Alpaca API integration |
 | `state/KILL_SWITCH` | Emergency stop (create file to activate) |
 | `logs/events.jsonl` | Structured event logs |
 | `state/hash_chain.jsonl` | Tamper-proof audit trail |
 
----
+---`n## Canonical Setup (Two Strategies + 900 Universe)
 
-## First 5 Minutes
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n## First 5 Minutes
 
 ### 1. Navigate to Project
 ```bash
@@ -93,9 +183,19 @@ python scripts/preflight.py
 - Verify internet connection
 - Ensure Polygon and Alpaca accounts are active
 
----
+---`n## Canonical Setup (Two Strategies + 900 Universe)
 
-## Understanding the Architecture
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n## Understanding the Architecture
 
 ### The 10 Layers (Top to Bottom)
 
@@ -107,8 +207,8 @@ Layer 7:  EXECUTION       - Broker API (Alpaca)
 Layer 6:  OMS             - Order management, idempotency
 Layer 5:  RISK            - Policy gate, kill switch
 Layer 4:  BACKTEST        - Historical simulation
-Layer 3:  STRATEGY        - Signal generation (RSI-2, IBS)
-Layer 2:  UNIVERSE        - Stock filtering (950 symbols)
+Layer 3:  STRATEGY        - Signal generation (Donchian Breakout + ICT Turtle Soup)
+Layer 2:  UNIVERSE        - Stock filtering (900 symbols)
 Layer 1:  DATA            - Market data ingestion (Polygon)
 Layer 0:  EXTERNAL        - APIs, configuration
 ```
@@ -117,17 +217,17 @@ Layer 0:  EXTERNAL        - APIs, configuration
 
 ```
 1. Fetch data from Polygon (cached to CSV)
-   ↓
-2. Load 950-stock universe
-   ↓
-3. Generate RSI-2 signals (oversold stocks)
-   ↓
-4. Generate IBS signals (weak closes)
-   ↓
+   â†“
+2. Load 900-stock universe
+   â†“
+3. Generate Donchian/ICT signals (see scan.py)
+   â†“
+4. (legacy ICT content removed)
+   â†“
 5. Filter to AND signals (both agree)
-   ↓
+   â†“
 6. Check kill switch (abort if active)
-   ↓
+   â†“
 7. For each signal:
    - Get best ask price
    - Check PolicyGate (budget limits)
@@ -145,13 +245,23 @@ Layer 0:  EXTERNAL        - APIs, configuration
 5. **Lookahead Prevention** - Indicators shifted 1 bar (no future data)
 6. **Config Pinning** - Detects unauthorized parameter changes
 
----
+---`n## Canonical Setup (Two Strategies + 900 Universe)
 
-## Running Your First Backtest
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n## Running Your First Backtest
 
 ### Step 1: Build Universe (One-Time Setup)
 
-This takes ~30 minutes and downloads 10 years of data for 950 stocks:
+This takes ~30 minutes and downloads 10 years of data for 900 stocks:
 
 ```bash
 python scripts/build_universe_polygon.py \
@@ -159,7 +269,7 @@ python scripts/build_universe_polygon.py \
   --start 2015-01-01 \
   --end 2024-12-31 \
   --min-years 10 \
-  --cap 950 \
+  --cap 900 \
   --cache data/cache \
   --concurrency 3
 ```
@@ -168,7 +278,7 @@ python scripts/build_universe_polygon.py \
 - Loads candidate symbols from CSV
 - Checks each for options availability (via Polygon)
 - Verifies 10+ years of historical data
-- Writes final 950 symbols to `data/universe/optionable_liquid_final.csv`
+- Writes final 900 symbols to `data/universe/optionable_liquid_900.csv`
 
 **Skip this step if universe file already exists.**
 
@@ -178,34 +288,43 @@ Pre-download all historical bars to speed up backtests:
 
 ```bash
 python scripts/prefetch_polygon_universe.py \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --start 2015-01-01 \
   --end 2024-12-31 \
   --cache data/cache \
   --concurrency 3
 ```
 
-**Benefit:** Walk-forward backtests run 10x faster with cached data.
+**Benefit:** walk-forward backtests run 10x faster with cached data.
 
-### Step 3: Run Simple Backtest (RSI-2 Strategy)
+### Step 3: Run Simple Backtest (Donchian or ICT)
 
 ```bash
+# Donchian Backtest (single strategy)
 python scripts/run_backtest_polygon.py \
-  --strategy rsi2 \
-  --universe data/universe/optionable_liquid_final.csv \
+  --strategy donchian \
+  --universe data/universe/optionable_liquid_900.csv \
   --start 2020-01-01 \
   --end 2024-12-31 \
-  --cap 950 \
+  --cap 900 \
   --cache data/cache \
-  --outdir backtest_outputs
+  --outdir backtest_outputs_donchian
+
+# ICT Turtle Soup Backtest (single strategy)
+python scripts/run_backtest_polygon.py \
+  --strategy turtle_soup \
+  --universe data/universe/optionable_liquid_900.csv \
+  --start 2020-01-01 \
+  --end 2024-12-31 \
+  --cap 900 \
+  --cache data/cache \
+  --outdir backtest_outputs_ict
 ```
 
-**Expected runtime:** 5-15 minutes
-
 **Outputs:**
-- `backtest_outputs/trade_list.csv` - Every trade with entry/exit
-- `backtest_outputs/equity_curve.csv` - Daily portfolio values
-- `backtest_outputs/summary.json` - Performance metrics
+- `backtest_outputs_*/trade_list.csv` - Every trade with entry/exit
+- `backtest_outputs_*/equity_curve.csv` - Daily portfolio values
+- `backtest_outputs_*/summary.json` - Performance metrics
 
 ### Step 4: Review Results
 
@@ -213,7 +332,7 @@ python scripts/run_backtest_polygon.py \
 # View summary
 cat backtest_outputs/summary.json
 
-# Expected metrics (RSI-2 on 2020-2024):
+# Expected metrics (Donchian/ICT on 2020-2024):
 # {
 #   "total_return": 0.45,     (45% gain)
 #   "sharpe_ratio": 1.5,
@@ -223,18 +342,18 @@ cat backtest_outputs/summary.json
 # }
 ```
 
-### Step 5: Run Walk-Forward Validation
+### Step 5: Run walk-forward Validation
 
 Test strategy stability across multiple time periods:
 
 ```bash
 python scripts/run_wf_polygon.py \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --start 2015-01-01 \
   --end 2024-12-31 \
   --train-days 252 \
   --test-days 63 \
-  --strategies rsi2,ibs,and \
+  --donchian-on --turtle-soup-on \
   --cache data/cache \
   --outdir wf_outputs
 ```
@@ -259,14 +378,24 @@ open wf_outputs/wf_report.html   # macOS
 ```
 
 **Report shows:**
-- Side-by-side strategy comparison
+- side-by-side strategy comparison
 - Stability metrics (mean/median/stddev of Sharpe)
 - Equity curves per split
 - Drawdown analysis
 
----
+---`n## Canonical Setup (Two Strategies + 900 Universe)
 
-## Paper Trading Setup
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n## Paper Trading Setup
 
 ### Prerequisites
 
@@ -279,7 +408,7 @@ open wf_outputs/wf_report.html   # macOS
 
 ```bash
 python scripts/run_paper_trade.py \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --start 2024-06-01 \
   --end 2025-12-26 \
   --cap 50
@@ -287,7 +416,7 @@ python scripts/run_paper_trade.py \
 
 **What happens:**
 1. Fetches latest 540 days of data for 50 stocks
-2. Generates RSI-2 and IBS signals
+2. Generates Donchian/ICT and ICT signals
 3. Filters to AND signals (both agree)
 4. Checks kill switch
 5. For each signal:
@@ -314,7 +443,7 @@ python scripts/positions.py
 ```bash
 python scripts/runner.py \
   --mode paper \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --cap 50 \
   --scan-times 09:35,10:30,15:55 \
   --lookback-days 540
@@ -343,26 +472,36 @@ python scripts/reconcile_alpaca.py
 python scripts/metrics.py
 ```
 
----
+---`n## Canonical Setup (Two Strategies + 900 Universe)
 
-## Key Concepts
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n## Key Concepts
 
 ### 1. Strategies
 
-**RSI-2 (Connors):**
+**Donchian/ICT Notes:**
 - **Indicator:** 2-period RSI with Wilder smoothing
-- **Entry:** RSI ≤ 10 (oversold) + above SMA(200) trend
-- **Exit:** ATR(14) × 2.0 stop OR 5 bars OR RSI ≥ 70
+- **Entry:** RSI â‰¤ 10 (oversold) + above SMA(200) trend
+- **Exit:** ATR(14) Ã— 2.0 stop OR 5 bars OR RSI â‰¥ 70
 - **Philosophy:** Buy weakness in uptrends
 
-**IBS (Internal Bar Strength):**
+**ICT (Internal Bar Strength):**
 - **Indicator:** (Close - Low) / (High - Low)
-- **Entry:** IBS < 0.2 (weak close) + above SMA(200) trend
-- **Exit:** ATR(14) × 2.0 stop OR 5 bars
+- **Entry:** ICT < 0.2 (weak close) + above SMA(200) trend
+- **Exit:** ATR(14) Ã— 2.0 stop OR 5 bars
 - **Philosophy:** Buy stocks closing near daily low in uptrends
 
 **AND Filter:**
-- Requires BOTH RSI-2 AND IBS to signal on same day
+- Requires BOTH Donchian/ICT AND ICT to signal on same day
 - Higher win rate (~62% vs ~58% for individual strategies)
 - Lower trade frequency (50% fewer signals)
 - Better risk-adjusted returns
@@ -389,7 +528,7 @@ entry_signal = df['rsi2_sig'] <= 10
 - Fill occurs at open of bar t+1
 - Realistic simulation of live trading
 
-### 3. Walk-Forward Validation
+### 3. walk-forward Validation
 
 **Purpose:** Test strategy stability over time (avoid overfitting)
 
@@ -417,7 +556,7 @@ entry_signal = df['rsi2_sig'] <= 10
 ### 4. Order Types
 
 **IOC LIMIT (Immediate-or-Cancel Limit):**
-- Limit price: Best ask × 1.001 (0.1% premium)
+- Limit price: Best ask Ã— 1.001 (0.1% premium)
 - Time in force: IOC (fill immediately or cancel)
 - No partial fills in v1 (all-or-nothing)
 
@@ -459,9 +598,19 @@ entry_signal = df['rsi2_sig'] <= 10
 - Prevents duplicate orders from retries
 - Based on decision_id (timestamp + symbol + random)
 
----
+---`n## Canonical Setup (Two Strategies + 900 Universe)
 
-## Common Tasks
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n## Common Tasks
 
 ### View Recent Logs
 ```bash
@@ -572,9 +721,19 @@ python scripts/backup.py --outdir backups/2025-12-26
 # - config/ (settings.json)
 ```
 
----
+---`n## Canonical Setup (Two Strategies + 900 Universe)
 
-## Troubleshooting
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n## Troubleshooting
 
 ### Issue: Preflight fails with "Missing env keys"
 
@@ -628,10 +787,10 @@ grep "policy_veto" logs/events.jsonl
 grep "order_submit" logs/events.jsonl
 
 # Run with debug output
-python scripts/run_paper_trade.py --cap 10 --universe data/universe/optionable_liquid_final.csv --start 2024-01-01 --end 2025-12-26
+python scripts/run_paper_trade.py --cap 10 --universe data/universe/optionable_liquid_900.csv --start 2024-01-01 --end 2025-12-26
 ```
 
-### Issue: Walk-forward takes too long
+### Issue: walk-forward takes too long
 
 **Solution:**
 1. Use prefetched data (see "Prefetch Data" above)
@@ -680,9 +839,19 @@ python scripts/orders.py --recent 10
    ```
 4. If tampering suspected, investigate logs and file access
 
----
+---`n## Canonical Setup (Two Strategies + 900 Universe)
 
-## Next Steps
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n## Next Steps
 
 ### After Paper Trading Success (30+ days)
 
@@ -711,7 +880,7 @@ python scripts/orders.py --recent 10
 **After 90 Days Clean Live Micro:**
 
 - [ ] 90+ days of live trading with no incidents
-- [ ] Win rate matches backtest expectations (±5%)
+- [ ] Win rate matches backtest expectations (Â±5%)
 - [ ] Max drawdown within acceptable range
 - [ ] Reconciliation always clean (0 discrepancies)
 - [ ] Hash chain integrity verified daily
@@ -720,15 +889,145 @@ python scripts/orders.py --recent 10
 **Gradual Scale-Up:**
 
 | Metric | Micro | Small | Medium | Normal |
-|--------|-------|-------|--------|--------|
+|---`n## Canonical Setup (Two Strategies + 900 Universe)
+
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n---`n## Canonical Setup (Two Strategies + 900 Universe)
+
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n--|---`n## Canonical Setup (Two Strategies + 900 Universe)
+
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n---`n## Canonical Setup (Two Strategies + 900 Universe)
+
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n-|---`n## Canonical Setup (Two Strategies + 900 Universe)
+
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n---`n## Canonical Setup (Two Strategies + 900 Universe)
+
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n-|---`n## Canonical Setup (Two Strategies + 900 Universe)
+
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n---`n## Canonical Setup (Two Strategies + 900 Universe)
+
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n--|---`n## Canonical Setup (Two Strategies + 900 Universe)
+
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n---`n## Canonical Setup (Two Strategies + 900 Universe)
+
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n--|
 | Universe Cap | 10 | 25 | 50 | 100+ |
 | Order Budget | $75 | $150 | $300 | $500+ |
 | Daily Budget | $1,000 | $2,500 | $5,000 | $10,000+ |
 | Review Period | 90 days | 60 days | 30 days | Ongoing |
 
----
+---`n## Canonical Setup (Two Strategies + 900 Universe)
 
-## Additional Resources
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n## Additional Resources
 
 ### Documentation
 - **Full Architecture:** `docs/TECHNICAL_ARCHITECTURE.md`
@@ -743,11 +1042,21 @@ python scripts/orders.py --recent 10
 ### External Links
 - **Polygon API Docs:** https://polygon.io/docs/stocks
 - **Alpaca API Docs:** https://alpaca.markets/docs/api-references/trading-api/
-- **Connors RSI-2 Research:** "How Markets Really Work" by Laurence Connors
+- **Additional Reading:** (removed legacy reference)
 
----
+---`n## Canonical Setup (Two Strategies + 900 Universe)
 
-## Getting Help
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n## Getting Help
 
 ### Check Logs First
 ```bash
@@ -773,7 +1082,7 @@ python scripts/verify_hash_chain.py
 python scripts/preflight.py
 
 # Run backtest
-python scripts/run_backtest_polygon.py --strategy rsi2 --cap 950
+python scripts/run_backtest_polygon.py --strategy rsi2 --cap 900
 
 # Paper trade
 python scripts/run_paper_trade.py --cap 50
@@ -806,15 +1115,33 @@ python scripts/orders.py --recent 10
 python scripts/metrics.py
 ```
 
----
+---`n## Canonical Setup (Two Strategies + 900 Universe)
 
-**Congratulations!** You're now ready to operate Kobe81 Traderbot.
+Use these commands as the source of truth:
+
+- Preflight:
+  python scripts/preflight.py --dotenv ./.env
+- Walk-forward (Donchian vs ICT):
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+- Daily pipeline (Top-3 + TOTD):
+  python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
+- Scheduler (24/7):
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+`n**Congratulations!** You're now ready to operate Kobe81 Traderbot.
 
 **Remember:**
 1. Always run preflight before trading
-2. Test in backtest → paper → live micro → scale up
+2. Test in backtest â†’ paper â†’ live micro â†’ scale up
 3. Monitor logs daily
 4. Reconcile weekly
 5. Keep kill switch handy (emergency)
 
 **Happy Trading!**
+
+
+
+
+
+
+
+

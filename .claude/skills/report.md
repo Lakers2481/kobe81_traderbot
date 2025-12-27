@@ -1,4 +1,4 @@
-# /report
+﻿# /report
 
 Generate comprehensive performance reports.
 
@@ -41,7 +41,7 @@ if trades_file.exists():
         except:
             pass
 
-    print('📊 TRADING SUMMARY')
+    print('ðŸ“Š TRADING SUMMARY')
     print(f'   Trades today: {len(trades)}')
     if trades:
         pnl = sum(t.get('pnl', 0) for t in trades)
@@ -49,12 +49,12 @@ if trades_file.exists():
         print(f'   P&L: \${pnl:+,.2f}')
         print(f'   Win rate: {wins/len(trades)*100:.0f}%')
 else:
-    print('📊 TRADING SUMMARY')
+    print('ðŸ“Š TRADING SUMMARY')
     print('   No trades today')
 print()
 
 # 2. Positions
-print('📈 OPEN POSITIONS')
+print('ðŸ“ˆ OPEN POSITIONS')
 pos_file = Path('state/positions.json')
 if pos_file.exists():
     positions = json.loads(pos_file.read_text())
@@ -68,9 +68,9 @@ else:
 print()
 
 # 3. System Health
-print('🏥 SYSTEM HEALTH')
+print('ðŸ¥ SYSTEM HEALTH')
 kill = Path('state/KILL_SWITCH').exists()
-print(f'   Kill switch: {\"🛑 ACTIVE\" if kill else \"✅ Off\"}')
+print(f'   Kill switch: {\"ðŸ›‘ ACTIVE\" if kill else \"âœ… Off\"}')
 
 pid_file = Path('state/runner.pid')
 if pid_file.exists():
@@ -78,19 +78,19 @@ if pid_file.exists():
     pid = int(pid_file.read_text())
     try:
         os.kill(pid, 0)
-        print(f'   Runner: ✅ Running (PID {pid})')
+        print(f'   Runner: âœ… Running (PID {pid})')
     except:
-        print('   Runner: ❌ Stopped')
+        print('   Runner: âŒ Stopped')
 else:
-    print('   Runner: ❌ Not running')
+    print('   Runner: âŒ Not running')
 
 from core.hash_chain import verify_chain
 valid = verify_chain()
-print(f'   Hash chain: {\"✅ Valid\" if valid else \"❌ TAMPERED\"}')
+print(f'   Hash chain: {\"âœ… Valid\" if valid else \"âŒ TAMPERED\"}')
 print()
 
 # 4. Alerts
-print('⚠️ ALERTS')
+print('âš ï¸ ALERTS')
 alerts_file = Path('logs/alerts.log')
 if alerts_file.exists():
     today = date.today().isoformat()
@@ -157,11 +157,11 @@ if not webhook:
     print('Discord webhook not configured')
     exit()
 
-report_text = f'''📊 **Kobe Daily Report - {date.today()}**
+report_text = f'''ðŸ“Š **Kobe Daily Report - {date.today()}**
 
 Trades today: 0
 P&L: \$0.00
-System: ✅ Running
+System: âœ… Running
 
 _Full report: /report_
 '''
@@ -179,9 +179,9 @@ req = urllib.request.Request(
 
 try:
     urllib.request.urlopen(req)
-    print('✅ Report sent to Discord')
+    print('âœ… Report sent to Discord')
 except Exception as e:
-    print(f'❌ Failed to send: {e}')
+    print(f'âŒ Failed to send: {e}')
 "
 ```
 
@@ -204,3 +204,5 @@ except Exception as e:
 # Add to crontab for daily reports
 0 17 * * 1-5 cd /path/to/kobe && python -c "exec(open('.claude/skills/report.md').read())"
 ```
+
+

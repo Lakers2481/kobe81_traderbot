@@ -1,4 +1,4 @@
-# /restart
+﻿# /restart
 
 Restart the Kobe trading system cleanly.
 
@@ -40,7 +40,7 @@ if pid_file.exists():
         except ProcessLookupError:
             pass
         pid_file.unlink()
-        print('  ✅ Runner stopped')
+        print('  âœ… Runner stopped')
     except ProcessLookupError:
         print('  Runner not running')
         pid_file.unlink()
@@ -69,26 +69,26 @@ checks.append(('Hash chain', verify_chain()))
 
 all_ok = all(c[1] for c in checks)
 for name, ok in checks:
-    print(f'  {\"✅\" if ok else \"❌\"} {name}')
+    print(f'  {\"âœ…\" if ok else \"âŒ\"} {name}')
 
 if not all_ok:
-    print('  ❌ Preflight failed')
+    print('  âŒ Preflight failed')
     sys.exit(1)
-print('  ✅ Preflight passed')
+print('  âœ… Preflight passed')
 "
 
 # 3. Start fresh
 echo "Step 3: Starting runner..."
 nohup python scripts/runner.py \
     --mode paper \
-    --universe data/universe/optionable_liquid_final.csv \
+    --universe data/universe/optionable_liquid_900.csv \
     --cap 50 \
     --scan-times 09:35,10:30,15:55 \
     --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env \
     > logs/runner.log 2>&1 &
 
 echo $! > state/runner.pid
-echo "  ✅ Runner started (PID $(cat state/runner.pid))"
+echo "  âœ… Runner started (PID $(cat state/runner.pid))"
 
 # 4. Verify
 sleep 2
@@ -99,9 +99,9 @@ import psutil
 pid = int(Path('state/runner.pid').read_text())
 try:
     p = psutil.Process(pid)
-    print(f'  ✅ Runner verified (PID {pid})')
+    print(f'  âœ… Runner verified (PID {pid})')
 except:
-    print('  ❌ Runner failed to start - check logs/runner.log')
+    print('  âŒ Runner failed to start - check logs/runner.log')
 "
 
 echo "=== RESTART COMPLETE ==="
@@ -130,14 +130,14 @@ if pid_file.exists():
 cmd = [
     sys.executable, 'scripts/runner.py',
     '--mode', 'paper',
-    '--universe', 'data/universe/optionable_liquid_final.csv',
+    '--universe', 'data/universe/optionable_liquid_900.csv',
     '--cap', '50',
     '--scan-times', '09:35,10:30,15:55',
     '--dotenv', 'C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env'
 ]
 proc = subprocess.Popen(cmd, stdout=open('logs/runner.log', 'w'), stderr=subprocess.STDOUT)
 Path('state/runner.pid').write_text(str(proc.pid))
-print(f'✅ Restarted (PID {proc.pid})')
+print(f'âœ… Restarted (PID {proc.pid})')
 "
 ```
 
@@ -173,3 +173,5 @@ rm -f state/runner.pid
 # Start fresh
 /start
 ```
+
+

@@ -1,4 +1,4 @@
-# /reconcile
+﻿# /reconcile
 
 Reconcile Kobe's internal state with Alpaca broker positions.
 
@@ -62,9 +62,9 @@ for symbol in sorted(all_symbols):
         print()
 
 if not mismatches:
-    print('✅ All positions reconciled - no mismatches')
+    print('âœ… All positions reconciled - no mismatches')
 else:
-    print(f'⚠️  {len(mismatches)} mismatches found')
+    print(f'âš ï¸  {len(mismatches)} mismatches found')
     print('Run with --fix to sync internal state to broker')
 "
 ```
@@ -80,3 +80,5 @@ else:
 2. `--fix` updates internal state to match
 3. All fixes logged to audit chain
 4. Review causes to prevent recurrence
+
+

@@ -146,7 +146,7 @@ def run_data_tests() -> Tuple[bool, List[str]]:
     results = []
 
     # Check universe file
-    universe_file = Path("data/universe/optionable_liquid_final.csv")
+    universe_file = Path("data/universe/optionable_liquid_900.csv")
     if universe_file.exists():
         with open(universe_file) as f:
             lines = len(f.readlines()) - 1  # Minus header

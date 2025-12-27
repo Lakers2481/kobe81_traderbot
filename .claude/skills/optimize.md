@@ -1,4 +1,4 @@
-# /optimize
+﻿# /optimize
 
 Run parameter optimization for strategy tuning.
 
@@ -15,18 +15,18 @@ Run parameter optimization for strategy tuning.
 
 ## Commands
 ```bash
-# Optimize RSI-2 parameters
-python scripts/optimize_params.py --strategy rsi2 --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --metric sharpe
+# Optimize Donchian/ICT parameters
+python scripts/optimize_params.py --strategy donchian --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --metric sharpe
 
-# Optimize IBS parameters
-python scripts/optimize_params.py --strategy ibs --metric profit_factor
+# Optimize ICT parameters
+python scripts/optimize_params.py --strategy ICT --metric profit_factor
 
 # Quick optimization (smaller grid)
-python scripts/optimize_params.py --strategy rsi2 --quick --metric win_rate
+python scripts/optimize_params.py --strategy donchian --quick --metric win_rate
 ```
 
 ## Parameter Ranges
-### RSI-2
+### Donchian/ICT
 | Parameter | Default | Range |
 |-----------|---------|-------|
 | rsi_period | 2 | 2-5 |
@@ -34,7 +34,7 @@ python scripts/optimize_params.py --strategy rsi2 --quick --metric win_rate
 | exit_threshold | 70 | 60-80 |
 | sma_period | 200 | 100-200 |
 
-### IBS
+### ICT
 | Parameter | Default | Range |
 |-----------|---------|-------|
 | ibs_long_max | 0.2 | 0.1-0.3 |
@@ -56,3 +56,5 @@ python scripts/optimize_params.py --strategy rsi2 --quick --metric win_rate
 - Always use walk-forward (OOS) for final validation
 - Beware overfitting to historical data
 - Prefer robust parameters over optimal ones
+
+

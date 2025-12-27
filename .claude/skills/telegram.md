@@ -1,4 +1,4 @@
-# /telegram
+﻿# /telegram
 
 Manage Telegram bot notifications and alerts.
 
@@ -56,3 +56,5 @@ TELEGRAM_CHAT_ID=your_chat_id
 2. Get chat ID via @userinfobot
 3. Add to .env file
 4. Run `/telegram test` to verify
+
+

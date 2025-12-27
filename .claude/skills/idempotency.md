@@ -1,4 +1,4 @@
-# /idempotency
+﻿# /idempotency
 
 View and manage the idempotency store (duplicate order prevention).
 
@@ -92,11 +92,11 @@ cur.execute('''
 dups = cur.fetchall()
 
 if dups:
-    print('⚠️ DUPLICATE ENTRIES FOUND:')
+    print('âš ï¸ DUPLICATE ENTRIES FOUND:')
     for row in dups:
         print(f'  {row[0]}: {row[1]} copies')
 else:
-    print('✅ No duplicates found')
+    print('âœ… No duplicates found')
 con.close()
 "
 
@@ -134,14 +134,14 @@ con.close()
 
 ## How Idempotency Works
 ```
-Signal generated → decision_id created
-                     ↓
+Signal generated â†’ decision_id created
+                     â†“
               IdempotencyStore.exists()?
                    /     \
                  YES      NO
-                  ↓        ↓
+                  â†“        â†“
               SKIP     place_ioc_limit()
-                              ↓
+                              â†“
                      IdempotencyStore.put()
 ```
 
@@ -157,3 +157,5 @@ Signal generated → decision_id created
 - **Weekly**: Review stats
 - **Monthly**: Clear entries >30 days old
 - **Never**: Clear during active trading
+
+

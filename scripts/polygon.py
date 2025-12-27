@@ -355,7 +355,7 @@ def main():
         epilog="""
 Examples:
   python scripts/polygon.py --verify-key
-  python scripts/polygon.py --check-coverage --universe data/universe/optionable_liquid_final.csv
+  python scripts/polygon.py --check-coverage --universe data/universe/optionable_liquid_900.csv
   python scripts/polygon.py --compare-cache --sample 10
   python scripts/polygon.py --full-validation --report outputs/polygon_report.txt
         """,
@@ -375,7 +375,7 @@ Examples:
     ap.add_argument(
         "--universe",
         type=str,
-        default="data/universe/optionable_liquid_final.csv",
+        default="data/universe/optionable_liquid_900.csv",
         help="Universe CSV file",
     )
     ap.add_argument(

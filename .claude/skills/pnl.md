@@ -1,4 +1,4 @@
-# /pnl
+﻿# /pnl
 
 Show Kobe's P&L summary - today, week, month, all-time.
 
@@ -75,3 +75,5 @@ print(f'Day P&L: \${float(account.get(\"daily_change\", 0)):+,.2f}')
 - **Profit Factor**: Gross profit / Gross loss (>1.5 is good)
 - **Equity**: Total account value
 - **Day P&L**: Change since market open
+
+

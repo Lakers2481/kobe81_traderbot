@@ -1,4 +1,4 @@
-# /wf
+﻿# /wf
 
 Run Kobe's walk-forward backtest with HTML report.
 
@@ -17,13 +17,13 @@ Run Kobe's walk-forward backtest with HTML report.
 ## Commands
 ```bash
 # Standard 10-year walk-forward
-python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63
+python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63
 
 # Generate HTML report
 python scripts/aggregate_wf_report.py --wfdir wf_outputs
 
 # Quick backtest (5 years)
-python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_final.csv --start 2020-01-01 --end 2024-12-31 --train-days 252 --test-days 63
+python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2020-01-01 --end 2024-12-31 --train-days 252 --test-days 63
 ```
 
 ## Output
@@ -43,3 +43,5 @@ python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_fina
 - Uses Polygon EOD data (cached locally)
 - No lookahead: signals at close(t), fills at open(t+1)
 - Includes slippage (10 bps) and commissions
+
+

@@ -1,4 +1,4 @@
-# /debug
+﻿# /debug
 
 Toggle debug mode and verbose logging.
 
@@ -38,7 +38,7 @@ from datetime import datetime
 debug_flag = Path('state/DEBUG_MODE')
 debug_flag.parent.mkdir(parents=True, exist_ok=True)
 debug_flag.write_text(datetime.now().isoformat())
-print('✅ Debug mode ENABLED')
+print('âœ… Debug mode ENABLED')
 print('Verbose logging will appear in logs/debug.log')
 "
 
@@ -49,7 +49,7 @@ from pathlib import Path
 debug_flag = Path('state/DEBUG_MODE')
 if debug_flag.exists():
     debug_flag.unlink()
-    print('✅ Debug mode DISABLED')
+    print('âœ… Debug mode DISABLED')
 else:
     print('Debug mode was already off')
 "
@@ -123,10 +123,10 @@ sys.path.insert(0, '.')
 print('=== COMPONENT TEST ===')
 
 # Test strategy signal generation
-print('Testing ConnorsRSI2Strategy...')
+print('Testing RSI2Strategy...')
 import pandas as pd
 import numpy as np
-from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
+from strategies._rsi2.strategy import RSI2Strategy
 
 dates = pd.date_range(end='2024-01-01', periods=250, freq='B')
 df = pd.DataFrame({
@@ -141,17 +141,17 @@ df = pd.DataFrame({
 df['high'] = df[['open', 'high', 'close']].max(axis=1) + 0.5
 df['low'] = df[['open', 'low', 'close']].min(axis=1) - 0.5
 
-strat = ConnorsRSI2Strategy()
+strat = RSI2Strategy()
 df_with_ind = strat._compute_indicators(df)
 
-print(f'Last RSI2: {df_with_ind[\"rsi2\"].iloc[-1]:.2f}')
+print(f'Last donchian: {df_with_ind[\"donchian\"].iloc[-1]:.2f}')
 print(f'Last SMA200: {df_with_ind[\"sma200\"].iloc[-1]:.2f}')
 print(f'Last ATR14: {df_with_ind[\"atr14\"].iloc[-1]:.2f}')
 
 sigs = strat.generate_signals(df)
 print(f'Signals generated: {len(sigs)}')
 
-print('✅ Strategy component OK')
+print('âœ… Strategy component OK')
 "
 ```
 
@@ -176,3 +176,5 @@ print('✅ Strategy component OK')
 | Why order rejected? | Check PolicyGate limits |
 | Why duplicate? | Check idempotency store |
 | Why wrong data? | Validate data cache |
+
+

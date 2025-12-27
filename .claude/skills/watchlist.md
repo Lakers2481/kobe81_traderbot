@@ -1,4 +1,4 @@
-# /watchlist
+﻿# /watchlist
 
 Manage custom watchlists beyond the main universe.
 
@@ -48,3 +48,5 @@ echo "MSFT" >> data/watchlists/earnings.csv
 - Watchlists stored in `data/watchlists/`
 - Can be used with any script via `--universe`
 - Avoid list checked by PolicyGate
+
+

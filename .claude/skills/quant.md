@@ -1,4 +1,4 @@
-# /quant
+﻿# /quant
 
 High-level quantitative analysis and research dashboard.
 
@@ -79,7 +79,7 @@ RISK
 ALPHA DECOMPOSITION
   Total Return: +18.5%
   Market (Beta): +11.2%
-  ─────────────────────
+  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Alpha: +7.3% ***
 
   t-stat: 2.45 (significant at 95%)
@@ -91,8 +91,8 @@ FACTOR EXPOSURES
   Momentum: 0.35 (momentum tilt)
 
 STRATEGY BREAKDOWN
-  RSI-2: +5.2% contribution
-  IBS: +2.1% contribution
+  Donchian/ICT: +5.2% contribution
+  ICT: +2.1% contribution
   Correlation: 0.45
 ```
 
@@ -112,7 +112,7 @@ STRATEGY BREAKDOWN
 [ ] Hypothesis: Add momentum filter
     Status: In progress, 60% complete
 
-[x] Hypothesis: IBS + RSI combination
+[x] Hypothesis: ICT + RSI combination
     Status: Validated, deployed
 ```
 
@@ -127,3 +127,5 @@ STRATEGY BREAKDOWN
 - Weekly email report
 - Feeds into /regime for adaptation
 - Logs to logs/quant_metrics.jsonl
+
+

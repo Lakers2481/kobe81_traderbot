@@ -1,4 +1,4 @@
-# /stop
+﻿# /stop
 
 Gracefully stop the Kobe trading system.
 
@@ -45,9 +45,9 @@ try:
         print('Runner still running, waiting...')
         time.sleep(5)
         os.kill(pid, 0)
-        print('⚠️ Runner not responding. Use /stop --force')
+        print('âš ï¸ Runner not responding. Use /stop --force')
     except ProcessLookupError:
-        print('✅ Runner stopped successfully')
+        print('âœ… Runner stopped successfully')
         pid_file.unlink()
 
 except ProcessLookupError:
@@ -76,7 +76,7 @@ try:
     os.kill(pid, signal.SIGKILL)  # Force kill
     print('SIGKILL sent')
     pid_file.unlink()
-    print('✅ Runner force stopped')
+    print('âœ… Runner force stopped')
 except ProcessLookupError:
     print('Runner was not running')
     pid_file.unlink()
@@ -133,12 +133,12 @@ if pid_file.exists():
     pid = int(pid_file.read_text())
     try:
         os.kill(pid, 0)
-        print('⚠️ Runner still running')
+        print('âš ï¸ Runner still running')
     except:
-        print('✅ Runner stopped')
+        print('âœ… Runner stopped')
         pid_file.unlink()
 else:
-    print('✅ Runner stopped')
+    print('âœ… Runner stopped')
 "
 ```
 
@@ -167,3 +167,5 @@ else:
 ```bash
 /start --mode paper
 ```
+
+

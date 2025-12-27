@@ -1,4 +1,4 @@
-# /polygon
+﻿# /polygon
 
 Validate Polygon data source and API health.
 
@@ -21,8 +21,8 @@ python scripts/polygon_health.py --status --dotenv C:/Users/Owner/OneDrive/Deskt
 # Test API with sample request
 python scripts/polygon_health.py --test
 
-# Verify 950 universe coverage
-python scripts/polygon_health.py --coverage --universe data/universe/optionable_liquid_final.csv
+# Verify 900 universe coverage
+python scripts/polygon_health.py --coverage --universe data/universe/optionable_liquid_900.csv
 
 # Check data freshness
 python scripts/polygon_health.py --freshness --cache data/cache
@@ -41,8 +41,8 @@ API STATUS:
   [PASS] Rate limit OK (4/5 per second)
   [PASS] Subscription: Stocks Starter
 
-UNIVERSE COVERAGE (950 symbols):
-  [PASS] 950/950 symbols have data
+UNIVERSE COVERAGE (900 symbols):
+  [PASS] 900/900 symbols have data
   [PASS] All symbols have 10+ years history
   [PASS] No gaps > 5 days detected
   [WARN] 3 symbols have stale data (>7 days)
@@ -52,7 +52,7 @@ UNIVERSE COVERAGE (950 symbols):
 
 DATA FRESHNESS:
   Cache location: data/cache/
-  Total cached files: 950
+  Total cached files: 900
   Oldest cache: 2024-12-20
   Newest cache: 2024-12-25
   [PASS] 95% of cache < 3 days old
@@ -76,3 +76,5 @@ RECOMMENDATIONS:
 - Daily automated check
 - Alert on API issues
 - Block trading if coverage < 95%
+
+

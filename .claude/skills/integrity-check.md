@@ -1,4 +1,4 @@
-# /integrity-check
+﻿# /integrity-check
 
 Comprehensive data integrity validation - detect lookahead, bias, bugs, fake data, manipulation.
 
@@ -100,3 +100,5 @@ Trading BLOCKED if any:
 - Runs in /preflight
 - Blocks trading on FAIL
 - Telegram alert on issues
+
+

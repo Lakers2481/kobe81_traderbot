@@ -1,4 +1,4 @@
-# /test
+﻿# /test
 
 Run unit tests and integration tests.
 
@@ -89,3 +89,5 @@ These must pass before /live:
 - Blocks /deploy if failures
 - Coverage report in reports/coverage/
 - CI/CD integration ready
+
+

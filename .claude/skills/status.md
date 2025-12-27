@@ -1,4 +1,4 @@
-# /status
+﻿# /status
 
 Show Kobe's current system health and trading state.
 
@@ -46,3 +46,5 @@ curl -s http://localhost:8000/health 2>/dev/null || echo "Health endpoint not ru
 - Kill switch ON = No new orders submitted
 - No positions = Flat (all cash)
 - Stale scan = Data may need refresh
+
+

@@ -1,4 +1,4 @@
-﻿# Kobe81 Traderbot - Progress Status
+﻿## DEPRECATION NOTE\n\nThis document predates the final two-strategy (Donchian + ICT) alignment and 900-universe standard. Refer to README.md, AI_HANDOFF_PROMPT.md, and docs/RUN_24x7.md for current guidance.\n\n# Kobe81 Traderbot - Progress Status
 
 **Last Updated:** 2025-12-26 23:30 UTC
 **Project:** C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot
@@ -227,4 +227,5 @@ All 10 core audit items verified. Kobe81 trading system is ready for:
 - Full WF run (2015-2024, cap 900) - ~2-4 hours
 - Cost sensitivity analysis
 - OOS stability analysis with --anchored
+
 

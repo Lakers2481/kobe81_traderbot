@@ -1,11 +1,11 @@
-﻿Kobe81 Traderbot â€” Interview Oneâ€‘Pager
+﻿Kobe81 Traderbot — Interview One-Pager
 
 What it is
-- Canonical daily equities system with Connors RSIâ€‘2, ICT Turtle Soup, ,  TOPâ€‘N selector.
+- Canonical daily equities system with two strategies: Donchian Breakout (trend) and ICT Turtle Soup (mean reversion).
 - Deterministic backtester (nextâ€‘bar fills), ATR stops  time stops; no lookahead.
 - Evidence artifacts autoâ€‘generated (CSV + HTML); quick test finishes in minutes.
 
-How to run (3 comms)
+How to run (3 commands)
 1) Install deps: `pip install -r requirements.txt`
 2) Set keys in `./.env` (POLYGON_API_KEY, ALPACA_API_KEY_ID, ALPACA_API_SECRET_KEY)
 3) Quick test + report:
@@ -22,8 +22,10 @@ Metrics to discuss
 - Commission model optional (enable in `config/base.yaml`)
 
 Notes
-- Universe: `data/universe/optionable_liquid_final.csv` (cap=50 in quick run)
+- Universe: `data/universe/optionable_liquid_900.csv` (cap=50 in quick run)
 - Data: Polygon daily OHLCV with CSV caching under `data/cache/`
 - Safety: kill switch `state/KILL_SWITCH`, risk budgets in `risk/policy_gate.py`
+
+
 
 

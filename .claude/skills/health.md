@@ -1,4 +1,4 @@
-# /health
+﻿# /health
 
 Control and monitor the health check server.
 
@@ -28,16 +28,16 @@ port = 8000
 try:
     r = requests.get(f'http://localhost:{port}/liveness', timeout=2)
     if r.status_code == 200:
-        print(f'✅ Health server running on port {port}')
+        print(f'âœ… Health server running on port {port}')
         print(f'   Liveness: {r.json()}')
 
     r = requests.get(f'http://localhost:{port}/readiness', timeout=2)
     if r.status_code == 200:
         print(f'   Readiness: {r.json()}')
 except requests.exceptions.ConnectionError:
-    print(f'❌ Health server not running on port {port}')
+    print(f'âŒ Health server not running on port {port}')
 except Exception as e:
-    print(f'❌ Error: {e}')
+    print(f'âŒ Error: {e}')
 "
 
 # Manual health check (without server)
@@ -51,17 +51,17 @@ print('=== HEALTH CHECK ===')
 # Check kill switch
 kill_switch = Path('state/KILL_SWITCH')
 if kill_switch.exists():
-    print('🛑 KILL SWITCH ACTIVE')
+    print('ðŸ›‘ KILL SWITCH ACTIVE')
 else:
-    print('✅ Kill switch: OFF')
+    print('âœ… Kill switch: OFF')
 
 # Check state files
 state_dir = Path('state')
 if state_dir.exists():
     files = list(state_dir.glob('*'))
-    print(f'✅ State directory: {len(files)} files')
+    print(f'âœ… State directory: {len(files)} files')
 else:
-    print('⚠️ State directory missing')
+    print('âš ï¸ State directory missing')
 
 # Check logs
 logs_dir = Path('logs')
@@ -69,19 +69,19 @@ if logs_dir.exists():
     events = logs_dir / 'events.jsonl'
     if events.exists():
         lines = len(events.read_text().splitlines())
-        print(f'✅ Event log: {lines} entries')
+        print(f'âœ… Event log: {lines} entries')
     else:
-        print('⚠️ No event log')
+        print('âš ï¸ No event log')
 else:
-    print('⚠️ Logs directory missing')
+    print('âš ï¸ Logs directory missing')
 
 # Check data
 data_dir = Path('data/cache')
 if data_dir.exists():
     cached = len(list(data_dir.glob('*.csv')))
-    print(f'✅ Data cache: {cached} symbols')
+    print(f'âœ… Data cache: {cached} symbols')
 else:
-    print('⚠️ Data cache missing')
+    print('âš ï¸ Data cache missing')
 "
 
 # Full system health
@@ -125,7 +125,7 @@ checks.append(('Hash chain', valid, 'valid' if valid else 'TAMPERED'))
 
 # Print results
 for name, ok, detail in checks:
-    status = '✅' if ok else '❌'
+    status = 'âœ…' if ok else 'âŒ'
     print(f'{status} {name}: {detail}')
 "
 ```
@@ -158,3 +158,5 @@ readinessProbe:
 - **Prometheus**: Scrape /metrics endpoint
 - **Uptime Kuma**: Ping /liveness every 60s
 - **AWS ALB**: Use /readiness for target health
+
+

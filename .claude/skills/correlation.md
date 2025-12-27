@@ -1,4 +1,4 @@
-# /correlation
+﻿# /correlation
 
 Position correlation matrix and concentration analysis.
 
@@ -22,7 +22,7 @@ python scripts/analyze_correlation.py --dotenv C:/Users/Owner/OneDrive/Desktop/G
 python scripts/analyze_correlation.py --period 60
 
 # Include universe (not just positions)
-python scripts/analyze_correlation.py --universe data/universe/optionable_liquid_final.csv --top 50
+python scripts/analyze_correlation.py --universe data/universe/optionable_liquid_900.csv --top 50
 
 # Export matrix
 python scripts/analyze_correlation.py --output correlation_matrix.csv
@@ -67,3 +67,5 @@ SUGGESTIONS:
 - PolicyGate checks avg correlation
 - Alert on correlation spike
 - Weekly correlation report
+
+

@@ -1,4 +1,4 @@
-# /deploy
+﻿# /deploy
 
 Safely deploy updates to Kobe with rollback capability.
 
@@ -48,7 +48,7 @@ python scripts/preflight.py --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2
 
 # 7. If all checks pass, remove kill switch
 rm state/KILL_SWITCH
-echo "✅ Deployment complete"
+echo "âœ… Deployment complete"
 
 # 8. Monitor for 15 minutes
 echo "Monitoring... Check /logs and /status"
@@ -82,3 +82,5 @@ rm state/KILL_SWITCH
 - Check `/status` every 5 min
 - Verify `/positions` unchanged
 - Monitor `/metrics` for anomalies
+
+

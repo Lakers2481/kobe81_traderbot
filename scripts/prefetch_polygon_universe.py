@@ -25,7 +25,7 @@ def main():
     ap.add_argument('--cache', type=str, default='data/cache')
     ap.add_argument('--fallback-free', action='store_true', default=False)
     ap.add_argument('--concurrency', type=int, default=3)
-    ap.add_argument('--dotenv', type=str, default='C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env')
+    ap.add_argument('--dotenv', type=str, default='./.env')
     args = ap.parse_args()
 
     dotenv = Path(args.dotenv)

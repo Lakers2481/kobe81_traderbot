@@ -1,4 +1,4 @@
-# /smoke
+﻿# /smoke
 
 Run smoke tests to verify system integrity.
 
@@ -60,16 +60,16 @@ except Exception as e:
 
 # Strategies
 try:
-    from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
-    tests.append(('strategies.connors_rsi2', True))
+    from strategies._rsi2.strategy import RSI2Strategy
+    tests.append(('strategies._rsi2', True))
 except Exception as e:
-    tests.append(('strategies.connors_rsi2', False, str(e)))
+    tests.append(('strategies._rsi2', False, str(e)))
 
 try:
-    from strategies.ibs.strategy import IBSStrategy
-    tests.append(('strategies.ibs', True))
+    from strategies.ICT.strategy import IBSStrategy
+    tests.append(('strategies.ICT', True))
 except Exception as e:
-    tests.append(('strategies.ibs', False, str(e)))
+    tests.append(('strategies.ICT', False, str(e)))
 
 # Backtest
 try:
@@ -117,17 +117,17 @@ passed = sum(1 for t in tests if t[1])
 failed = len(tests) - passed
 
 for t in tests:
-    status = '✅' if t[1] else '❌'
+    status = 'âœ…' if t[1] else 'âŒ'
     msg = '' if t[1] else f' - {t[2][:40]}'
     print(f'{status} {t[0]}{msg}')
 
 print()
 print(f'Passed: {passed}/{len(tests)}')
 if failed > 0:
-    print(f'❌ SMOKE TEST FAILED')
+    print(f'âŒ SMOKE TEST FAILED')
     sys.exit(1)
 else:
-    print('✅ SMOKE TEST PASSED')
+    print('âœ… SMOKE TEST PASSED')
 "
 
 # Full smoke test (with live checks)
@@ -150,7 +150,7 @@ print()
 print('--- Strategy Execution ---')
 import pandas as pd
 import numpy as np
-from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
+from strategies._rsi2.strategy import RSI2Strategy
 
 dates = pd.date_range(end='2024-01-01', periods=250, freq='B')
 df = pd.DataFrame({
@@ -165,9 +165,9 @@ df = pd.DataFrame({
 df['high'] = df[['open', 'high', 'close']].max(axis=1)
 df['low'] = df[['open', 'low', 'close']].min(axis=1)
 
-strat = ConnorsRSI2Strategy()
+strat = RSI2Strategy()
 sigs = strat.generate_signals(df)
-print(f'✅ Strategy generated {len(sigs)} signals on synthetic data')
+print(f'âœ… Strategy generated {len(sigs)} signals on synthetic data')
 
 # 3. PolicyGate
 print()
@@ -175,7 +175,7 @@ print('--- PolicyGate ---')
 from risk.policy_gate import PolicyGate
 pg = PolicyGate()
 ok, reason = pg.check('TEST', 'long', 50.0, 1)
-print(f'✅ PolicyGate check: {ok} ({reason})')
+print(f'âœ… PolicyGate check: {ok} ({reason})')
 
 # 4. Idempotency
 print()
@@ -184,10 +184,10 @@ from oms.idempotency_store import IdempotencyStore
 store = IdempotencyStore(':memory:')
 store.put('test_id', 'test_key')
 exists = store.exists('test_id')
-print(f'✅ Idempotency store: put/exists works ({exists})')
+print(f'âœ… Idempotency store: put/exists works ({exists})')
 
 print()
-print('✅ FULL SMOKE TEST PASSED')
+print('âœ… FULL SMOKE TEST PASSED')
 "
 ```
 
@@ -205,3 +205,5 @@ print('✅ FULL SMOKE TEST PASSED')
 - Before starting trading
 - After deployments
 - When diagnosing issues
+
+

@@ -1,4 +1,4 @@
-# /backup
+﻿# /backup
 
 Backup Kobe's state, logs, and configuration.
 
@@ -52,7 +52,7 @@ shutil.make_archive(
     '.'  # Would need to filter in production
 )
 
-print(f'✅ Backup created: {archive_path}.zip')
+print(f'âœ… Backup created: {archive_path}.zip')
 "
 
 # List recent backups
@@ -83,3 +83,5 @@ unzip backups/kobe_backup_20251225.zip -d restore_temp/
 - Daily backups: 7 days
 - Weekly backups: 4 weeks
 - Monthly backups: 12 months
+
+

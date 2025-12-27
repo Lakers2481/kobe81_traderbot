@@ -1,4 +1,4 @@
-# /regime
+﻿# /regime
 
 Market regime detection (bull/bear/chop).
 
@@ -58,16 +58,18 @@ REGIME HISTORY (90 days):
   CHOP: 10 days (11%)
 
 STRATEGY IMPLICATIONS:
-  RSI-2: FAVORABLE (mean reversion works in low vol)
-  IBS: FAVORABLE (range-bound intraday)
+  Donchian/ICT: FAVORABLE (mean reversion works in low vol)
+  ICT: FAVORABLE (range-bound intraday)
   Position Size: 100% (normal)
 
 WATCH FOR:
-  - VIX spike above 20 → reduce exposure
-  - SPY break below SMA50 → defensive mode
+  - VIX spike above 20 â†’ reduce exposure
+  - SPY break below SMA50 â†’ defensive mode
 ```
 
 ## Integration
 - Checked by PolicyGate before entries
 - Logged in daily structured logs
 - Telegram alert on regime change
+
+

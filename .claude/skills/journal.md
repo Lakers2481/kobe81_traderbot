@@ -1,4 +1,4 @@
-# /journal
+﻿# /journal
 
 Trading journal for notes, lessons, and trade reviews.
 
@@ -16,7 +16,7 @@ Trading journal for notes, lessons, and trade reviews.
 ## Commands
 ```bash
 # Add journal entry
-python scripts/journal.py add --note "RSI-2 working well in choppy market" --tags market,rsi2
+python scripts/journal.py add --note "Donchian/ICT working well in choppy market" --tags market,donchian
 
 # View recent entries
 python scripts/journal.py view --days 7
@@ -59,3 +59,5 @@ python scripts/journal.py add --type lesson --note "Don't chase after missing en
 # Generate weekly summary
 python scripts/journal.py weekly --output logs/journal_weekly.md
 ```
+
+

@@ -1,4 +1,4 @@
-# /strategy
+﻿# /strategy
 
 View and compare strategy configurations and parameters.
 
@@ -27,12 +27,12 @@ for d in strategies_dir.iterdir():
         print(f'  - {d.name}')
 "
 
-# Show Connors RSI-2 parameters
+# Show  Donchian/ICT parameters
 python -c "
-from strategies.connors_rsi2.strategy import ConnorsRSI2Params
+from strategies._rsi2.strategy import RSI2Params
 
-params = ConnorsRSI2Params()
-print('=== CONNORS RSI-2 STRATEGY ===')
+params = RSI2Params()
+print('===  Donchian/ICT STRATEGY ===')
 print()
 print('Entry Rules:')
 print('  LONG:  RSI(2) <= 10 AND Close > SMA(200)')
@@ -47,19 +47,19 @@ for field in params.__dataclass_fields__:
     print(f'  {field}: {getattr(params, field)}')
 "
 
-# Show IBS parameters
+# Show ICT parameters
 python -c "
-print('=== IBS STRATEGY ===')
+print('=== ICT STRATEGY ===')
 print()
 print('Entry Rules:')
-print('  LONG:  IBS < 0.2 AND Close > SMA(200)')
-print('  SHORT: IBS > 0.8 AND Close < SMA(200)')
+print('  LONG:  ICT < 0.2 AND Close > SMA(200)')
+print('  SHORT: ICT > 0.8 AND Close < SMA(200)')
 print()
 print('Exit Rules:')
 print('  - Stop Loss: ATR(14) x 2.0')
 print('  - Time Stop: 5 bars')
 print()
-print('Where IBS = (Close - Low) / (High - Low)')
+print('Where ICT = (Close - Low) / (High - Low)')
 "
 
 # Compare strategy performance (from WF results)
@@ -101,11 +101,13 @@ for strat_dir in wf_dir.iterdir():
 ## Strategy Matrix
 | Strategy | Entry | Exit | Best For |
 |----------|-------|------|----------|
-| Connors RSI-2 | RSI(2)≤10 | ATR stop / 5 bars | Mean reversion |
-| IBS | IBS<0.2 | ATR stop / 5 bars | Intraday range |
+|  Donchian/ICT | RSI(2)â‰¤10 | ATR stop / 5 bars | Mean reversion |
+| ICT | ICT<0.2 | ATR stop / 5 bars | Intraday range |
 
 ## Modifying Parameters
 Parameters are in `strategies/<name>/strategy.py`. Changes require:
 1. Update the `*Params` dataclass
 2. Re-run walk-forward validation
 3. Update config pin hash
+
+

@@ -1,4 +1,4 @@
-# /replay
+﻿# /replay
 
 Replay historical signals to analyze past performance.
 
@@ -26,7 +26,7 @@ import pandas as pd
 
 from config.env_loader import load_env
 from data.providers.polygon_eod import fetch_eod_bars
-from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
+from strategies._rsi2.strategy import RSI2Strategy
 from data.universe.loader import load_universe
 
 load_env(Path('C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env'))
@@ -37,14 +37,14 @@ print(f'=== SIGNAL REPLAY: {target_date} ===')
 print()
 
 # Load universe
-universe = load_universe('data/universe/optionable_liquid_final.csv', cap=50)
+universe = load_universe('data/universe/optionable_liquid_900.csv', cap=50)
 
 # Fetch data up to and including target date
 end_date = datetime.strptime(target_date, '%Y-%m-%d')
 start_date = end_date - timedelta(days=300)
 
 signals = []
-strategy = ConnorsRSI2Strategy()
+strategy = RSI2Strategy()
 
 print(f'Scanning {len(universe)} symbols...')
 for sym in universe:
@@ -86,7 +86,7 @@ import pandas as pd
 
 from config.env_loader import load_env
 from data.providers.polygon_eod import fetch_eod_bars
-from strategies.connors_rsi2.strategy import ConnorsRSI2Strategy
+from strategies._rsi2.strategy import RSI2Strategy
 
 load_env(Path('C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env'))
 
@@ -103,7 +103,7 @@ if df is None or len(df) < 200:
     print('Insufficient data')
     exit()
 
-strategy = ConnorsRSI2Strategy()
+strategy = RSI2Strategy()
 df_ind = strategy._compute_indicators(df)
 
 # Get the target date row
@@ -129,11 +129,11 @@ rsi = row['rsi2_sig']
 sma = row['sma200_sig']
 
 if close > sma and rsi <= 10:
-    print('✅ LONG signal conditions MET')
+    print('âœ… LONG signal conditions MET')
 elif close < sma and rsi >= 90:
-    print('✅ SHORT signal conditions MET')
+    print('âœ… SHORT signal conditions MET')
 else:
-    print('❌ No signal conditions met')
+    print('âŒ No signal conditions met')
     print(f'   RSI {rsi:.1f} not <= 10 for long or >= 90 for short')
     if close <= sma:
         print(f'   Close {close:.2f} not above SMA {sma:.2f} for long')
@@ -195,9 +195,11 @@ Signals that would have been generated:
 
   AAPL   long  @ $198.50
          Stop: $195.20
-         RSI2=8.5<= 10 & above SMA200
+         donchian=8.5<= 10 & above SMA200
 
   MSFT   long  @ $425.30
          Stop: $420.10
-         RSI2=6.2<= 10 & above SMA200
+         donchian=6.2<= 10 & above SMA200
 ```
+
+

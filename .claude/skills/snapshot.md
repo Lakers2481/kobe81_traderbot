@@ -1,4 +1,4 @@
-# /snapshot
+﻿# /snapshot
 
 Create full state snapshot for recovery.
 
@@ -39,28 +39,28 @@ python scripts/snapshot.py delete --name "old_snapshot"
 ### 1. STATE FILES
 | File | Included |
 |------|----------|
-| positions.json | ✅ |
-| orders.json | ✅ |
-| pnl_history.json | ✅ |
-| idempotency_store.json | ✅ |
-| hash_chain.jsonl | ✅ |
-| KILL_SWITCH | ✅ (if exists) |
+| positions.json | âœ… |
+| orders.json | âœ… |
+| pnl_history.json | âœ… |
+| idempotency_store.json | âœ… |
+| hash_chain.jsonl | âœ… |
+| KILL_SWITCH | âœ… (if exists) |
 
 ### 2. CONFIGURATION
 | File | Included |
 |------|----------|
-| config.json | ✅ |
-| strategy params | ✅ |
-| risk limits | ✅ |
-| .env (masked) | ✅ |
+| config.json | âœ… |
+| strategy params | âœ… |
+| risk limits | âœ… |
+| .env (masked) | âœ… |
 
 ### 3. METADATA
 | Info | Included |
 |------|----------|
-| Timestamp | ✅ |
-| Version | ✅ |
-| Git commit | ✅ |
-| File hashes | ✅ |
+| Timestamp | âœ… |
+| Version | âœ… |
+| Git commit | âœ… |
+| File hashes | âœ… |
 
 ## Output
 ```
@@ -130,3 +130,5 @@ Run /preflight to verify system state.
 - Auto-snapshot before /live
 - Telegram alert on restore
 - Logged to audit chain
+
+

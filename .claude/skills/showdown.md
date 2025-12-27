@@ -1,4 +1,4 @@
-# /showdown
+﻿# /showdown
 
 Run strategy showdown - compare multiple strategies head-to-head.
 
@@ -17,7 +17,7 @@ Run strategy showdown - compare multiple strategies head-to-head.
 ```bash
 # Run strategy showdown
 python scripts/run_showdown_polygon.py \
-    --universe data/universe/optionable_liquid_final.csv \
+    --universe data/universe/optionable_liquid_900.csv \
     --start 2020-01-01 \
     --end 2024-12-31 \
     --cap 100 \
@@ -59,7 +59,7 @@ print()
 print(f'{\"Strategy\":<15} {\"Trades\":>8} {\"Win%\":>8} {\"PF\":>8} {\"Sharpe\":>8} {\"MaxDD\":>8}')
 print('-' * 60)
 
-for strat in ['connors_rsi2', 'ibs']:
+for strat in ['_rsi2', 'ICT']:
     wf_dir = Path(f'wf_outputs/{strat}')
     if not wf_dir.exists():
         continue
@@ -107,9 +107,11 @@ for strat in ['connors_rsi2', 'ibs']:
 ## Output
 ```
 wf_outputs/
-├── wf_summary_compare.csv    # Side-by-side comparison
-├── connors_rsi2/
-│   └── split_*/
-└── ibs/
-    └── split_*/
+â”œâ”€â”€ wf_summary_compare.csv    # Side-by-side comparison
+â”œâ”€â”€ _rsi2/
+â”‚   â””â”€â”€ split_*/
+â””â”€â”€ ICT/
+    â””â”€â”€ split_*/
 ```
+
+

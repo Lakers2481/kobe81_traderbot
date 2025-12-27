@@ -1,4 +1,6 @@
-﻿# PROJECT CONTEXT: Kobe81 Trading Bot
+﻿**Alignment Note**: Canonical setup uses Donchian Breakout + ICT Turtle Soup only, with a 900-symbol universe. README.md and AI_HANDOFF_PROMPT.md are the source of truth for commands. Some legacy references remain here for historical context.
+
+# PROJECT CONTEXT: Kobe81 Trading Bot
 
 > **Purpose:** This document provides complete context for any AI or developer to underst  continue work on this project.
 
@@ -33,7 +35,7 @@
 
 ```
 â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ Layer 10: RUNNER         scripts/runner.py                  â”‚
+â”‚ Layer 10: RUNNER         scripts/scheduler_kobe.py                  â”‚
 â”‚           24/7 scheduler, scan times, state persistence     â”‚
 â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
 â”‚ Layer 9: MONITOR         monitor/health_endpoints.py        â”‚
@@ -69,12 +71,12 @@
 
 ## Trading Strategies
 
-### 1. Connors Donchian breakout (Primary)
+### 1. Donchian Breakout (Trend)\n- Entry: Breakout above Donchian high (e.g., 20–55)\n- Exit: ATR-based stop, time stop, optional R-multiple take profit
 - **Entry:** RSI(2) â‰¤ 10  Close > SMA(200)
 - **Exit:** RSI(2) â‰¥ 70 OR ATR(14)Ã—2 stop OR 5-bar timeout
 - **Expected:** 58-62% win rate, Sharpe 1.2-1.8
 
-### 2. ICT Turtle Soup (Internal Bar Strength)
+### 2. ICT Turtle Soup (Mean Reversion)\n- Entry: Failed breakout (liquidity sweep) against prior extreme\n- Exit: ATR-based stop, time stop; R-multiple target
 - **Entry:** ICT Turtle Soup < 0.2  Close > SMA(200)
 - **Exit:** ATR(14)Ã—2 stop OR 5-bar timeout
 - **Expected:** 54-58% win rate, Sharpe 1.0-1.5
@@ -105,10 +107,10 @@
 - `scripts/run_wf_polygon.py` - Walk-forward testing
 - `scripts/run_paper_trade.py` - Paper trading
 - `scripts/run_live_trade_micro.py` - Live micro trading
-- `scripts/runner.py` - 24/7 scheduler
+- `scripts/scheduler_kobe.py` - 24/7 scheduler
 
 ### Data
-- `data/universe/optionable_liquid_final.csv` - 900 stocks
+- `data/universe/optionable_liquid_900.csv` - 900 stocks
 - `data/cache/` - Polygon data cache (203 MB)
 
 ### State
@@ -139,7 +141,7 @@ python scripts/preflight.py --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2
 ### 2. Walk-Forward Validation
 ```bash
 python scripts/run_wf_polygon.py \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --start 2015-01-01 --end 2024-12-31 \
   --train-days 252 --test-days 63 \
   --cap 900 --outdir wf_outputs \
@@ -150,14 +152,14 @@ python scripts/run_wf_polygon.py \
 ### 3. Paper Trading
 ```bash
 python scripts/run_paper_trade.py \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --cap 50 \
   --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
 ```
 
 ### 4. 24/7 Runner
 ```bash
-python scripts/runner.py \
+python scripts/scheduler_kobe.py \
   --scan-times 09:35,10:30,15:55 \
   --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
 ```
@@ -251,5 +253,7 @@ kobe81_traderbot/
 ---
 
 *Last Updated: 2025-12-26*
+
+
 
 

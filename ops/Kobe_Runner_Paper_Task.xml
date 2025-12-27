@@ -36,8 +36,7 @@
   <Actions Context="Author">
     <Exec>
       <Command>cmd.exe</Command>
-      <Arguments>/c cd /d C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot &amp;&amp; C:\Users\Owner\AppData\Local\Programs\Python\Python311\python.exe scripts\runner.py --mode paper --universe data\universe\optionable_liquid_final.csv --cap 50 --scan-times 09:35,10:30,15:55 --lookback-days 540 --dotenv C:\Users\Owner\OneDrive\Desktop\GAME_PLAN_2K28\.env</Arguments>
+      <Arguments>/c cd /d C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot &amp;&amp; C:\Users\Owner\AppData\Local\Programs\Python\Python311\python.exe scripts\runner.py --mode paper --universe data\universe\optionable_liquid_900.csv --cap 50 --scan-times 09:35,10:30,15:55 --lookback-days 540 --dotenv .\.env</Arguments>
     </Exec>
   </Actions>
  </Task>
-

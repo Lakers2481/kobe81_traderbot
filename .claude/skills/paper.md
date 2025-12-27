@@ -1,4 +1,4 @@
-# /paper
+﻿# /paper
 
 Start Kobe's paper trading session with micro budget.
 
@@ -17,13 +17,13 @@ Start Kobe's paper trading session with micro budget.
 ## Commands
 ```bash
 # Standard paper trading (50 stock cap)
-python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_final.csv --cap 50 --scan-times 09:35,10:30,15:55
+python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv --cap 50 --scan-times 09:35,10:30,15:55
 
 # Micro budget paper trading
-python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_final.csv --cap 50
+python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --cap 50
 
 # With custom scan times
-python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_final.csv --cap 50 --scan-times 09:35,12:00,15:55
+python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv --cap 50 --scan-times 09:35,12:00,15:55
 ```
 
 ## Budget Limits (PolicyGate)
@@ -46,3 +46,5 @@ rm state/KILL_SWITCH
 - Watch logs: `tail -f logs/events.jsonl`
 - Check positions: `/status`
 - Verify chain: `python scripts/verify_hash_chain.py`
+
+

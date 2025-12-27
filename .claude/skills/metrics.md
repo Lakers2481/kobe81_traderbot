@@ -1,4 +1,4 @@
-# /metrics
+﻿# /metrics
 
 Show Kobe's performance metrics and system stats.
 
@@ -101,3 +101,5 @@ if latencies:
 | Sharpe Ratio | >1.0 | Risk-adjusted return |
 | Max Drawdown | <15% | Peak to trough |
 | Avg Trade | >$0 | Expectancy per trade |
+
+

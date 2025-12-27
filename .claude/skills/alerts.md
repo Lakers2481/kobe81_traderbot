@@ -1,4 +1,4 @@
-# /alerts
+﻿# /alerts
 
 Manage Kobe's alert configuration and view recent alerts.
 
@@ -56,7 +56,7 @@ if not webhook_url:
     exit()
 
 message = {
-    'content': '🧪 **Kobe Alert Test**\nThis is a test alert from the trading system.',
+    'content': 'ðŸ§ª **Kobe Alert Test**\nThis is a test alert from the trading system.',
     'username': 'Kobe Trading Bot'
 }
 
@@ -68,9 +68,9 @@ req = urllib.request.Request(
 
 try:
     urllib.request.urlopen(req)
-    print('✅ Test alert sent to Discord')
+    print('âœ… Test alert sent to Discord')
 except Exception as e:
-    print(f'❌ Alert failed: {e}')
+    print(f'âŒ Alert failed: {e}')
 "
 ```
 
@@ -96,3 +96,5 @@ DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
 ALERT_EMAIL=your@email.com
 ALERT_DAILY_LOSS_THRESHOLD=100
 ```
+
+

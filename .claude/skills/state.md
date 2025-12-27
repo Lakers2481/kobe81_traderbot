@@ -1,4 +1,4 @@
-# /state
+﻿# /state
 
 View and manage all state files.
 
@@ -44,29 +44,29 @@ state_dir = Path('state')
 # Kill switch
 kill = state_dir / 'KILL_SWITCH'
 if kill.exists():
-    print('🛑 KILL_SWITCH: ACTIVE')
+    print('ðŸ›‘ KILL_SWITCH: ACTIVE')
     print(f'   Content: {kill.read_text()[:100]}')
 else:
-    print('✅ KILL_SWITCH: off')
+    print('âœ… KILL_SWITCH: off')
 print()
 
 # Config pin
 pin = state_dir / 'config_pin.txt'
 if pin.exists():
-    print(f'📌 Config pin: {pin.read_text()[:16]}...')
+    print(f'ðŸ“Œ Config pin: {pin.read_text()[:16]}...')
 else:
-    print('⚠️ Config pin: not set')
+    print('âš ï¸ Config pin: not set')
 print()
 
 # Runner state
 runner = state_dir / 'runner_last.json'
 if runner.exists():
     data = json.loads(runner.read_text())
-    print('🏃 Runner state:')
+    print('ðŸƒ Runner state:')
     for k, v in data.items():
         print(f'   {k}: {v}')
 else:
-    print('🏃 Runner state: no history')
+    print('ðŸƒ Runner state: no history')
 print()
 
 # Idempotency store
@@ -76,18 +76,18 @@ if idem.exists():
     con = sqlite3.connect(idem)
     count = con.execute('SELECT COUNT(*) FROM idempotency').fetchone()[0]
     con.close()
-    print(f'🔑 Idempotency store: {count} entries')
+    print(f'ðŸ”‘ Idempotency store: {count} entries')
 else:
-    print('🔑 Idempotency store: empty')
+    print('ðŸ”‘ Idempotency store: empty')
 print()
 
 # Hash chain
 chain = state_dir / 'hash_chain.jsonl'
 if chain.exists():
     lines = len(chain.read_text().splitlines())
-    print(f'⛓️ Hash chain: {lines} blocks')
+    print(f'â›“ï¸ Hash chain: {lines} blocks')
 else:
-    print('⛓️ Hash chain: empty')
+    print('â›“ï¸ Hash chain: empty')
 "
 
 # Validate state integrity
@@ -102,18 +102,18 @@ print('=== STATE INTEGRITY CHECK ===')
 from core.hash_chain import verify_chain
 valid = verify_chain()
 if valid:
-    print('✅ Hash chain: valid')
+    print('âœ… Hash chain: valid')
 else:
-    print('❌ Hash chain: TAMPERED')
+    print('âŒ Hash chain: TAMPERED')
 
 # Idempotency store
 from oms.idempotency_store import IdempotencyStore
 try:
     store = IdempotencyStore()
     # Just opening it validates the schema
-    print('✅ Idempotency store: valid')
+    print('âœ… Idempotency store: valid')
 except Exception as e:
-    print(f'❌ Idempotency store: {e}')
+    print(f'âŒ Idempotency store: {e}')
 
 # State directory permissions
 state_dir = Path('state')
@@ -122,9 +122,9 @@ if state_dir.exists():
         test_file = state_dir / '.write_test'
         test_file.write_text('test')
         test_file.unlink()
-        print('✅ State directory: writable')
+        print('âœ… State directory: writable')
     except:
-        print('❌ State directory: not writable')
+        print('âŒ State directory: not writable')
 "
 
 # Clean stale state (CAREFUL!)
@@ -168,12 +168,12 @@ print('To delete, uncomment the unlink() line in the script')
 ## State Directory Structure
 ```
 state/
-├── KILL_SWITCH         # Created by /kill, removed by /resume
-├── config_pin.txt      # SHA256 of settings.json
-├── hash_chain.jsonl    # Append-only audit log
-├── idempotency.sqlite  # SQLite database
-├── runner_last.json    # Last run timestamps
-└── runner.pid          # Running process ID
+â”œâ”€â”€ KILL_SWITCH         # Created by /kill, removed by /resume
+â”œâ”€â”€ config_pin.txt      # SHA256 of settings.json
+â”œâ”€â”€ hash_chain.jsonl    # Append-only audit log
+â”œâ”€â”€ idempotency.sqlite  # SQLite database
+â”œâ”€â”€ runner_last.json    # Last run timestamps
+â””â”€â”€ runner.pid          # Running process ID
 ```
 
 ## Backup State
@@ -181,3 +181,5 @@ State files should be backed up:
 - Before deployments
 - After each trading day
 - Before manual interventions
+
+

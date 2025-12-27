@@ -1,4 +1,4 @@
-# /cleanup
+﻿# /cleanup
 
 Purge old logs, cache, and temporary files.
 
@@ -98,3 +98,5 @@ Run with --force to execute cleanup.
 - Weekly cron job recommended
 - Alert if disk < 5GB
 - Log cleanup actions to audit
+
+

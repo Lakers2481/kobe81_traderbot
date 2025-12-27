@@ -325,7 +325,7 @@ Examples:
     ap.add_argument(
         "--universe",
         type=str,
-        default="data/universe/optionable_liquid_final.csv",
+        default="data/universe/optionable_liquid_900.csv",
         help="Universe CSV file",
     )
     ap.add_argument(

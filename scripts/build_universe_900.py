@@ -32,7 +32,7 @@ def build(final_path: Path, candidates_path: Path, out_path: Path, target: int =
 
 def main() -> int:
     ap = argparse.ArgumentParser(description='Build 900-symbol universe from final + candidates')
-    ap.add_argument('--final', type=str, default='data/universe/optionable_liquid_final.csv')
+    ap.add_argument('--final', type=str, default='data/universe/optionable_liquid_900.csv')
     ap.add_argument('--candidates', type=str, default='data/universe/optionable_liquid_candidates.csv')
     ap.add_argument('--out', type=str, default='data/universe/optionable_liquid_900.csv')
     ap.add_argument('--target', type=int, default=900)

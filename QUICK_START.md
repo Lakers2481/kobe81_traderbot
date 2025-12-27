@@ -45,14 +45,14 @@ python scripts/run_backtest_polygon.py \
 ```bash
 # 1. Prefetch data (one-time, ~30 min for 900 stocks)
 python scripts/prefetch_polygon_universe.py \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --start 2015-01-01 --end 2024-12-31 \
   --cache data/cache --concurrency 3 \
   --dotenv ./.env
 
 # 2. Run walk-forward
 python scripts/run_wf_polygon.py \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --start 2015-01-01 --end 2024-12-31 \
   --train-days 252 --test-days 63 \
   --cap 900 --outdir wf_outputs \
@@ -69,7 +69,7 @@ python scripts/aggregate_wf_report.py \
 
 ```bash
 python scripts/run_showdown_polygon.py \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --start 2015-01-01 --end 2024-12-31 \
   --cap 900 --outdir showdown_outputs \
   --cache data/cache \
@@ -80,7 +80,7 @@ python scripts/run_showdown_polygon.py \
 
 ```bash
 python scripts/run_paper_trade.py \
-  --universe data/universe/optionable_liquid_final.csv \
+  --universe data/universe/optionable_liquid_900.csv \
   --cap 50 \
   --dotenv ./.env
 ```
@@ -207,5 +207,6 @@ kobe81_traderbot/
 ---
 
 *For detailed architecture, see `PROJECT_CONTEXT.md`*
+
 
 

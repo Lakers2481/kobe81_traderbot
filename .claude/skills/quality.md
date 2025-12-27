@@ -1,4 +1,4 @@
-# /quality
+﻿# /quality
 
 Run comprehensive quality checks on code, data, and system.
 
@@ -111,3 +111,5 @@ SYSTEM QUALITY: 92/100
 - Blocks /deploy if score < 80
 - Weekly quality trend report
 - Telegram alert on score drop
+
+

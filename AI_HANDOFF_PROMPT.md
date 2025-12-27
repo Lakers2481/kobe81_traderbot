@@ -1,4 +1,4 @@
-# AI Handoff Prompt for Kobe81 Trading Bot
+﻿# AI Handoff Prompt for Kobe81 Trading Bot
 
 > Instructions: Copy everything below the line and paste it as your first message to a new AI assistant.
 
@@ -61,10 +61,10 @@ Selection/TOPN ranking is disabled in this setup; only these two strategies are 
 python scripts/preflight.py --dotenv ./.env
 
 # Walk-forward validation (Donchian vs ICT)
-python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_final.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 
 # Paper trading
-python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_final.csv --cap 50 --dotenv ./.env
+python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --cap 50 --dotenv ./.env
 ```
 
 ### Environment Variables Needed

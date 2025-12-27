@@ -1,4 +1,4 @@
-# /secrets
+﻿# /secrets
 
 Manage and validate API keys and secrets.
 
@@ -36,13 +36,13 @@ if polygon_key:
     import requests
     r = requests.get(f'https://api.polygon.io/v2/aggs/ticker/AAPL/prev?apiKey={polygon_key}', timeout=5)
     if r.status_code == 200:
-        print('  ✅ Valid and working')
+        print('  âœ… Valid and working')
     elif r.status_code == 401:
-        print('  ❌ Invalid key')
+        print('  âŒ Invalid key')
     else:
-        print(f'  ⚠️ HTTP {r.status_code}')
+        print(f'  âš ï¸ HTTP {r.status_code}')
 else:
-    print('POLYGON_API_KEY: ❌ NOT SET')
+    print('POLYGON_API_KEY: âŒ NOT SET')
 
 print()
 
@@ -54,13 +54,13 @@ if alpaca_id:
     masked = alpaca_id[:4] + '*' * (len(alpaca_id) - 8) + alpaca_id[-4:] if len(alpaca_id) > 8 else '*' * len(alpaca_id)
     print(f'ALPACA_API_KEY_ID: {masked}')
 else:
-    print('ALPACA_API_KEY_ID: ❌ NOT SET')
+    print('ALPACA_API_KEY_ID: âŒ NOT SET')
 
 if alpaca_secret:
     masked = alpaca_secret[:4] + '*' * (len(alpaca_secret) - 8) + alpaca_secret[-4:] if len(alpaca_secret) > 8 else '*' * len(alpaca_secret)
     print(f'ALPACA_API_SECRET_KEY: {masked}')
 else:
-    print('ALPACA_API_SECRET_KEY: ❌ NOT SET')
+    print('ALPACA_API_SECRET_KEY: âŒ NOT SET')
 
 # Test Alpaca
 if alpaca_id and alpaca_secret:
@@ -71,11 +71,11 @@ if alpaca_id and alpaca_secret:
         'APCA-API-SECRET-KEY': alpaca_secret,
     }, timeout=5)
     if r.status_code == 200:
-        print('  ✅ Valid and working')
+        print('  âœ… Valid and working')
     elif r.status_code == 401 or r.status_code == 403:
-        print('  ❌ Invalid credentials')
+        print('  âŒ Invalid credentials')
     else:
-        print(f'  ⚠️ HTTP {r.status_code}')
+        print(f'  âš ï¸ HTTP {r.status_code}')
 
 print()
 
@@ -102,9 +102,9 @@ env_locations = [
 print('=== ENV FILE LOCATIONS ===')
 for loc in env_locations:
     if loc.exists():
-        print(f'✅ {loc} (exists)')
+        print(f'âœ… {loc} (exists)')
     else:
-        print(f'❌ {loc} (not found)')
+        print(f'âŒ {loc} (not found)')
 "
 
 # Key rotation guide
@@ -150,3 +150,5 @@ echo "
 - **Polygon**: ~32 character alphanumeric
 - **Alpaca Key ID**: ~20 character alphanumeric
 - **Alpaca Secret**: ~40 character alphanumeric
+
+
