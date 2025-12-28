@@ -534,11 +534,22 @@ class SignalQualityGate:
         current_positions: List[Dict],
         price_data: pd.DataFrame,
     ) -> float:
-        """Calculate correlation penalty (0-10 points)."""
+        """Calculate correlation penalty (0-10 points) based on returns correlation.
+
+        Penalizes signals that are highly correlated with existing positions,
+        which would increase portfolio concentration risk.
+
+        Args:
+            signal: Signal dict with 'symbol' key.
+            current_positions: List of position dicts with 'symbol' keys.
+            price_data: DataFrame with 'symbol', 'timestamp', and 'close' columns.
+
+        Returns:
+            Penalty from 0-10 based on maximum correlation with positions.
+        """
         if not current_positions:
             return 0.0
 
-        # Simple sector-based correlation check
         symbol = signal.get('symbol', '')
 
         # If same symbol already in positions, maximum penalty
@@ -546,8 +557,70 @@ class SignalQualityGate:
             if pos.get('symbol') == symbol:
                 return 10.0
 
-        # TODO: Implement proper correlation check using returns data
-        return 0.0
+        # Calculate returns-based correlation with existing positions
+        try:
+            if price_data.empty or 'symbol' not in price_data.columns:
+                return 0.0
+
+            # Get signal symbol's returns (last 60 days)
+            signal_data = price_data[price_data['symbol'] == symbol].copy()
+            if len(signal_data) < 20:
+                return 0.0
+
+            close_col = 'close' if 'close' in signal_data.columns else 'Close'
+            signal_data = signal_data.sort_values('timestamp').tail(60)
+            signal_returns = signal_data[close_col].pct_change().dropna()
+
+            if len(signal_returns) < 15:
+                return 0.0
+
+            # Calculate correlation with each position
+            max_corr = 0.0
+            for pos in current_positions:
+                pos_symbol = pos.get('symbol', '')
+                if pos_symbol == symbol:
+                    continue
+
+                pos_data = price_data[price_data['symbol'] == pos_symbol].copy()
+                if len(pos_data) < 20:
+                    continue
+
+                pos_data = pos_data.sort_values('timestamp').tail(60)
+                pos_returns = pos_data[close_col].pct_change().dropna()
+
+                if len(pos_returns) < 15:
+                    continue
+
+                # Align by index length (simple approach)
+                min_len = min(len(signal_returns), len(pos_returns))
+                if min_len < 15:
+                    continue
+
+                corr = np.corrcoef(
+                    signal_returns.values[-min_len:],
+                    pos_returns.values[-min_len:]
+                )[0, 1]
+
+                if not np.isnan(corr):
+                    max_corr = max(max_corr, abs(corr))
+
+            # Apply penalty based on correlation level
+            # corr >= 0.8: full penalty (10)
+            # corr >= 0.6: moderate penalty (5)
+            # corr >= 0.4: light penalty (2)
+            # corr < 0.4: no penalty
+            if max_corr >= 0.8:
+                return 10.0
+            elif max_corr >= 0.6:
+                return 5.0
+            elif max_corr >= 0.4:
+                return 2.0
+            else:
+                return 0.0
+
+        except Exception as e:
+            logger.debug(f"Correlation calculation failed: {e}")
+            return 0.0
 
     def _calculate_timing_penalty(self, signal: Dict) -> float:
         """Calculate timing penalty (0-10 points)."""

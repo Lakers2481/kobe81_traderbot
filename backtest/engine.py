@@ -22,6 +22,7 @@ class CommissionConfig:
 
 @dataclass
 class BacktestConfig:
+    """Configuration for backtest execution including dates, capital, and costs."""
     start_date: Optional[str] = None
     end_date: Optional[str] = None
     initial_cash: float = 100_000.0
@@ -30,6 +31,7 @@ class BacktestConfig:
 
 @dataclass
 class Trade:
+    """Record of an executed trade with timestamp, symbol, side, quantity, and price."""
     timestamp: datetime
     symbol: str
     side: str
@@ -38,11 +40,13 @@ class Trade:
 
 @dataclass
 class Position:
+    """Represents an open position with symbol, quantity, and average cost basis."""
     symbol: str
     qty: int = 0
     avg_cost: float = 0.0
 
 class Backtester:
+    """Event-driven backtester with FIFO P&L, slippage, and commission modeling."""
     def __init__(self, cfg: BacktestConfig, get_signals: Callable[[pd.DataFrame], pd.DataFrame], fetch_bars: Callable[[str], pd.DataFrame]):
         self.cfg = cfg
         self.get_signals = get_signals
@@ -81,6 +85,15 @@ class Backtester:
         return fee
 
     def run(self, symbols: List[str], outdir: Optional[str] = None) -> Dict[str, Any]:
+        """Execute backtest across symbols, simulating trades with FIFO P&L accounting.
+
+        Args:
+            symbols: List of ticker symbols to backtest.
+            outdir: Optional directory to write trade_list.csv and equity_curve.csv.
+
+        Returns:
+            Dict with keys: trades, pnl, equity (DataFrame), metrics (win_rate, profit_factor, etc.)
+        """
         # Load data per symbol
         by_sym: Dict[str, pd.DataFrame] = {}
         for s in symbols:
@@ -184,12 +197,17 @@ class Backtester:
         ts_index = pd.Series(df.index.values, index=df['timestamp'])
         # Iterate over signals chronologically
         for _, sig in sigs.sort_values('timestamp').iterrows():
-            sig_ts = pd.to_datetime(sig['timestamp'], utc=True).tz_localize(None)
-            # Find next bar index strictly after signal ts
-            later = df[df['timestamp'] > sig_ts]
-            if later.empty:
+            # Robust next-bar lookup using searchsorted to avoid tz/naive mismatches
+            try:
+                sig_ts = pd.to_datetime(sig['timestamp'])
+            except Exception:
                 continue
-            entry_idx = int(later.index[0])
+            ts_series = pd.to_datetime(df['timestamp'])
+            # Find insertion point to the right (strictly greater than signal ts)
+            entry_idx = int(ts_series.searchsorted(sig_ts, side='right'))
+            if entry_idx >= len(df):
+                # No next bar available to fill
+                continue
             if open_trade is not None:
                 # Skip new signal until current position is closed
                 continue
