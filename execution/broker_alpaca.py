@@ -623,10 +623,10 @@ class OrderResult:
 
     @property
     def success(self) -> bool:
-        """True if order was submitted (not rejected or blocked)."""
+        """True if order was successfully executed (filled or submitted)."""
         return (
             not self.blocked_by_liquidity
-            and self.order.status == OrderStatus.SUBMITTED
+            and self.order.status in (OrderStatus.SUBMITTED, OrderStatus.FILLED)
         )
 
 

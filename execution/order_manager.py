@@ -155,6 +155,9 @@ class OrderManager:
             broker_result.order.filled_qty,
             broker_result.order.fill_price
         )
+        # Copy broker_order_id from the result
+        if broker_result.order.broker_order_id:
+            order.broker_order_id = broker_result.order.broker_order_id
         return broker_result
 
     def _execute_twap(self, order: OrderRecord, market_bid_at_submission: float, market_ask_at_submission: float, duration_minutes: int = 60, slice_count: int = 10):
@@ -232,10 +235,10 @@ class OrderManager:
 # Singleton instance
 _order_manager: Optional[OrderManager] = None
 
-def get_order_manager(default_strategy: str = "LIMIT") -> OrderManager:
+def get_order_manager(default_execution_strategy: str = "LIMIT") -> OrderManager:
     """Get or create singleton OrderManager."""
     global _order_manager
     if _order_manager is None:
-        _order_manager = OrderManager(default_strategy=default_strategy)
+        _order_manager = OrderManager(default_execution_strategy=default_execution_strategy)
     return _order_manager
 

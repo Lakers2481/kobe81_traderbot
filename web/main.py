@@ -86,7 +86,7 @@ async def get_bot_status() -> Dict[str, Any]:
             "kill_switch_active": False, # Placeholder
             "paper_mode": True, # Placeholder
             "active_cognitive_episodes": len(signal_processor._active_episodes),
-            "log_level": logger.getLevel(),
+            "log_level": logging.getLevelName(logger.getEffectiveLevel()),
         }
         return status
     except Exception as e:

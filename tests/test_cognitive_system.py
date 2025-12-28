@@ -1,4 +1,4 @@
-"""
+﻿"""
 Cognitive System Tests
 =======================
 
@@ -142,7 +142,7 @@ class TestEpisodicMemory:
         # Start episode
         episode_id = memory.start_episode(
             market_context={'regime': 'BULL'},
-            signal_context={'strategy': 'donchian', 'symbol': 'AAPL'},
+            signal_context={'strategy': 'ibs_rsi', 'symbol': 'AAPL'},
         )
 
         assert episode_id is not None
@@ -173,10 +173,11 @@ class TestSemanticMemory:
         from cognitive.semantic_memory import SemanticMemory, get_semantic_memory
         assert SemanticMemory is not None
 
-    def test_add_and_query_rule(self):
+    def test_add_and_query_rule(self, tmp_path):
         from cognitive.semantic_memory import SemanticMemory
 
-        memory = SemanticMemory(auto_persist=False)
+        # Use temp directory to avoid loading existing rules from disk
+        memory = SemanticMemory(storage_dir=str(tmp_path), auto_persist=False)
 
         rule = memory.add_rule(
             condition="regime = BULL AND vix < 20",
@@ -303,7 +304,7 @@ class TestCognitiveBrain:
         decision = brain.deliberate(
             signal={
                 'symbol': 'AAPL',
-                'strategy': 'donchian',
+                'strategy': 'ibs_rsi',
                 'entry_price': 150,
                 'stop_loss': 145,
             },
@@ -425,7 +426,7 @@ class TestSignalProcessor:
         signals = pd.DataFrame([
             {
                 'symbol': 'AAPL',
-                'strategy': 'donchian',
+                'strategy': 'ibs_rsi',
                 'side': 'long',
                 'entry_price': 150.0,
                 'stop_loss': 145.0,
@@ -461,3 +462,4 @@ class TestSignalProcessor:
 
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
+

@@ -36,12 +36,17 @@ Usage:
     daily_tca = tca_analyzer.get_daily_summary()
 """
 
+import json
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from enum import Enum
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 import pandas as pd
 
+from cognitive.self_model import get_self_model
+from cognitive.global_workspace import get_workspace
 from oms.order_state import OrderRecord, OrderStatus
 
 logger = logging.getLogger(__name__)
@@ -127,7 +132,6 @@ class TransactionCostAnalyzer:
     def self_model(self):
         """Lazy-loads the SelfModel."""
         if self._self_model is None:
-            from cognitive.self_model import get_self_model
             self._self_model = get_self_model()
         return self._self_model
 
@@ -135,7 +139,6 @@ class TransactionCostAnalyzer:
     def workspace(self):
         """Lazy-loads the GlobalWorkspace."""
         if self._workspace is None:
-            from cognitive.global_workspace import get_workspace
             self._workspace = get_workspace()
         return self._workspace
 
@@ -219,7 +222,14 @@ class TransactionCostAnalyzer:
         total_trades = len(recent_records)
         avg_slippage_bps = sum(r.slippage_bps for r in recent_records) / total_trades
         avg_spread_capture_bps = sum(r.spread_capture_bps for r in recent_records) / total_trades
-        total_cost_usd = sum((r.fill_price - r.entry_price_decision) * r.qty for r in recent_records)
+        # For BUY, cost = (fill - entry) positive when overpaid
+        # For SELL, cost = (entry - fill) positive when underpaid (got less)
+        def calc_cost(r):
+            if r.side == "BUY":
+                return (r.fill_price - r.entry_price_decision) * r.qty
+            else:  # SELL
+                return (r.entry_price_decision - r.fill_price) * r.qty
+        total_cost_usd = sum(calc_cost(r) for r in recent_records)
 
         return {
             'total_trades': total_trades,

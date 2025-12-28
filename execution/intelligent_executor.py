@@ -37,6 +37,7 @@ Usage:
 """
 
 import logging
+import uuid
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime
@@ -45,6 +46,11 @@ import pandas as pd
 # Import the new OrderManager
 from execution.order_manager import get_order_manager
 from oms.order_state import OrderRecord, OrderStatus
+from strategies.adaptive_selector import AdaptiveStrategySelector
+from ml_features.confidence_integrator import get_confidence_integrator
+from portfolio.risk_manager import get_risk_manager
+from risk.policy_gate import PolicyGate
+from risk.trailing_stops import get_trailing_stop_manager
 
 logger = logging.getLogger(__name__)
 
@@ -151,9 +157,8 @@ class IntelligentExecutor:
         """Lazy load AdaptiveStrategySelector."""
         if self._strategy_selector is None:
             try:
-                from strategies.adaptive_selector import AdaptiveStrategySelector
                 self._strategy_selector = AdaptiveStrategySelector()
-            except ImportError as e:
+            except Exception as e:
                 logger.warning(f"AdaptiveStrategySelector not available: {e}")
         return self._strategy_selector
 
@@ -162,9 +167,8 @@ class IntelligentExecutor:
         """Lazy load ConfidenceIntegrator."""
         if self._confidence_integrator is None:
             try:
-                from ml_features.confidence_integrator import get_confidence_integrator
                 self._confidence_integrator = get_confidence_integrator()
-            except ImportError as e:
+            except Exception as e:
                 logger.warning(f"ConfidenceIntegrator not available: {e}")
         return self._confidence_integrator
 
@@ -173,9 +177,8 @@ class IntelligentExecutor:
         """Lazy load PortfolioRiskManager."""
         if self._risk_manager is None:
             try:
-                from portfolio.risk_manager import get_risk_manager
                 self._risk_manager = get_risk_manager(equity=self.equity)
-            except ImportError as e:
+            except Exception as e:
                 logger.warning(f"PortfolioRiskManager not available: {e}")
         return self._risk_manager
 
@@ -184,9 +187,8 @@ class IntelligentExecutor:
         """Lazy load TrailingStopManager."""
         if self._trailing_stop_manager is None:
             try:
-                from risk.trailing_stops import get_trailing_stop_manager
                 self._trailing_stop_manager = get_trailing_stop_manager()
-            except ImportError as e:
+            except Exception as e:
                 logger.warning(f"TrailingStopManager not available: {e}")
         return self._trailing_stop_manager
 
@@ -195,9 +197,8 @@ class IntelligentExecutor:
         """Lazy load PolicyGate for budget enforcement."""
         if self._policy_gate is None:
             try:
-                from risk.policy_gate import PolicyGate
                 self._policy_gate = PolicyGate()
-            except ImportError as e:
+            except Exception as e:
                 logger.warning(f"PolicyGate not available: {e}")
         return self._policy_gate
 
