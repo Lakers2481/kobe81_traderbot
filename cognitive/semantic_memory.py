@@ -144,6 +144,18 @@ class ConditionMatcher:
         """
         condition_str = condition_str.strip()
 
+        # Strip parentheses from the condition to handle nested expressions
+        while condition_str.startswith('(') and condition_str.endswith(')'):
+            condition_str = condition_str[1:-1].strip()
+
+        # Skip non-parseable conditions (e.g., natural language descriptions)
+        if '(' in condition_str or ')' in condition_str:
+            # Has unbalanced or embedded parentheses, skip
+            return False
+        if 'e.g.' in condition_str.lower():
+            # Natural language, not a condition
+            return False
+
         # Recursively handle AND/OR logic.
         if ' AND ' in condition_str:
             return all(self.matches(p.strip(), context) for p in condition_str.split(' AND '))
