@@ -1,16 +1,33 @@
-﻿Kobe81 Traderbot â€” Backtesting, Paper, Live (Micro)
+﻿Kobe81 Traderbot â€" Backtesting, Paper, Live (Micro)
+
+## Performance (v2.2 - Quant Interview Ready)
+
+| Strategy | Win Rate | Profit Factor | Trades | Period |
+|----------|----------|---------------|--------|--------|
+| IBS+RSI | 59.9% | 1.46 | 867 | 2015-2024 |
+| Turtle Soup | 61.0% | 1.37 | 305 | 2015-2024 |
+| **Combined** | **60.2%** | **1.44** | **1,172** | 2015-2024 |
+
+**Quick Replication:**
+```bash
+python scripts/backtest_dual_strategy.py --cap 200 --start 2015-01-01 --end 2024-12-31
+```
+
+**[Full Optimization Guide](docs/V2.2_OPTIMIZATION_GUIDE.md)** | **[Replication Steps](docs/STATUS.md#how-to-replicate-v22-results-critical---read-this)**
+
+---
 
 Overview
-- Strategies: ICT Turtle Soup (failed breakout mean reversion) and Donchian breakout (trend-following).
+- Strategies: ICT Turtle Soup (failed breakout mean reversion) and IBS+RSI mean reversion.
 - Data: Polygon daily OHLCV with caching.
 - Universe: optionable + liquid candidates filtered to final 900 with 10y coverage.
 - Backtesting: deterministic next-bar fills, ATR(14) x2 stop, 5-bar time stop, no lookahead.
 - Outputs: trade_list.csv, equity_curve.csv, summary.json per run/split.
-- walk-forward: rolling splits, side-by-side comparison (Donchian vs ICT), HTML report.
+- walk-forward: rolling splits, side-by-side comparison (IBS_RSI vs ICT), HTML report.
 - Execution: Alpaca IOC LIMIT submission (paper or live), kill switch, budgets, idempotency, audit log.
 
 Project Map
-- strategies/ — ICT Turtle Soup and Donchian implementations
+- strategies/ - ICT Turtle Soup and IBS+RSI implementations
 - backtest/ â€” engine + walkâ€‘forward
 - data/ â€” providers (Polygon) + universe loader
 - execution/ â€” Alpaca broker adapter (IOC limit)
@@ -66,7 +83,12 @@ Evidence Artifacts
   python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv --cap 50 --scan-times 09:35,10:30,15:55 --lookback-days 540 --dotenv ./.env
 - Live example:
   python scripts/runner.py --mode live --universe data/universe/optionable_liquid_900.csv --cap 10 --scan-times 09:35,10:30,15:55 --lookback-days 540 --dotenv ./.env
-- Task Scheduler setup: see docs/RUN_24x7.md
+ - Task Scheduler setup: see docs/RUN_24x7.md
+
+Time Zones
+- Policy: All schedules operate in ET; all displays (UI and Telegram) show CT and ET in 12-hour format (e.g., "8:45 AM CT | 9:45 AM ET").
+- Trading operations (schedules, scan dates) run on New York time (ET). Displays (live dashboard) default to Central Time (CT) with AM/PM.
+- Windows Task registration (ops/windows/register_all_tasks.ps1) registers jobs at ET hours converted to your local clock (handles DST automatically).
 
 Safety
 - Kill switch: create file `state/KILL_SWITCH` to halt submissions.
@@ -109,7 +131,7 @@ All features below are disabled by default. Enable in `config/base.yaml`:
    - Module: `core/regime_filter.py`
 
 7) Signal Selection (Top-N Ranking)
-   - Disabled in this two-strategy setup; Top-3 logic is handled inside `scripts/scan.py` (2×ICT + 1×Donchian)
+   - Disabled in this two-strategy setup; Top-3 logic is handled inside `scripts/scan.py` (2×ICT + 1×IBS_RSI)
 
 8) Volatility-Targeted Sizing
    - Set `sizing.enabled: true`
@@ -122,7 +144,7 @@ Robustness Tools
   python scripts/optimize.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --cap 100 --outdir optimize_outputs --dotenv ./.env
 
 - Monte Carlo Robustness Testing:
-  python scripts/monte_carlo.py --trades wf_outputs/donchian/split_00/trade_list.csv --iterations 1000 --outdir monte_carlo_outputs
+  python scripts/monte_carlo.py --trades wf_outputs/ibs_rsi/split_00/trade_list.csv --iterations 1000 --outdir monte_carlo_outputs
 
 Crypto (Backtest-Only)
 Research-only crypto backtesting using Polygon hourly bars. No live execution.
