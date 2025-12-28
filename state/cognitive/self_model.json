@@ -3,23 +3,23 @@
     "ibs_rsi|bull": {
       "strategy": "ibs_rsi",
       "regime": "BULL",
-      "total_trades": 408,
-      "winning_trades": 408,
+      "total_trades": 418,
+      "winning_trades": 418,
       "losing_trades": 0,
-      "total_pnl": 50850.0,
-      "avg_r_multiple": 1.0973039215686267,
-      "last_updated": "2025-12-28T13:59:34.847609",
+      "total_pnl": 52100.0,
+      "avg_r_multiple": 1.097368421052631,
+      "last_updated": "2025-12-28T14:58:02.041691",
       "notes": [
-        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2331994045392'>) and carries 50% weight.",
-        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2331990160784'>) and carries 50% weight.",
-        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2331990877136'>) and carries 50% weight.",
-        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2331992984336'>) and carries 50% weight.",
-        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2331990640976'>) and carries 50% weight.",
-        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2331993561104'>) and carries 50% weight.",
-        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2331986260688'>) and carries 50% weight.",
-        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2331993508048'>) and carries 50% weight.",
-        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2331989975312'>) and carries 50% weight.",
-        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2331993518032'>) and carries 50% weight."
+        "Reflection on win episode for BULL / ibs_rsi. Key lesson: The pattern 'ibs_rsi' seems effective in the context of 'BULL / ibs_rsi'.",
+        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2668834360848'>) and carries 50% weight.",
+        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2668831513296'>) and carries 50% weight.",
+        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2668792108432'>) and carries 50% weight.",
+        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2668792334224'>) and carries 50% weight.",
+        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2668792248528'>) and carries 50% weight.",
+        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2668834844752'>) and carries 50% weight.",
+        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2668825157136'>) and carries 50% weight.",
+        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2668834362832'>) and carries 50% weight.",
+        "Reflection on win episode for BULL / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2668792204944'>) and carries 50% weight."
       ],
       "win_rate": 1.0,
       "capability": "excellent"
@@ -27,14 +27,13 @@
     "turtle_soup|choppy": {
       "strategy": "turtle_soup",
       "regime": "CHOPPY",
-      "total_trades": 31,
+      "total_trades": 32,
       "winning_trades": 0,
-      "losing_trades": 31,
-      "total_pnl": -3100.0,
+      "losing_trades": 32,
+      "total_pnl": -3200.0,
       "avg_r_multiple": -0.8000000000000005,
-      "last_updated": "2025-12-28T13:58:49.149554",
+      "last_updated": "2025-12-28T14:55:54.139059",
       "notes": [
-        "Reflection on loss episode for CHOPPY / turtle_soup. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2287002437328'>) and carries 50% weight.",
         "Reflection on loss episode for CHOPPY / turtle_soup. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2854115560464'>) and carries 50% weight.",
         "Reflection on loss episode for CHOPPY / turtle_soup. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2203483478160'>) and carries 50% weight.",
         "Reflection on loss episode for CHOPPY / turtle_soup. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='1854511368464'>) and carries 50% weight.",
@@ -43,7 +42,8 @@
         "Reflection on loss episode for CHOPPY / turtle_soup. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2027299988368'>) and carries 50% weight.",
         "Reflection on loss episode for CHOPPY / turtle_soup. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='1602569795088'>) and carries 50% weight.",
         "Reflection on loss episode for CHOPPY / turtle_soup. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2296026855120'>) and carries 50% weight.",
-        "Reflection on loss episode for CHOPPY / turtle_soup. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2331992934288'>) and carries 50% weight."
+        "Reflection on loss episode for CHOPPY / turtle_soup. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2331992934288'>) and carries 50% weight.",
+        "Reflection on loss episode for CHOPPY / turtle_soup. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2668835182096'>) and carries 50% weight."
       ],
       "win_rate": 0.0,
       "capability": "poor"
@@ -51,14 +51,13 @@
     "ibs_rsi|bear": {
       "strategy": "ibs_rsi",
       "regime": "BEAR",
-      "total_trades": 31,
+      "total_trades": 32,
       "winning_trades": 0,
-      "losing_trades": 31,
+      "losing_trades": 32,
       "total_pnl": 0.0,
       "avg_r_multiple": 0.0,
-      "last_updated": "2025-12-28T13:58:52.254016",
+      "last_updated": "2025-12-28T14:56:05.908155",
       "notes": [
-        "Reflection on stand_down episode for BEAR / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2287002326800'>) and carries 50% weight.",
         "Reflection on stand_down episode for BEAR / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2854115079184'>) and carries 50% weight.",
         "Reflection on stand_down episode for BEAR / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2203478810832'>) and carries 50% weight.",
         "Reflection on stand_down episode for BEAR / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='1854507215440'>) and carries 50% weight.",
@@ -67,7 +66,8 @@
         "Reflection on stand_down episode for BEAR / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2027301051024'>) and carries 50% weight.",
         "Reflection on stand_down episode for BEAR / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='1602566509840'>) and carries 50% weight.",
         "Reflection on stand_down episode for BEAR / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2296025769936'>) and carries 50% weight.",
-        "Reflection on stand_down episode for BEAR / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2331990184016'>) and carries 50% weight."
+        "Reflection on stand_down episode for BEAR / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2331990184016'>) and carries 50% weight.",
+        "Reflection on stand_down episode for BEAR / ibs_rsi. Key lesson: [SIMULATED] This learning is from synthetic data (<Mock name='mock.simulation_source' id='2668825815824'>) and carries 50% weight."
       ],
       "win_rate": 0.0,
       "capability": "poor"
@@ -75,14 +75,13 @@
     "turtle_soup|bear": {
       "strategy": "turtle_soup",
       "regime": "BEAR",
-      "total_trades": 60,
+      "total_trades": 61,
       "winning_trades": 24,
-      "losing_trades": 36,
-      "total_pnl": 3600.0,
-      "avg_r_multiple": 0.12000000000000005,
-      "last_updated": "2025-12-28T14:00:08.043460",
+      "losing_trades": 37,
+      "total_pnl": 3500.0,
+      "avg_r_multiple": 0.1049180327868853,
+      "last_updated": "2025-12-28T14:55:10.095980",
       "notes": [
-        "Reflection on win episode for BEAR / turtle_soup. Key lesson: The pattern 'turtle_soup' seems effective in the context of 'BEAR / turtle_soup'.",
         "Reflection on loss episode for BEAR / turtle_soup. Key lesson: The pattern 'turtle_soup' may be unreliable in the context of 'BEAR / turtle_soup'.",
         "Reflection on loss episode for BEAR / turtle_soup. Key lesson: The pattern 'turtle_soup' may be unreliable in the context of 'BEAR / turtle_soup'.",
         "Reflection on win episode for BEAR / turtle_soup. Key lesson: The pattern 'turtle_soup' seems effective in the context of 'BEAR / turtle_soup'.",
@@ -91,9 +90,10 @@
         "Reflection on loss episode for BEAR / turtle_soup. Key lesson: The pattern 'turtle_soup' may be unreliable in the context of 'BEAR / turtle_soup'.",
         "Reflection on win episode for BEAR / turtle_soup. Key lesson: The pattern 'turtle_soup' seems effective in the context of 'BEAR / turtle_soup'.",
         "Reflection on loss episode for BEAR / turtle_soup. Key lesson: The pattern 'turtle_soup' may be unreliable in the context of 'BEAR / turtle_soup'.",
-        "Reflection on win episode for BEAR / turtle_soup. Key lesson: The pattern 'turtle_soup' seems effective in the context of 'BEAR / turtle_soup'."
+        "Reflection on win episode for BEAR / turtle_soup. Key lesson: The pattern 'turtle_soup' seems effective in the context of 'BEAR / turtle_soup'.",
+        "Reflection on loss episode for BEAR / turtle_soup. Key lesson: The pattern 'turtle_soup' may be unreliable in the context of 'BEAR / turtle_soup'."
       ],
-      "win_rate": 0.4,
+      "win_rate": 0.39344262295081966,
       "capability": "weak"
     },
     "unknown|unknown": {
@@ -104,7 +104,7 @@
       "losing_trades": 0,
       "total_pnl": 250.0,
       "avg_r_multiple": 0.0,
-      "last_updated": "2025-12-28T13:58:27.585205",
+      "last_updated": "2025-12-28T14:54:46.128251",
       "notes": [
         "Reflection on win episode for unknown context. Key lesson: The pattern 'unknown' seems effective in the context of 'unknown context'."
       ],
@@ -118,8 +118,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection shows a commendable level of introspection and self-awareness. The key lessons identified - giving more weight to noted concerns, re-evaluating th",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\nthe reflection provided offers a limited perspective on the trading performance. while it acknowledges a loss episode and identifies a potential issue with the 'turtle_soup' pattern": {
@@ -127,8 +127,8 @@
       "description": "**Meta-Critique:**\nThe reflection provided offers a limited perspective on the trading performance. While it acknowledges a loss episode and identifies a potential issue with the 'turtle_soup' pattern",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe reflection provided suggests that the trading bot has identified a potential issue with the reliability of the 'turtle_soup' pattern in the context of a 'bear' market regime. h": {
@@ -136,8 +136,8 @@
       "description": "**Meta-Critique:**\n\nThe reflection provided suggests that the trading bot has identified a potential issue with the reliability of the 'turtle_soup' pattern in the context of a 'BEAR' market regime. H",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's reflection on the loss episode highlights several important insights, but also reveals potential biases and flaws in its reasoning. while the bot acknowledges the": {
@@ -145,8 +145,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's reflection on the loss episode highlights several important insights, but also reveals potential biases and flaws in its reasoning. While the bot acknowledges the",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe reflection provided suggests a narrow, pattern-based approach to trading that may be overly simplistic. the bot's key lesson - that the 'turtle_soup' pattern may be unreliable ": {
@@ -154,8 +154,8 @@
       "description": "**Meta-Critique:**\n\nThe reflection provided suggests a narrow, pattern-based approach to trading that may be overly simplistic. The bot's key lesson - that the 'turtle_soup' pattern may be unreliable ",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights several important issues that a simple statistical analysis may have missed:\n\n1. **overconfidence bias:** the bot was overly confident ": {
@@ -163,8 +163,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights several important issues that a simple statistical analysis may have missed:\n\n1. **Overconfidence Bias:** The bot was overly confident ",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe trading bot's self-assessment seems to focus solely on the specific pattern \"turtle_soup\" in the context of a \"bear\" market regime. this narrow focus on a single pattern and ma": {
@@ -172,8 +172,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-assessment seems to focus solely on the specific pattern \"turtle_soup\" in the context of a \"BEAR\" market regime. This narrow focus on a single pattern and ma",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights some important lessons, but there are a few potential issues that a deeper analysis could uncover:\n\n1. **overconfidence bias**: the bot": {
@@ -181,8 +181,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights some important lessons, but there are a few potential issues that a deeper analysis could uncover:\n\n1. **Overconfidence Bias**: The bot",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe trading bot's reflection on the loss episode for the 'bear / turtle_soup' strategy highlights a potential issue with the reliability of the 'turtle_soup' pattern in the given m": {
@@ -190,8 +190,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's reflection on the loss episode for the 'BEAR / turtle_soup' strategy highlights a potential issue with the reliability of the 'turtle_soup' pattern in the given m",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe bot's self-reflection highlights a potential flaw in its trading strategy, specifically the unreliability of the 'turtle_soup' pattern in the context of a 'bear / turtle_soup' ": {
@@ -199,8 +199,8 @@
       "description": "**Meta-Critique:**\n\nThe bot's self-reflection highlights a potential flaw in its trading strategy, specifically the unreliability of the 'turtle_soup' pattern in the context of a 'BEAR / turtle_soup' ",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights several important issues that a simple statistical analysis may miss. the key concerns are:\n\n1. overconfidence in a losing trade: the b": {
@@ -208,8 +208,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights several important issues that a simple statistical analysis may miss. The key concerns are:\n\n1. Overconfidence in a losing trade: The b",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe reflection provided by the trading bot highlights a single loss episode and a corresponding lesson learned. however, this narrow focus on a specific pattern and market conditio": {
@@ -217,8 +217,8 @@
       "description": "**Meta-Critique:**\n\nThe reflection provided by the trading bot highlights a single loss episode and a corresponding lesson learned. However, this narrow focus on a specific pattern and market conditio",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights several important issues that deserve further investigation:\n\n1. **overconfidence bias:** the bot was overconfident (75%) in a losing t": {
@@ -226,8 +226,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights several important issues that deserve further investigation:\n\n1. **Overconfidence Bias:** The bot was overconfident (75%) in a losing t",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe reflection provided suggests a narrow, pattern-focused approach to trading that may be prone to overfitting and lack of adaptability. the bot's key lesson - that the 'turtle_so": {
@@ -235,8 +235,8 @@
       "description": "**Meta-Critique:**\n\nThe reflection provided suggests a narrow, pattern-focused approach to trading that may be prone to overfitting and lack of adaptability. The bot's key lesson - that the 'turtle_so",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe trading bot's self-assessment seems overly simplistic, focusing solely on the immediate loss without deeper reflection on the broader context and potential meta-patterns. a mor": {
@@ -244,8 +244,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-assessment seems overly simplistic, focusing solely on the immediate loss without deeper reflection on the broader context and potential meta-patterns. A mor",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe trading bot's self-reflection identifies a potential issue with the 'turtle_soup' pattern in the context of a 'bear' market regime. however, the reflection lacks deeper analysi": {
@@ -253,8 +253,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection identifies a potential issue with the 'turtle_soup' pattern in the context of a 'BEAR' market regime. However, the reflection lacks deeper analysi",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's reflection highlights several important insights, but also reveals potential biases and flaws in its reasoning:\n\n1. overconfidence bias: the bot was 75% confident": {
@@ -262,8 +262,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's reflection highlights several important insights, but also reveals potential biases and flaws in its reasoning:\n\n1. Overconfidence bias: The bot was 75% confident",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe trading bot's self-reflection appears to be overly simplistic and lacks a deeper analysis of the potential underlying factors contributing to the loss. while the bot has identi": {
@@ -271,8 +271,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection appears to be overly simplistic and lacks a deeper analysis of the potential underlying factors contributing to the loss. While the bot has identi",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection on the loss episode highlights several important insights, but also reveals potential biases and flawed reasoning that a simple statistical analys": {
@@ -280,8 +280,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection on the loss episode highlights several important insights, but also reveals potential biases and flawed reasoning that a simple statistical analys",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe reflection provided suggests that the trading bot has identified a potential issue with the reliability of the 'turtle_soup' pattern in the context of a 'bear / turtle_soup' ma": {
@@ -289,8 +289,8 @@
       "description": "**Meta-Critique:**\n\nThe reflection provided suggests that the trading bot has identified a potential issue with the reliability of the 'turtle_soup' pattern in the context of a 'BEAR / turtle_soup' ma",
       "severity": "moderate",
       "occurrences": 2,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights several important lessons, but there are some potential meta-patterns and biases that a simple statistical analysis might miss:\n\n1. **o": {
@@ -298,8 +298,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights several important lessons, but there are some potential meta-patterns and biases that a simple statistical analysis might miss:\n\n1. **O",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe trading bot's self-assessment seems to focus solely on the specific pattern \"turtle_soup\" in the context of a \"bear\" market regime. this narrow focus may overlook more fundamen": {
@@ -307,8 +307,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-assessment seems to focus solely on the specific pattern \"turtle_soup\" in the context of a \"BEAR\" market regime. This narrow focus may overlook more fundamen",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights several important insights, but also reveals potential biases and flawed reasoning that may be hindering its performance. some key obse": {
@@ -316,8 +316,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights several important insights, but also reveals potential biases and flawed reasoning that may be hindering its performance. Some key obse",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe reflection highlights a single loss episode, which is not sufficient to draw robust conclusions about the overall performance of the 'bear / turtle_soup' strategy. the reflecti": {
@@ -325,8 +325,8 @@
       "description": "**Meta-Critique:**\n\nThe reflection highlights a single loss episode, which is not sufficient to draw robust conclusions about the overall performance of the 'BEAR / turtle_soup' strategy. The reflecti",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights several important issues that warrant further investigation. the key concerns are:\n\n1. **overconfidence in a losing trade**: the bot wa": {
@@ -334,8 +334,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights several important issues that warrant further investigation. The key concerns are:\n\n1. **Overconfidence in a losing trade**: The bot wa",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe reflection highlights a single loss episode for the 'bear / turtle_soup' strategy, which the system has identified as a potential issue with the reliability of the 'turtle_soup": {
@@ -343,8 +343,8 @@
       "description": "**Meta-Critique:**\n\nThe reflection highlights a single loss episode for the 'BEAR / turtle_soup' strategy, which the system has identified as a potential issue with the reliability of the 'turtle_soup",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights several important insights, but also reveals potential biases and flawed reasoning that could be further explored. a few key points:\n\n1": {
@@ -352,8 +352,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights several important insights, but also reveals potential biases and flawed reasoning that could be further explored. A few key points:\n\n1",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe reflection provided indicates that the trading bot encountered a loss episode when using the 'turtle_soup' pattern in the context of a 'bear' market regime. the bot's self-asse": {
@@ -361,8 +361,8 @@
       "description": "**Meta-Critique:**\n\nThe reflection provided indicates that the trading bot encountered a loss episode when using the 'turtle_soup' pattern in the context of a 'BEAR' market regime. The bot's self-asse",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights several important lessons, but there are some potential flaws in its reasoning that merit further investigation. the primary concern is": {
@@ -370,8 +370,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights several important lessons, but there are some potential flaws in its reasoning that merit further investigation. The primary concern is",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection on the loss episode highlights several important insights, but also reveals potential flaws in its reasoning and decision-making process. while th": {
@@ -379,8 +379,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection on the loss episode highlights several important insights, but also reveals potential flaws in its reasoning and decision-making process. While th",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe trading bot's self-assessment seems to focus solely on the specific pattern \"turtle_soup\" within the bear market context. while this is a reasonable starting point, the analysi": {
@@ -388,8 +388,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-assessment seems to focus solely on the specific pattern \"turtle_soup\" within the BEAR market context. While this is a reasonable starting point, the analysi",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection on the loss episode provides valuable insights, but also highlights some potential biases and flawed reasoning that could be addressed:\n\n1. **over": {
@@ -397,8 +397,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection on the loss episode provides valuable insights, but also highlights some potential biases and flawed reasoning that could be addressed:\n\n1. **Over",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe trading bot's self-reflection on the loss episode is limited to a specific pattern ('turtle_soup') and market context ('bear / turtle_soup'). while this is a valuable lesson, t": {
@@ -406,8 +406,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection on the loss episode is limited to a specific pattern ('turtle_soup') and market context ('BEAR / turtle_soup'). While this is a valuable lesson, t",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe reflection provided suggests a narrow focus on a specific pattern ('turtle_soup') within a specific market context ('bear / turtle_soup'). while identifying potential unreliabi": {
@@ -415,8 +415,8 @@
       "description": "**Meta-Critique:**\n\nThe reflection provided suggests a narrow focus on a specific pattern ('turtle_soup') within a specific market context ('BEAR / turtle_soup'). While identifying potential unreliabi",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights several key issues that warrant further investigation:\n\n1. **overconfidence bias**: the bot was \"75.0% overconfident in a losing trade\"": {
@@ -424,8 +424,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights several key issues that warrant further investigation:\n\n1. **Overconfidence Bias**: The bot was \"75.0% overconfident in a losing trade\"",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe trading bot's self-assessment seems overly simplistic, focusing solely on the loss of the individual trade. this approach misses potential meta-patterns and higher-level insigh": {
@@ -433,8 +433,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-assessment seems overly simplistic, focusing solely on the loss of the individual trade. This approach misses potential meta-patterns and higher-level insigh",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's performance reflection highlights several important insights, but also reveals potential biases and flawed reasoning that could be further explored. the key issue": {
@@ -442,8 +442,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's performance reflection highlights several important insights, but also reveals potential biases and flawed reasoning that could be further explored. The key issue",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe reflection provided suggests that the trading bot has identified a potential issue with the reliability of the 'turtle_soup' pattern in the context of a 'bear' market environme": {
@@ -451,8 +451,8 @@
       "description": "**Meta-Critique:**\n\nThe reflection provided suggests that the trading bot has identified a potential issue with the reliability of the 'turtle_soup' pattern in the context of a 'BEAR' market environme",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's performance reflection highlights several key issues that warrant further investigation:\n\n1. overconfidence bias: the bot exhibited high confidence (75%) in a los": {
@@ -460,8 +460,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's performance reflection highlights several key issues that warrant further investigation:\n\n1. Overconfidence Bias: The bot exhibited high confidence (75%) in a los",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe reflection provided by the trading bot highlights a key lesson - the 'turtle_soup' pattern may be unreliable in the context of a 'bear' market. however, the analysis seems limi": {
@@ -469,8 +469,8 @@
       "description": "**Meta-Critique:**\n\nThe reflection provided by the trading bot highlights a key lesson - the 'turtle_soup' pattern may be unreliable in the context of a 'BEAR' market. However, the analysis seems limi",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe reflection provided by the trading bot focuses on a single loss episode and identifies a potential issue with the reliability of the \"turtle_soup\" pattern in the context of a \"": {
@@ -478,8 +478,8 @@
       "description": "**Meta-Critique:**\n\nThe reflection provided by the trading bot focuses on a single loss episode and identifies a potential issue with the reliability of the \"turtle_soup\" pattern in the context of a \"",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's performance reflection highlights several concerning issues that a simple statistical analysis may overlook. the key problems identified are overconfidence in a l": {
@@ -487,8 +487,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's performance reflection highlights several concerning issues that a simple statistical analysis may overlook. The key problems identified are overconfidence in a l",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe trading bot's self-assessment seems to focus solely on the specific pattern \"turtle_soup\" in the context of a \"bear\" market regime. this narrow framing may overlook broader met": {
@@ -496,8 +496,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-assessment seems to focus solely on the specific pattern \"turtle_soup\" in the context of a \"BEAR\" market regime. This narrow framing may overlook broader met",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights several important lessons, but the analysis appears to be biased towards the simulated data, which carries a significant 50% weight. th": {
@@ -505,8 +505,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights several important lessons, but the analysis appears to be biased towards the simulated data, which carries a significant 50% weight. Th",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe trading bot's self-assessment seems overly simplistic and narrow. while identifying the potential unreliability of the 'turtle_soup' pattern in a 'bear / turtle_soup' context i": {
@@ -514,8 +514,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-assessment seems overly simplistic and narrow. While identifying the potential unreliability of the 'turtle_soup' pattern in a 'BEAR / turtle_soup' context i",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's performance reflection highlights several important insights and lessons, but also reveals potential biases and flaws in its reasoning. the key issues are:\n\n1. ov": {
@@ -523,8 +523,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's performance reflection highlights several important insights and lessons, but also reveals potential biases and flaws in its reasoning. The key issues are:\n\n1. Ov",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe reflection provided by the trading bot seems to focus solely on the specific loss episode and the identified pattern, without considering broader meta-patterns or potential bia": {
@@ -532,8 +532,8 @@
       "description": "**Meta-Critique:**\n\nThe reflection provided by the trading bot seems to focus solely on the specific loss episode and the identified pattern, without considering broader meta-patterns or potential bia",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights several important issues that warrant further investigation:\n\n1. **overconfidence bias**: the bot's high confidence (75%) in a losing t": {
@@ -541,8 +541,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights several important issues that warrant further investigation:\n\n1. **Overconfidence Bias**: The bot's high confidence (75%) in a losing t",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe trading bot's self-assessment appears to be focused on a single pattern, \"turtle_soup\", and its performance in the context of a \"bear\" market regime. this narrow focus may over": {
@@ -550,8 +550,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-assessment appears to be focused on a single pattern, \"turtle_soup\", and its performance in the context of a \"BEAR\" market regime. This narrow focus may over",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights several important issues that warrant further investigation:\n\n1. **overconfidence bias**: the bot was overconfident (75% confidence) in": {
@@ -559,8 +559,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights several important issues that warrant further investigation:\n\n1. **Overconfidence Bias**: The bot was overconfident (75% confidence) in",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe reflection provided by the trading bot suggests a narrow, pattern-based approach to trading that may be overly simplistic and prone to biases. the key lesson identified - that ": {
@@ -568,8 +568,8 @@
       "description": "**Meta-Critique:**\n\nThe reflection provided by the trading bot suggests a narrow, pattern-based approach to trading that may be overly simplistic and prone to biases. The key lesson identified - that ",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights several important insights, but also reveals potential biases and flaws in its reasoning. the key issues i observe are:\n\n1. **overconfi": {
@@ -577,8 +577,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights several important insights, but also reveals potential biases and flaws in its reasoning. The key issues I observe are:\n\n1. **Overconfi",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe trading bot's reflection on the loss episode highlights a potential flaw in its understanding of the relationship between the 'bear' market condition and the 'turtle_soup' patt": {
@@ -586,8 +586,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's reflection on the loss episode highlights a potential flaw in its understanding of the relationship between the 'BEAR' market condition and the 'turtle_soup' patt",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights several important insights, but also reveals potential biases and flawed reasoning that a simple statistical analysis may miss. the bot": {
@@ -595,8 +595,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights several important insights, but also reveals potential biases and flawed reasoning that a simple statistical analysis may miss. The bot",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights a potential issue with the reliability of the 'turtle_soup' pattern in the context of a 'bear' market regime. however, this assessment ": {
@@ -604,8 +604,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights a potential issue with the reliability of the 'turtle_soup' pattern in the context of a 'BEAR' market regime. However, this assessment ",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's reflection on the loss episode highlights several key issues that warrant further investigation:\n\n1. **overconfidence bias**: the bot was overly confident (75%) i": {
@@ -613,8 +613,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's reflection on the loss episode highlights several key issues that warrant further investigation:\n\n1. **Overconfidence Bias**: The bot was overly confident (75%) i",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe trading bot's reflection on the loss episode for the 'bear / turtle_soup' strategy raises some concerns. the bot's key lesson is that the 'turtle_soup' pattern may be unreliabl": {
@@ -622,8 +622,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's reflection on the loss episode for the 'BEAR / turtle_soup' strategy raises some concerns. The bot's key lesson is that the 'turtle_soup' pattern may be unreliabl",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights several important insights, but also reveals potential biases and flawed reasoning that a simple statistical analysis may miss.\n\nthe ke": {
@@ -631,8 +631,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights several important insights, but also reveals potential biases and flawed reasoning that a simple statistical analysis may miss.\n\nThe ke",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe trading bot's self-assessment seems to focus solely on the immediate loss episode, without considering the broader context or potential meta-patterns in its performance. the bo": {
@@ -640,8 +640,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-assessment seems to focus solely on the immediate loss episode, without considering the broader context or potential meta-patterns in its performance. The bo",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's reflection on the loss episode highlights several important points:\n\n1. the bot acknowledges the limitations of learning from synthetic data, appropriately assign": {
@@ -649,8 +649,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's reflection on the loss episode highlights several important points:\n\n1. The bot acknowledges the limitations of learning from synthetic data, appropriately assign",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe trading bot's self-reflection indicates a narrow focus on a specific pattern ('turtle_soup') within a specific market context ('bear / turtle_soup'). this suggests a potential ": {
@@ -658,8 +658,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection indicates a narrow focus on a specific pattern ('turtle_soup') within a specific market context ('BEAR / turtle_soup'). This suggests a potential ",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights several important issues that merit further investigation. the key concerns are:\n\n1. overconfidence in a losing trade: the bot was 75% ": {
@@ -667,8 +667,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights several important issues that merit further investigation. The key concerns are:\n\n1. Overconfidence in a losing trade: The bot was 75% ",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe reflection provided by the trading bot suggests a narrow, pattern-focused approach to trading. the bot has identified a specific pattern ('turtle_soup') and its performance in ": {
@@ -676,8 +676,8 @@
       "description": "**Meta-Critique:**\n\nThe reflection provided by the trading bot suggests a narrow, pattern-focused approach to trading. The bot has identified a specific pattern ('turtle_soup') and its performance in ",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's self-reflection highlights several important issues that warrant further investigation:\n\n1. **overconfidence bias:** the bot was overconfident (75%) in a losing t": {
@@ -685,8 +685,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's self-reflection highlights several important issues that warrant further investigation:\n\n1. **Overconfidence Bias:** The bot was overconfident (75%) in a losing t",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:27.585205",
-      "last_observed": "2025-12-28T13:58:27.585205",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|bear|slow|**meta-critique:**\n\nthe trading bot's reflection on the loss episode reveals a potential flaw in its reasoning. the bot has identified that the 'turtle_soup' pattern may be unreliable in the context o": {
@@ -694,8 +694,8 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's reflection on the loss episode reveals a potential flaw in its reasoning. The bot has identified that the 'turtle_soup' pattern may be unreliable in the context o",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:33.901966",
-      "last_observed": "2025-12-28T13:58:33.901966",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
       "mitigation": null
     },
     "turtle_soup|choppy|slow|**meta-critique:**\n\nthe trading bot's reflection highlights several important insights, but also reveals potential biases and flaws in its reasoning. the key issues i see are:\n\n1. overconfidence bias:": {
@@ -703,61 +703,79 @@
       "description": "**Meta-Critique:**\n\nThe trading bot's reflection highlights several important insights, but also reveals potential biases and flaws in its reasoning. The key issues I see are:\n\n1. Overconfidence bias:",
       "severity": "moderate",
       "occurrences": 1,
-      "first_observed": "2025-12-28T13:58:49.153567",
-      "last_observed": "2025-12-28T13:58:49.153567",
+      "first_observed": "2025-12-28T14:54:46.128251",
+      "last_observed": "2025-12-28T14:54:46.128251",
+      "mitigation": null
+    },
+    "turtle_soup|bear|slow|**meta-critique:**\n\nthe bot's reflection demonstrates concerning shallow pattern recognition and lacks systematic thinking. the conclusion that \"turtle_soup may be unreliable in bear context\" is drawn": {
+      "context": "turtle_soup|BEAR|slow",
+      "description": "**Meta-Critique:**\n\nThe bot's reflection demonstrates concerning shallow pattern recognition and lacks systematic thinking. The conclusion that \"turtle_soup may be unreliable in BEAR context\" is drawn",
+      "severity": "moderate",
+      "occurrences": 1,
+      "first_observed": "2025-12-28T14:55:10.102835",
+      "last_observed": "2025-12-28T14:55:10.102835",
+      "mitigation": null
+    },
+    "turtle_soup|choppy|slow|**meta-critique:**\n\nthe bot exhibits a dangerous disconnect between its analytical capabilities and decision-making execution. despite identifying \"valid concerns,\" it proceeded with excessive confide": {
+      "context": "turtle_soup|CHOPPY|slow",
+      "description": "**Meta-Critique:**\n\nThe bot exhibits a dangerous disconnect between its analytical capabilities and decision-making execution. Despite identifying \"valid concerns,\" it proceeded with excessive confide",
+      "severity": "moderate",
+      "occurrences": 1,
+      "first_observed": "2025-12-28T14:55:54.147493",
+      "last_observed": "2025-12-28T14:55:54.147493",
       "mitigation": null
     }
   },
   "calibration": {},
-  "self_description": "I am a trading agent. Based on my experience, I have the following characteristics:\n\nMy Strengths:\n  - I am effective at ibs_rsi in BULL (100.0%).\n\nMy Weaknesses:\n  - I am not effective at turtle_soup in CHOPPY (0.0%).\n  - I am not effective at ibs_rsi in BEAR (0.0%).\n  - I am not effective at turtle_soup in BEAR (40.0%).\n\nMy confidence is currently well-calibrated (error: 0.0%).\n\nI have analyzed a total of 531 trades to form this self-assessment.",
+  "self_description": "I am a trading agent. Based on my experience, I have the following characteristics:\n\nMy Strengths:\n  - I am effective at ibs_rsi in BULL (100.0%).\n\nMy Weaknesses:\n  - I am not effective at turtle_soup in CHOPPY (0.0%).\n  - I am not effective at ibs_rsi in BEAR (0.0%).\n  - I am not effective at turtle_soup in BEAR (39.3%).\n\nMy confidence is currently well-calibrated (error: 0.0%).\n\nI have analyzed a total of 544 trades to form this self-assessment.",
   "cognitive_efficiency": {
     "ibs_rsi|bull|slow": {
       "strategy": "ibs_rsi",
       "regime": "BULL",
       "decision_mode": "slow",
-      "total_decisions": 408,
-      "positive_pnl_count": 408,
-      "total_pnl": 50850.0,
+      "total_decisions": 418,
+      "positive_pnl_count": 418,
+      "total_pnl": 52100.0,
       "avg_time_ms": 0.0,
       "success_rate": 1.0,
-      "avg_pnl_per_decision": 124.63235294117646,
-      "last_updated": "2025-12-28T13:59:34.858266"
+      "avg_pnl_per_decision": 124.64114832535886,
+      "last_updated": "2025-12-28T14:58:02.041691"
     },
     "turtle_soup|choppy|slow": {
       "strategy": "turtle_soup",
       "regime": "CHOPPY",
       "decision_mode": "slow",
-      "total_decisions": 31,
+      "total_decisions": 32,
       "positive_pnl_count": 0,
-      "total_pnl": -3100.0,
+      "total_pnl": -3200.0,
       "avg_time_ms": 0.0,
       "success_rate": 0.0,
       "avg_pnl_per_decision": -100.0,
-      "last_updated": "2025-12-28T13:58:49.153567"
+      "last_updated": "2025-12-28T14:55:54.147493"
     },
     "ibs_rsi|bear|slow": {
       "strategy": "ibs_rsi",
       "regime": "BEAR",
       "decision_mode": "slow",
-      "total_decisions": 31,
+      "total_decisions": 32,
       "positive_pnl_count": 0,
       "total_pnl": 0.0,
       "avg_time_ms": 0.0,
       "success_rate": 0.0,
       "avg_pnl_per_decision": 0.0,
-      "last_updated": "2025-12-28T13:58:52.257233"
+      "last_updated": "2025-12-28T14:56:05.913245"
     },
     "turtle_soup|bear|slow": {
       "strategy": "turtle_soup",
       "regime": "BEAR",
       "decision_mode": "slow",
-      "total_decisions": 60,
+      "total_decisions": 61,
       "positive_pnl_count": 24,
-      "total_pnl": 3600.0,
+      "total_pnl": 3500.0,
       "avg_time_ms": 0.0,
-      "success_rate": 0.4,
-      "avg_pnl_per_decision": 60.0,
-      "last_updated": "2025-12-28T14:00:08.043460"
+      "success_rate": 0.39344262295081966,
+      "avg_pnl_per_decision": 57.377049180327866,
+      "last_updated": "2025-12-28T14:55:10.102835"
     },
     "unknown|unknown|slow": {
       "strategy": "unknown",
@@ -769,7 +787,7 @@
       "avg_time_ms": 0.0,
       "success_rate": 1.0,
       "avg_pnl_per_decision": 250.0,
-      "last_updated": "2025-12-28T13:58:27.585205"
+      "last_updated": "2025-12-28T14:54:46.128251"
     }
   },
   "adjustment_history": [
@@ -778,163 +796,9 @@
       "param_name": "stand_down_threshold",
       "current_value": 0.3,
       "proposed_value": 0.4,
-      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 28 decisions. Raising stand-down threshold.",
-      "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "c6aa1475",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 28 decisions. Raising stand-down threshold.",
-      "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "54973d39",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 28 decisions. Raising stand-down threshold.",
-      "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "c6aa1475",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 28 decisions. Raising stand-down threshold.",
-      "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "54973d39",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 28 decisions. Raising stand-down threshold.",
-      "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "c6aa1475",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 28 decisions. Raising stand-down threshold.",
-      "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "54973d39",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 28 decisions. Raising stand-down threshold.",
-      "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "c6aa1475",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 28 decisions. Raising stand-down threshold.",
-      "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "54973d39",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 28 decisions. Raising stand-down threshold.",
-      "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "c6aa1475",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 28 decisions. Raising stand-down threshold.",
-      "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "54973d39",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 28 decisions. Raising stand-down threshold.",
-      "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "c6aa1475",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 28 decisions. Raising stand-down threshold.",
-      "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "54973d39",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "c6aa1475",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 28 decisions. Raising stand-down threshold.",
-      "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "54973d39",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
-      "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -945,7 +809,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -956,7 +820,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -967,7 +831,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -978,7 +842,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -989,7 +853,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1000,7 +864,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1011,7 +875,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1022,7 +886,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1033,7 +897,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1044,7 +908,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1055,7 +919,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1066,7 +930,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1077,7 +941,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1088,7 +952,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1099,7 +963,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1110,7 +974,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1121,139 +985,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "54973d39",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
-      "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "c6aa1475",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
-      "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "54973d39",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
-      "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "c6aa1475",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
-      "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "54973d39",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
-      "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "c6aa1475",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
-      "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "54973d39",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
-      "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "c6aa1475",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
-      "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "54973d39",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
-      "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "c6aa1475",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
-      "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "54973d39",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
-      "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
-      "applied": false,
-      "outcome_pnl": null
-    },
-    {
-      "adjustment_id": "c6aa1475",
-      "param_name": "stand_down_threshold",
-      "current_value": 0.3,
-      "proposed_value": 0.4,
-      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
-      "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1264,7 +996,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1275,7 +1007,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 29 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1286,7 +1018,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1297,7 +1029,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1308,7 +1040,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1319,7 +1051,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1330,7 +1062,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1341,7 +1073,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1352,7 +1084,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1363,7 +1095,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1374,7 +1106,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1385,7 +1117,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1396,7 +1128,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1407,7 +1139,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1418,7 +1150,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1429,7 +1161,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1440,7 +1172,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1451,7 +1183,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1462,7 +1194,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1473,7 +1205,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1484,7 +1216,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1495,7 +1227,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1506,7 +1238,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1517,7 +1249,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:27.585205",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1528,7 +1260,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:31.005137",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1539,7 +1271,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:31.005137",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1550,7 +1282,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:33.887357",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1561,7 +1293,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:33.887357",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1572,7 +1304,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:43.790044",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1583,7 +1315,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:43.790044",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1594,7 +1326,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:49.143795",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1605,7 +1337,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:49.143795",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1616,7 +1348,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:58:52.236727",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1627,7 +1359,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 30 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:58:52.236727",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1638,7 +1370,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:59:05.135904",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1649,7 +1381,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:59:05.135904",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1660,7 +1392,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:59:07.604953",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1671,7 +1403,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:59:07.604953",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1682,7 +1414,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:59:10.866600",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1693,7 +1425,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:59:10.866600",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1704,7 +1436,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:59:14.650252",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1715,7 +1447,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:59:14.650252",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1726,7 +1458,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:59:17.914260",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1737,7 +1469,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:59:17.914260",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1748,7 +1480,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:59:21.686099",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1759,7 +1491,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:59:21.686099",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1770,7 +1502,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:59:24.480104",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1781,7 +1513,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:59:24.480104",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1792,7 +1524,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:59:28.398126",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1803,7 +1535,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:59:28.398126",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1814,7 +1546,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:59:31.895637",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1825,7 +1557,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:59:31.895637",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1836,7 +1568,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T13:59:34.824960",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1847,7 +1579,7 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T13:59:34.824960",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1858,7 +1590,7 @@
       "proposed_value": 0.4,
       "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T14:00:08.043460",
+      "timestamp": "2025-12-28T14:54:46.128251",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1869,7 +1601,293 @@
       "proposed_value": 0.4,
       "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T14:00:08.043460",
+      "timestamp": "2025-12-28T14:54:46.128251",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "54973d39",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
+      "context": "turtle_soup|choppy|slow",
+      "timestamp": "2025-12-28T14:54:57.520034",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "c6aa1475",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
+      "context": "ibs_rsi|bear|slow",
+      "timestamp": "2025-12-28T14:54:57.520034",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "54973d39",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
+      "context": "turtle_soup|choppy|slow",
+      "timestamp": "2025-12-28T14:55:10.091110",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "c6aa1475",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
+      "context": "ibs_rsi|bear|slow",
+      "timestamp": "2025-12-28T14:55:10.091110",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "54973d39",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
+      "context": "turtle_soup|choppy|slow",
+      "timestamp": "2025-12-28T14:55:38.963653",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "c6aa1475",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
+      "context": "ibs_rsi|bear|slow",
+      "timestamp": "2025-12-28T14:55:38.963653",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "54973d39",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
+      "context": "turtle_soup|choppy|slow",
+      "timestamp": "2025-12-28T14:55:54.137228",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "c6aa1475",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
+      "context": "ibs_rsi|bear|slow",
+      "timestamp": "2025-12-28T14:55:54.137228",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "54973d39",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
+      "context": "turtle_soup|choppy|slow",
+      "timestamp": "2025-12-28T14:56:05.903156",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "c6aa1475",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
+      "context": "ibs_rsi|bear|slow",
+      "timestamp": "2025-12-28T14:56:05.903156",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "54973d39",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
+      "context": "turtle_soup|choppy|slow",
+      "timestamp": "2025-12-28T14:56:48.937714",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "c6aa1475",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
+      "context": "ibs_rsi|bear|slow",
+      "timestamp": "2025-12-28T14:56:48.937714",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "54973d39",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
+      "context": "turtle_soup|choppy|slow",
+      "timestamp": "2025-12-28T14:57:00.490577",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "c6aa1475",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
+      "context": "ibs_rsi|bear|slow",
+      "timestamp": "2025-12-28T14:57:00.490577",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "54973d39",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
+      "context": "turtle_soup|choppy|slow",
+      "timestamp": "2025-12-28T14:57:10.965452",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "c6aa1475",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
+      "context": "ibs_rsi|bear|slow",
+      "timestamp": "2025-12-28T14:57:10.965452",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "54973d39",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
+      "context": "turtle_soup|choppy|slow",
+      "timestamp": "2025-12-28T14:57:20.443051",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "c6aa1475",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
+      "context": "ibs_rsi|bear|slow",
+      "timestamp": "2025-12-28T14:57:20.443051",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "54973d39",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
+      "context": "turtle_soup|choppy|slow",
+      "timestamp": "2025-12-28T14:57:29.481126",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "c6aa1475",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
+      "context": "ibs_rsi|bear|slow",
+      "timestamp": "2025-12-28T14:57:29.481126",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "54973d39",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
+      "context": "turtle_soup|choppy|slow",
+      "timestamp": "2025-12-28T14:57:38.892693",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "c6aa1475",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
+      "context": "ibs_rsi|bear|slow",
+      "timestamp": "2025-12-28T14:57:38.892693",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "54973d39",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
+      "context": "turtle_soup|choppy|slow",
+      "timestamp": "2025-12-28T14:57:49.806673",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "c6aa1475",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
+      "context": "ibs_rsi|bear|slow",
+      "timestamp": "2025-12-28T14:57:49.806673",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "54973d39",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
+      "context": "turtle_soup|choppy|slow",
+      "timestamp": "2025-12-28T14:58:02.033991",
+      "applied": false,
+      "outcome_pnl": null
+    },
+    {
+      "adjustment_id": "c6aa1475",
+      "param_name": "stand_down_threshold",
+      "current_value": 0.3,
+      "proposed_value": 0.4,
+      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
+      "context": "ibs_rsi|bear|slow",
+      "timestamp": "2025-12-28T14:58:02.033991",
       "applied": false,
       "outcome_pnl": null
     }
@@ -1880,9 +1898,9 @@
       "param_name": "stand_down_threshold",
       "current_value": 0.3,
       "proposed_value": 0.4,
-      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
+      "rationale": "Context turtle_soup|choppy|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
       "context": "turtle_soup|choppy|slow",
-      "timestamp": "2025-12-28T14:00:08.043460",
+      "timestamp": "2025-12-28T14:58:02.033991",
       "applied": false,
       "outcome_pnl": null
     },
@@ -1891,9 +1909,9 @@
       "param_name": "stand_down_threshold",
       "current_value": 0.3,
       "proposed_value": 0.4,
-      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 31 decisions. Raising stand-down threshold.",
+      "rationale": "Context ibs_rsi|bear|slow has 0.0% success rate over 32 decisions. Raising stand-down threshold.",
       "context": "ibs_rsi|bear|slow",
-      "timestamp": "2025-12-28T14:00:08.043460",
+      "timestamp": "2025-12-28T14:58:02.033991",
       "applied": false,
       "outcome_pnl": null
     }

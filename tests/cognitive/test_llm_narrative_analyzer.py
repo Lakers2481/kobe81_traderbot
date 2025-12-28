@@ -83,7 +83,7 @@ def test_analyze_reflection_success(mock_client, mock_anthropic_api_key, sample_
     assert result.hypotheses[0].condition == "vix > 25"
     mock_client.return_value.messages.create.assert_called_once()
     args, kwargs = mock_client.return_value.messages.create.call_args
-    assert kwargs['model'] == "claude-3-haiku-20240307"
+    assert kwargs['model'] == "claude-sonnet-4-20250514"
     assert "Trade of AAPL resulted in a loss." in kwargs['messages'][0]['content']
 
 

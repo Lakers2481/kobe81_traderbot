@@ -161,7 +161,7 @@ class LLMNarrativeAnalyzer:
         try:
             logger.debug("Sending reflection analysis request to LLM...")
             response = self._client.messages.create(
-                model="claude-3-haiku-20240307",  # Using Haiku for speed and cost-effectiveness
+                model="claude-sonnet-4-20250514",  # Upgraded to Sonnet 4 for better reasoning
                 max_tokens=1200,  # Increased to accommodate strategy ideas
                 temperature=0.7,
                 system="You are a senior quantitative trading analyst and AI psychologist. Your task is to critique the performance and reasoning of a trading robot, generate testable hypotheses, and suggest novel trading strategies.",

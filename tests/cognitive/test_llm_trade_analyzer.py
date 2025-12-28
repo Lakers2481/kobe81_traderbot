@@ -113,8 +113,8 @@ class TestLLMTradeAnalyzer:
         from cognitive.llm_trade_analyzer import LLMTradeAnalyzer
 
         analyzer = LLMTradeAnalyzer()
-        assert analyzer.model == "claude-3-haiku-20240307"
-        assert analyzer.max_tokens == 1500
+        assert analyzer.model == "claude-sonnet-4-20250514"
+        assert analyzer.max_tokens == 2000
         assert analyzer.temperature == 0.7
         assert analyzer.fallback_enabled is True
 

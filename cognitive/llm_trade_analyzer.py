@@ -172,8 +172,8 @@ class LLMTradeAnalyzer:
 
     def __init__(
         self,
-        model: str = "claude-3-haiku-20240307",
-        max_tokens: int = 1500,
+        model: str = "claude-sonnet-4-20250514",  # Upgraded to latest Sonnet 4
+        max_tokens: int = 2000,
         temperature: float = 0.7,
         fallback_enabled: bool = True,
     ):

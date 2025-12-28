@@ -81,7 +81,7 @@ class PlaybookGenerator:
 
         try:
             message = client.messages.create(
-                model="claude-3-haiku-20240307",  # Fast, cheap model
+                model="claude-sonnet-4-20250514",  # Upgraded to Sonnet 4
                 max_tokens=2000,
                 messages=[{"role": "user", "content": prompt}],
             )
