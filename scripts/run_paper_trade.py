@@ -22,6 +22,7 @@ from data.providers.polygon_eod import fetch_daily_bars_polygon
 from strategies.dual_strategy import DualStrategyScanner, DualStrategyParams
 from execution.broker_alpaca import get_best_ask, get_best_bid, construct_decision, place_ioc_limit
 from risk.policy_gate import PolicyGate, RiskLimits
+from risk.position_limit_gate import PositionLimitGate, PositionLimits
 from oms.order_state import OrderStatus
 from core.hash_chain import append_block
 from core.structured_log import jlog
@@ -67,6 +68,14 @@ def main():
 
     # Risk/Policy
     policy = PolicyGate(RiskLimits(max_notional_per_order=75.0, max_daily_notional=1000.0, min_price=3.0, allow_shorts=False))
+    position_gate = PositionLimitGate(PositionLimits(max_positions=5, max_per_symbol=1))
+
+    # Check current position count before proceeding
+    pos_status = position_gate.get_status()
+    print(f"Current positions: {pos_status['open_positions']}/{pos_status['max_positions']} "
+          f"(available: {pos_status['positions_available']})")
+    if pos_status['open_symbols']:
+        print(f"  Open: {', '.join(pos_status['open_symbols'])}")
 
     # Fetch latest bars (daily)
     frames = []
@@ -180,6 +189,12 @@ def main():
         if not ok:
             jlog('policy_veto', symbol=sym, reason=reason, price=limit_px, qty=max_qty)
             print(f"VETO {sym}: {reason}")
+            continue
+        # Position limit check
+        pos_ok, pos_reason = position_gate.check(sym, 'long' if side=='BUY' else 'short')
+        if not pos_ok:
+            jlog('position_limit_veto', symbol=sym, reason=pos_reason)
+            print(f"VETO {sym}: {pos_reason}")
             continue
         decision = construct_decision(sym, 'long' if side=='BUY' else 'short', max_qty, ask)
         rec = place_ioc_limit(decision)

@@ -190,3 +190,76 @@ class TestPositionSizing:
         max_shares = int(max_position_value / price)
 
         assert max_shares == 20  # $10,000 / $500 = 20 shares
+
+
+class TestPositionLimitGate:
+    """Tests for PositionLimitGate - max concurrent positions enforcement."""
+
+    def test_position_limit_gate_import(self):
+        """Test that PositionLimitGate can be imported."""
+        from risk.position_limit_gate import PositionLimitGate, PositionLimits
+        assert PositionLimitGate is not None
+        assert PositionLimits is not None
+
+    def test_position_limits_defaults(self):
+        """Test PositionLimits default values."""
+        from risk.position_limit_gate import PositionLimits
+        limits = PositionLimits()
+        assert limits.max_positions == 5
+        assert limits.max_per_symbol == 1
+        assert limits.max_sector_concentration == 0.40
+
+    def test_position_limit_gate_initialization(self):
+        """Test PositionLimitGate initialization."""
+        from risk.position_limit_gate import PositionLimitGate, PositionLimits
+        limits = PositionLimits(max_positions=3, max_per_symbol=1)
+        gate = PositionLimitGate(limits)
+        assert gate is not None
+        assert gate.limits.max_positions == 3
+
+    def test_position_limit_gate_check_returns_tuple(self):
+        """Test that check() returns (bool, str) tuple."""
+        from risk.position_limit_gate import PositionLimitGate, PositionLimits
+        gate = PositionLimitGate(PositionLimits())
+        result = gate.check("AAPL", "long")
+        assert isinstance(result, tuple)
+        assert len(result) == 2
+        assert isinstance(result[0], bool)
+        assert isinstance(result[1], str)
+
+    def test_position_limit_gate_get_status(self):
+        """Test get_status returns expected keys."""
+        from risk.position_limit_gate import PositionLimitGate, PositionLimits
+        gate = PositionLimitGate(PositionLimits())
+        status = gate.get_status()
+        assert 'open_positions' in status
+        assert 'max_positions' in status
+        assert 'positions_available' in status
+        assert 'open_symbols' in status
+        assert 'max_per_symbol' in status
+
+    def test_position_limit_gate_clear_cache(self):
+        """Test that clear_cache resets internal cache."""
+        from risk.position_limit_gate import PositionLimitGate, PositionLimits
+        gate = PositionLimitGate(PositionLimits())
+        gate._cached_positions = [{'symbol': 'TEST'}]
+        gate._cache_timestamp = 1000.0
+        gate.clear_cache()
+        assert gate._cached_positions is None
+        assert gate._cache_timestamp == 0
+
+    def test_get_position_limit_gate_singleton(self):
+        """Test singleton pattern for get_position_limit_gate."""
+        from risk.position_limit_gate import get_position_limit_gate, reset_position_limit_gate
+        reset_position_limit_gate()  # Clear any existing singleton
+        gate1 = get_position_limit_gate()
+        gate2 = get_position_limit_gate()
+        assert gate1 is gate2
+        reset_position_limit_gate()
+
+    def test_position_limit_export_from_risk(self):
+        """Test that PositionLimitGate is exported from risk package."""
+        from risk import PositionLimitGate, PositionLimits, get_position_limit_gate
+        assert PositionLimitGate is not None
+        assert PositionLimits is not None
+        assert get_position_limit_gate is not None
