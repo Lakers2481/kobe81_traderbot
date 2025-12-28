@@ -1,9 +1,9 @@
 # Kobe81 Traderbot - STATUS
 
-> **Last Updated:** 2025-12-28 21:00 UTC
+> **Last Updated:** 2025-12-28 22:00 UTC
 > **Verified By:** Claude Code (v2.2 QUANT INTERVIEW READY - 60.2% WR, 1.44 PF combined)
 > **Document Type:** AI GOVERNANCE & SYSTEM BLUEPRINT
-> **Audit Status:** FULLY VERIFIED - 869 tests passing (4 skipped), 0 warnings, all modules importable
+> **Audit Status:** FULLY VERIFIED - 873 tests passing, 0 skipped, 0 warnings, all modules importable
 
 ---
 
@@ -327,7 +327,7 @@ conf_score = 0.8 * ML_probability + 0.2 * sentiment_score
 - Heartbeat system (every 1 minute)
 - Morning reports with calibration tables
 - **Data pipeline documented (docs/DATA_PIPELINE.md)**
-- **All 869 tests passing (0 warnings)**
+- **All 873 tests passing (0 skipped, 0 warnings)**
 - **All core modules importable (core, oms, cognitive, strategies)**
 
 ### Pending / Known Gaps
@@ -416,7 +416,7 @@ conf_score = 0.8 * ML_probability + 0.2 * sentiment_score
 ## Recent Changes (2025-12-28)
 
 ### System Hardening & Warning Fixes (LATEST)
-**869 tests passing, 4 skipped, 0 warnings**
+**873 tests passing, 0 skipped, 0 warnings**
 
 | Fix | File | Description |
 |-----|------|-------------|
@@ -1065,3 +1065,5 @@ Follow these exact steps to reproduce end-to-end results with no ambiguity.
 
 *This document is the single source of truth for Kobe81 system alignment.*
 
+
+> Evidence Update (2025-12-28 10:35:08 ET): Verified v2.2 backtest via reports/backtest_dual_latest.txt (2015–2024, cap=200). Quick WF runs require train-days >= 200 due to SMA200. See wf_outputs_verify_2023_2024 for partial IBS-only metrics and CSV artifacts.
