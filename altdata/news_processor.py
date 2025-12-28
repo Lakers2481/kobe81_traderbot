@@ -8,7 +8,8 @@ can then be integrated into the market context for the Cognitive Brain, allowing
 the AI to factor in qualitative news information into its trading decisions.
 
 Features:
-- Fetches news from a configured API (e.g., Alpaca News API).
+- Fetches news from Alpaca News API (real-time, production-grade).
+- Falls back to simulated data when API unavailable.
 - Performs sentiment analysis using VADER (Valence Aware Dictionary and sEntiment Reasoner).
 - Provides aggregated sentiment scores for specific symbols or the overall market.
 
@@ -18,29 +19,33 @@ Usage:
     processor = NewsProcessor()
 
     # Get news for a specific symbol
-    aapl_news = processor.fetch_news(symbol='AAPL')
-    aapl_sentiment = processor.analyze_sentiment(aapl_news)
+    aapl_news = processor.fetch_news(symbols=['AAPL'])
+    aapl_sentiment = processor.get_aggregated_sentiment(symbols=['AAPL'])
 
     # Get overall market sentiment
-    market_news = processor.fetch_news(query='S&P 500')
-    market_sentiment = processor.get_overall_sentiment(market_news)
+    market_sentiment = processor.get_aggregated_sentiment()
 
     # This sentiment can then be added to the CognitiveBrain's context.
 """
 
 import logging
+import os
+import requests
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
+from functools import lru_cache
+import time
 
 # VADER is already in requirements.txt
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
-# Alpaca API (assuming this is used for brokerage and can also fetch news)
-# from alpaca.data.requests import NewsRequest
-# from alpaca.data.client import NewsClient
-
 logger = logging.getLogger(__name__)
+
+# Alpaca News API configuration
+ALPACA_NEWS_URL = "https://data.alpaca.markets/v1beta1/news"
+ALPACA_NEWS_RATE_LIMIT = 200  # requests per minute
+_last_request_time: float = 0.0
 
 
 @dataclass
@@ -73,12 +78,34 @@ class NewsArticle:
 class NewsProcessor:
     """
     Fetches financial news and performs sentiment analysis.
+
+    Uses Alpaca News API for real-time news with fallback to simulated data
+    when API is unavailable or for testing purposes.
     """
-    def __init__(self):
+    def __init__(self, use_real_api: bool = True):
+        """
+        Initialize the NewsProcessor.
+
+        Args:
+            use_real_api: If True, try to use Alpaca News API first.
+                          If False, always use simulated data.
+        """
         self._sentiment_analyzer = SentimentIntensityAnalyzer()
-        # Initialize Alpaca News Client if API key is available
-        # self._alpaca_news_client = NewsClient(api_key=os.getenv("APCA_API_KEY_ID"), secret_key=os.getenv("APCA_API_SECRET_KEY"))
-        logger.info("NewsProcessor initialized. Sentiment analyzer ready.")
+        self._use_real_api = use_real_api
+
+        # Alpaca API credentials from environment
+        self._api_key = os.getenv("ALPACA_API_KEY_ID") or os.getenv("APCA_API_KEY_ID")
+        self._api_secret = os.getenv("ALPACA_API_SECRET_KEY") or os.getenv("APCA_API_SECRET_KEY")
+
+        # Check if API is available
+        self._api_available = bool(self._api_key and self._api_secret)
+        if self._api_available and self._use_real_api:
+            logger.info("NewsProcessor initialized with Alpaca News API.")
+        else:
+            if not self._api_available:
+                logger.warning("Alpaca API keys not found. NewsProcessor will use simulated data.")
+            else:
+                logger.info("NewsProcessor initialized with simulated data (API disabled).")
 
     def _get_sentiment_scores(self, text: str) -> Dict[str, float]:
         """
@@ -87,7 +114,16 @@ class NewsProcessor:
         """
         return self._sentiment_analyzer.polarity_scores(text)
 
-    def fetch_news(
+    def _rate_limit(self) -> None:
+        """Enforce rate limiting for API requests."""
+        global _last_request_time
+        min_interval = 60.0 / ALPACA_NEWS_RATE_LIMIT  # seconds between requests
+        elapsed = time.time() - _last_request_time
+        if elapsed < min_interval:
+            time.sleep(min_interval - elapsed)
+        _last_request_time = time.time()
+
+    def _fetch_from_alpaca(
         self,
         symbols: Optional[List[str]] = None,
         query: Optional[str] = None,
@@ -96,51 +132,112 @@ class NewsProcessor:
         end_date: Optional[datetime] = None,
     ) -> List[NewsArticle]:
         """
-        Fetches news articles. For now, this is a simulated fetch.
-        In a real implementation, this would call an external API.
+        Fetch news from Alpaca News API.
+
+        Raises:
+            requests.RequestException: If the API request fails.
         """
-        logger.info(f"Simulating news fetch for symbols={symbols}, query='{query}'")
-        
-        # --- SIMULATED NEWS DATA ---
+        self._rate_limit()
+
+        headers = {
+            "APCA-API-KEY-ID": self._api_key,
+            "APCA-API-SECRET-KEY": self._api_secret,
+        }
+
+        params: Dict[str, Any] = {"limit": min(limit, 50)}  # Alpaca max is 50
+
+        if symbols:
+            params["symbols"] = ",".join(symbols)
+
+        if start_date:
+            params["start"] = start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        if end_date:
+            params["end"] = end_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        response = requests.get(ALPACA_NEWS_URL, headers=headers, params=params, timeout=10)
+        response.raise_for_status()
+
+        data = response.json()
+        articles = []
+
+        for item in data.get("news", []):
+            # Parse created_at timestamp
+            created_str = item.get("created_at", "")
+            try:
+                created_at = datetime.fromisoformat(created_str.replace("Z", "+00:00"))
+                # Convert to naive datetime for consistency
+                created_at = created_at.replace(tzinfo=None)
+            except (ValueError, AttributeError):
+                created_at = datetime.now()
+
+            article = NewsArticle(
+                id=item.get("id", ""),
+                headline=item.get("headline", ""),
+                summary=item.get("summary", ""),
+                url=item.get("url", ""),
+                created_at=created_at,
+                symbols=item.get("symbols", []),
+                author=item.get("author", ""),
+                source=item.get("source", ""),
+            )
+
+            # Apply sentiment analysis
+            full_text = f"{article.headline}. {article.summary or ''}"
+            article.sentiment_score = self._get_sentiment_scores(full_text)
+            articles.append(article)
+
+        logger.info(f"Fetched {len(articles)} articles from Alpaca News API")
+        return articles
+
+    def _get_simulated_news(
+        self,
+        symbols: Optional[List[str]] = None,
+        query: Optional[str] = None,
+        limit: int = 20,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+    ) -> List[NewsArticle]:
+        """Get simulated news data for testing or when API is unavailable."""
         simulated_news_data = [
             NewsArticle(
-                id="1", headline="AAPL beats earnings expectations",
+                id="sim_1", headline="AAPL beats earnings expectations",
                 summary="Apple reported strong Q3 results, exceeding analyst forecasts.",
-                symbols=['AAPL'], source="Financial Times",
+                symbols=['AAPL'], source="Simulated",
                 created_at=datetime.now() - timedelta(minutes=10)
             ),
             NewsArticle(
-                id="2", headline="Market uncertainty rises due to inflation fears",
+                id="sim_2", headline="Market uncertainty rises due to inflation fears",
                 summary="Investors are concerned about persistent inflation pressures.",
-                symbols=['SPY'], source="Reuters",
+                symbols=['SPY'], source="Simulated",
                 created_at=datetime.now() - timedelta(minutes=30)
             ),
             NewsArticle(
-                id="3", headline="TSLA production ramp-up positive for Q4 outlook",
+                id="sim_3", headline="TSLA production ramp-up positive for Q4 outlook",
                 summary="Tesla's new factory showing strong output, boosting delivery estimates.",
-                symbols=['TSLA'], source="Bloomberg",
+                symbols=['TSLA'], source="Simulated",
                 created_at=datetime.now() - timedelta(hours=1)
             ),
             NewsArticle(
-                id="4", headline="GOOG faces antitrust scrutiny in Europe",
+                id="sim_4", headline="GOOG faces antitrust scrutiny in Europe",
                 summary="Google's advertising practices are under investigation.",
-                symbols=['GOOG'], source="Wall Street Journal",
+                symbols=['GOOG'], source="Simulated",
                 created_at=datetime.now() - timedelta(hours=2)
             ),
             NewsArticle(
-                id="5", headline="New tech breakthrough for NVDA chips",
+                id="sim_5", headline="New tech breakthrough for NVDA chips",
                 summary="Nvidia announced a revolutionary new chip architecture.",
-                symbols=['NVDA'], source="TechCrunch",
+                symbols=['NVDA'], source="Simulated",
                 created_at=datetime.now() - timedelta(hours=3)
             ),
             NewsArticle(
-                id="6", headline="Unexpected dip in consumer spending data",
+                id="sim_6", headline="Unexpected dip in consumer spending data",
                 summary="Retail sales figures came in weaker than anticipated.",
-                symbols=['SPY', 'XLY'], source="MarketWatch",
+                symbols=['SPY', 'XLY'], source="Simulated",
                 created_at=datetime.now() - timedelta(hours=4)
             ),
         ]
-        
+
         filtered_news = []
         for article in simulated_news_data:
             # Filter by symbols
@@ -156,13 +253,47 @@ class NewsProcessor:
             if end_date and article.created_at > end_date:
                 continue
             filtered_news.append(article)
-        
+
         # Apply sentiment analysis to the fetched articles
         for article in filtered_news:
             full_text = f"{article.headline}. {article.summary or ''}"
             article.sentiment_score = self._get_sentiment_scores(full_text)
-            
+
         return filtered_news[:limit]
+
+    def fetch_news(
+        self,
+        symbols: Optional[List[str]] = None,
+        query: Optional[str] = None,
+        limit: int = 20,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+    ) -> List[NewsArticle]:
+        """
+        Fetches news articles from Alpaca News API with fallback to simulated data.
+
+        Args:
+            symbols: List of stock symbols to filter by (e.g., ['AAPL', 'MSFT']).
+            query: Text query to search for (not supported by Alpaca, used for simulated only).
+            limit: Maximum number of articles to return.
+            start_date: Start of date range to filter articles.
+            end_date: End of date range to filter articles.
+
+        Returns:
+            List of NewsArticle objects with sentiment scores.
+        """
+        # Try real API if available and enabled
+        if self._api_available and self._use_real_api:
+            try:
+                return self._fetch_from_alpaca(symbols, query, limit, start_date, end_date)
+            except requests.RequestException as e:
+                logger.warning(f"Alpaca News API request failed: {e}. Falling back to simulated data.")
+            except Exception as e:
+                logger.error(f"Unexpected error fetching news: {e}. Falling back to simulated data.")
+
+        # Fall back to simulated data
+        logger.debug(f"Using simulated news for symbols={symbols}, query='{query}'")
+        return self._get_simulated_news(symbols, query, limit, start_date, end_date)
 
     def get_aggregated_sentiment(
         self,
@@ -199,10 +330,13 @@ class NewsProcessor:
         
     def introspect(self) -> str:
         """Generates an introspection report for the NewsProcessor."""
+        api_status = "connected" if (self._api_available and self._use_real_api) else "simulated"
         return (
             "--- News Processor Introspection ---\n"
+            f"Data source: Alpaca News API ({api_status})\n"
             "My role is to provide real-time qualitative market insights.\n"
-            "I fetch news and analyze its sentiment to inform the CognitiveBrain."
+            "I fetch news and analyze its sentiment using VADER to inform the CognitiveBrain.\n"
+            "I support symbol-specific and market-wide sentiment aggregation."
         )
 
 

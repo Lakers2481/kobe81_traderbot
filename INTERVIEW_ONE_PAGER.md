@@ -1,7 +1,7 @@
 ﻿Kobe81 Traderbot — Interview One-Pager
 
 What it is
-- Canonical daily equities system with two strategies: Donchian Breakout (trend) and ICT Turtle Soup (mean reversion).
+- Canonical daily equities system with two strategies: IBS+RSI Mean Reversion (trend) and ICT Turtle Soup (mean reversion).
 - Deterministic backtester (nextâ€‘bar fills), ATR stops  time stops; no lookahead.
 - Evidence artifacts autoâ€‘generated (CSV + HTML); quick test finishes in minutes.
 

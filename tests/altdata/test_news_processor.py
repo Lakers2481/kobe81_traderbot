@@ -21,20 +21,20 @@ def mock_sentiment_analyzer():
 
 # Test initialization
 def test_news_processor_init(mock_sentiment_analyzer):
-    processor = NewsProcessor()
+    processor = NewsProcessor(use_real_api=False)
     assert processor._sentiment_analyzer is mock_sentiment_analyzer
     mock_sentiment_analyzer.polarity_scores.assert_not_called()
 
 # Test _get_sentiment_scores
 def test_get_sentiment_scores(mock_sentiment_analyzer):
-    processor = NewsProcessor()
+    processor = NewsProcessor(use_real_api=False)
     scores = processor._get_sentiment_scores("This is a positive text.")
     assert scores['compound'] == 0.9 # Based on mock setup
     mock_sentiment_analyzer.polarity_scores.assert_called_once_with("This is a positive text.")
 
 # Test fetch_news - basic
 def test_fetch_news_basic(mock_sentiment_analyzer):
-    processor = NewsProcessor()
+    processor = NewsProcessor(use_real_api=False)
     articles = processor.fetch_news(limit=2)
     assert len(articles) == 2
     for article in articles:
@@ -43,7 +43,7 @@ def test_fetch_news_basic(mock_sentiment_analyzer):
 
 # Test fetch_news - by symbol
 def test_fetch_news_by_symbol(mock_sentiment_analyzer):
-    processor = NewsProcessor()
+    processor = NewsProcessor(use_real_api=False)
     articles = processor.fetch_news(symbols=['AAPL'])
     assert len(articles) > 0
     for article in articles:
@@ -51,7 +51,7 @@ def test_fetch_news_by_symbol(mock_sentiment_analyzer):
 
 # Test fetch_news - by query
 def test_fetch_news_by_query(mock_sentiment_analyzer):
-    processor = NewsProcessor()
+    processor = NewsProcessor(use_real_api=False)
     articles = processor.fetch_news(query='earnings')
     assert len(articles) > 0
     for article in articles:
@@ -59,19 +59,19 @@ def test_fetch_news_by_query(mock_sentiment_analyzer):
 
 # Test fetch_news - by date range
 def test_fetch_news_by_date_range(mock_sentiment_analyzer):
-    processor = NewsProcessor()
+    processor = NewsProcessor(use_real_api=False)
     now = datetime.now()
     start_date = now - timedelta(hours=2)
-    end_date = now - timedelta(minutes=15) # Should get 'AAPL' news
+    end_date = now - timedelta(minutes=5)  # Wider window to capture simulated news
     articles = processor.fetch_news(start_date=start_date, end_date=end_date)
-    
+
     assert len(articles) > 0
     for article in articles:
         assert start_date <= article.created_at <= end_date
 
 # Test get_aggregated_sentiment
 def test_get_aggregated_sentiment_overall(mock_sentiment_analyzer):
-    processor = NewsProcessor()
+    processor = NewsProcessor(use_real_api=False)
     # Mock some news for aggregation
     with patch.object(processor, 'fetch_news') as mock_fetch_news:
         mock_fetch_news.return_value = [
@@ -85,7 +85,7 @@ def test_get_aggregated_sentiment_overall(mock_sentiment_analyzer):
         assert sentiment['negative'] > 0
 
 def test_get_aggregated_sentiment_no_news(mock_sentiment_analyzer):
-    processor = NewsProcessor()
+    processor = NewsProcessor(use_real_api=False)
     with patch.object(processor, 'fetch_news') as mock_fetch_news:
         mock_fetch_news.return_value = []
         sentiment = processor.get_aggregated_sentiment()

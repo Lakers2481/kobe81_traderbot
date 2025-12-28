@@ -1,5 +1,9 @@
 ﻿# Kobe81 Traderbot - Technical Architecture Documentation
 
+> Alignment Banner (v2.2): docs/STATUS.md is the canonical, single source of truth for active strategies, parameters, and performance metrics (QUANT INTERVIEW READY). Always consult docs/STATUS.md first.
+
+
+
 > Note: Strategy set is standardized to IBS+RSI (mean reversion) + ICT Turtle Soup (mean reversion) and universe size is 900. Any mentions of IBS+RSI/950 symbols are legacy and will be updated. See `README.md` for the canonical setup.
 
 **Version:** 1.0
@@ -1591,6 +1595,7 @@ pytest>=7.2.0
 *System Version: Kobe81 v1.0*
 *Total Python Modules: 112*
 *Total Lines of Code: ~8,500*
+
 
 
 

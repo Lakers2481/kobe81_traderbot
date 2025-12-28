@@ -86,7 +86,7 @@ Step 2: Indicator Calculation
 
 Step 3: Signal Logic
   Close (175.20) > SMA200 (168.30)? YES
-  donchian (8.45) <= 10? YES
+  ibs_rsi (8.45) <= 10? YES
   Price >= $5? YES
   [SIGNAL GENERATED]
 
@@ -133,7 +133,7 @@ BREAKPOINT: strategy.py:86
 Local variables:
   sym = 'AAPL'
   row = Series(timestamp=2024-12-25, close=175.20, ...)
-  donchian = 8.45
+  ibs_rsi = 8.45
   sma200 = 168.30
   atrv = 3.25
 

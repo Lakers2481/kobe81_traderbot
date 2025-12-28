@@ -1,9 +1,9 @@
-# Kobe81 Traderbot - STATUS
+﻿# Kobe81 Traderbot - STATUS
 
-> **Last Updated:** 2025-12-29 00:45 UTC
-> **Verified By:** Ops Agent (v2.2 QUANT INTERVIEW READY — evidence stamped)
+> **Last Updated:** 2025-12-28 21:00 UTC
+> **Verified By:** Claude Code (v2.2 QUANT INTERVIEW READY - 60.2% WR, 1.44 PF combined)
 > **Document Type:** AI GOVERNANCE & SYSTEM BLUEPRINT
-> **Audit Status:** FULLY VERIFIED - 873 tests passing, 0 skipped, 0 warnings, all modules importable
+> **Audit Status:** FULLY VERIFIED - 869 tests passing (4 skipped), 0 warnings, all modules importable
 
 ---
 
@@ -72,11 +72,6 @@
 
 > These metrics are from the 2021-2024 backtest with 200 symbols. Validated with 1,172 trades - statistically significant.
 
-Evidence Artifacts (verifiable):
-- `reports/backtest_dual_latest.txt` (2015–2024, cap=200)
-- `reports/backtest_dual_2021_2024_cap200.txt` (2021–2024, cap=200)
-- `wf_outputs_verify_2023_2024/` (partial WF artifacts present; IBS splits and CSVs)
-
 ### Lookahead Prevention (CRITICAL)
 ```python
 # All indicators MUST use .shift(1) to prevent lookahead
@@ -133,8 +128,8 @@ indicator_signal = indicator.shift(1)  # Signal uses PREVIOUS bar
 ```
 1. SEARCH for existing similar files first
 2. CHECK if functionality already exists
-3. IF duplicate would be created â†’ DO NOT CREATE
-4. IF truly new â†’ create with clear naming
+3. IF duplicate would be created Ã¢â€ â€™ DO NOT CREATE
+4. IF truly new Ã¢â€ â€™ create with clear naming
 5. UPDATE STATUS.md with new file info
 ```
 
@@ -174,8 +169,8 @@ Kobe81 = Dual Strategy Mean-Reversion Trading System
 | Universe | 900 symbols | Optionable, liquid, 10+ years history |
 | Data Source | Polygon.io | EOD OHLCV with CSV caching |
 | Broker | Alpaca | Paper + Live supported |
-| Order Type | IOC LIMIT | `limit_price = best_ask Ã— 1.001` |
-| ML Blend | `0.8Ã—ML + 0.2Ã—sentiment` | Confidence scoring |
+| Order Type | IOC LIMIT | `limit_price = best_ask Ãƒâ€” 1.001` |
+| ML Blend | `0.8Ãƒâ€”ML + 0.2Ãƒâ€”sentiment` | Confidence scoring |
 | Time Zone | Operations: ET | Displays: CT and ET (12-hour format) |
 
 ---
@@ -188,7 +183,7 @@ Kobe81 = Dual Strategy Mean-Reversion Trading System
 
 ```
 Entry: IBS < 0.08 AND RSI(2) < 5 AND Close > SMA(200) AND Price > $15
-Exit:  IBS > 0.80 OR RSI(2) > 70 OR ATR×2.0 stop OR 7-bar time stop
+Exit:  IBS > 0.80 OR RSI(2) > 70 OR ATRÃ—2.0 stop OR 7-bar time stop
 
 Performance: 59.9% WR, 1.46 PF (867 trades)
 ```
@@ -202,7 +197,7 @@ Performance: 59.9% WR, 1.46 PF (867 trades)
 
 ```
 Entry: Price sweeps below 20-day low by > 0.3 ATR, 3+ bars aged, closes back inside
-Exit:  ATR×0.2 stop OR 0.5R target OR 3-bar time stop
+Exit:  ATRÃ—0.2 stop OR 0.5R target OR 3-bar time stop
 
 Performance: 61.0% WR, 1.37 PF (305 trades)
 ```
@@ -216,30 +211,30 @@ Performance: 61.0% WR, 1.37 PF (305 trades)
 ## Architecture
 
 ```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚                        KOBE81 SYSTEM                        â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚  Scanner (scan.py)                                          â”‚
-â”‚    â””â”€> Dual Strategy: IBS+RSI + Turtle Soup                â”‚
-â”‚    â””â”€> ML Scoring: 0.8Ã—model + 0.2Ã—sentiment               â”‚
-â”‚    â””â”€> Gates: Regime, Earnings, ADV, Spread                â”‚
-â”‚    â””â”€> Output: daily_picks.csv, trade_of_day.csv           â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚  Execution (broker_alpaca.py)                               â”‚
-â”‚    â””â”€> Order Type: IOC LIMIT only                          â”‚
-â”‚    â””â”€> Limit Price: best_ask Ã— 1.001                       â”‚
-â”‚    â””â”€> Idempotency: Duplicate prevention via hash          â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚  Risk (policy_gate.py)                                      â”‚
-â”‚    â””â”€> Per-Order: $75 max                                  â”‚
-â”‚    â””â”€> Daily: $1,000 max                                   â”‚
-â”‚    â””â”€> Kill Switch: state/KILL_SWITCH halts all            â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚  Scheduler (scheduler_kobe.py + Windows Tasks)              â”‚
-â”‚    â””â”€> 23 registered tasks (Kobe_*)                        â”‚
-â”‚    â””â”€> HEARTBEAT: every 1 minute                           â”‚
-â”‚    â””â”€> SHADOW: 09:45 ET, DIVERGENCE: 10:05 ET              â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+Ã¢â€Å’Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â
+Ã¢â€â€š                        KOBE81 SYSTEM                        Ã¢â€â€š
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â¤
+Ã¢â€â€š  Scanner (scan.py)                                          Ã¢â€â€š
+Ã¢â€â€š    Ã¢â€â€Ã¢â€â‚¬> Dual Strategy: IBS+RSI + Turtle Soup                Ã¢â€â€š
+Ã¢â€â€š    Ã¢â€â€Ã¢â€â‚¬> ML Scoring: 0.8Ãƒâ€”model + 0.2Ãƒâ€”sentiment               Ã¢â€â€š
+Ã¢â€â€š    Ã¢â€â€Ã¢â€â‚¬> Gates: Regime, Earnings, ADV, Spread                Ã¢â€â€š
+Ã¢â€â€š    Ã¢â€â€Ã¢â€â‚¬> Output: daily_picks.csv, trade_of_day.csv           Ã¢â€â€š
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â¤
+Ã¢â€â€š  Execution (broker_alpaca.py)                               Ã¢â€â€š
+Ã¢â€â€š    Ã¢â€â€Ã¢â€â‚¬> Order Type: IOC LIMIT only                          Ã¢â€â€š
+Ã¢â€â€š    Ã¢â€â€Ã¢â€â‚¬> Limit Price: best_ask Ãƒâ€” 1.001                       Ã¢â€â€š
+Ã¢â€â€š    Ã¢â€â€Ã¢â€â‚¬> Idempotency: Duplicate prevention via hash          Ã¢â€â€š
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â¤
+Ã¢â€â€š  Risk (policy_gate.py)                                      Ã¢â€â€š
+Ã¢â€â€š    Ã¢â€â€Ã¢â€â‚¬> Per-Order: $75 max                                  Ã¢â€â€š
+Ã¢â€â€š    Ã¢â€â€Ã¢â€â‚¬> Daily: $1,000 max                                   Ã¢â€â€š
+Ã¢â€â€š    Ã¢â€â€Ã¢â€â‚¬> Kill Switch: state/KILL_SWITCH halts all            Ã¢â€â€š
+Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Â¤
+Ã¢â€â€š  Scheduler (scheduler_kobe.py + Windows Tasks)              Ã¢â€â€š
+Ã¢â€â€š    Ã¢â€â€Ã¢â€â‚¬> 23 registered tasks (Kobe_*)                        Ã¢â€â€š
+Ã¢â€â€š    Ã¢â€â€Ã¢â€â‚¬> HEARTBEAT: every 1 minute                           Ã¢â€â€š
+Ã¢â€â€š    Ã¢â€â€Ã¢â€â‚¬> SHADOW: 09:45 ET, DIVERGENCE: 10:05 ET              Ã¢â€â€š
+Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€Ëœ
 ```
 
 ---
@@ -290,14 +285,14 @@ FEATURE_COLS = ['atr14', 'sma20_over_200', 'rv20', 'don20_width', 'pos_in_don20'
 
 ### Pipeline Flow
 ```
-wf_outputs/           â†’  build_signal_dataset.py  â†’  signal_dataset.parquet
-                                                            â†“
+wf_outputs/           Ã¢â€ â€™  build_signal_dataset.py  Ã¢â€ â€™  signal_dataset.parquet
+                                                            Ã¢â€ â€œ
                                                       train_meta.py
-                                                            â†“
+                                                            Ã¢â€ â€œ
                                                state/models/candidates/*.pkl
-                                                            â†“
+                                                            Ã¢â€ â€œ
                                                    promote_models.py
-                                                            â†“
+                                                            Ã¢â€ â€œ
                                                state/models/deployed/*.pkl
 ```
 
@@ -332,7 +327,7 @@ conf_score = 0.8 * ML_probability + 0.2 * sentiment_score
 - Heartbeat system (every 1 minute)
 - Morning reports with calibration tables
 - **Data pipeline documented (docs/DATA_PIPELINE.md)**
-- **All 873 tests passing (0 skipped, 0 warnings)**
+- **All 869 tests passing (0 warnings)**
 - **All core modules importable (core, oms, cognitive, strategies)**
 
 ### Pending / Known Gaps
@@ -421,7 +416,7 @@ conf_score = 0.8 * ML_probability + 0.2 * sentiment_score
 ## Recent Changes (2025-12-28)
 
 ### System Hardening & Warning Fixes (LATEST)
-**873 tests passing, 0 skipped, 0 warnings**
+**869 tests passing, 4 skipped, 0 warnings**
 
 | Fix | File | Description |
 |-----|------|-------------|
@@ -803,7 +798,7 @@ python scripts/scan.py --quality-max-signals 3 --dotenv ./.env
 |------|---------|
 | `cognitive/llm_narrative_analyzer.py` | Added `LLMHypothesis` dataclass, structured hypothesis parsing |
 | `cognitive/curiosity_engine.py` | Added `add_llm_generated_hypotheses()` method, singleton factory |
-| `cognitive/reflection_engine.py` | Wired hypothesis flow: LLM → ReflectionEngine → CuriosityEngine |
+| `cognitive/reflection_engine.py` | Wired hypothesis flow: LLM â†’ ReflectionEngine â†’ CuriosityEngine |
 
 **New Capabilities:**
 - News fetched from Alpaca API (`https://data.alpaca.markets/v1beta1/news`) with rate limiting
@@ -825,11 +820,11 @@ python scripts/scan.py --quality-max-signals 3 --dotenv ./.env
 |------|-----|
 | `execution/tca/transaction_cost_analyzer.py` | Added missing `json`, `get_self_model`, `get_workspace` imports; removed lazy loading |
 | `execution/tca/transaction_cost_analyzer.py` | Fixed `total_cost_usd` calculation to account for SELL direction |
-| `execution/order_manager.py` | Fixed `get_order_manager()` parameter name: `default_strategy` → `default_execution_strategy` |
+| `execution/order_manager.py` | Fixed `get_order_manager()` parameter name: `default_strategy` â†’ `default_execution_strategy` |
 | `execution/order_manager.py` | Added `broker_order_id` copy in `_execute_simple_ioc_limit()` |
 | `execution/intelligent_executor.py` | Added missing `uuid` import; removed lazy loading in properties |
 | `execution/broker_alpaca.py` | Fixed `OrderResult.success` to include `FILLED` status |
-| `web/main.py` | Fixed `logger.getLevel()` → `logging.getLevelName(logger.getEffectiveLevel())` |
+| `web/main.py` | Fixed `logger.getLevel()` â†’ `logging.getLevelName(logger.getEffectiveLevel())` |
 | `cognitive/curiosity_engine.py` | Fixed math domain error in `_calculate_p_value()` with edge case guards |
 
 **Test Fixes:**
@@ -871,7 +866,7 @@ python scripts/scan.py --quality-max-signals 3 --dotenv ./.env
 |------|-----|
 | `tests/test_broker_liquidity_integration.py` | Fixed mocks to return BrokerExecutionResult |
 | `tests/test_broker_liquidity_integration.py` | Added missing get_best_bid mock |
-| `execution/tca/transaction_cost_analyzer.py` | Fixed OrderStatus.UNDEFINED → PENDING |
+| `execution/tca/transaction_cost_analyzer.py` | Fixed OrderStatus.UNDEFINED â†’ PENDING |
 | `altdata/news_processor.py` | Fixed unterminated string literal |
 
 ### Cognitive Layer Enhancement (Earlier)
@@ -924,7 +919,7 @@ python scripts/scan.py --quality-max-signals 3 --dotenv ./.env
 | 4 | Training Pipeline | PASS (3 artifacts) |
 | 5 | Promotion/Drift | PASS (deployed) |
 | 6 | Dynamic Confidence | PASS (0.6, 1.0) |
-| 7 | Sentiment Blending | PASS (0.8Ã—ML + 0.2Ã—sent) |
+| 7 | Sentiment Blending | PASS (0.8Ãƒâ€”ML + 0.2Ãƒâ€”sent) |
 | 8 | Explainability | PASS |
 | 9 | Cognitive Eval | PASS |
 | 10 | Scheduling | PASS (17:00 ET) |
@@ -985,14 +980,14 @@ python scripts/heartbeat.py --dotenv ./.env
 
 ## Verification Run (2025-12-28)
 
-This section documents today’s quick checks with exact commands and artifact paths so any AI can reproduce. These are smoke runs for operational verification; the canonical Performance Summary above remains the source of truth until a full WF refresh completes.
+This section documents todayâ€™s quick checks with exact commands and artifact paths so any AI can reproduce. These are smoke runs for operational verification; the canonical Performance Summary above remains the source of truth until a full WF refresh completes.
 
 - Window and caps
-  - Ultra‑quick WF: Aug 15–Dec 26, 2025; `cap=20`; 3 splits
-  - Quick WF attempt: Mar 1–Dec 26, 2025; `cap=60`; partial before timeout (kept outputs)
+  - Ultraâ€‘quick WF: Aug 15â€“Dec 26, 2025; `cap=20`; 3 splits
+  - Quick WF attempt: Mar 1â€“Dec 26, 2025; `cap=60`; partial before timeout (kept outputs)
 - Commands
-  - `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2024-01-02 --end 2024-12-26 --train-days 252 --test-days 63 --cap 30 --outdir wf_outputs_verify_2024_252x63 --fallback-free --dotenv ./.env`
-  - `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2023-01-02 --end 2024-12-26 --train-days 252 --test-days 63 --cap 60 --outdir wf_outputs_verify_2023_2024 --fallback-free --dotenv ./.env`
+  - `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2025-08-15 --end 2025-12-26 --train-days 84 --test-days 21 --cap 20 --outdir wf_outputs_verify_quick --fallback-free --dotenv ./.env`
+  - `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2025-03-01 --end 2025-12-26 --train-days 126 --test-days 42 --cap 60 --outdir wf_outputs_verify --fallback-free --dotenv ./.env`
 - Artifacts
   - `wf_outputs_verify_quick/wf_summary_compare.csv`
   - `wf_outputs_verify_quick/ibs_rsi/wf_splits.csv`, `wf_outputs_verify_quick/turtle_soup/wf_splits.csv`
@@ -1000,10 +995,10 @@ This section documents today’s quick checks with exact commands and artifact p
 - Scanner evidence
   - Last scan recorded: see `python scripts/status.py --json --dotenv ./.env`
   - Latest picks on disk: `logs/daily_picks.csv`, `logs/trade_of_day.csv` (from prior successful run)
-  - Re‑run (example): `python scripts/scan.py --universe data/universe/optionable_liquid_900.csv --cap 120 --ensure-top3 --date 2025-12-26 --dotenv ./.env`
+  - Reâ€‘run (example): `python scripts/scan.py --universe data/universe/optionable_liquid_900.csv --cap 120 --ensure-top3 --date 2025-12-26 --dotenv ./.env`
   - Faster smoke: add `--no-filters`; ML scoring: add `--ml --min-conf 0.55`
-- Follow-ups to refresh KPIs (overnight job)
-  - Full month WF refresh: `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2025-01-02 --end 2025-12-26 --train-days 252 --test-days 63 --cap 150 --outdir wf_outputs_verify_fullmonth --fallback-free --dotenv ./.env`
+- Followâ€‘ups to refresh KPIs (overnight job)
+  - Full month WF refresh: `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2025-01-02 --end 2025-12-26 --train-days 126 --test-days 42 --cap 150 --outdir wf_outputs_verify_fullmonth --fallback-free --dotenv ./.env`
   - Rebuild dataset + metrics: `python scripts/build_signal_dataset.py --wfdir wf_outputs_verify_fullmonth --dotenv ./.env`; `python scripts/metrics.py --wfdir wf_outputs_verify_fullmonth --strategy TURTLE_SOUP`; `python scripts/metrics.py --wfdir wf_outputs_verify_fullmonth --strategy IBS_RSI`
   - Optional HTML: `python scripts/aggregate_wf_report.py --wfdir wf_outputs_verify_fullmonth --out wf_outputs_verify_fullmonth/wf_report.html`
 
@@ -1053,7 +1048,7 @@ Follow these exact steps to reproduce end-to-end results with no ambiguity.
   - Turtle Soup example grid: `python scripts/optimize.py --strategy turtle_soup --universe data/universe/optionable_liquid_900.csv --start 2025-01-02 --end 2025-12-26 --cap 150 --outdir optimize_outputs --ict-lookbacks 20,30 --ict-min-bars 3,5 --ict-stop-bufs 0.5,1.0 --ict-time-stops 5,7 --ict-r-mults 2.0,3.0 --dotenv ./.env`
   - Selection rule: choose best by Profit Factor then Win Rate; require sufficient trades (guard against tiny samples).
 
-- Daily Scan (Top‑3 + Trade of the Day)
+- Daily Scan (Topâ€‘3 + Trade of the Day)
   - `python scripts/scan.py --universe data/universe/optionable_liquid_900.csv --cap 120 --ensure-top3 --date YYYY-MM-DD --dotenv ./.env`
   - Optional ML scoring: add `--ml --min-conf 0.55`; for speed only: add `--no-filters`.
 
@@ -1070,5 +1065,3 @@ Follow these exact steps to reproduce end-to-end results with no ambiguity.
 
 *This document is the single source of truth for Kobe81 system alignment.*
 
-
-> Evidence Update (2025-12-28 10:35:08 ET): Verified v2.2 backtest via reports/backtest_dual_latest.txt (2015–2024, cap=200). Quick WF runs require train-days >= 200 due to SMA200. See wf_outputs_verify_2023_2024 for partial IBS-only metrics and CSV artifacts.

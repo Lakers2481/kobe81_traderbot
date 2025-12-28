@@ -6,20 +6,356 @@
     "parameters": {
       "reason": "REPEAT: Trade turtle_soup in BEAR + turtle_soup"
     },
-    "confidence": 0.6,
-    "supporting_episodes": 1,
+    "confidence": 1.0,
+    "supporting_episodes": 36,
     "contradicting_episodes": 0,
     "created_at": "2025-12-26T21:55:41.002347",
-    "last_updated": "2025-12-26T21:55:41.002347",
+    "last_updated": "2025-12-27T02:40:47.557179",
     "last_applied": null,
     "times_applied": 0,
     "times_successful": 0,
-    "success_rate": 0.0,
     "source": "Reflection on win",
     "tags": [
       "reflection",
       "positive"
     ],
-    "is_active": true
+    "is_active": true,
+    "success_rate": 0.0
+  },
+  "d314cc5c2a88": {
+    "rule_id": "d314cc5c2a88",
+    "condition": "regime = BEAR AND strategy = turtle_soup AND vix >= 20 AND vix < 30",
+    "action": "increase_confidence",
+    "parameters": {
+      "edge_win_rate": 0.9487179487179487
+    },
+    "confidence": 1.0,
+    "supporting_episodes": 2,
+    "contradicting_episodes": 0,
+    "created_at": "2025-12-27T23:32:19.931885",
+    "last_updated": "2025-12-27T23:32:19.935639",
+    "last_applied": null,
+    "times_applied": 0,
+    "times_successful": 0,
+    "source": "Curiosity Engine: turtle_soup performance in BEAR with vix >= 20 AND vix < 30",
+    "tags": [
+      "edge",
+      "validated",
+      "auto-generated"
+    ],
+    "is_active": true,
+    "success_rate": 0.0
+  },
+  "fa29db9ff428": {
+    "rule_id": "fa29db9ff428",
+    "condition": "regime = BEAR AND strategy = turtle_soup",
+    "action": "increase_confidence",
+    "parameters": {
+      "edge_win_rate": 0.9487179487179487
+    },
+    "confidence": 1.0,
+    "supporting_episodes": 1220,
+    "contradicting_episodes": 0,
+    "created_at": "2025-12-27T23:32:19.933892",
+    "last_updated": "2025-12-28T00:36:03.498531",
+    "last_applied": null,
+    "times_applied": 0,
+    "times_successful": 0,
+    "source": "Curiosity Engine: turtle_soup has high win rate in BEAR regime",
+    "tags": [
+      "edge",
+      "validated",
+      "auto-generated"
+    ],
+    "is_active": true,
+    "success_rate": 0.0
+  },
+  "b97d63c3b896": {
+    "rule_id": "b97d63c3b896",
+    "condition": "regime = BULL AND strategy = ibs_rsi",
+    "action": "increase_confidence",
+    "parameters": {
+      "reason": "Past justified high-confidence win (Reflection on win episode for BULL / ibs_rsi. Key lesson: Trust high-confidence signals in similar contexts.)"
+    },
+    "confidence": 1.0,
+    "supporting_episodes": 3515,
+    "contradicting_episodes": 0,
+    "created_at": "2025-12-27T23:32:19.976060",
+    "last_updated": "2025-12-28T11:27:14.036972",
+    "last_applied": null,
+    "times_applied": 0,
+    "times_successful": 0,
+    "source": "Reflection on episode test-win-123",
+    "tags": [
+      "reflection",
+      "positive",
+      "auto-generated"
+    ],
+    "is_active": true,
+    "success_rate": 0.0
+  },
+  "d98454c8aeea": {
+    "rule_id": "d98454c8aeea",
+    "condition": "regime = BEAR AND vix > 20",
+    "action": "increase_confidence",
+    "parameters": {
+      "edge_win_rate": 1.0
+    },
+    "confidence": 1.0,
+    "supporting_episodes": 18,
+    "contradicting_episodes": 0,
+    "created_at": "2025-12-28T01:19:33.757989",
+    "last_updated": "2025-12-28T10:34:33.139644",
+    "last_applied": null,
+    "times_applied": 0,
+    "times_successful": 0,
+    "source": "Curiosity Engine: The 'ibs_rsi' pattern may be more effective in specific market regimes or conditions",
+    "tags": [
+      "edge",
+      "validated",
+      "auto-generated"
+    ],
+    "is_active": true,
+    "success_rate": 0.0
+  },
+  "b10d66d395f0": {
+    "rule_id": "b10d66d395f0",
+    "condition": "regime = BEAR OR regime = BULL",
+    "action": "increase_confidence",
+    "parameters": {
+      "edge_win_rate": 0.7339449541284404
+    },
+    "confidence": 1.0,
+    "supporting_episodes": 3,
+    "contradicting_episodes": 0,
+    "created_at": "2025-12-28T01:21:05.707299",
+    "last_updated": "2025-12-28T02:51:47.650666",
+    "last_applied": null,
+    "times_applied": 0,
+    "times_successful": 0,
+    "source": "Curiosity Engine: The bot's trading strategies may exhibit performance differences based on market regimes (e.g., BEAR, BULL).",
+    "tags": [
+      "edge",
+      "validated",
+      "auto-generated"
+    ],
+    "is_active": true,
+    "success_rate": 0.0
+  },
+  "2a90c250f02a": {
+    "rule_id": "2a90c250f02a",
+    "condition": "strategy = ibs_rsi",
+    "action": "increase_confidence",
+    "parameters": {
+      "edge_win_rate": 1.0
+    },
+    "confidence": 1.0,
+    "supporting_episodes": 72,
+    "contradicting_episodes": 0,
+    "created_at": "2025-12-28T01:35:37.253819",
+    "last_updated": "2025-12-28T11:27:25.791451",
+    "last_applied": null,
+    "times_applied": 0,
+    "times_successful": 0,
+    "source": "Curiosity Engine: The 'ibs_rsi' pattern may exhibit asymmetric performance between long and short positions.",
+    "tags": [
+      "edge",
+      "validated",
+      "auto-generated"
+    ],
+    "is_active": true,
+    "success_rate": 0.0
+  },
+  "42944b188341": {
+    "rule_id": "42944b188341",
+    "condition": "Strategy = ibs_rsi",
+    "action": "increase_confidence",
+    "parameters": {
+      "edge_win_rate": 1.0
+    },
+    "confidence": 0.9500000000000003,
+    "supporting_episodes": 20,
+    "contradicting_episodes": 0,
+    "created_at": "2025-12-28T01:41:30.722765",
+    "last_updated": "2025-12-28T10:34:33.670211",
+    "last_applied": null,
+    "times_applied": 0,
+    "times_successful": 0,
+    "source": "Curiosity Engine: The bot's performance may improve with the addition of risk management and position sizing techniques",
+    "tags": [
+      "edge",
+      "validated",
+      "auto-generated"
+    ],
+    "is_active": false,
+    "success_rate": 0.0
+  },
+  "65932991f5f7": {
+    "rule_id": "65932991f5f7",
+    "condition": "regime = BEAR",
+    "action": "increase_confidence",
+    "parameters": {
+      "edge_win_rate": 0.625
+    },
+    "confidence": 1.0,
+    "supporting_episodes": 8,
+    "contradicting_episodes": 0,
+    "created_at": "2025-12-28T02:00:32.993049",
+    "last_updated": "2025-12-28T02:51:47.492589",
+    "last_applied": null,
+    "times_applied": 0,
+    "times_successful": 0,
+    "source": "Curiosity Engine: The 'ibs_rsi' pattern may exhibit different performance characteristics depending on the market regime (BULL vs. BEAR).",
+    "tags": [
+      "edge",
+      "validated",
+      "auto-generated"
+    ],
+    "is_active": true,
+    "success_rate": 0.0
+  },
+  "d85fd1219b60": {
+    "rule_id": "d85fd1219b60",
+    "condition": "Regime = BEAR AND strategy = turtle_soup",
+    "action": "increase_confidence",
+    "parameters": {
+      "edge_win_rate": 0.6170212765957447
+    },
+    "confidence": 1.0,
+    "supporting_episodes": 3,
+    "contradicting_episodes": 0,
+    "created_at": "2025-12-28T02:12:21.814444",
+    "last_updated": "2025-12-28T02:51:47.541313",
+    "last_applied": null,
+    "times_applied": 0,
+    "times_successful": 0,
+    "source": "Curiosity Engine: The bot's trading strategy may be overfitted to specific market contexts, leading to poor generalization",
+    "tags": [
+      "edge",
+      "validated",
+      "auto-generated"
+    ],
+    "is_active": true,
+    "success_rate": 0.0
+  },
+  "8d2366ea8e4f": {
+    "rule_id": "8d2366ea8e4f",
+    "condition": "regime = BEAR OR regime = SIDEWAYS",
+    "action": "increase_confidence",
+    "parameters": {
+      "edge_win_rate": 0.6170212765957447
+    },
+    "confidence": 1.0,
+    "supporting_episodes": 2,
+    "contradicting_episodes": 0,
+    "created_at": "2025-12-28T02:13:19.011333",
+    "last_updated": "2025-12-28T02:51:47.571615",
+    "last_applied": null,
+    "times_applied": 0,
+    "times_successful": 0,
+    "source": "Curiosity Engine: The 'ibs_rsi' pattern may exhibit overfitting to the 'BULL' market context",
+    "tags": [
+      "edge",
+      "validated",
+      "auto-generated"
+    ],
+    "is_active": true,
+    "success_rate": 0.0
+  },
+  "7f64306d0471": {
+    "rule_id": "7f64306d0471",
+    "condition": "vix >= 25 AND regime = BEAR",
+    "action": "increase_confidence",
+    "parameters": {
+      "edge_win_rate": 1.0
+    },
+    "confidence": 1.0,
+    "supporting_episodes": 130,
+    "contradicting_episodes": 0,
+    "created_at": "2025-12-28T02:51:47.592723",
+    "last_updated": "2025-12-28T11:27:25.265230",
+    "last_applied": null,
+    "times_applied": 0,
+    "times_successful": 0,
+    "source": "Curiosity Engine: LLM strategy 'BEAR_Reversal_Scalper' may be viable: Capitalize on short-term mean reversion opportunities during",
+    "tags": [
+      "edge",
+      "validated",
+      "auto-generated"
+    ],
+    "is_active": true,
+    "success_rate": 0.0
+  },
+  "98c35c18407a": {
+    "rule_id": "98c35c18407a",
+    "condition": "regime = BULL",
+    "action": "increase_confidence",
+    "parameters": {
+      "edge_win_rate": 1.0
+    },
+    "confidence": 0.9999999713781879,
+    "supporting_episodes": 1,
+    "contradicting_episodes": 0,
+    "created_at": "2025-12-28T02:51:47.603250",
+    "last_updated": "2025-12-28T02:51:47.603250",
+    "last_applied": null,
+    "times_applied": 0,
+    "times_successful": 0,
+    "source": "Curiosity Engine: LLM strategy 'Adaptive Regime-Based Trading' may be viable: Dynamically adjust trading strategy and risk management base",
+    "tags": [
+      "edge",
+      "validated",
+      "auto-generated"
+    ],
+    "is_active": true,
+    "success_rate": 0.0
+  },
+  "562ea31dce34": {
+    "rule_id": "562ea31dce34",
+    "condition": "vix >= 25",
+    "action": "increase_confidence",
+    "parameters": {
+      "edge_win_rate": 1.0
+    },
+    "confidence": 1.0,
+    "supporting_episodes": 108,
+    "contradicting_episodes": 0,
+    "created_at": "2025-12-28T02:54:23.177671",
+    "last_updated": "2025-12-28T11:27:25.531349",
+    "last_applied": null,
+    "times_applied": 0,
+    "times_successful": 0,
+    "source": "Curiosity Engine: LLM strategy 'Volatility-Sensitive Trend Following' may be viable: Adapt a trend-following strategy to be more sensitive to cha",
+    "tags": [
+      "edge",
+      "validated",
+      "auto-generated"
+    ],
+    "is_active": true,
+    "success_rate": 0.0
+  },
+  "483e5db12d9c": {
+    "rule_id": "483e5db12d9c",
+    "condition": "vix > 20",
+    "action": "increase_confidence",
+    "parameters": {
+      "edge_win_rate": 1.0
+    },
+    "confidence": 1.0,
+    "supporting_episodes": 8,
+    "contradicting_episodes": 0,
+    "created_at": "2025-12-28T09:13:56.476199",
+    "last_updated": "2025-12-28T11:07:19.544153",
+    "last_applied": null,
+    "times_applied": 0,
+    "times_successful": 0,
+    "source": "Curiosity Engine: Volatility-adjusted position sizing may improve risk-adjusted returns",
+    "tags": [
+      "edge",
+      "validated",
+      "auto-generated"
+    ],
+    "is_active": true,
+    "success_rate": 0.0
   }
 }

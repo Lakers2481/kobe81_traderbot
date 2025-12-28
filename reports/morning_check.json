@@ -1,5 +1,5 @@
 {
-  "timestamp_utc": "2025-12-27T04:30:52.389872",
+  "timestamp_utc": "2025-12-28T02:25:24.970312",
   "env": {
     "POLYGON_API_KEY": true,
     "ALPACA_API_KEY_ID": true,
@@ -22,8 +22,8 @@
   },
   "disk": {
     "total": 1999441489920,
-    "used": 205389041664,
-    "free": 1794052448256,
+    "used": 206662152192,
+    "free": 1792779337728,
     "free_human": "1.6 TB"
   },
   "backup": {

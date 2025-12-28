@@ -31,7 +31,7 @@ python scripts/explain_signal.py --scan-date 2024-12-25
 ## Output Example
 ```
 SIGNAL EXPLANATION: SIG_20241225_AAPL_ABC123
-Strategy:  Donchian/ICT
+Strategy:  IBS_RSI/ICT
 Symbol: AAPL
 Date: 2024-12-25
 
@@ -48,7 +48,7 @@ CALCULATED VALUES:
 
 CONFIDENCE: HIGH
   - Strong trend (close 4% above SMA200)
-  - Deep oversold (donchian in bottom 10%)
+  - Deep oversold (ibs_rsi in bottom 10%)
   - Adequate liquidity (ADV $50M+)
 ```
 

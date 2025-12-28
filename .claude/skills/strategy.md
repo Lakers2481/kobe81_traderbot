@@ -27,12 +27,12 @@ for d in strategies_dir.iterdir():
         print(f'  - {d.name}')
 "
 
-# Show  Donchian/ICT parameters
+# Show  IBS_RSI/ICT parameters
 python -c "
 from strategies._rsi2.strategy import RSI2Params
 
 params = RSI2Params()
-print('===  Donchian/ICT STRATEGY ===')
+print('===  IBS_RSI/ICT STRATEGY ===')
 print()
 print('Entry Rules:')
 print('  LONG:  RSI(2) <= 10 AND Close > SMA(200)')
@@ -101,7 +101,7 @@ for strat_dir in wf_dir.iterdir():
 ## Strategy Matrix
 | Strategy | Entry | Exit | Best For |
 |----------|-------|------|----------|
-|  Donchian/ICT | RSI(2)â‰¤10 | ATR stop / 5 bars | Mean reversion |
+|  IBS_RSI/ICT | RSI(2)â‰¤10 | ATR stop / 5 bars | Mean reversion |
 | ICT | ICT<0.2 | ATR stop / 5 bars | Intraday range |
 
 ## Modifying Parameters

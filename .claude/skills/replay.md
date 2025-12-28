@@ -195,11 +195,11 @@ Signals that would have been generated:
 
   AAPL   long  @ $198.50
          Stop: $195.20
-         donchian=8.5<= 10 & above SMA200
+         ibs_rsi=8.5<= 10 & above SMA200
 
   MSFT   long  @ $425.30
          Stop: $420.10
-         donchian=6.2<= 10 & above SMA200
+         ibs_rsi=6.2<= 10 & above SMA200
 ```
 
 

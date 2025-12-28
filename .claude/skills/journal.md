@@ -16,7 +16,7 @@ Trading journal for notes, lessons, and trade reviews.
 ## Commands
 ```bash
 # Add journal entry
-python scripts/journal.py add --note "Donchian/ICT working well in choppy market" --tags market,donchian
+python scripts/journal.py add --note "IBS_RSI/ICT working well in choppy market" --tags market,ibs_rsi
 
 # View recent entries
 python scripts/journal.py view --days 7

@@ -23,6 +23,7 @@ import urllib.request
 import urllib.parse
 import json
 from datetime import datetime
+from core.clock.tz_utils import now_et, fmt_ct
 from typing import Any, Optional, List, Dict
 
 
@@ -104,6 +105,11 @@ class TelegramAlerter:
             print(f"[WARN] Telegram send failed: {e}")
             return False
 
+    # --- Time formatting helpers (CT display, ET internal) ---
+    def _now_ct_str(self) -> str:
+        """Return current time formatted as 12-hour CT string (e.g., '9:45 AM CT')."""
+        return fmt_ct(now_et())
+
     def alert_signal(self, signal: Any) -> bool:
         """Alert on new trading signal."""
         direction_emoji = "+" if getattr(signal, 'direction', 'long') == "long" else "-"
@@ -116,7 +122,7 @@ class TelegramAlerter:
             f"Stop: ${signal.stop_loss:.2f}\n"
             f"Target: ${signal.take_profit:.2f}\n"
             f"Confidence: {confidence_pct:.0f}%\n"
-            f"Time: {datetime.now().strftime('%H:%M:%S')}"
+            f"Time: {self._now_ct_str()}"
         )
 
         return self._send_message(text)
@@ -127,7 +133,7 @@ class TelegramAlerter:
             f"<b>ORDER SUBMITTED</b>\n\n"
             f"<b>{symbol}</b> {side} {shares} shares\n"
             f"Order ID: <code>{order_id[:12]}...</code>\n"
-            f"Time: {datetime.now().strftime('%H:%M:%S')}"
+            f"Time: {self._now_ct_str()}"
         )
         return self._send_message(text)
 
@@ -136,7 +142,7 @@ class TelegramAlerter:
         text = (
             f"<b>ORDER FILLED</b>\n\n"
             f"<b>{symbol}</b> {side} {shares} @ ${fill_price:.2f}\n"
-            f"Time: {datetime.now().strftime('%H:%M:%S')}"
+            f"Time: {self._now_ct_str()}"
         )
         return self._send_message(text)
 
@@ -245,7 +251,7 @@ class TelegramAlerter:
             f"<b>KOBE TRADING SYSTEM STARTED</b>\n\n"
             f"Mode: {mode}\n"
             f"Universe: {symbols_count} symbols\n"
-            f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            f"Time: {self._now_ct_str()}"
         )
         return self._send_message(text)
 
@@ -254,7 +260,7 @@ class TelegramAlerter:
         text = (
             f"<b>KOBE TRADING SYSTEM STOPPED</b>\n\n"
             f"Reason: {reason}\n"
-            f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            f"Time: {self._now_ct_str()}"
         )
         return self._send_message(text)
 
@@ -264,7 +270,7 @@ class TelegramAlerter:
             f"<b>ERROR</b>\n\n"
             f"Type: {error_type}\n"
             f"Message: {message[:200]}\n"
-            f"Time: {datetime.now().strftime('%H:%M:%S')}"
+            f"Time: {self._now_ct_str()}"
         )
         return self._send_message(text)
 
@@ -308,7 +314,7 @@ class TelegramAlerter:
             text_lines.append(f"  R:R: {rr:.1f}:1")
             text_lines.append("")
 
-        text_lines.append(f"Time: {datetime.now().strftime('%H:%M:%S')}")
+        text_lines.append(f"Time: {self._now_ct_str()}")
 
         return self._send_message("\n".join(text_lines))
 

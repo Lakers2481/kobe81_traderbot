@@ -15,18 +15,18 @@ Run parameter optimization for strategy tuning.
 
 ## Commands
 ```bash
-# Optimize Donchian/ICT parameters
-python scripts/optimize_params.py --strategy donchian --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --metric sharpe
+# Optimize IBS_RSI/ICT parameters
+python scripts/optimize_params.py --strategy ibs_rsi --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --metric sharpe
 
 # Optimize ICT parameters
 python scripts/optimize_params.py --strategy ICT --metric profit_factor
 
 # Quick optimization (smaller grid)
-python scripts/optimize_params.py --strategy donchian --quick --metric win_rate
+python scripts/optimize_params.py --strategy ibs_rsi --quick --metric win_rate
 ```
 
 ## Parameter Ranges
-### Donchian/ICT
+### IBS_RSI/ICT
 | Parameter | Default | Range |
 |-----------|---------|-------|
 | rsi_period | 2 | 2-5 |

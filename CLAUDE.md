@@ -1,10 +1,14 @@
 ﻿# CLAUDE.md
 
+> Alignment Banner (v2.2): docs/STATUS.md is the canonical, single source of truth for active strategies, parameters, and performance metrics (QUANT INTERVIEW READY). Always consult docs/STATUS.md first, then follow its Replication Checklist.
+
+
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository. The trading robot is named "Kobe". Do not refer to any prior system name.
 
 ## Project Overview
 
-Python quantitative trading system: backtesting, paper trading,  live execution for two strategies: Donchian Breakout (trend) and ICT Turtle Soup (mean reversion). Uses Polygon.io for EOD data, Alpaca for execution.
+Python quantitative trading system: backtesting, paper trading, live execution for mean-reversion strategies (IBS+RSI and ICT Turtle Soup). Uses Polygon.io for EOD data, Alpaca for execution.
 
 ## Requirements
 
@@ -235,7 +239,7 @@ All scripts accept `--dotenv` to specify env file location.
 |-------|--------|---------|
 | Data | `data/providers/polygon_eod.py` | EOD OHLCV fetch with CSV caching |
 | Universe | `data/universe/loader.py` | Symbol list loading, dedup, cap |
-| Strategies | `strategies/donchian/`, `strategies/ict/` | Signal generation with shifted indicators |
+| Strategies | `strategies/dual_strategy/`, `strategies/ibs_rsi/`, `strategies/ict/` | Signal generation with shifted indicators |
 | Backtest | `backtest/engine.py`, `backtest/walk_forward.py` | Simulation engine, WF splits |
 | Risk | `risk/policy_gate.py` | Per-order ($75)  daily ($1k) budgets |
 | Risk Advanced | `risk/advanced/` | VaR, Kelly sizing, correlation limits |
@@ -259,6 +263,24 @@ All scripts accept `--dotenv` to specify env file location.
 | `lstm_confidence/` | Multi-output LSTM for signal confidence (A/B/C grades) |
 | `ensemble/` | Multi-model ensemble predictor (XGBoost, LightGBM, LSTM) |
 | `online_learning.py` | Incremental learning with concept drift detection |
+
+### Cognitive Architecture (`cognitive/`)
+Brain-inspired decision system with self-awareness. **83 unit tests passing.**
+
+| Module | Purpose |
+|--------|---------|
+| `cognitive_brain.py` | Main orchestrator - deliberation, learning, introspection |
+| `metacognitive_governor.py` | System 1/2 routing (fast vs slow thinking) |
+| `reflection_engine.py` | Learning from outcomes (Reflexion pattern) |
+| `self_model.py` | Capability tracking, calibration, self-awareness |
+| `episodic_memory.py` | Experience storage (context → reasoning → outcome) |
+| `semantic_memory.py` | Generalized rules and knowledge |
+| `knowledge_boundary.py` | Uncertainty detection, stand-down recommendations |
+| `curiosity_engine.py` | Hypothesis generation and edge discovery |
+
+**Configuration:** `config/base.yaml` (cognitive section)
+**Tests:** `tests/cognitive/`
+**State:** `state/cognitive/`
 
 ### Strategy Interface
 ```python
@@ -385,8 +407,9 @@ if report.passed:
 
 ### Core Trading
 - `backtest/engine.py`: Backtester with equity curve, ATR/time stops, FIFO P&L
-- `strategies/donchian/strategy.py`: Donchian breakout (channel breakout with ATR/time stops)
-- `strategies/ICT Turtle Soup/strategy.py`: ICT Turtle Soup<0.2 entry, SMA(200) filter
+- `strategies/dual_strategy/combined.py`: DualStrategyScanner (IBS+RSI + Turtle Soup combined)
+- `strategies/ibs_rsi/strategy.py`: IBS<0.15 + RSI(2)<10 entry, SMA(200) filter (62.3% WR)
+- `strategies/ict/turtle_soup.py`: ICT Turtle Soup liquidity sweep, SMA(200) filter (61.1% WR)
 - `execution/broker_alpaca.py`: `place_ioc_limit()`, `get_best_ask()`, idempotency
 - `risk/policy_gate.py`: `PolicyGate.check()` for budget enforcement
 - `scripts/runner.py`: 24/7 scheduler with `--scan-times`  state persistence
@@ -415,6 +438,7 @@ if report.passed:
 /logs           Recent events
 /broker         Broker connection
 ```
+
 
 
 

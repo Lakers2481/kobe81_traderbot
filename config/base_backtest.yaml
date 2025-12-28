@@ -1,0 +1,18 @@
+# Backtest-only overrides to speed WF and avoid over-filtering
+
+regime_filter:
+  enabled: false
+
+filters:
+  earnings:
+    enabled: false
+
+quality_gate:
+  enabled: false
+
+backtest:
+  # keep slippage reasonable; leave commissions off for comparability
+  slippage_pct: 0.0005
+  commissions:
+    enabled: false
+

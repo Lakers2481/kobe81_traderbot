@@ -6,7 +6,7 @@ Uses HMM regime detection to automatically select the best strategy
 for current market conditions.
 
 Logic:
-- BULL regime -> Donchian Breakout (trend-following)
+- BULL regime -> IBS+RSI Mean Reversion (trend-following)
 - BEAR regime -> TurtleSoup (mean-reversion on failed breakdowns)
 - NEUTRAL/CHOPPY -> Reduced size or skip trading
 
@@ -53,7 +53,7 @@ class StrategyConfig:
 # Regime-specific configurations
 REGIME_CONFIGS = {
     MarketRegime.BULL: StrategyConfig(
-        strategy_name="donchian",
+        strategy_name="ibs_rsi",
         position_size_multiplier=1.0,
         take_profit_multiplier=1.2,   # Extend targets in trends
         stop_loss_multiplier=1.0,
@@ -126,9 +126,9 @@ class AdaptiveStrategySelector:
     def _get_strategy_instance(self, name: str):
         """Get or create strategy instance."""
         if name not in self._strategies:
-            if name == "donchian":
-                from strategies.donchian.strategy import DonchianBreakoutStrategy
-                self._strategies[name] = DonchianBreakoutStrategy()
+            if name == "ibs_rsi":
+                from strategies.ibs_rsi.strategy import IbsRsiStrategy
+                self._strategies[name] = IbsRsiStrategy()
             elif name == "turtle_soup":
                 from strategies.ict.turtle_soup import TurtleSoupStrategy
                 self._strategies[name] = TurtleSoupStrategy()

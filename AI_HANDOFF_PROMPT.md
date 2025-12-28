@@ -15,7 +15,7 @@ I'm continuing work on the Kobe81 algorithmic trading bot. Please read the proje
 
 ### What Is Kobe81?
 A production-grade algorithmic trading system implementing exactly two strategies:
-- Donchian Breakout (trend-following): Channel breakout with ATR-based stop, time stop, optional R-multiple take profit.
+- IBS+RSI Mean Reversion (trend-following): Channel breakout with ATR-based stop, time stop, optional R-multiple take profit.
 - ICT Turtle Soup (mean reversion): Failed breakout (liquidity sweep) reversion with R-multiple target and time stop.
 
 Selection/TOPN ranking is disabled in this setup; only these two strategies are compared and traded.
@@ -37,16 +37,16 @@ Selection/TOPN ranking is disabled in this setup; only these two strategies are 
 - Unit tests passing locally
 - Imports normalized (configs -> config)
 - Universe: 900 stocks validated
-- Documentation aligned to Donchian + ICT
+- Documentation aligned to IBS_RSI + ICT
 
 ### Key Files to Know
-- `strategies/donchian/strategy.py` - Donchian Breakout Strategy
+- `strategies/ibs_rsi/strategy.py` - IBS+RSI Mean Reversion Strategy
 - `strategies/ict/turtle_soup.py` - ICT Turtle Soup Strategy
 - `backtest/engine.py` - Backtesting engine
 - `backtest/walk_forward.py` - Walk-forward framework
 - `execution/broker_alpaca.py` - Broker integration (IOC LIMIT)
 - `risk/policy_gate.py` - Risk controls and guardrails
-- `scripts/run_wf_polygon.py` - Donchian vs ICT walk-forward
+- `scripts/run_wf_polygon.py` - IBS_RSI vs ICT walk-forward
 - `config/base.yaml` - Global configuration (universe file, features)
 
 ### Safety Mechanisms
@@ -60,7 +60,7 @@ Selection/TOPN ranking is disabled in this setup; only these two strategies are 
 # Preflight check
 python scripts/preflight.py --dotenv ./.env
 
-# Walk-forward validation (Donchian vs ICT)
+# Walk-forward validation (IBS_RSI vs ICT)
 python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 
 # Paper trading

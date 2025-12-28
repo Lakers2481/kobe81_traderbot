@@ -121,9 +121,9 @@
   "code_quality_observations": [
     {
       "category": "Positive - No Lookahead Bias",
-      "description": "All strategy files (Donchian, Turtle Soup) correctly implement no-lookahead indicators using .shift(1) for signal generation. This ensures backtest validity.",
+      "description": "All strategy files (IBS+RSI, Turtle Soup) correctly implement no-lookahead indicators using .shift(1) for signal generation. This ensures backtest validity.",
       "files": [
-        "strategies/donchian/strategy.py",
+        "strategies/ibs_rsi/strategy.py",
         "strategies/ict/turtle_soup.py"
       ]
     },

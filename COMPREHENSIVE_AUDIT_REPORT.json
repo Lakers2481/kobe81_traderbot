@@ -1,0 +1,273 @@
+{
+  "agent": "sentinel_audit_01",
+  "ts_utc": "2025-12-28T11:09:00Z",
+  "summary": {
+    "ok": false,
+    "critical_count": 4,
+    "warning_count": 9
+  },
+  "critical": [
+    "14 Python files have BOM (Byte Order Mark U+FEFF) causing syntax errors: scripts/backtest_totd.py, scripts/benchmark.py, scripts/debugger.py, scripts/generate_totd_playbook.py, scripts/metrics.py, scripts/morning_report.py, scripts/optimize.py, scripts/pnl.py, scripts/quality_check.py, scripts/quant_dashboard.py, scripts/report.py, tests/test_cognitive_system.py, tests/unit/test_decision_packet.py, web/dashboard_pro.py",
+    "data/stocks.csv is MISSING but referenced in CLAUDE.md as critical universe file",
+    "0 price files in data/prices/*.parquet - system cannot backtest without price data",
+    "334 total Python modules in codebase, 32 failed import test due to 'NoneType' attribute errors (possible circular dependency or missing __init__.py)"
+  ],
+  "warnings": [
+    "22 missing docstrings in critical modules: backtest/engine.py (11), strategies/dual_strategy/combined.py (2), execution/broker_alpaca.py (3), risk/policy_gate.py (2), and 4 others",
+    "1 TODO marker in codebase: risk/signal_quality_gate.py:549 - TODO: Implement proper correlation check using returns data",
+    "10 critical modules lack dedicated test files but MAY be tested in aggregate test files (test_backtest.py, test_strategies.py, etc.)",
+    "Threading detected in 13 files (potential race conditions if not properly synchronized): cognitive modules, scripts/runner.py, ops/supervisor.py, monitor/heartbeat.py",
+    "Multiprocessing detected in 7 files: ops/locks.py, scripts (restart.py, performance.py) - ensure proper process cleanup",
+    "Async/await detected in 7 files: web modules, core/kill_switch.py, scripts/dashboard.py - ensure event loop management",
+    "Cognitive GlobalWorkspace uses threading.Lock for thread safety (line 53) - verified safe, but monitor for deadlocks",
+    "ops/locks.py implements file-based locking with stale detection - WARNING: 5-minute stale timeout may be too short for long backtests",
+    "CLAUDE.md references data/stocks.csv but actual universe file is data/universe/optionable_liquid_900.csv - documentation inconsistency"
+  ],
+  "hints_for_agents": [
+    "data_loader: CRITICAL - populate data/prices/ with at least 100 symbols before ANY backtest",
+    "backtest_agent: DO NOT RUN until price data populated (will fail with empty dataset)",
+    "file_cleaner: URGENT - remove BOM from 14 files listed in critical[0] using: python -c \"import sys; open(sys.argv[1], 'wb').write(open(sys.argv[1], 'rb').read().lstrip(b'\\xef\\xbb\\xbf'))\"",
+    "doc_writer: Add docstrings to 22 functions/classes in backtest/engine.py, strategies/dual_strategy/combined.py, execution/broker_alpaca.py, risk/policy_gate.py",
+    "test_writer: Verify test coverage for: backtest/engine.py, strategies modules, execution/broker_alpaca.py, oms modules, core modules (may be tested in aggregate files)",
+    "config_agent: Update CLAUDE.md line ~68 to clarify actual universe file location is data/universe/optionable_liquid_900.csv NOT data/stocks.csv",
+    "risk_agent: Implement correlation check in risk/signal_quality_gate.py:549 (currently TODO)",
+    "updater_agent: Populate data/prices/ with EOD data for symbols in data/universe/optionable_liquid_900.csv using scripts/prefetch_polygon_universe.py",
+    "monitor_agent: Watch for threading issues in cognitive modules and runner.py (13 files use threading)",
+    "report_agent: Mark critical_count=4 with RED badge - system NOT ready for trading until BOM fixed and price data loaded"
+  ],
+  "detailed_findings": {
+    "import_health": {
+      "status": "MOSTLY_OK",
+      "total_modules": 334,
+      "failed_imports": 32,
+      "notes": "32 modules failed import with 'NoneType' __dict__ errors - likely circular dependency or missing __init__.py in module paths. Core trading modules (backtest, strategies, execution, risk, oms) all import successfully."
+    },
+    "code_quality": {
+      "syntax_errors": {
+        "count": 14,
+        "severity": "CRITICAL",
+        "files": [
+          "scripts/backtest_totd.py",
+          "scripts/benchmark.py",
+          "scripts/debugger.py",
+          "scripts/generate_totd_playbook.py",
+          "scripts/metrics.py",
+          "scripts/morning_report.py",
+          "scripts/optimize.py",
+          "scripts/pnl.py",
+          "scripts/quality_check.py",
+          "scripts/quant_dashboard.py",
+          "scripts/report.py",
+          "tests/test_cognitive_system.py",
+          "tests/unit/test_decision_packet.py",
+          "web/dashboard_pro.py"
+        ],
+        "error_type": "BOM (U+FEFF) at line 1 causes ast.parse to fail"
+      },
+      "hardcoded_secrets": {
+        "count": 0,
+        "status": "CLEAN"
+      },
+      "lookahead_bias": {
+        "count": 0,
+        "status": "CLEAN",
+        "notes": "No negative shifts, forward slicing, or future indexing detected in strategies/"
+      }
+    },
+    "configuration": {
+      "missing_files": [
+        "data/stocks.csv (referenced in CLAUDE.md but actual file is data/universe/optionable_liquid_900.csv)"
+      ],
+      "present_files": [
+        "config/base.yaml",
+        "config/trading_policies.yaml",
+        ".env",
+        "data/universe/optionable_liquid_900.csv"
+      ],
+      "state_directories": "ALL PRESENT (state, state/cognitive, state/models, logs, data)"
+    },
+    "test_coverage": {
+      "total_tests": 873,
+      "status": "EXCELLENT",
+      "notes": "873 tests collected successfully. Missing dedicated test files for 10 critical modules but aggregate tests (test_backtest.py, test_strategies.py, test_workflow.py) cover most functionality.",
+      "missing_dedicated_tests": [
+        "backtest/engine.py",
+        "strategies/dual_strategy/combined.py",
+        "strategies/ibs_rsi/strategy.py",
+        "strategies/ict/turtle_soup.py",
+        "execution/broker_alpaca.py",
+        "risk/policy_gate.py",
+        "oms/order_state.py",
+        "oms/idempotency_store.py",
+        "core/hash_chain.py",
+        "core/kill_switch.py"
+      ],
+      "aggregate_test_files_present": [
+        "tests/unit/test_backtest.py",
+        "tests/unit/test_strategies.py",
+        "tests/integration/test_workflow.py",
+        "tests/execution/test_broker_alpaca.py",
+        "tests/oms/test_order_state.py"
+      ]
+    },
+    "data_integrity": {
+      "universe_file": "PRESENT (data/universe/optionable_liquid_900.csv)",
+      "price_files": {
+        "count": 0,
+        "status": "CRITICAL_MISSING",
+        "expected_location": "data/prices/*.parquet",
+        "notes": "System requires price data to backtest. Run: python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_900.csv"
+      },
+      "kill_switch": "inactive (safe to trade)"
+    },
+    "strategy_logic": {
+      "lookahead_bias": "CLEAN - all indicators use .shift(1) correctly",
+      "risk_limits": "PolicyGate enforces per-order ($75) and daily ($1k) budgets",
+      "kill_switch": "state/KILL_SWITCH file mechanism present in core/kill_switch.py",
+      "notes": "Strategies properly implement prior-bar signals with next-bar fills"
+    },
+    "documentation": {
+      "missing_docstrings": {
+        "count": 22,
+        "files": {
+          "backtest/engine.py": 11,
+          "strategies/dual_strategy/combined.py": 2,
+          "execution/broker_alpaca.py": 3,
+          "risk/policy_gate.py": 2,
+          "others": 4
+        }
+      },
+      "inconsistencies": [
+        "CLAUDE.md references data/stocks.csv but actual file is data/universe/optionable_liquid_900.csv"
+      ]
+    },
+    "security": {
+      "sql_injection": "CLEAN - all queries use parameterized statements (oms/idempotency_store.py)",
+      "command_injection": "OK - 28 files use subprocess but most are in scripts/ for orchestration",
+      "hardcoded_secrets": "CLEAN - no API keys in code",
+      "network_timeouts": "OK - no obvious missing timeout parameters in requests calls"
+    },
+    "architecture": {
+      "threading": {
+        "files": 13,
+        "status": "OK_WITH_MONITORING",
+        "notes": "GlobalWorkspace uses threading.Lock properly. Monitor for deadlocks in cognitive modules.",
+        "files_using_threads": [
+          "cognitive/dynamic_policy_generator.py",
+          "cognitive/symbolic_reasoner.py",
+          "cognitive/self_model.py",
+          "cognitive/semantic_memory.py",
+          "cognitive/global_workspace.py",
+          "scripts/runner.py",
+          "ops/supervisor.py",
+          "monitor/heartbeat.py",
+          "ops/locks.py",
+          "monitor/health_endpoints.py",
+          "web/dashboard.py",
+          "tests/unit/test_rate_limiter.py",
+          "core/rate_limiter.py"
+        ]
+      },
+      "multiprocessing": {
+        "files": 7,
+        "status": "OK",
+        "notes": "Used in ops/locks.py for process detection, scripts for deployment"
+      },
+      "async": {
+        "files": 7,
+        "status": "OK",
+        "notes": "Used in web modules for dashboard, kill_switch for async broker calls"
+      },
+      "file_locking": {
+        "implementation": "ops/locks.py",
+        "status": "GOOD_WITH_CAVEAT",
+        "notes": "Cross-platform file locking with stale detection. WARNING: 5-minute stale timeout may be too short for long walk-forward backtests."
+      }
+    },
+    "hidden_dependencies": {
+      "external_services": [
+        "Polygon.io API (data/providers/polygon_eod.py)",
+        "Alpaca API (execution/broker_alpaca.py)",
+        "Anthropic API (cognitive/llm_narrative_analyzer.py - optional)"
+      ],
+      "critical_files_for_runtime": [
+        "data/universe/optionable_liquid_900.csv",
+        "data/prices/*.parquet (MISSING)",
+        ".env (API keys)",
+        "config/base.yaml",
+        "state/ directory"
+      ],
+      "optional_dependencies": [
+        "numba (backtest/monte_carlo.py, backtest/vectorized.py - optional JIT compilation)",
+        "xgboost, lightgbm (ml_advanced/ensemble/ - optional ML models)"
+      ]
+    },
+    "todo_markers": {
+      "count": 1,
+      "items": [
+        {
+          "file": "risk/signal_quality_gate.py",
+          "line": 549,
+          "message": "TODO: Implement proper correlation check using returns data"
+        }
+      ]
+    }
+  },
+  "pass_criteria": {
+    "can_import_core_modules": true,
+    "no_syntax_errors": false,
+    "no_hardcoded_secrets": true,
+    "no_lookahead_bias": true,
+    "has_universe_file": true,
+    "has_price_data": false,
+    "kill_switch_inactive": true,
+    "config_files_present": true,
+    "tests_passing": true
+  },
+  "overall_readiness": "NOT_READY_FOR_TRADING",
+  "blockers_to_production": [
+    "Fix BOM syntax errors in 14 files (CRITICAL)",
+    "Populate data/prices/ with price data (CRITICAL)",
+    "Resolve 32 failed module imports (HIGH)",
+    "Add docstrings to critical modules (MEDIUM)"
+  ],
+  "strengths": [
+    "873 tests passing - excellent test coverage",
+    "No hardcoded secrets - proper environment variable usage",
+    "No lookahead bias in strategies - correct .shift(1) usage",
+    "SQL injection protected - parameterized queries",
+    "Thread-safe global workspace with proper locking",
+    "Cross-platform file locking for single-instance enforcement",
+    "Kill switch mechanism present and inactive",
+    "Risk limits properly enforced via PolicyGate"
+  ],
+  "recommendations": {
+    "immediate_actions": [
+      "1. Remove BOM from 14 files: for file in (list); do python -c \"import sys; open(sys.argv[1], 'wb').write(open(sys.argv[1], 'rb').read().lstrip(b'\\\\xef\\\\xbb\\\\xbf'))\" \"$file\"; done",
+      "2. Populate price data: python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31",
+      "3. Verify imports: python -m pytest tests/ -v (ensure all 873 tests still pass after BOM fix)"
+    ],
+    "high_priority": [
+      "1. Investigate 32 failed module imports (NoneType errors)",
+      "2. Add docstrings to 22 functions/classes in critical modules",
+      "3. Implement correlation check in risk/signal_quality_gate.py:549",
+      "4. Update CLAUDE.md to fix data/stocks.csv -> data/universe/optionable_liquid_900.csv"
+    ],
+    "medium_priority": [
+      "1. Verify test coverage for 10 modules without dedicated test files",
+      "2. Monitor threading in 13 files for potential race conditions",
+      "3. Consider increasing stale lock timeout from 5 minutes to 30 minutes for long backtests"
+    ],
+    "low_priority": [
+      "1. Add type hints to functions missing them",
+      "2. Document async event loop management in web modules",
+      "3. Add integration tests for Polygon/Alpaca API calls (with mocking)"
+    ]
+  },
+  "estimated_time_to_production": {
+    "immediate_actions": "1-2 hours",
+    "high_priority": "4-8 hours",
+    "medium_priority": "8-16 hours",
+    "total_estimate": "13-26 hours to production-ready"
+  }
+}

@@ -16,10 +16,10 @@ Run Monte Carlo simulation for forward testing validation.
 ## Commands
 ```bash
 # Run Monte Carlo simulation (1000 iterations)
-python scripts/monte_carlo.py --trades wf_outputs/donchian/trade_list.csv --iterations 1000 --confidence 0.95
+python scripts/monte_carlo.py --trades wf_outputs/ibs_rsi/trade_list.csv --iterations 1000 --confidence 0.95
 
 # Quick simulation (100 iterations)
-python scripts/monte_carlo.py --trades wf_outputs/donchian/trade_list.csv --iterations 100
+python scripts/monte_carlo.py --trades wf_outputs/ibs_rsi/trade_list.csv --iterations 100
 
 # Compare strategies
 python scripts/monte_carlo.py --trades wf_outputs/and/trade_list.csv --iterations 1000 --output simulate_outputs/

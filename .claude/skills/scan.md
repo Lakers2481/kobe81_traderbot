@@ -10,7 +10,7 @@ Run Kobe's daily universe scanner to find trading signals.
 ## What it does
 1. Loads the 900-stock universe
 2. Fetches latest EOD data from Polygon
-3. Runs  Donchian/ICT + ICT strategies
+3. Runs  IBS_RSI/ICT + ICT strategies
 4. Outputs signals meeting entry criteria
 5. Respects PolicyGate budgets ($75/order, $1k/day)
 

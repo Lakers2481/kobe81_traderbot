@@ -45,19 +45,21 @@ def main():
     ap.add_argument('--dotenv', type=str, default='./.env')
     ap.add_argument('--regime-on', action='store_true', default=False, help='Force regime filter ON (overrides config)')
     # Streamlined CLI (no RSI2/IBS/CRSI/TOPN knobs in two-strategy setup)
-    # IBS+RSI params
+    # IBS+RSI params (v2.2 defaults)
     ap.add_argument('--ibs-on', action='store_true', default=False, help='Run IBS+RSI overlay')
-    ap.add_argument('--ibs-max', type=float, default=0.15)
-    ap.add_argument('--rsi-max', type=float, default=10.0)
-    ap.add_argument('--ibs-atr-mult', type=float, default=1.0)
-    ap.add_argument('--ibs-r-mult', type=float, default=2.0)
-    ap.add_argument('--ibs-time-stop', type=int, default=5)
-    # Turtle Soup (ICT Liquidity Sweep) params
+    ap.add_argument('--ibs-max', type=float, default=0.08, help='IBS threshold (default 0.08)')
+    ap.add_argument('--rsi-max', type=float, default=5.0, help='RSI(2) threshold (default 5.0)')
+    ap.add_argument('--ibs-atr-mult', type=float, default=2.0, help='ATR stop multiple (default 2.0)')
+    ap.add_argument('--ibs-r-mult', type=float, default=2.0, help='Take-profit R multiple (default 2.0)')
+    ap.add_argument('--ibs-time-stop', type=int, default=7, help='Time stop bars (default 7)')
+    # Turtle Soup (ICT Liquidity Sweep) params (v2.2 defaults)
     ap.add_argument('--turtle-soup-on', action='store_true', default=False, help='Run Turtle Soup (ICT liquidity sweep) strategy')
     ap.add_argument('--turtle-soup-lookback', type=int, default=20, help='N-day channel lookback (default 20)')
     ap.add_argument('--turtle-soup-min-bars', type=int, default=3, help='Min bars since prior extreme (default 3)')
-    ap.add_argument('--turtle-soup-r-mult', type=float, default=2.0, help='Take-profit R-multiple (default 2.0)')
-    ap.add_argument('--turtle-soup-time-stop', type=int, default=5, help='Time stop bars (default 5)')
+    ap.add_argument('--turtle-soup-stop-buf', type=float, default=0.2, help='ATR stop buffer multiple (default 0.2)')
+    ap.add_argument('--turtle-soup-r-mult', type=float, default=0.5, help='Take-profit R-multiple (default 0.5)')
+    ap.add_argument('--turtle-soup-time-stop', type=int, default=3, help='Time stop bars (default 3)')
+    ap.add_argument('--turtle-soup-min-sweep', type=float, default=0.3, help='Min sweep strength in ATR to accept (default 0.3)')
     args = ap.parse_args()
 
     universe = _P(args.universe)
@@ -121,6 +123,7 @@ def main():
     ts_params = TurtleSoupParams(
         lookback=int(args.turtle_soup_lookback),
         min_bars_since_extreme=int(args.turtle_soup_min_bars),
+        stop_buffer_mult=float(args.turtle_soup_stop_buf),
         r_multiple=float(args.turtle_soup_r_mult),
         time_stop_bars=int(args.turtle_soup_time_stop),
         min_price=float(get_setting('selection.min_price', 10.0)),
@@ -149,7 +152,8 @@ def main():
     # No cross-sectional TOPN ranking in this two-strategy setup
 
     def get_ibs(df: pd.DataFrame) -> pd.DataFrame:
-        sigs = ibs.generate_signals(df)
+        # Backtest-friendly: generate ALL historical signals over the window
+        sigs = ibs.scan_signals_over_time(df)
         sigs = apply_regime_filter(sigs)
         sigs = apply_earnings_filter(sigs)
         return sigs
@@ -157,15 +161,36 @@ def main():
     def get_turtle_soup(df: pd.DataFrame) -> pd.DataFrame:
         """Turtle Soup (ICT Liquidity Sweep) - trades failed breakouts."""
         sigs = turtle_soup.scan_signals_over_time(df)
+        # Enforce v2.2 sweep strength threshold (in ATR units)
+        try:
+            min_sweep = float(args.turtle_soup_min_sweep)
+            if 'sweep_strength' in sigs.columns:
+                sigs = sigs[sigs['sweep_strength'] >= min_sweep]
+        except Exception:
+            pass
         sigs = apply_regime_filter(sigs)
         sigs = apply_earnings_filter(sigs)
         return sigs
 
-    # Run WF per selected strategies
-    print('\nRunning IBS+RSI Mean Reversion...')
-    don_results = run_walk_forward(symbols, fetcher, get_ibs, splits, outdir=str(outdir / 'ibs_rsi'), config_factory=make_bt_cfg)
-    print('Running ICT Turtle Soup...')
-    ts_results = run_walk_forward(symbols, fetcher, get_turtle_soup, splits, outdir=str(outdir / 'turtle_soup'), config_factory=make_bt_cfg)
+    # Determine which strategies to run:
+    # If neither flag is set, run both. If any is set, run only the selected ones.
+    run_ibs = args.ibs_on or (not args.ibs_on and not args.turtle_soup_on)
+    run_ts = args.turtle_soup_on or (not args.ibs_on and not args.turtle_soup_on)
+
+    don_results = []
+    ts_results = []
+
+    if run_ibs:
+        print('\nRunning IBS+RSI Mean Reversion...')
+        don_results = run_walk_forward(symbols, fetcher, get_ibs, splits, outdir=str(outdir / 'ibs_rsi'), config_factory=make_bt_cfg)
+    else:
+        print('\nSkipping IBS+RSI (flag not set)')
+
+    if run_ts:
+        print('Running ICT Turtle Soup...')
+        ts_results = run_walk_forward(symbols, fetcher, get_turtle_soup, splits, outdir=str(outdir / 'turtle_soup'), config_factory=make_bt_cfg)
+    else:
+        print('Skipping ICT Turtle Soup (flag not set)')
 
     # Ensure subdirs exist for CSV outputs
     (outdir / 'ibs_rsi').mkdir(parents=True, exist_ok=True)
@@ -174,8 +199,10 @@ def main():
     # Summaries
     # Combined side-by-side CSV
     rows = []
-    rows.append({'strategy': 'IBS_RSI', **summarize_results(don_results)})
-    rows.append({'strategy': 'TURTLE_SOUP', **summarize_results(ts_results)})
+    if run_ibs:
+        rows.append({'strategy': 'IBS_RSI', **summarize_results(don_results)})
+    if run_ts:
+        rows.append({'strategy': 'TURTLE_SOUP', **summarize_results(ts_results)})
 
     compare_df = pd.DataFrame(rows)
     compare_df.to_csv(outdir / 'wf_summary_compare.csv', index=False)

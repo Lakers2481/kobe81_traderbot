@@ -124,7 +124,7 @@ for line in signals_file.read_text().splitlines():
 | stop_loss | float | Protective stop |
 | take_profit | float | Target (optional) |
 | reason | string | Entry condition details |
-| donchian | float | RSI(2) value at signal |
+| ibs_rsi | float | RSI(2) value at signal |
 
 ## Signal Flow
 ```

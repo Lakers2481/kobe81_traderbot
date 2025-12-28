@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 """
-IBS + RSI(2) Mean-Reversion Strategy (long-only, daily)
+IBS + RSI(2) Mean-Reversion Strategy (long-only, daily) — v2.2 defaults
 
 Entry conditions (evaluated on prior bar to avoid lookahead):
 - IBS(prev) < ibs_max (default 0.15)
@@ -11,7 +11,7 @@ Entry conditions (evaluated on prior bar to avoid lookahead):
 Stops/targets:
 - Stop = entry - atr_mult * ATR(14)
 - Target = entry + r_mult * (entry - stop)
-- Time exit = time_stop_bars (default 5)
+- Time exit = time_stop_bars (default 7)
 
 Outputs a DataFrame with columns:
   timestamp, symbol, side, entry_price, stop_loss, take_profit, reason, score, time_stop_bars
@@ -24,14 +24,14 @@ import pandas as pd
 
 @dataclass
 class IbsRsiParams:
-    # TIGHTENED PARAMETERS (v2.0) - Reduce signals from 50/week to ~5/week
-    ibs_max: float = 0.08          # Was 0.15 - 47% tighter for extreme oversold only
-    rsi_max: float = 5.0           # Was 10.0 - 50% tighter for severe oversold
+    # v2.2 defaults (Quant Interview Ready)
+    ibs_max: float = 0.08          # Extreme oversold only
+    rsi_max: float = 5.0           # Severe oversold
     sma200_filter: bool = True
-    atr_mult: float = 1.5          # Was 1.0 - wider stop reduces false stop-outs
+    atr_mult: float = 2.0          # Wider stop (v2.2)
     r_multiple: float = 2.0
-    time_stop_bars: int = 7        # Was 5 - more patience for mean reversion
-    min_price: float = 15.0        # Was 5.0 - higher liquidity stocks only
+    time_stop_bars: int = 7        # v2.2 patience
+    min_price: float = 15.0        # Higher liquidity only
 
 
 class IbsRsiStrategy:

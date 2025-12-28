@@ -144,7 +144,7 @@ df['low'] = df[['open', 'low', 'close']].min(axis=1) - 0.5
 strat = RSI2Strategy()
 df_with_ind = strat._compute_indicators(df)
 
-print(f'Last donchian: {df_with_ind[\"donchian\"].iloc[-1]:.2f}')
+print(f'Last ibs_rsi: {df_with_ind[\"ibs_rsi\"].iloc[-1]:.2f}')
 print(f'Last SMA200: {df_with_ind[\"sma200\"].iloc[-1]:.2f}')
 print(f'Last ATR14: {df_with_ind[\"atr14\"].iloc[-1]:.2f}')
 

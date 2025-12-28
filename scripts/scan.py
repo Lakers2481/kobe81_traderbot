@@ -2,13 +2,13 @@
 """
 Kobe Daily Stock Scanner
 
-Scans the universe for trading signals using the Dual Strategy System:
-- IBS+RSI Mean Reversion (high frequency, 62.3% WR)
-- Turtle Soup Liquidity Sweep (high conviction, 61.1% WR)
+Scans the universe for trading signals using the Dual Strategy System (v2.2):
+- IBS+RSI Mean Reversion (high frequency) — ~59.9% WR, ~1.46 PF
+- Turtle Soup Liquidity Sweep (high conviction) — ~61.0% WR, ~1.37 PF
 
 Features:
 - Loads universe from data/universe/optionable_liquid_900.csv (900 symbols)
-- Fetches latest EOD data via Polygon
+- Fetches latest EOD data via Polygon or multi-source fallback
 - Runs DualStrategyScanner for combined signals
 - Outputs signals to stdout and logs/signals.jsonl
 """

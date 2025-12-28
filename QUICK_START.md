@@ -65,7 +65,7 @@ python scripts/aggregate_wf_report.py \
   --out wf_outputs/wf_report.html
 ```
 
-### B. Strategy Showdown (Compare Donchian breakout vs ICT Turtle Soup)
+### B. Strategy Showdown (Compare IBS+RSI vs ICT Turtle Soup)
 
 ```bash
 python scripts/run_showdown_polygon.py \
@@ -131,9 +131,9 @@ After running backtests/walk-forward:
 
 | File | Location | Contents |
 |------|----------|----------|
-| Trade List | `wf_outputs/Donchian breakout/split_XX/trade_list.csv` | All trades with P&L |
-| Equity Curve | `wf_outputs/Donchian breakout/split_XX/equity_curve.csv` | Daily portfolio value |
-| Summary | `wf_outputs/Donchian breakout/split_XX/summary.json` | KPIs (Sharpe, WR, DD) |
+| Trade List | `wf_outputs/IBS+RSI/split_XX/trade_list.csv` | All trades with P&L |
+| Equity Curve | `wf_outputs/IBS+RSI/split_XX/equity_curve.csv` | Daily portfolio value |
+| Summary | `wf_outputs/IBS+RSI/split_XX/summary.json` | KPIs (Sharpe, WR, DD) |
 | Report | `wf_outputs/wf_report.html` | Interactive HTML report |
 
 ---
@@ -179,7 +179,7 @@ python scripts/prefetch_polygon_universe.py ...
 
 ```
 kobe81_traderbot/
-â”œâ”€â”€ strategies/          # Donchian breakout, ICT Turtle Soup strategies
+â”œâ”€â”€ strategies/          # IBS+RSI, ICT Turtle Soup strategies
 â”œâ”€â”€ backtest/            # Backtesting engine
 â”œâ”€â”€ data/                # Providers, universe (900 stocks)
 â”œâ”€â”€ execution/           # Alpaca broker
@@ -207,6 +207,7 @@ kobe81_traderbot/
 ---
 
 *For detailed architecture, see `PROJECT_CONTEXT.md`*
+
 
 
 

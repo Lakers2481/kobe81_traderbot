@@ -91,7 +91,7 @@ FACTOR EXPOSURES
   Momentum: 0.35 (momentum tilt)
 
 STRATEGY BREAKDOWN
-  Donchian/ICT: +5.2% contribution
+  IBS_RSI/ICT: +5.2% contribution
   ICT: +2.1% contribution
   Correlation: 0.45
 ```

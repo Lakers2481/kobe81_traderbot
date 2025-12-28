@@ -9,11 +9,11 @@ Rules (no lookahead)
 - Generate signal at close(t); fills occur at open(t+1)
 - Trend filter: Close >= SMA(200) when enabled
 
-Default parameters (IbsRsiParams)
-- ibs_max=0.15, rsi_max=10, atr_mult=1.0, r_multiple=2.0, time_stop_bars=5, min_price=5.0
+Default parameters (IbsRsiParams) — v2.2
+- ibs_max=0.08, rsi_max=5.0, atr_mult=2.0, r_multiple=2.0, time_stop_bars=7, min_price=15.0
 
-Quick backtest (walk-forward, small slice)
-python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2025-08-15 --end 2025-12-26 --train-days 84 --test-days 21 --cap 20 --outdir wf_outputs_verify_quick --fallback-free --dotenv ./.env
+Quick backtest (walk-forward, small slice; ensure train-days >= 200 for SMA200)
+python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2024-01-02 --end 2024-12-26 --train-days 252 --test-days 63 --cap 30 --outdir wf_outputs_verify_2024_252x63 --fallback-free --dotenv ./.env
 
 Metrics from WF
 python scripts/metrics.py --wfdir wf_outputs_verify_quick --strategy IBS_RSI
@@ -24,4 +24,3 @@ python scripts/optimize.py --strategy ibs_rsi --universe data/universe/optionabl
 Notes
 - Use STATUS.md “Replication Checklist (KEY)” for canonical steps.
 - Always verify environment with: python scripts/status.py --json --dotenv ./.env
-

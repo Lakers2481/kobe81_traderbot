@@ -1,4 +1,4 @@
-﻿**Alignment Note**: Canonical setup uses Donchian Breakout + ICT Turtle Soup only, with a 900-symbol universe. README.md and AI_HANDOFF_PROMPT.md are the source of truth for commands. Some legacy references remain here for historical context.
+﻿**Alignment Note**: Canonical setup uses IBS+RSI + ICT Turtle Soup only, with a 900-symbol universe. README.md and AI_HANDOFF_PROMPT.md are the source of truth for commands. Some legacy references remain here for historical context.
 
 # PROJECT CONTEXT: Kobe81 Trading Bot
 
@@ -21,7 +21,7 @@
 | Component | Status | Notes |
 |-----------|--------|-------|
 | Core Architecture | COMPLETE | 10-layer system fully implemented |
-| Strategies | COMPLETE | Donchian breakout, ICT Turtle Soup,  filter |
+| Strategies | COMPLETE | IBS+RSI, ICT Turtle Soup,  filter |
 | Backtesting | COMPLETE | Walk-forward validated |
 | Universe | COMPLETE | 900 stocks, 10Y coverage |
 | Paper Trading | READY | Micro budgets enforced |
@@ -56,7 +56,7 @@
 â”‚ Layer 4: BACKTEST        backtest/engine.py, walk_forward   â”‚
 â”‚          Historical simulation, rolling validation          â”‚
 â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚ Layer 3: STRATEGY        strategies/connors_Donchian breakout, ICT Turtle Soup       â”‚
+â”‚ Layer 3: STRATEGY        strategies/connors_IBS+RSI, ICT Turtle Soup       â”‚
 â”‚          Signal generation, lookahead prevention            â”‚
 â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
 â”‚ Layer 2: UNIVERSE        data/universe/loader.py            â”‚
@@ -71,7 +71,7 @@
 
 ## Trading Strategies
 
-### 1. Donchian Breakout (Trend)\n- Entry: Breakout above Donchian high (e.g., 20–55)\n- Exit: ATR-based stop, time stop, optional R-multiple take profit
+### 1. IBS+RSI (Trend)\n- Entry: Breakout above IBS+RSI high (e.g., 20–55)\n- Exit: ATR-based stop, time stop, optional R-multiple take profit
 - **Entry:** RSI(2) â‰¤ 10  Close > SMA(200)
 - **Exit:** RSI(2) â‰¥ 70 OR ATR(14)Ã—2 stop OR 5-bar timeout
 - **Expected:** 58-62% win rate, Sharpe 1.2-1.8
@@ -82,7 +82,7 @@
 - **Expected:** 54-58% win rate, Sharpe 1.0-1.5
 
 ### 3.  Filter (Combined)
-- **Entry:** BOTH Donchian breakout  ICT Turtle Soup signal on same bar
+- **Entry:** BOTH IBS+RSI  ICT Turtle Soup signal on same bar
 - **Higher selectivity:** 60-65% win rate, fewer trades
 
 ---
@@ -91,12 +91,12 @@
 
 ### Configuration
 - `config/settings.json` - Global settings
-- `config/strategies/connors_Donchian breakout.yaml` - Donchian breakout parameters
+- `config/strategies/connors_IBS+RSI.yaml` - IBS+RSI parameters
 - `config/strategies/ICT Turtle Soup.yaml` - ICT Turtle Soup parameters
 - `.env` - API keys (POLYGON, ALPACA) - NOT in git
 
 ### Core Modules
-- `strategies/connors_Donchian breakout/strategy.py` - Donchian breakout implementation
+- `strategies/connors_IBS+RSI/strategy.py` - IBS+RSI implementation
 - `strategies/ICT Turtle Soup/strategy.py` - ICT Turtle Soup implementation
 - `backtest/engine.py` - Backtesting engine
 - `execution/broker_alpaca.py` - Broker integration
@@ -225,7 +225,7 @@ pytest tests/unit -v
 
 ```
 kobe81_traderbot/
-â”œâ”€â”€ strategies/          # Trading strategies (Donchian breakout, ICT Turtle Soup)
+â”œâ”€â”€ strategies/          # Trading strategies (IBS+RSI, ICT Turtle Soup)
 â”œâ”€â”€ backtest/            # Backtesting engine
 â”œâ”€â”€ data/                # Data providers, universe
 â”œâ”€â”€ execution/           # Broker integration
@@ -253,6 +253,7 @@ kobe81_traderbot/
 ---
 
 *Last Updated: 2025-12-26*
+
 
 
 

@@ -19,7 +19,7 @@ Show what Kobe learned from recent trades.
 python scripts/learn_trades.py --period 30 --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
 
 # Learn by strategy
-python scripts/learn_trades.py --strategy donchian --period 60
+python scripts/learn_trades.py --strategy ibs_rsi --period 60
 
 # Compare strategies
 python scripts/learn_trades.py --compare --period 90
@@ -32,7 +32,7 @@ python scripts/learn_trades.py --period 30 --output learnings.json
 
 ### Entry Timing
 ```
-LEARNED: donchian entries at RSI < 5 outperform RSI 5-10
+LEARNED: ibs_rsi entries at RSI < 5 outperform RSI 5-10
   Win Rate: 68% vs 52%
   Avg Return: +2.1% vs +0.8%
   Sample: 45 trades

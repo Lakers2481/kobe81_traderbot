@@ -58,7 +58,7 @@ REGIME HISTORY (90 days):
   CHOP: 10 days (11%)
 
 STRATEGY IMPLICATIONS:
-  Donchian/ICT: FAVORABLE (mean reversion works in low vol)
+  IBS_RSI/ICT: FAVORABLE (mean reversion works in low vol)
   ICT: FAVORABLE (range-bound intraday)
   Position Size: 100% (normal)
 
