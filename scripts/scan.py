@@ -790,11 +790,72 @@ Examples:
                                     for risk in narr.risk_factors[:2]:
                                         print(f"     - {risk}")
 
-                        if report.totd_deep_analysis:
+                        # Generate comprehensive TOTD report if we have a TOTD
+                        if totd_dict:
+                            comp_report = analyzer.generate_comprehensive_totd_report(
+                                totd=totd_dict,
+                                market_context=market_context,
+                                price_data=None,  # Will fetch automatically
+                            )
+
+                            print("\n" + "=" * 70)
+                            print(f"COMPREHENSIVE TRADE OF THE DAY - {comp_report.symbol}")
+                            print("=" * 70)
+
+                            # Core metrics
+                            print(f"\nStrategy: {comp_report.strategy} | Entry: ${comp_report.entry_price:.2f} | Stop: ${comp_report.stop_loss:.2f}")
+                            print(f"Risk: ${comp_report.risk_per_share:.2f} ({comp_report.stop_distance_pct:.1f}%) | R:R: {comp_report.risk_reward_ratio:.2f}:1")
+                            print(f"Overall Confidence: {comp_report.overall_confidence:.0f}% | Method: {comp_report.generation_method}")
+
+                            # Confidence breakdown
+                            print("\n--- CONFIDENCE BREAKDOWN ---")
+                            for k, v in comp_report.confidence_breakdown.items():
+                                bar = "█" * int(v / 5) + "░" * (20 - int(v / 5))
+                                print(f"  {k:18}: [{bar}] {v:.0f}%")
+
+                            # All analysis sections
+                            print("\n--- EXECUTIVE SUMMARY ---")
+                            print(comp_report.executive_summary)
+
+                            print("\n--- WHY THIS TRADE? ---")
+                            print(comp_report.why_this_trade)
+
+                            print("\n--- HISTORICAL EDGE ANALYSIS ---")
+                            print(comp_report.historical_edge_analysis)
+
+                            print("\n--- TECHNICAL ANALYSIS ---")
+                            print(comp_report.technical_analysis)
+
+                            print("\n--- NEWS IMPACT ---")
+                            print(comp_report.news_impact_analysis)
+
+                            print("\n--- RISK ANALYSIS ---")
+                            print(comp_report.risk_analysis)
+
+                            print("\n--- EXECUTION PLAN ---")
+                            print(comp_report.execution_plan)
+
+                            print("\n--- POSITION SIZING ---")
+                            print(comp_report.position_sizing)
+
+                            print("\n--- RISK WARNINGS ---")
+                            for w in comp_report.risk_warnings:
+                                print(f"  [!] {w}")
+
+                            print("\n--- KEY LEVELS TO WATCH ---")
+                            for l in comp_report.key_levels_to_watch:
+                                print(f"  > {l}")
+
+                            # Save comprehensive report
+                            comp_path = Path("logs/comprehensive_totd.json")
+                            with open(comp_path, 'w', encoding='utf-8') as f:
+                                json.dump(comp_report.to_dict(), f, indent=2, default=str)
+                            print(f"\n[Comprehensive TOTD saved to {comp_path}]")
+
+                        elif report.totd_deep_analysis:
                             print("\n" + "-" * 60)
                             print("TRADE OF THE DAY - DEEP ANALYSIS")
                             print("-" * 60)
-                            # Print first 500 chars of analysis
                             analysis = report.totd_deep_analysis
                             if len(analysis) > 600:
                                 print(analysis[:600] + "...")

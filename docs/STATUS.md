@@ -1026,6 +1026,13 @@ Notes
 
 ---
 
+## Scanner Consistency Fixes (2025-12-29)
+
+- Increased scan lookback from 300 → 400 calendar days to ensure ≥200 trading days for SMA(200) even on weekends/holidays (weekend-safe defaults).
+- Harmonized RSI(2) implementation: DualStrategyScanner now uses the same simple rolling RSI(2) as IbsRsiStrategy (replaces Wilder’s RSI in combined scanner) to avoid subtle discrepancies.
+
+These changes do not alter the validated v2.2 performance claims; they improve consistency and reduce edge-case confusion in daily scans.
+
 ## Replication Checklist (KEY)
 
 Follow these exact steps to reproduce end-to-end results with no ambiguity.
