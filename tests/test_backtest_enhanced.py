@@ -387,16 +387,11 @@ class TestBacktestPlotter:
         # Should return matplotlib figure or None if not available
         assert fig is not None or True  # Accept None if matplotlib unavailable
 
-    @pytest.mark.skipif(
-        not hasattr(__import__('sys'), 'modules') or 'tkinter' not in __import__('sys').modules,
-        reason="Skip if tkinter not available (GUI dependency)"
-    )
     def test_plot_trades_static(self, sample_trades, sample_ohlcv_data):
-        """Test static trade plotting - skipped if tkinter unavailable."""
-        try:
-            import tkinter
-        except ImportError:
-            pytest.skip("tkinter not available")
+        """Test static trade plotting with Agg backend (no GUI)."""
+        import matplotlib
+        matplotlib.use('Agg')  # Use non-interactive backend
+        import matplotlib.pyplot as plt
 
         from backtest.visualization import BacktestPlotter
 
@@ -416,17 +411,13 @@ class TestBacktestPlotter:
 
         # May be None if no proper trade/price alignment
         assert fig is None or fig is not None
+        plt.close('all')  # Clean up
 
-    @pytest.mark.skipif(
-        not hasattr(__import__('sys'), 'modules') or 'tkinter' not in __import__('sys').modules,
-        reason="Skip if tkinter not available (GUI dependency)"
-    )
     def test_plot_monthly_returns(self, sample_trades):
-        """Test monthly returns plotting - skipped if tkinter unavailable."""
-        try:
-            import tkinter
-        except ImportError:
-            pytest.skip("tkinter not available")
+        """Test monthly returns plotting with Agg backend (no GUI)."""
+        import matplotlib
+        matplotlib.use('Agg')  # Use non-interactive backend
+        import matplotlib.pyplot as plt
 
         from backtest.visualization import BacktestPlotter
 
@@ -444,6 +435,7 @@ class TestBacktestPlotter:
 
         fig = plotter.plot_monthly_returns(interactive=False)
         assert fig is None or fig is not None  # Accept either
+        plt.close('all')  # Clean up
 
 
 # =============================================================================
