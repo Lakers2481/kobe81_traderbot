@@ -9,6 +9,7 @@ from datetime import datetime
 
 from execution.broker_alpaca import (
     OrderResult,
+    BrokerExecutionResult,
     get_liquidity_gate,
     set_liquidity_gate,
     enable_liquidity_gate,
@@ -165,7 +166,11 @@ class TestPlaceOrderWithLiquidityCheck:
 
         order = self._create_test_order()
         order.status = OrderStatus.SUBMITTED
-        mock_place.return_value = order
+        mock_place.return_value = BrokerExecutionResult(
+            order=order,
+            market_bid_at_execution=149.98,
+            market_ask_at_execution=150.02,
+        )
 
         result = place_order_with_liquidity_check(order)
 
@@ -204,7 +209,11 @@ class TestPlaceOrderWithLiquidityCheck:
 
         order = self._create_test_order()
         order.status = OrderStatus.SUBMITTED
-        mock_place.return_value = order
+        mock_place.return_value = BrokerExecutionResult(
+            order=order,
+            market_bid_at_execution=149.98,
+            market_ask_at_execution=150.02,
+        )
 
         result = place_order_with_liquidity_check(order)
 
@@ -219,14 +228,16 @@ class TestPlaceOrderWithLiquidityCheck:
 class TestExecuteSignal:
     """Tests for execute_signal function."""
 
+    @patch('execution.broker_alpaca.get_best_bid')
     @patch('execution.broker_alpaca.get_best_ask')
     @patch('execution.broker_alpaca.check_liquidity_for_order')
     @patch('execution.broker_alpaca.place_ioc_limit')
-    def test_full_execution_flow(self, mock_place, mock_check, mock_ask):
+    def test_full_execution_flow(self, mock_place, mock_check, mock_ask, mock_bid):
         """Should execute full flow: quote -> construct -> check -> place."""
         enable_liquidity_gate(True)
 
         mock_ask.return_value = 150.0
+        mock_bid.return_value = 149.98
         mock_check.return_value = LiquidityCheck(
             symbol='AAPL',
             passed=True,
@@ -237,7 +248,11 @@ class TestExecuteSignal:
         def set_submitted(order):
             order.status = OrderStatus.SUBMITTED
             order.broker_order_id = "BROKER123"
-            return order
+            return BrokerExecutionResult(
+                order=order,
+                market_bid_at_execution=149.98,
+                market_ask_at_execution=150.02,
+            )
 
         mock_place.side_effect = set_submitted
 
