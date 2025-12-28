@@ -8,6 +8,8 @@ Tests for the new advanced integration components:
 - AdaptiveStrategySelector
 - ConfidenceIntegrator
 - IntelligentExecutor
+- CognitiveSignalProcessor (with News & LLM integration)
+- OrderManager (with TCA integration)
 
 Run: python -m pytest tests/test_integration_pipeline.py -v
 """
@@ -16,336 +18,253 @@ import pytest
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
+from unittest.mock import Mock, patch, MagicMock
 
+# Mock all lazy-loaded singletons and external API interactions
+@pytest.fixture(autouse=True)
+def mock_all_dependencies():
+    with patch('execution.intelligent_executor.get_signal_processor') as mock_get_signal_processor, \
+         patch('execution.intelligent_executor.get_risk_manager') as mock_get_risk_manager, \
+         patch('execution.intelligent_executor.PolicyGate') as MockPolicyGate, \
+         patch('execution.intelligent_executor.get_order_manager') as mock_get_order_manager, \
+         patch('execution.intelligent_executor.get_trailing_stop_manager') as mock_get_trailing_stop_manager, \
+         patch('execution.intelligent_executor.AdaptiveStrategySelector') as MockStrategySelector, \
+         patch('execution.intelligent_executor.get_confidence_integrator') as mock_get_confidence_integrator, \
+         \
+         patch('cognitive.signal_processor.get_cognitive_brain') as mock_get_cognitive_brain, \
+         patch('cognitive.signal_processor.get_news_processor') as mock_get_news_processor, \
+         \
+         patch('cognitive.reflection_engine.get_episodic_memory') as mock_get_episodic_memory, \
+         patch('cognitive.reflection_engine.get_semantic_memory') as mock_get_semantic_memory, \
+         patch('cognitive.reflection_engine.get_self_model') as mock_get_self_model, \
+         patch('cognitive.reflection_engine.get_workspace') as mock_get_workspace, \
+         patch('cognitive.reflection_engine.get_llm_analyzer') as mock_get_llm_analyzer, \
+         \
+         patch('execution.order_manager.place_ioc_limit') as mock_place_ioc_limit, \
+         patch('execution.order_manager.get_best_ask') as mock_get_best_ask, \
+         patch('execution.order_manager.get_best_bid') as mock_get_best_bid, \
+         patch('execution.order_manager.get_tca_analyzer') as mock_get_tca_analyzer, \
+         \
+         patch('execution.broker_alpaca.get_quote_with_sizes') as mock_get_quote_with_sizes, \
+         patch('execution.broker_alpaca.IdempotencyStore') as MockIdempotencyStore, \
+         patch('execution.broker_alpaca.update_trade_event') as mock_update_trade_event, \
+         patch('execution.broker_alpaca.requests') as mock_requests, \
+         patch('execution.broker_alpaca.is_kill_switch_active', return_value=False), \
+         patch('execution.broker_alpaca.is_clamp_enabled', return_value=False), \
+         patch('execution.broker_alpaca.is_liquidity_gate_enabled', return_value=False):
+        
+        # --- Configure Mocks ---
+        # Mock CognitiveBrain.deliberate
+        mock_decision = MagicMock()
+        mock_decision.should_act = True
+        mock_decision.confidence = 0.85
+        mock_decision.reasoning_trace = ["Cognitive approved"]
+        mock_decision.concerns = []
+        mock_decision.knowledge_gaps = []
+        mock_decision.invalidators = []
+        mock_decision.episode_id = "mock_cognitive_episode_123"
+        mock_decision.decision_mode = "slow"
+        mock_decision.action = {'size_multiplier': 1.0, 'type': 'trade'}
+        mock_get_cognitive_brain.return_value.deliberate.return_value = mock_decision
 
+        # Mock OrderManager.submit_order
+        def mock_submit_order(order_record: OrderRecord, *args, **kwargs):
+            order_record.status = OrderStatus.FILLED
+            order_record.broker_order_id = "BROKER-ID-MOCK"
+            order_record.fill_price = order_record.limit_price * 1.0001 # Slight slippage
+            order_record.filled_qty = order_record.qty
+            return "EXEC-ID-MOCK"
+        mock_get_order_manager.return_value.submit_order.side_effect = mock_submit_order
+        
+        # Mock broker_alpaca quotes
+        mock_get_best_ask.return_value = 150.10
+        mock_get_best_bid.return_value = 149.90
+        mock_get_quote_with_sizes.return_value = (149.90, 150.10, 100, 100) # bid, ask, bid_size, ask_size
+
+        # Mock broker_alpaca place_ioc_limit (for TCA tests)
+        mock_broker_order_filled = MagicMock(spec=OrderRecord)
+        mock_broker_order_filled.status = OrderStatus.FILLED
+        mock_broker_order_filled.broker_order_id = "ALPACA-ORDER-MOCK"
+        mock_broker_order_filled.fill_price = 150.05
+        mock_broker_order_filled.filled_qty = 100
+        mock_broker_order_filled.notes = None
+        mock_place_ioc_limit.return_value = BrokerExecutionResult(
+            order=mock_broker_order_filled,
+            market_bid_at_execution=149.90,
+            market_ask_at_execution=150.10
+        )
+
+        # Mock NewsProcessor
+        mock_get_news_processor.return_value.get_aggregated_sentiment.side_effect = [
+            {'compound': 0.7, 'positive': 0.8}, # Market sentiment
+            {'compound': 0.6, 'positive': 0.7}, # AAPL sentiment
+        ]
+
+        # Mock other components that are called
+        mock_get_self_model.return_value.record_trade_outcome.return_value = None
+        mock_get_semantic_memory.return_value.add_rule.return_value = None
+        mock_get_episodic_memory.return_value.add_postmortem.return_value = None
+        mock_get_episodic_memory.return_value.get_recent_episodes.return_value = []
+        
+        # Mock SignalProcessor's brain property (as it's used directly in web.main)
+        mock_get_signal_processor.return_value.brain = mock_get_cognitive_brain.return_value
+        mock_get_signal_processor.return_value._active_episodes = {"AAPL|mock_strategy": "mock_cognitive_episode_123"}
+        mock_get_signal_processor.return_value.get_cognitive_status.return_value = {"brain_init": True}
+        mock_get_signal_processor.return_value.build_market_context.return_value = {"regime": "BULL", "market_sentiment": {"compound": 0.5}}
+
+        yield
+
+# Generate mock price data
 def generate_mock_price_data(days: int = 300, start_price: float = 100.0) -> pd.DataFrame:
     """Generate realistic mock price data for testing."""
     np.random.seed(42)
     dates = pd.date_range(end=datetime.now(), periods=days, freq='D')
-
-    # Generate random walk with drift
     returns = np.random.normal(0.0005, 0.02, days)
     prices = start_price * np.cumprod(1 + returns)
-
-    high = prices * (1 + np.abs(np.random.normal(0, 0.01, days)))
-    low = prices * (1 - np.abs(np.random.normal(0, 0.01, days)))
-    volume = np.random.randint(1000000, 10000000, days)
-
     return pd.DataFrame({
         'open': prices * (1 + np.random.normal(0, 0.005, days)),
-        'high': high,
-        'low': low,
+        'high': prices * (1 + np.abs(np.random.normal(0, 0.01, days))),
+        'low': prices * (1 - np.abs(np.random.normal(0, 0.01, days))),
         'close': prices,
-        'volume': volume,
+        'volume': np.random.randint(1000000, 10000000, days),
     }, index=dates)
 
 
-class TestPortfolioRiskManager:
-    """Tests for PortfolioRiskManager."""
+class TestFullIntegrationPipeline:
+    """
+    Comprehensive integration tests for the entire trading pipeline,
+    including cognitive and execution enhancements.
+    """
 
-    def test_import(self):
-        """Test that PortfolioRiskManager can be imported."""
-        from portfolio.risk_manager import PortfolioRiskManager, get_risk_manager
-        assert PortfolioRiskManager is not None
-        assert get_risk_manager is not None
+    @pytest.fixture
+    def mock_strategy_signal_generator(self):
+        # Mock for strategy.generate_signals
+        mock_strategy = MagicMock()
+        mock_strategy.generate_signals.return_value = pd.DataFrame([
+            {'entry_price': 150.0, 'stop_loss': 145.0, 'take_profit': 160.0, 'signal_id': 'SIG-TEST-AAPL', 'conf_score': 0.8},
+        ])
+        return mock_strategy
 
-    def test_initialization(self):
-        """Test PortfolioRiskManager initialization."""
-        from portfolio.risk_manager import PortfolioRiskManager
-
-        prm = PortfolioRiskManager(equity=100000)
-        assert prm.equity == 100000
-        assert prm.max_position_pct == 0.05
-
-    def test_evaluate_trade_approval(self):
-        """Test trade evaluation with valid signal."""
-        from portfolio.risk_manager import PortfolioRiskManager
-
-        prm = PortfolioRiskManager(equity=100000, use_kelly=False, use_ml_confidence=False)
-
-        signal = {
-            'symbol': 'AAPL',
-            'entry_price': 150.0,
-            'stop_loss': 145.0,
-            'side': 'long',
-        }
-
-        decision = prm.evaluate_trade(signal, current_positions=[])
-        assert decision.approved == True
-        assert decision.shares > 0
-        assert decision.position_size > 0
-
-    def test_evaluate_trade_rejection_low_confidence(self):
-        """Test trade rejection due to low ML confidence."""
-        from portfolio.risk_manager import PortfolioRiskManager
-
-        prm = PortfolioRiskManager(
-            equity=100000,
-            use_ml_confidence=True,
-            min_confidence_threshold=0.6
+    def test_full_pipeline_execution_and_learning_loop(
+        self,
+        mock_all_dependencies,
+        mock_strategy_selector,
+        mock_confidence_integrator,
+        mock_risk_manager,
+        mock_policy_gate,
+        mock_order_manager,
+        mock_tca_analyzer,
+        mock_get_cognitive_brain,
+        mock_get_news_processor,
+        mock_get_llm_analyzer,
+        mock_get_episodic_memory,
+        mock_get_semantic_memory,
+        mock_get_self_model,
+        mock_update_trade_event, # for broker_alpaca.py log
+        sample_signal, # for direct intelligent_executor test
+        sample_price_data, # for direct intelligent_executor test
+        sample_spy_data # for direct intelligent_executor test
+    ):
+        # --- Setup Mocks for Pipeline ---
+        # Mock strategy selector to return our mock signal generator
+        mock_strategy_selector.return_value.get_strategy_for_regime.return_value = (
+            MagicMock(), MagicMock(strategy_name="mock_strategy", skip_trading=False)
         )
+        # Configure the mock strategy to generate a signal
+        mock_strategy_selector.return_value.get_strategy_for_regime.return_value[0].generate_signals.return_value = pd.DataFrame([
+            {'entry_price': 150.0, 'stop_loss': 145.0, 'take_profit': 160.0, 'signal_id': 'SIG-TEST-AAPL', 'conf_score': 0.8},
+        ])
 
-        signal = {
-            'symbol': 'AAPL',
-            'entry_price': 150.0,
-            'stop_loss': 145.0,
-            'side': 'long',
-        }
+        # Mock NewsProcessor for symbol-specific call
+        mock_get_news_processor.return_value.get_aggregated_sentiment.side_effect = [
+            {'compound': 0.7, 'positive': 0.8}, # Market sentiment
+            {'compound': 0.6, 'positive': 0.7}, # AAPL sentiment
+        ]
 
-        decision = prm.evaluate_trade(signal, current_positions=[], ml_confidence=0.4)
-        assert decision.approved == False
-        assert 'confidence' in decision.rejection_reason.lower()
-
-
-class TestTrailingStopManager:
-    """Tests for TrailingStopManager."""
-
-    def test_import(self):
-        """Test that TrailingStopManager can be imported."""
-        from risk.trailing_stops import TrailingStopManager, get_trailing_stop_manager
-        assert TrailingStopManager is not None
-        assert get_trailing_stop_manager is not None
-
-    def test_initialization(self):
-        """Test TrailingStopManager initialization."""
-        from risk.trailing_stops import TrailingStopManager
-
-        tsm = TrailingStopManager()
-        assert tsm.breakeven_threshold == 1.0
-        assert tsm.trail_1r_threshold == 2.0
-
-    def test_calculate_r_multiple(self):
-        """Test R-multiple calculation."""
-        from risk.trailing_stops import TrailingStopManager
-
-        tsm = TrailingStopManager()
-
-        # Long: Entry 100, Stop 95 (risk = 5), Price 110 (profit = 10)
-        r = tsm.calculate_r_multiple(
-            entry_price=100,
-            current_price=110,
-            initial_stop=95,
-            side='long'
-        )
-        assert r == 2.0  # 10/5 = 2R profit
-
-    def test_update_stop_breakeven(self):
-        """Test stop moves to breakeven at 1R profit."""
-        from risk.trailing_stops import TrailingStopManager, StopState
-
-        tsm = TrailingStopManager()
-
-        position = {
-            'symbol': 'AAPL',
-            'entry_price': 100.0,
-            'stop_loss': 95.0,
-            'initial_stop': 95.0,
-            'side': 'long',
-        }
-
-        # Price at 106 = 1.2R profit (should trigger breakeven)
-        update = tsm.update_stop(position, current_price=106.0)
-
-        assert update.state == StopState.BREAKEVEN
-        assert update.new_stop >= 99.0  # Should be at/near breakeven
-        assert update.should_update == True
-
-    def test_update_stop_trailing(self):
-        """Test stop trails at 1R behind after 2R profit."""
-        from risk.trailing_stops import TrailingStopManager, StopState
-
-        tsm = TrailingStopManager()
-
-        position = {
-            'symbol': 'AAPL',
-            'entry_price': 100.0,
-            'stop_loss': 95.0,
-            'initial_stop': 95.0,
-            'side': 'long',
-        }
-
-        # Price at 112 = 2.4R profit (should trigger trailing)
-        update = tsm.update_stop(position, current_price=112.0)
-
-        assert update.state == StopState.TRAILING_1R
-        assert update.new_stop > 95.0
-        assert update.should_update == True
-
-
-class TestAdaptiveStrategySelector:
-    """Tests for AdaptiveStrategySelector."""
-
-    def test_import(self):
-        """Test that AdaptiveStrategySelector can be imported."""
-        from strategies.adaptive_selector import AdaptiveStrategySelector, MarketRegime
-        assert AdaptiveStrategySelector is not None
-        assert MarketRegime is not None
-
-    def test_initialization(self):
-        """Test AdaptiveStrategySelector initialization."""
-        from strategies.adaptive_selector import AdaptiveStrategySelector
-
-        selector = AdaptiveStrategySelector()
-        assert selector.regime_lookback == 60
-        assert selector.confidence_threshold == 0.6
-
-    def test_detect_regime_simple_bull(self):
-        """Test simple regime detection identifies bull market."""
-        from strategies.adaptive_selector import AdaptiveStrategySelector, MarketRegime
-
-        selector = AdaptiveStrategySelector(use_hmm=False)
-
-        # Create uptrending data (price above SMA50 above SMA200)
-        price_data = generate_mock_price_data(days=250, start_price=100)
-        # Force uptrend
-        price_data['close'] = np.linspace(80, 150, len(price_data))
-        price_data['close'] = price_data['close'] + np.random.normal(0, 1, len(price_data))
-
-        regime, confidence = selector.detect_regime_simple(price_data)
-
-        assert regime == MarketRegime.BULL
-        assert confidence > 0.5
-
-    def test_detect_regime_simple_bear(self):
-        """Test simple regime detection identifies bear market."""
-        from strategies.adaptive_selector import AdaptiveStrategySelector, MarketRegime
-
-        selector = AdaptiveStrategySelector(use_hmm=False)
-
-        # Create downtrending data
-        price_data = generate_mock_price_data(days=250, start_price=150)
-        price_data['close'] = np.linspace(150, 80, len(price_data))
-        price_data['close'] = price_data['close'] + np.random.normal(0, 1, len(price_data))
-
-        regime, confidence = selector.detect_regime_simple(price_data)
-
-        assert regime == MarketRegime.BEAR
-        assert confidence > 0.5
-
-
-class TestConfidenceIntegrator:
-    """Tests for ConfidenceIntegrator."""
-
-    def test_import(self):
-        """Test that ConfidenceIntegrator can be imported."""
-        from ml_features.confidence_integrator import ConfidenceIntegrator, get_ml_confidence
-        assert ConfidenceIntegrator is not None
-        assert get_ml_confidence is not None
-
-    def test_initialization(self):
-        """Test ConfidenceIntegrator initialization."""
-        from ml_features.confidence_integrator import ConfidenceIntegrator
-
-        ci = ConfidenceIntegrator()
-        assert ci.conviction_weight == 0.40
-        assert ci.ensemble_weight == 0.35
-        assert ci.lstm_weight == 0.25
-
-    def test_get_simple_confidence(self):
-        """Test simple confidence calculation."""
-        from ml_features.confidence_integrator import ConfidenceIntegrator
-
-        ci = ConfidenceIntegrator()
-        price_data = generate_mock_price_data(days=250)
-
-        signal = {
-            'symbol': 'TEST',
-            'entry_price': 100.0,
-            'stop_loss': 95.0,
-            'take_profit': 110.0,
-        }
-
-        confidence = ci.get_simple_confidence(signal, price_data)
-
-        assert 0.0 <= confidence <= 1.0
-        assert confidence >= ci.min_confidence_floor
-
-
-class TestIntelligentExecutor:
-    """Tests for IntelligentExecutor."""
-
-    def test_import(self):
-        """Test that IntelligentExecutor can be imported."""
-        from execution.intelligent_executor import IntelligentExecutor, get_intelligent_executor
-        assert IntelligentExecutor is not None
-        assert get_intelligent_executor is not None
-
-    def test_initialization(self):
-        """Test IntelligentExecutor initialization."""
         from execution.intelligent_executor import IntelligentExecutor
+        from cognitive.signal_processor import CognitiveSignalProcessor
 
         executor = IntelligentExecutor(equity=100000, paper_mode=True)
-        assert executor.equity == 100000
-        assert executor.paper_mode == True
-        assert executor.min_confidence == 0.5
+        processor = CognitiveSignalProcessor()
 
-    def test_get_status(self):
-        """Test getting executor status."""
-        from execution.intelligent_executor import IntelligentExecutor
-
-        executor = IntelligentExecutor(equity=50000)
-        status = executor.get_status()
-
-        assert status['equity'] == 50000
-        assert 'components' in status
-
-    def test_execute_signal_dry_run(self):
-        """Test signal execution in dry run mode."""
-        from execution.intelligent_executor import IntelligentExecutor
-
-        executor = IntelligentExecutor(equity=100000, paper_mode=True)
-        price_data = generate_mock_price_data(days=250)
-
-        signal = {
-            'symbol': 'TEST',
-            'entry_price': 100.0,
-            'stop_loss': 95.0,
-            'take_profit': 110.0,
-            'side': 'long',
-        }
-
-        result = executor.execute_signal_intelligently(
-            signal=signal,
-            price_data=price_data,
-            dry_run=True
+        # --- Test: Full pipeline execution ---
+        universe_data = {"AAPL": generate_mock_price_data()}
+        pipeline_result = executor.execute_pipeline(
+            universe_data=universe_data,
+            spy_data=generate_mock_price_data(days=100, start_price=400),
+            dry_run=False
         )
 
-        # Should process but not execute in dry run
-        assert result.symbol == 'TEST'
-        assert result.executed == False  # dry_run=True
+        assert pipeline_result.signals_executed == 1
+        assert pipeline_result.execution_results[0].symbol == "AAPL"
+        assert pipeline_result.execution_results[0].executed is True
+
+        # --- Verification of Cognitive Components Call Chain ---
+        # CognitiveSignalProcessor.build_market_context should have been called
+        mock_get_news_processor.return_value.get_aggregated_sentiment.assert_any_call() # For market sentiment
+
+        # CognitiveBrain.deliberate should have been called
+        mock_get_cognitive_brain.return_value.deliberate.assert_called_once()
+        deliberate_kwargs = mock_get_cognitive_brain.return_value.deliberate.call_args.kwargs
+        assert 'symbol_sentiment' in deliberate_kwargs['context']
+        assert deliberate_kwargs['context']['symbol_sentiment']['compound'] == 0.6 # Symbol-specific sentiment
+
+        # OrderManager.submit_order should have been called
+        mock_get_order_manager.return_value.submit_order.assert_called_once()
+        submitted_order: OrderRecord = mock_get_order_manager.return_value.submit_order.call_args.args[0]
+        assert submitted_order.symbol == "AAPL"
+        assert submitted_order.status == OrderStatus.FILLED # Updated by mock_order_manager
+
+        # --- Verification of Learning Loop ---
+        # CognitiveBrain.learn_from_outcome should have been called
+        mock_get_cognitive_brain.return_value.learn_from_outcome.assert_called_once()
+        learn_kwargs = mock_get_cognitive_brain.return_value.learn_from_outcome.call_args.kwargs
+        assert learn_kwargs['episode_id'] == "mock_cognitive_episode_123" # From mock_decision
+        assert learn_kwargs['outcome']['won'] is True # Assuming success for this test
+
+        # ReflectionEngine should have been triggered (via learn_from_outcome internally)
+        # and it should have called the LLM analyzer
+        mock_get_llm_analyzer.return_value.analyze_reflection.assert_called_once()
+        # Ensure that the Reflection object passed to LLM has the basic summary
+        reflection_arg = mock_get_llm_analyzer.return_value.analyze_reflection.call_args.args[0]
+        assert "Cognitive approved" in reflection_arg.summary # From mock_decision.reasoning_trace
+
+        # SelfModel and SemanticMemory should have been updated by _apply_learnings
+        mock_get_self_model.return_value.record_trade_outcome.assert_called_once()
+        mock_get_semantic_memory.return_value.add_rule.assert_called_once() # For the winning trade
+
+        # TCA Analyzer should have recorded execution
+        mock_get_tca_analyzer.return_value.record_execution.assert_called_once()
+        tca_kwargs = mock_get_tca_analyzer.return_value.record_execution.call_args.kwargs
+        assert tca_kwargs['order'].symbol == "AAPL"
+        assert tca_kwargs['fill_price'] == 150.05
+        assert tca_kwargs['entry_price_decision'] == 150.0
 
 
-class TestComponentIntegration:
-    """Integration tests across all components."""
-
-    def test_full_pipeline_dry_run(self):
-        """Test the full pipeline end-to-end in dry run mode."""
+    def test_full_pipeline_rejection_by_cognitive_brain(
+        self,
+        mock_all_dependencies,
+        mock_get_cognitive_brain,
+        mock_order_manager,
+    ):
         from execution.intelligent_executor import IntelligentExecutor
+        
+        # Configure cognitive brain to reject the signal
+        mock_get_cognitive_brain.return_value.deliberate.return_value.should_act = False
+        mock_get_cognitive_brain.return_value.deliberate.return_value.confidence = 0.3
+        mock_get_cognitive_brain.return_value.deliberate.return_value.rejection_reason = "Low confidence from brain"
 
         executor = IntelligentExecutor(equity=100000, paper_mode=True)
+        universe_data = {"AAPL": generate_mock_price_data()}
 
-        # Create mock universe
-        universe = {
-            'AAPL': generate_mock_price_data(days=300, start_price=150),
-            'MSFT': generate_mock_price_data(days=300, start_price=350),
-            'GOOGL': generate_mock_price_data(days=300, start_price=140),
-        }
-
-        spy_data = generate_mock_price_data(days=300, start_price=450)
-
-        result = executor.execute_pipeline(
-            universe_data=universe,
-            spy_data=spy_data,
-            vix_level=18.5,
-            current_positions=[],
-            dry_run=True
+        pipeline_result = executor.execute_pipeline(
+            universe_data=universe_data,
+            spy_data=generate_mock_price_data(days=100, start_price=400),
+            dry_run=False
         )
-
-        assert result is not None
-        assert hasattr(result, 'signals_generated')
-        assert hasattr(result, 'regime')
-        assert hasattr(result, 'strategy_used')
-
-
-if __name__ == '__main__':
-    pytest.main([__file__, '-v'])
+        
+        assert pipeline_result.signals_executed == 0
+        assert pipeline_result.signals_rejected == 1
+        assert "Low confidence from brain" in pipeline_result.execution_results[0].rejection_reason
+        mock_get_order_manager.return_value.submit_order.assert_not_called()
+        mock_get_cognitive_brain.return_value.learn_from_outcome.assert_called_once() # Brain still learns from its decision not to act

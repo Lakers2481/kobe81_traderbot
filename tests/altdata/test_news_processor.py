@@ -75,9 +75,9 @@ def test_get_aggregated_sentiment_overall(mock_sentiment_analyzer):
     # Mock some news for aggregation
     with patch.object(processor, 'fetch_news') as mock_fetch_news:
         mock_fetch_news.return_value = [
-            NewsArticle(id='1', headline='Very positive news', sentiment_score={'compound': 0.8}),
-            NewsArticle(id='2', headline='Neutral report', sentiment_score={'compound': 0.1}),
-            NewsArticle(id='3', headline='Negative outlook', sentiment_score={'compound': -0.7}),
+            NewsArticle(id='1', headline='Very positive news', sentiment_score={'compound': 0.8, 'pos': 0.9, 'neg': 0.0, 'neu': 0.1}),
+            NewsArticle(id='2', headline='Neutral report', sentiment_score={'compound': 0.1, 'pos': 0.2, 'neg': 0.1, 'neu': 0.7}),
+            NewsArticle(id='3', headline='Negative outlook', sentiment_score={'compound': -0.7, 'pos': 0.0, 'neg': 0.8, 'neu': 0.2}),
         ]
         sentiment = processor.get_aggregated_sentiment()
         assert abs(sentiment['compound'] - (0.8 + 0.1 - 0.7) / 3) < 0.001
