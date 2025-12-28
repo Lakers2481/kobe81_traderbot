@@ -71,6 +71,8 @@ class UncertaintySource(Enum):
     CONFLICTING_SIGNALS = "conflicting_signals"
     STALE_DATA = "stale_data"
     UNUSUAL_VOLATILITY = "unusual_volatility"
+    EXTREME_SENTIMENT = "extreme_sentiment"  # Very high or low news/market sentiment
+    EXTREME_MARKET_MOOD = "extreme_market_mood"  # VIX + sentiment combined extreme
     EDGE_CASE = "edge_case" # e.g., an unusually wide stop-loss
 
 
@@ -238,6 +240,55 @@ class KnowledgeBoundary:
             recommendations.append("Reduce position size due to extreme volatility.")
             uncertainty_score += 0.15
 
+        # === CHECK 6: EXTREME SENTIMENT ===
+        # Check for unusually strong positive or negative news sentiment
+        market_sentiment = context.get('market_sentiment', {})
+        compound_sentiment = market_sentiment.get('compound', 0.0)
+        if abs(compound_sentiment) > 0.8:  # Very extreme sentiment (>0.8 or <-0.8)
+            uncertainty_sources.append(UncertaintySource.EXTREME_SENTIMENT)
+            missing_info.append("Neutral market sentiment for clearer decision-making.")
+            if compound_sentiment > 0.8:
+                recommendations.append("Extreme positive sentiment may indicate euphoria or market top risk.")
+            else:
+                recommendations.append("Extreme negative sentiment may indicate panic or capitulation opportunity.")
+            uncertainty_score += 0.15
+        elif abs(compound_sentiment) > 0.6:  # Moderately extreme sentiment
+            # Only mild concern for moderately extreme sentiment
+            if compound_sentiment > 0.6:
+                recommendations.append("Consider that positive sentiment may be overextended.")
+            elif compound_sentiment < -0.6:
+                recommendations.append("Consider that negative sentiment may present opportunity.")
+            uncertainty_score += 0.05
+
+        # === CHECK 7: EXTREME MARKET MOOD (VIX + Sentiment Combined) ===
+        # Check for extreme market mood from MarketMoodAnalyzer
+        is_extreme_mood = context.get('is_extreme_mood', False)
+        market_mood_score = context.get('market_mood_score', 0.0)
+        market_mood_state = context.get('market_mood_state', '')
+
+        if is_extreme_mood:
+            uncertainty_sources.append(UncertaintySource.EXTREME_MARKET_MOOD)
+            if market_mood_score <= -0.7:  # Extreme fear
+                recommendations.append(
+                    f"Market in EXTREME FEAR (mood={market_mood_score:.2f}). "
+                    "Consider standing down or using contrarian approach with reduced size."
+                )
+                # Extreme fear is very high uncertainty
+                uncertainty_score += 0.25
+            elif market_mood_score >= 0.7:  # Extreme greed
+                recommendations.append(
+                    f"Market in EXTREME GREED (mood={market_mood_score:.2f}). "
+                    "Be cautious of potential market top. Consider reducing long exposure."
+                )
+                # Extreme greed adds moderate uncertainty
+                uncertainty_score += 0.20
+            else:
+                # Extreme but not at the very edge
+                recommendations.append(
+                    f"Market mood is extreme ({market_mood_state}). Exercise caution."
+                )
+                uncertainty_score += 0.15
+
         # === FINALIZE ASSESSMENT ===
         uncertainty_score = min(1.0, uncertainty_score)
         is_uncertain = uncertainty_score >= self.uncertainty_threshold
@@ -277,7 +328,7 @@ class KnowledgeBoundary:
     def _generate_invalidators(self, signal: Dict[str, Any], context: Dict[str, Any]) -> List[Invalidator]:
         """Generates a list of "what would change my mind" conditions."""
         invalidators = []
-        
+
         # Example 1: Regime Change Invalidator
         invalidators.append(Invalidator(
             description="The market regime changes before the order is executed.",
@@ -295,6 +346,25 @@ class KnowledgeBoundary:
             importance=0.7,
             time_sensitive=True,
         ))
+
+        # Example 3: Sentiment Shift Invalidator
+        invalidators.append(Invalidator(
+            description="Market sentiment shifts dramatically (>0.5 change in compound score).",
+            data_needed="Real-time news sentiment aggregation.",
+            check_method="sentiment_shift_check",
+            importance=0.6,
+            time_sensitive=True,
+        ))
+
+        # Example 4: Symbol-specific Sentiment Invalidator
+        if symbol := signal.get('symbol'):
+            invalidators.append(Invalidator(
+                description=f"Major negative news breaks for {symbol}.",
+                data_needed=f"Real-time news feed for {symbol}.",
+                check_method="symbol_news_check",
+                importance=0.75,
+                time_sensitive=True,
+            ))
 
         return invalidators
 

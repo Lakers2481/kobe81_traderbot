@@ -317,6 +317,14 @@ class SemanticMemory:
             parts.append(f"regime = {regime}")
         if strategy := episode.signal_context.get('strategy'):
             parts.append(f"strategy = {strategy}")
+        # Extract sentiment condition from market context
+        market_sentiment = episode.market_context.get('market_sentiment', {})
+        if compound := market_sentiment.get('compound'):
+            if compound > 0.5:
+                parts.append("sentiment = positive")
+            elif compound < -0.5:
+                parts.append("sentiment = negative")
+            # Neutral sentiment (between -0.5 and 0.5) is not included as a condition
         return " AND ".join(parts) or "unknown"
 
     def get_all_rules(self, active_only: bool = True) -> List[SemanticRule]:

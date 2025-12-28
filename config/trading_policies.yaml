@@ -1,0 +1,314 @@
+# Dynamic Trading Policies Configuration
+# =======================================
+# Policies define regime-specific trading behavior modifications.
+# They can be activated automatically based on market conditions
+# or manually by the MetacognitiveGovernor.
+#
+# Policy Types:
+#   - crisis: Extreme risk-off measures
+#   - risk_off: Moderate defensive stance
+#   - cautious: Slightly reduced risk appetite
+#   - neutral: Default operating mode
+#   - bull_market_aggression: Increased risk appetite in trending markets
+#   - opportunity: Aggressive positioning for high-conviction setups
+#
+# Each policy specifies:
+#   - activation_conditions: When to automatically activate
+#   - risk_modifications: Changes to position sizing and limits
+#   - execution_modifications: Changes to order execution
+#   - cognitive_modifications: Changes to decision thresholds
+#   - semantic_rules_to_add: Dynamic rules to inject
+
+version: "1.0"
+description: "Dynamic trading policies for Kobe trading system"
+
+# =============================================================================
+# DEFAULT POLICY
+# Normal operating conditions
+# =============================================================================
+default_policy:
+  id: "POLICY_DEFAULT"
+  type: neutral
+  description: "Standard operating mode with balanced risk/reward"
+  risk_modifications:
+    max_position_size_multiplier: 1.0
+    max_daily_trades: 10
+    max_open_positions: 8
+    max_sector_concentration: 0.30
+  execution_modifications:
+    slippage_buffer: 0.001
+    max_spread_pct: 0.005
+  cognitive_modifications:
+    fast_path_threshold: 0.75
+    slow_path_confidence_boost: 0.10
+    require_llm_above_uncertainty: 0.60
+
+# =============================================================================
+# CRISIS POLICY
+# Maximum defensive posture for market crises
+# =============================================================================
+policies:
+  - id: "POLICY_CRISIS"
+    type: crisis
+    description: "Extreme defensive measures during market crisis"
+    priority: 1
+    activation_conditions:
+      vix_min: 40
+      market_mood_max: -0.6
+      # OR condition - either trigger activates
+      or_conditions:
+        - vix_min: 45
+        - market_mood_max: -0.8
+    deactivation_conditions:
+      vix_max: 30
+      market_mood_min: -0.3
+      # Both must be met to deactivate
+    risk_modifications:
+      max_position_size_multiplier: 0.25
+      max_daily_trades: 2
+      max_open_positions: 2
+      max_sector_concentration: 0.50
+      force_hedge_existing: true
+    execution_modifications:
+      slippage_buffer: 0.005
+      max_spread_pct: 0.02
+      reduce_limit_price_aggression: true
+    cognitive_modifications:
+      fast_path_threshold: 0.95  # Almost always use slow path
+      slow_path_confidence_boost: 0.20
+      require_llm_above_uncertainty: 0.30
+      stand_down_on_uncertainty: true
+    semantic_rules_to_add:
+      - id: "CRISIS_DYNAMIC_001"
+        condition: "side = LONG"
+        verdict: REQUIRE_SLOW_PATH
+        confidence: 0.90
+        rationale: "All longs require maximum deliberation in crisis"
+
+  # ===========================================================================
+  # RISK OFF POLICY
+  # Moderate defensive stance
+  # ===========================================================================
+  - id: "POLICY_RISK_OFF"
+    type: risk_off
+    description: "Defensive posture for elevated risk conditions"
+    priority: 2
+    activation_conditions:
+      vix_min: 28
+      market_mood_max: -0.3
+    deactivation_conditions:
+      vix_max: 22
+      market_mood_min: 0.0
+    risk_modifications:
+      max_position_size_multiplier: 0.50
+      max_daily_trades: 5
+      max_open_positions: 4
+      max_sector_concentration: 0.35
+    execution_modifications:
+      slippage_buffer: 0.003
+      max_spread_pct: 0.01
+    cognitive_modifications:
+      fast_path_threshold: 0.85
+      slow_path_confidence_boost: 0.15
+      require_llm_above_uncertainty: 0.45
+    semantic_rules_to_add:
+      - id: "RISK_OFF_DYNAMIC_001"
+        condition: "beta > 1.3 AND side = LONG"
+        verdict: REDUCE_SIZE
+        confidence: 0.80
+        reduction_factor: 0.6
+        rationale: "Reduce high-beta long exposure in risk-off"
+
+  # ===========================================================================
+  # CAUTIOUS POLICY
+  # Slightly reduced risk
+  # ===========================================================================
+  - id: "POLICY_CAUTIOUS"
+    type: cautious
+    description: "Cautious stance for uncertain conditions"
+    priority: 3
+    activation_conditions:
+      regime: "CHOPPY"
+      # OR
+      or_conditions:
+        - vix_min: 22
+          market_mood_range: [-0.2, 0.2]
+    deactivation_conditions:
+      regime_not: "CHOPPY"
+      vix_max: 18
+    risk_modifications:
+      max_position_size_multiplier: 0.75
+      max_daily_trades: 7
+      max_open_positions: 6
+      max_sector_concentration: 0.25
+    execution_modifications:
+      slippage_buffer: 0.002
+      max_spread_pct: 0.007
+    cognitive_modifications:
+      fast_path_threshold: 0.80
+      slow_path_confidence_boost: 0.12
+      require_llm_above_uncertainty: 0.50
+
+  # ===========================================================================
+  # BULL MARKET AGGRESSION POLICY
+  # Increased risk appetite in confirmed uptrends
+  # ===========================================================================
+  - id: "POLICY_BULL_AGG"
+    type: bull_market_aggression
+    description: "Aggressive positioning in confirmed bull markets"
+    priority: 4
+    activation_conditions:
+      regime: "BULL"
+      vix_max: 18
+      market_mood_min: 0.3
+    deactivation_conditions:
+      regime_not: "BULL"
+      vix_min: 22
+      market_mood_max: 0.1
+    risk_modifications:
+      max_position_size_multiplier: 1.25
+      max_daily_trades: 15
+      max_open_positions: 12
+      max_sector_concentration: 0.35
+    execution_modifications:
+      slippage_buffer: 0.0005
+      max_spread_pct: 0.003
+      increase_limit_price_aggression: true
+    cognitive_modifications:
+      fast_path_threshold: 0.70
+      slow_path_confidence_boost: 0.08
+      require_llm_above_uncertainty: 0.65
+    semantic_rules_to_add:
+      - id: "BULL_AGG_DYNAMIC_001"
+        condition: "side = LONG AND cognitive_confidence > 0.7"
+        verdict: CONFIRM_LONG_DUE_TO_ALIGNMENT
+        confidence: 0.75
+        confidence_boost: 0.08
+        rationale: "Momentum favorable for long positions"
+
+  # ===========================================================================
+  # OPPORTUNITY POLICY
+  # High conviction mode for exceptional setups
+  # ===========================================================================
+  - id: "POLICY_OPPORTUNITY"
+    type: opportunity
+    description: "Aggressive mode for high-conviction opportunities"
+    priority: 5
+    activation_conditions:
+      # Must be manually activated or triggered by curiosity engine discovery
+      manual_only: true
+      curiosity_edge_confidence_min: 0.85
+    deactivation_conditions:
+      duration_hours_max: 48
+      trades_executed_max: 5
+    risk_modifications:
+      max_position_size_multiplier: 1.50
+      max_daily_trades: 20
+      max_open_positions: 10
+    execution_modifications:
+      slippage_buffer: 0.0003
+      max_spread_pct: 0.002
+      priority_execution: true
+    cognitive_modifications:
+      fast_path_threshold: 0.65
+      slow_path_confidence_boost: 0.05
+
+  # ===========================================================================
+  # EARNINGS SEASON POLICY
+  # Special handling during earnings announcements
+  # ===========================================================================
+  - id: "POLICY_EARNINGS_SEASON"
+    type: cautious
+    description: "Careful positioning during earnings season"
+    priority: 3
+    activation_conditions:
+      earnings_season: true
+      earnings_density_min: 0.3  # >30% of holdings reporting soon
+    deactivation_conditions:
+      earnings_season: false
+      earnings_density_max: 0.1
+    risk_modifications:
+      max_position_size_multiplier: 0.60
+      max_daily_trades: 5
+      max_open_positions: 5
+      avoid_earnings_window_days: 3
+    execution_modifications:
+      slippage_buffer: 0.004
+      max_spread_pct: 0.015
+    cognitive_modifications:
+      fast_path_threshold: 0.90
+      require_llm_above_uncertainty: 0.40
+    semantic_rules_to_add:
+      - id: "EARNINGS_DYNAMIC_001"
+        condition: "has_earnings = true AND days_to_earnings <= 5"
+        verdict: COMPLIANCE_BLOCK
+        confidence: 0.95
+        rationale: "Avoid binary event risk"
+
+  # ===========================================================================
+  # LEARNING MODE POLICY
+  # Activated when system detects need for exploration
+  # ===========================================================================
+  - id: "POLICY_LEARNING"
+    type: cautious
+    description: "Conservative mode while system is learning new patterns"
+    priority: 6
+    activation_conditions:
+      # Triggered by CuriosityEngine when many hypotheses are pending
+      pending_hypotheses_min: 10
+      hypothesis_validation_rate_max: 0.4
+    deactivation_conditions:
+      pending_hypotheses_max: 3
+      hypothesis_validation_rate_min: 0.6
+    risk_modifications:
+      max_position_size_multiplier: 0.50
+      max_daily_trades: 5
+      max_open_positions: 4
+    cognitive_modifications:
+      fast_path_threshold: 0.90
+      slow_path_confidence_boost: 0.20
+      require_llm_above_uncertainty: 0.35
+      increase_exploration: true
+
+# =============================================================================
+# POLICY TRANSITION RULES
+# How to handle transitions between policies
+# =============================================================================
+transition_rules:
+  # Minimum time between policy changes (prevents oscillation)
+  min_policy_duration_minutes: 30
+
+  # How to handle conflicting policies
+  conflict_resolution: "highest_priority_wins"
+
+  # Grace period before full policy activation
+  activation_ramp_minutes: 5
+
+  # Grace period before full policy deactivation
+  deactivation_ramp_minutes: 10
+
+  # Notification settings
+  notify_on_activation: true
+  notify_on_deactivation: true
+  log_policy_changes: true
+
+# =============================================================================
+# LLM POLICY GENERATION CONSTRAINTS
+# Limits on what the LLM can propose for dynamic policies
+# =============================================================================
+llm_policy_constraints:
+  # Maximum adjustments the LLM can propose
+  max_position_size_multiplier_range: [0.25, 1.50]
+  max_daily_trades_range: [1, 25]
+  max_open_positions_range: [1, 15]
+
+  # Policies that cannot be modified by LLM
+  protected_policies:
+    - "POLICY_CRISIS"
+    - "POLICY_DEFAULT"
+
+  # Require human confirmation for these changes
+  require_confirmation:
+    - position_size_multiplier_change_gt: 0.25
+    - daily_trades_change_gt: 5
+    - new_semantic_rules: true

@@ -110,6 +110,12 @@ class Episode:
     # --- Metadata ---
     tags: List[str] = field(default_factory=list)
     importance: float = 0.5  # Subjective score (0-1) of how valuable this memory is for future learning.
+    metadata: Dict[str, Any] = field(default_factory=dict)  # Generic metadata storage
+
+    # --- Simulation Fields (Task B2) ---
+    is_simulated: bool = False  # True if this episode was generated synthetically
+    simulation_source: Optional[str] = None  # e.g., 'counterfactual', 'hypothesis_test', 'stress_test'
+    simulation_params: Dict[str, Any] = field(default_factory=dict)  # Parameters used to generate
 
     def to_dict(self) -> Dict:
         """Serializes the Episode to a dictionary for storage."""

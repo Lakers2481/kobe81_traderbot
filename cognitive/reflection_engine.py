@@ -50,7 +50,8 @@ logger = logging.getLogger(__name__)
 class Reflection:
     """
     A structured report containing the output of a reflection process.
-    This now includes a field for critique from an external LLM.
+    This now includes a field for critique from an external LLM and
+    proposed cognitive parameter adjustments (Task B1).
     """
     scope: str  # The scope of the reflection: "episode", "daily", "weekly".
     timestamp: datetime = field(default_factory=datetime.now)
@@ -64,6 +65,8 @@ class Reflection:
     confidence_adjustment: float = 0.0 # A suggested global confidence adjustment.
     # --- New field for LLM integration ---
     llm_critique: Optional[str] = None # Stores the meta-analysis from the LLM.
+    # --- Meta-metacognitive field (Task B1) ---
+    cognitive_adjustments: Optional[Dict[str, Any]] = None  # Proposed param adjustments
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict:
@@ -81,6 +84,7 @@ class Reflection:
             'behavior_changes': self.behavior_changes,
             'confidence_adjustment': self.confidence_adjustment,
             'llm_critique': self.llm_critique,
+            'cognitive_adjustments': self.cognitive_adjustments,
             'metadata': self.metadata,
         }
 
@@ -97,10 +101,11 @@ class ReflectionEngine:
         self._semantic_memory = None
         self._self_model = None
         self._workspace = None
-        self._llm_analyzer = None # Add the new LLM analyzer
+        self._llm_analyzer = None  # LLM analyzer for meta-reflection
+        self._curiosity_engine = None  # CuriosityEngine for hypothesis testing
 
         self._reflections: List[Reflection] = []
-        self._max_reflections = 100 # Limit the history of reflections.
+        self._max_reflections = 100  # Limit the history of reflections.
 
         logger.info("ReflectionEngine initialized.")
 
@@ -132,13 +137,38 @@ class ReflectionEngine:
             self._llm_analyzer = get_llm_analyzer()
         return self._llm_analyzer
 
+    @property
+    def curiosity_engine(self):
+        """Lazy-loads the CuriosityEngine."""
+        if self._curiosity_engine is None:
+            from cognitive.curiosity_engine import get_curiosity_engine
+            self._curiosity_engine = get_curiosity_engine()
+        return self._curiosity_engine
+
     def reflect_on_episode(self, episode: Any) -> Reflection:
         """
         Performs a detailed reflection on a single completed trading episode.
         This now includes a meta-reflection step using an LLM.
+
+        Note: Simulated episodes (Task B2) are weighted with 0.5x confidence
+        to ensure real experience is valued more highly than synthetic data.
         """
         from cognitive.episodic_memory import EpisodeOutcome
         reflection = Reflection(scope="episode")
+
+        # --- 0. Check for Simulated Episode (Task B2) ---
+        # Simulated episodes get reduced weight in learning
+        is_simulated = getattr(episode, 'is_simulated', False)
+        simulation_weight = 0.5 if is_simulated else 1.0
+
+        if is_simulated:
+            reflection.metadata['is_simulated'] = True
+            reflection.metadata['simulation_source'] = getattr(episode, 'simulation_source', 'unknown')
+            reflection.metadata['simulation_weight'] = simulation_weight
+            reflection.lessons.append(
+                f"[SIMULATED] This learning is from synthetic data ({episode.simulation_source or 'unknown'}) "
+                f"and carries {simulation_weight:.0%} weight."
+            )
 
         # --- 1. Analyze the Outcome (Internal Analysis) ---
         if episode.outcome == EpisodeOutcome.WIN:
@@ -157,12 +187,31 @@ class ReflectionEngine:
 
         # --- 3. Perform Meta-Reflection with LLM ---
         # Pass the initial reflection to the LLM for a deeper, more abstract critique.
+        # The LLM now returns an LLMAnalysisResult with critique, hypotheses, and strategy ideas.
         if self.llm_analyzer:
-            llm_critique = self.llm_analyzer.analyze_reflection(reflection)
-            if llm_critique:
-                reflection.llm_critique = llm_critique
-                # Potentially extract new hypotheses from the critique here in a future step.
+            llm_result = self.llm_analyzer.analyze_reflection(reflection)
+            if llm_result.critique:
+                reflection.llm_critique = llm_result.critique
                 logger.info("LLM meta-reflection critique added.")
+
+            # Pass any extracted hypotheses to the CuriosityEngine for testing
+            if llm_result.hypotheses:
+                added = self.curiosity_engine.add_llm_generated_hypotheses(llm_result.hypotheses)
+                if added:
+                    logger.info(f"Added {len(added)} LLM hypotheses to CuriosityEngine.")
+
+            # Pass any extracted strategy ideas to the CuriosityEngine
+            if llm_result.strategy_ideas:
+                strategy_records = self.curiosity_engine.add_llm_generated_strategy_ideas(llm_result.strategy_ideas)
+                if strategy_records:
+                    logger.info(f"Added {len(strategy_records)} LLM strategy ideas to CuriosityEngine.")
+
+        # --- 3.5 Propose Cognitive Parameter Adjustments (Task B1) ---
+        # Ask the self-model if any cognitive parameters should be adjusted based on efficiency data
+        cognitive_adjustments = self.self_model.propose_cognitive_param_adjustments()
+        if cognitive_adjustments.get('pending_count', 0) > 0:
+            reflection.cognitive_adjustments = cognitive_adjustments
+            logger.info(f"Proposed {cognitive_adjustments['pending_count']} cognitive parameter adjustments.")
 
         # --- 4. Apply the Learnings ---
         # This is the most critical step: turning reflection into concrete changes.
@@ -292,17 +341,25 @@ class ReflectionEngine:
 
         # 3. Update Semantic Memory: Create or modify general rules based on the experience.
         # This is how a single experience becomes generalized knowledge.
+        # Apply simulation weight (Task B2) to reduce confidence for synthetic data
+        is_simulated = getattr(episode, 'is_simulated', False)
+        simulation_weight = 0.5 if is_simulated else 1.0
         context_condition = f"regime = {episode.market_context.get('regime', 'unknown')} AND strategy = {episode.signal_context.get('strategy', 'unknown')}"
-        
+
+        # Build tags including simulation flag if applicable
+        base_tags = ['reflection', 'auto-generated']
+        if is_simulated:
+            base_tags.append('simulated')
+
         if episode.outcome == EpisodeOutcome.LOSS and "Overconfident" in " ".join(reflection.what_went_wrong):
              # If we were overconfident and lost, create a rule to be more cautious.
             self.semantic_memory.add_rule(
                 condition=context_condition,
                 action="reduce_confidence",
                 parameters={'reason': f"Past overconfident loss in this context ({reflection.summary})"},
-                confidence=0.7, # Start with medium confidence in the new rule.
+                confidence=0.7 * simulation_weight,  # Apply simulation weight
                 source=f"Reflection on episode {episode.episode_id}",
-                tags=['reflection', 'caution', 'auto-generated']
+                tags=base_tags + ['caution']
             )
         elif episode.outcome == EpisodeOutcome.WIN and "justified" in " ".join(reflection.what_went_well):
             # If we were confident and won, reinforce that behavior.
@@ -310,10 +367,34 @@ class ReflectionEngine:
                 condition=context_condition,
                 action="increase_confidence",
                 parameters={'reason': f"Past justified high-confidence win ({reflection.summary})"},
-                confidence=0.6,
+                confidence=0.6 * simulation_weight,  # Apply simulation weight
                 source=f"Reflection on episode {episode.episode_id}",
-                tags=['reflection', 'positive', 'auto-generated']
+                tags=base_tags + ['positive']
             )
+
+        # 4. Record Cognitive Efficiency Feedback (Task B1)
+        # Track which decision mode (fast/slow/hybrid) worked in which context
+        try:
+            decision_mode = episode.metadata.get('decision_mode', 'slow') if hasattr(episode, 'metadata') and isinstance(episode.metadata, dict) else 'slow'
+            decision_time_ms = episode.metadata.get('decision_time_ms', 0) if hasattr(episode, 'metadata') and isinstance(episode.metadata, dict) else 0
+            # Ensure decision_time_ms is numeric
+            if not isinstance(decision_time_ms, (int, float)):
+                decision_time_ms = 0
+        except (AttributeError, TypeError):
+            decision_mode = 'slow'
+            decision_time_ms = 0
+
+        llm_summary = reflection.llm_critique[:200] if reflection.llm_critique else None
+
+        self.self_model.record_cognitive_efficiency_feedback(
+            decision_id=episode.episode_id,
+            decision_mode_used=decision_mode,
+            strategy=episode.signal_context.get('strategy', 'unknown'),
+            regime=episode.market_context.get('regime', 'unknown'),
+            actual_pnl=episode.pnl,
+            llm_critique_summary=llm_summary,
+            time_taken_ms=float(decision_time_ms),
+        )
 
     def periodic_reflection(self, lookback_hours: int = 24) -> Reflection:
         """
@@ -348,7 +429,20 @@ class ReflectionEngine:
         
         # Add LLM critique to periodic reflection as well
         if self.llm_analyzer:
-            reflection.llm_critique = self.llm_analyzer.analyze_reflection(reflection)
+            llm_result = self.llm_analyzer.analyze_reflection(reflection)
+            if llm_result.critique:
+                reflection.llm_critique = llm_result.critique
+            # Pass any extracted hypotheses to the CuriosityEngine
+            if llm_result.hypotheses:
+                added = self.curiosity_engine.add_llm_generated_hypotheses(llm_result.hypotheses)
+                if added:
+                    logger.info(f"Periodic reflection added {len(added)} LLM hypotheses.")
+            # Pass any extracted strategy ideas to the CuriosityEngine
+            # Periodic reflections are great times for strategy innovation
+            if llm_result.strategy_ideas:
+                strategy_records = self.curiosity_engine.add_llm_generated_strategy_ideas(llm_result.strategy_ideas)
+                if strategy_records:
+                    logger.info(f"Periodic reflection added {len(strategy_records)} LLM strategy ideas.")
 
         self.workspace.publish(topic='reflection', data=reflection.to_dict(), source='ReflectionEngine')
         logger.info(reflection.summary)
@@ -383,3 +477,14 @@ class ReflectionEngine:
             f"I have performed {len(self._reflections)} reflections and extracted {total_lessons} lessons.\n"
             "My purpose is to learn from every action, win or lose, to continuously improve."
         )
+
+
+# --- Singleton Implementation ---
+_reflection_engine: Optional[ReflectionEngine] = None
+
+def get_reflection_engine() -> ReflectionEngine:
+    """Factory function to get the singleton instance of ReflectionEngine."""
+    global _reflection_engine
+    if _reflection_engine is None:
+        _reflection_engine = ReflectionEngine()
+    return _reflection_engine

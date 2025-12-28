@@ -232,3 +232,13 @@ cognitive:
   curiosity:
     max_hypotheses: 50                # Maximum active hypotheses
     validation_threshold: 0.7         # Confidence needed to promote hypothesis
+
+  # MarketMoodAnalyzer settings (Task A2)
+  market_mood:
+    vix_weight: 0.6                   # Weight for VIX in mood calculation
+    sentiment_weight: 0.4             # Weight for sentiment in mood calculation
+    extreme_threshold: 0.7            # |mood_score| threshold for extreme mood
+    vix_fear_level: 25.0              # VIX level indicating fear
+    vix_greed_level: 15.0             # VIX level indicating greed
+    vix_extreme_fear_level: 35.0      # VIX level indicating extreme fear
+    vix_extreme_greed_level: 12.0     # VIX level indicating extreme greed

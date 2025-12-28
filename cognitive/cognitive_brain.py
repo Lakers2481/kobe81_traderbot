@@ -147,6 +147,8 @@ class CognitiveBrain:
         self._reflection_engine = None
         self._knowledge_boundary = None
         self._curiosity_engine = None
+        self._symbolic_reasoner = None
+        self._policy_generator = None
 
         # Internal state tracking
         self._initialized = False
@@ -235,6 +237,20 @@ class CognitiveBrain:
             from cognitive.curiosity_engine import CuriosityEngine
             self._curiosity_engine = CuriosityEngine()
         return self._curiosity_engine
+
+    @property
+    def symbolic_reasoner(self):
+        if self._symbolic_reasoner is None:
+            from cognitive.symbolic_reasoner import get_symbolic_reasoner
+            self._symbolic_reasoner = get_symbolic_reasoner()
+        return self._symbolic_reasoner
+
+    @property
+    def policy_generator(self):
+        if self._policy_generator is None:
+            from cognitive.dynamic_policy_generator import get_policy_generator
+            self._policy_generator = get_policy_generator()
+        return self._policy_generator
 
     def deliberate(
         self,
@@ -407,6 +423,91 @@ class CognitiveBrain:
         # Clamp the final value between 0 and 1.
         confidence = max(0, min(1, confidence))
         reasoning_trace.append(f"Final calculated confidence: {confidence:.2f}")
+
+        # === Step 5.5: Symbolic Reasoning Override (Task B3) ===
+        # Apply neuro-symbolic reasoning rules to potentially override or adjust
+        # the neural network's confidence based on explicit trading rules.
+        try:
+            # Get market mood score from context
+            market_mood_score = context.get('market_mood_score', 0.0)
+
+            # Get self-model status for symbolic evaluation
+            self_model_status = {
+                'strategy_regime_weakness': False,
+                'calibration_drift': 0.0,
+                'situation_novelty': 0.0,
+            }
+            try:
+                strategy = signal.get('strategy', 'unknown')
+                regime = context.get('regime', 'unknown')
+                should_stand, _ = self.self_model.should_stand_down(strategy, regime)
+                self_model_status['strategy_regime_weakness'] = should_stand
+            except Exception:
+                pass
+
+            # Evaluate symbolic rules
+            from cognitive.symbolic_reasoner import SymbolicVerdictType
+            verdict = self.symbolic_reasoner.reason(
+                market_context=context,
+                signal_data=signal,
+                cognitive_confidence=confidence,
+                market_mood_score=market_mood_score,
+                self_model_status=self_model_status,
+            )
+
+            # Apply symbolic verdict
+            if verdict.verdict_type == SymbolicVerdictType.COMPLIANCE_BLOCK:
+                # Hard compliance block - immediate stand-down
+                elapsed_ms = int((time.time() - start_time) * 1000)
+                self._decision_count += 1
+                reasoning_trace.append(f"Symbolic Override: COMPLIANCE_BLOCK - {verdict.suggested_action}")
+                for rule_id in verdict.triggered_rules[:3]:
+                    reasoning_trace.append(f"  Triggered rule: {rule_id}")
+                return CognitiveDecision(
+                    decision_type=DecisionType.STAND_DOWN, should_act=False, action=None,
+                    confidence=0.0, reasoning_trace=reasoning_trace, concerns=concerns,
+                    knowledge_gaps=knowledge_gaps, invalidators=invalidators,
+                    episode_id=episode_id, decision_mode=decision_mode,
+                    processing_time_ms=elapsed_ms,
+                    metadata={'symbolic_verdict': verdict.to_dict()},
+                )
+
+            elif verdict.should_override:
+                # Override verdict - reduce confidence
+                old_confidence = confidence
+                confidence = confidence * (1 - verdict.override_strength)
+                reasoning_trace.append(
+                    f"Symbolic Override: {verdict.verdict_type.value} reduced confidence "
+                    f"from {old_confidence:.2f} to {confidence:.2f}"
+                )
+                for reason in verdict.reasoning_chain[:3]:
+                    reasoning_trace.append(f"  Reason: {reason}")
+                concerns.append(f"Symbolic override: {verdict.verdict_type.value}")
+
+            elif verdict.confidence_boost > 0:
+                # Confirmation verdict - boost confidence
+                old_confidence = confidence
+                confidence = min(1.0, confidence + verdict.confidence_boost)
+                reasoning_trace.append(
+                    f"Symbolic Confirmation: {verdict.verdict_type.value} boosted confidence "
+                    f"from {old_confidence:.2f} to {confidence:.2f}"
+                )
+
+            elif verdict.size_reduction < 1.0:
+                # Size reduction verdict - will be applied later
+                reasoning_trace.append(
+                    f"Symbolic Sizing: Position size will be reduced by factor {verdict.size_reduction:.2f}"
+                )
+
+            elif verdict.verdict_type == SymbolicVerdictType.REQUIRE_SLOW_PATH:
+                # Force slow path if not already in it
+                if decision_mode == 'fast':
+                    reasoning_trace.append("Symbolic Override: Forcing slow path for deeper analysis")
+                    decision_mode = 'slow'
+
+        except Exception as e:
+            logger.warning(f"Symbolic reasoning error (continuing without): {e}")
+            reasoning_trace.append(f"Symbolic reasoning skipped due to error: {e}")
 
         # === Step 6: Make Decision ===
         if confidence < self.min_confidence_to_act:
@@ -647,6 +748,15 @@ class CognitiveBrain:
                 'semantic_memory': self.semantic_memory.get_stats(),
                 'curiosity_engine': self.curiosity_engine.get_stats(),
                 'governor': self.governor.get_routing_stats(),
+                'symbolic_reasoner': {
+                    'enabled': self.symbolic_reasoner.enabled,
+                    'rules_count': len(self.symbolic_reasoner.get_rules()),
+                },
+                'policy_generator': {
+                    'enabled': self.policy_generator.enabled,
+                    'policies_count': len(self.policy_generator.get_all_policies()),
+                    'active_policy': self.policy_generator.get_active_policy().policy_id if self.policy_generator.get_active_policy() else None,
+                },
             }
         }
 
@@ -679,6 +789,16 @@ class CognitiveBrain:
             "Knowledge Boundary Status",
             "-" * 40,
             self.knowledge_boundary.introspect(),
+            "",
+            "-" * 40,
+            "Symbolic Reasoner Status",
+            "-" * 40,
+            self.symbolic_reasoner.introspect(),
+            "",
+            "-" * 40,
+            "Dynamic Policy Generator Status",
+            "-" * 40,
+            self.policy_generator.introspect(),
             "",
             "=" * 60,
         ]

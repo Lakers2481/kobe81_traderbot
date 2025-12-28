@@ -1,0 +1,217 @@
+# Symbolic Rules for Neuro-Symbolic Market Reasoning
+# ===================================================
+# These rules combine symbolic logic with neural network outputs to make
+# trading decisions. Rules are evaluated in priority order (lower = higher priority).
+#
+# Condition Syntax:
+#   - Comparisons: =, !=, >, <, >=, <=
+#   - Logical: AND, OR, NOT
+#   - Variables: vix, regime, side, market_mood_score, cognitive_confidence,
+#                is_prohibited, sector, beta, has_earnings, days_to_earnings
+#
+# Verdict Types:
+#   - PASS_THROUGH: No modification, allow normal processing
+#   - OVERRIDE_LONG_DUE_TO_MACRO_RISK: Block long trades due to macro conditions
+#   - OVERRIDE_SHORT_DUE_TO_MACRO_RISK: Block short trades due to macro conditions
+#   - CONFIRM_LONG_DUE_TO_ALIGNMENT: Boost confidence for aligned long trades
+#   - CONFIRM_SHORT_DUE_TO_ALIGNMENT: Boost confidence for aligned short trades
+#   - SUGGEST_HEDGE: Recommend protective hedging
+#   - COMPLIANCE_BLOCK: Hard block for compliance reasons
+#   - REDUCE_SIZE: Reduce position size
+#   - REQUIRE_SLOW_PATH: Force deliberative processing
+
+version: "1.0"
+description: "Neuro-symbolic trading rules for Kobe trading system"
+
+# =============================================================================
+# MACRO RISK RULES
+# These rules override neural network signals when macro conditions are extreme
+# =============================================================================
+macro_risk_rules:
+  - id: "MACRO_001"
+    name: "VIX Spike Long Block"
+    description: "Block new long positions when VIX is extremely elevated"
+    condition: "vix >= 35 AND side = LONG AND regime != BEAR"
+    verdict: OVERRIDE_LONG_DUE_TO_MACRO_RISK
+    confidence: 0.85
+    priority: 10
+    rationale: "Extreme fear conditions historically precede further downside"
+
+  - id: "MACRO_002"
+    name: "VIX Extreme Fear Hedge Suggestion"
+    description: "Suggest hedging when VIX shows extreme fear"
+    condition: "vix >= 40 AND has_positions = true"
+    verdict: SUGGEST_HEDGE
+    confidence: 0.90
+    priority: 5
+    rationale: "VIX > 40 indicates market stress requiring protection"
+
+  - id: "MACRO_003"
+    name: "Low VIX Short Caution"
+    description: "Reduce short exposure when VIX is extremely low (complacency)"
+    condition: "vix <= 12 AND side = SHORT"
+    verdict: REDUCE_SIZE
+    confidence: 0.70
+    priority: 20
+    reduction_factor: 0.5
+    rationale: "Extremely low VIX often precedes volatility expansion"
+
+  - id: "MACRO_004"
+    name: "Bear Market Long Reduction"
+    description: "Reduce long position sizes in confirmed bear markets"
+    condition: "regime = BEAR AND side = LONG"
+    verdict: REDUCE_SIZE
+    confidence: 0.75
+    priority: 15
+    reduction_factor: 0.6
+    rationale: "Mean reversion less reliable in persistent downtrends"
+
+# =============================================================================
+# ALIGNMENT RULES
+# These rules boost confidence when multiple signals align
+# =============================================================================
+alignment_rules:
+  - id: "ALIGN_001"
+    name: "Bull Regime Long Alignment"
+    description: "Confirm long trades when regime and mood align bullishly"
+    condition: "regime = BULL AND market_mood_score > 0.3 AND side = LONG"
+    verdict: CONFIRM_LONG_DUE_TO_ALIGNMENT
+    confidence: 0.80
+    priority: 30
+    confidence_boost: 0.10
+    rationale: "Trend following in confirmed bull markets"
+
+  - id: "ALIGN_002"
+    name: "Bear Regime Short Alignment"
+    description: "Confirm short trades when regime and mood align bearishly"
+    condition: "regime = BEAR AND market_mood_score < -0.3 AND side = SHORT"
+    verdict: CONFIRM_SHORT_DUE_TO_ALIGNMENT
+    confidence: 0.80
+    priority: 30
+    confidence_boost: 0.10
+    rationale: "Trend following in confirmed bear markets"
+
+  - id: "ALIGN_003"
+    name: "High Confidence Fast Path"
+    description: "Allow fast path when cognitive confidence is very high"
+    condition: "cognitive_confidence >= 0.85 AND regime != CHOPPY"
+    verdict: PASS_THROUGH
+    confidence: 0.90
+    priority: 40
+    rationale: "Trust high-confidence signals in stable regimes"
+
+  - id: "ALIGN_004"
+    name: "Low Confidence Slow Path"
+    description: "Force slow path when confidence is low or regime is choppy"
+    condition: "cognitive_confidence < 0.5 OR regime = CHOPPY"
+    verdict: REQUIRE_SLOW_PATH
+    confidence: 0.85
+    priority: 25
+    rationale: "Deliberate more carefully in uncertain conditions"
+
+# =============================================================================
+# COMPLIANCE RULES
+# Hard blocks for regulatory and risk management compliance
+# =============================================================================
+compliance_rules:
+  - id: "COMP_001"
+    name: "Prohibited Symbol Block"
+    description: "Block trading in prohibited symbols"
+    condition: "is_prohibited = true"
+    verdict: COMPLIANCE_BLOCK
+    confidence: 1.0
+    priority: 1
+    rationale: "Regulatory compliance - no exceptions"
+
+  - id: "COMP_002"
+    name: "Earnings Proximity Block"
+    description: "Block new positions too close to earnings"
+    condition: "has_earnings = true AND days_to_earnings <= 2"
+    verdict: COMPLIANCE_BLOCK
+    confidence: 0.95
+    priority: 2
+    rationale: "Avoid binary event risk from earnings"
+
+  - id: "COMP_003"
+    name: "Extreme Mood Stand Down"
+    description: "Stand down during extreme market emotional states"
+    condition: "market_mood_score >= 0.9 OR market_mood_score <= -0.9"
+    verdict: COMPLIANCE_BLOCK
+    confidence: 0.90
+    priority: 3
+    rationale: "Avoid trading during market extremes"
+
+  - id: "COMP_004"
+    name: "Kill Switch Active"
+    description: "Block all trading when kill switch is engaged"
+    condition: "kill_switch_active = true"
+    verdict: COMPLIANCE_BLOCK
+    confidence: 1.0
+    priority: 0
+    rationale: "Emergency halt - absolute compliance"
+
+# =============================================================================
+# SECTOR-SPECIFIC RULES
+# Adjust behavior based on sector characteristics
+# =============================================================================
+sector_rules:
+  - id: "SECT_001"
+    name: "Tech Sector High Beta Caution"
+    description: "Reduce size for high-beta tech in volatile conditions"
+    condition: "sector = Technology AND beta > 1.5 AND vix > 25"
+    verdict: REDUCE_SIZE
+    confidence: 0.75
+    priority: 35
+    reduction_factor: 0.7
+    rationale: "High-beta tech amplifies market moves"
+
+  - id: "SECT_002"
+    name: "Utilities Defensive Boost"
+    description: "Boost confidence for defensive utilities in risk-off"
+    condition: "sector = Utilities AND vix > 25 AND side = LONG"
+    verdict: CONFIRM_LONG_DUE_TO_ALIGNMENT
+    confidence: 0.70
+    priority: 45
+    confidence_boost: 0.05
+    rationale: "Utilities outperform in risk-off environments"
+
+  - id: "SECT_003"
+    name: "Financials Interest Rate Sensitivity"
+    description: "Require slow path for financials during rate uncertainty"
+    condition: "sector = Financials AND rate_uncertainty = high"
+    verdict: REQUIRE_SLOW_PATH
+    confidence: 0.65
+    priority: 50
+    rationale: "Financials highly sensitive to rate expectations"
+
+# =============================================================================
+# SELF-MODEL INTEGRATION RULES
+# Use cognitive self-awareness in decision making
+# =============================================================================
+self_model_rules:
+  - id: "SELF_001"
+    name: "Strategy Weakness Override"
+    description: "Override when self-model shows strategy weakness in current regime"
+    condition: "strategy_regime_weakness = true AND cognitive_confidence < 0.6"
+    verdict: REQUIRE_SLOW_PATH
+    confidence: 0.80
+    priority: 20
+    rationale: "System recognizes its own limitations"
+
+  - id: "SELF_002"
+    name: "Calibration Drift Alert"
+    description: "Force slow path when calibration shows systematic bias"
+    condition: "calibration_drift > 0.15"
+    verdict: REQUIRE_SLOW_PATH
+    confidence: 0.75
+    priority: 22
+    rationale: "Confidence estimates may be unreliable"
+
+  - id: "SELF_003"
+    name: "Novel Situation Detection"
+    description: "Slow down when episodic memory has few similar situations"
+    condition: "situation_novelty > 0.8"
+    verdict: REQUIRE_SLOW_PATH
+    confidence: 0.85
+    priority: 18
+    rationale: "Limited experience with this market condition"

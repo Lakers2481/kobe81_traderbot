@@ -268,3 +268,16 @@ def get_cognitive_curiosity_config() -> Dict[str, Any]:
         "max_hypotheses": int(get_setting("cognitive.curiosity.max_hypotheses", 50)),
         "validation_threshold": float(get_setting("cognitive.curiosity.validation_threshold", 0.7)),
     }
+
+
+def get_market_mood_config() -> Dict[str, Any]:
+    """Get MarketMoodAnalyzer configuration."""
+    return {
+        "vix_weight": float(get_setting("cognitive.market_mood.vix_weight", 0.6)),
+        "sentiment_weight": float(get_setting("cognitive.market_mood.sentiment_weight", 0.4)),
+        "extreme_threshold": float(get_setting("cognitive.market_mood.extreme_threshold", 0.7)),
+        "vix_fear_level": float(get_setting("cognitive.market_mood.vix_fear_level", 25.0)),
+        "vix_greed_level": float(get_setting("cognitive.market_mood.vix_greed_level", 15.0)),
+        "vix_extreme_fear_level": float(get_setting("cognitive.market_mood.vix_extreme_fear_level", 35.0)),
+        "vix_extreme_greed_level": float(get_setting("cognitive.market_mood.vix_extreme_greed_level", 12.0)),
+    }

@@ -71,6 +71,7 @@ class EscalationReason(Enum):
     CONFLICTING_SIGNALS = "conflicting_signals"
     SELF_MODEL_CONCERN = "self_model_concern" # AI's self-model indicates it's not good at this.
     RESOURCE_AVAILABLE = "resource_available" # Has spare compute, so can afford to think deeper.
+    EXTREME_MARKET_MOOD = "extreme_market_mood"  # Market in extreme fear/greed state.
 
 
 class StandDownReason(Enum):
@@ -81,6 +82,7 @@ class StandDownReason(Enum):
     HIGH_UNCERTAINTY = "high_uncertainty"
     CONFLICTING_ADVICE = "conflicting_advice"
     SELF_DOUBT = "self_doubt"
+    EXTREME_MARKET_MOOD = "extreme_market_mood"  # Market mood is dangerously extreme.
 
 
 @dataclass
@@ -171,7 +173,14 @@ class MetacognitiveGovernor:
         self._correct_routings = 0
         self._total_routings = 0
 
+        # --- Meta-metacognitive state (Task B1) ---
+        # Context-specific threshold adjustments: {context_key: {param: value}}
+        self._adaptive_thresholds: Dict[str, Dict[str, float]] = {}
+        self._adjustment_audit_log: List[Dict[str, Any]] = []
+        self._pending_adjustments: List[Dict[str, Any]] = []
+
         self._self_model = None # Lazy-loaded dependency.
+        self._policy_generator = None  # Lazy-loaded policy generator.
         logger.info("MetacognitiveGovernor initialized with config-driven settings.")
 
     @property
@@ -181,6 +190,160 @@ class MetacognitiveGovernor:
             from cognitive.self_model import get_self_model
             self._self_model = get_self_model()
         return self._self_model
+
+    @property
+    def policy_generator(self):
+        """Lazy-loads the DynamicPolicyGenerator for policy-based routing."""
+        if self._policy_generator is None:
+            from cognitive.dynamic_policy_generator import get_policy_generator
+            self._policy_generator = get_policy_generator()
+        return self._policy_generator
+
+    # ==========================================================================
+    # ADAPTIVE THRESHOLDS (Task B1: Meta-Metacognitive Self-Configuration)
+    # ==========================================================================
+
+    def get_adaptive_threshold(
+        self,
+        param_name: str,
+        strategy: Optional[str] = None,
+        regime: Optional[str] = None,
+    ) -> float:
+        """
+        Gets an adaptive threshold for a parameter, potentially adjusted for context.
+
+        This enables context-specific tuning of cognitive parameters. For example,
+        the fast_confidence_threshold might be higher in volatile markets.
+
+        Args:
+            param_name: The parameter name (e.g., 'fast_confidence_threshold')
+            strategy: Optional strategy context
+            regime: Optional regime context
+
+        Returns:
+            The threshold value, adjusted if a context-specific override exists.
+        """
+        # First, check for context-specific override
+        if strategy and regime:
+            context_key = f"{strategy.lower()}|{regime.lower()}"
+            if context_key in self._adaptive_thresholds:
+                if param_name in self._adaptive_thresholds[context_key]:
+                    return self._adaptive_thresholds[context_key][param_name]
+
+        # Fall back to global adaptive adjustment (if any)
+        if 'global' in self._adaptive_thresholds:
+            if param_name in self._adaptive_thresholds['global']:
+                return self._adaptive_thresholds['global'][param_name]
+
+        # Fall back to default threshold
+        return getattr(self, param_name, 0.5)
+
+    def apply_proposed_adjustments(
+        self,
+        adjustments: List[Dict[str, Any]],
+        require_confirmation: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Applies proposed cognitive parameter adjustments from the SelfModel.
+
+        This is how the AI tunes its own cognitive parameters based on learned
+        efficiency data.
+
+        Args:
+            adjustments: List of adjustment dicts with param_name, proposed_value, context
+            require_confirmation: If True, adds to pending; if False, applies immediately
+
+        Returns:
+            Dict with applied count, pending count, and details
+        """
+        from datetime import datetime
+
+        applied = []
+        pending = []
+
+        for adj in adjustments:
+            param_name = adj.get('param_name')
+            proposed_value = adj.get('proposed_value')
+            context = adj.get('context', 'global')
+            adjustment_id = adj.get('adjustment_id', 'unknown')
+
+            if param_name is None or proposed_value is None:
+                continue
+
+            if require_confirmation:
+                # Add to pending for human review
+                pending_adj = {
+                    'adjustment_id': adjustment_id,
+                    'param_name': param_name,
+                    'proposed_value': proposed_value,
+                    'context': context,
+                    'rationale': adj.get('rationale', ''),
+                    'requested_at': datetime.now().isoformat(),
+                }
+                self._pending_adjustments.append(pending_adj)
+                pending.append(pending_adj)
+            else:
+                # Apply immediately
+                if context not in self._adaptive_thresholds:
+                    self._adaptive_thresholds[context] = {}
+
+                old_value = self._adaptive_thresholds.get(context, {}).get(
+                    param_name, getattr(self, param_name, None)
+                )
+                self._adaptive_thresholds[context][param_name] = proposed_value
+
+                applied_adj = {
+                    'adjustment_id': adjustment_id,
+                    'param_name': param_name,
+                    'old_value': old_value,
+                    'new_value': proposed_value,
+                    'context': context,
+                    'applied_at': datetime.now().isoformat(),
+                }
+                self._adjustment_audit_log.append(applied_adj)
+                applied.append(applied_adj)
+
+                # Mark as applied in SelfModel
+                if self.self_model:
+                    self.self_model.mark_adjustment_applied(adjustment_id)
+
+                logger.info(
+                    f"Applied cognitive adjustment: {param_name} = {proposed_value} "
+                    f"(was {old_value}) in context '{context}'"
+                )
+
+        return {
+            'applied': applied,
+            'pending': pending,
+            'applied_count': len(applied),
+            'pending_count': len(pending),
+        }
+
+    def confirm_pending_adjustment(self, adjustment_id: str) -> bool:
+        """Confirms and applies a pending adjustment by its ID."""
+        for adj in self._pending_adjustments[:]:
+            if adj.get('adjustment_id') == adjustment_id:
+                self._pending_adjustments.remove(adj)
+                self.apply_proposed_adjustments([adj], require_confirmation=False)
+                return True
+        return False
+
+    def reject_pending_adjustment(self, adjustment_id: str) -> bool:
+        """Rejects and removes a pending adjustment by its ID."""
+        for adj in self._pending_adjustments[:]:
+            if adj.get('adjustment_id') == adjustment_id:
+                self._pending_adjustments.remove(adj)
+                logger.info(f"Rejected cognitive adjustment: {adjustment_id}")
+                return True
+        return False
+
+    def get_pending_adjustments(self) -> List[Dict[str, Any]]:
+        """Returns all pending adjustments awaiting confirmation."""
+        return self._pending_adjustments.copy()
+
+    def get_adjustment_history(self, limit: int = 50) -> List[Dict[str, Any]]:
+        """Returns recent adjustment audit log entries."""
+        return self._adjustment_audit_log[-limit:]
 
     def route_decision(
         self,
@@ -204,11 +367,13 @@ class MetacognitiveGovernor:
         decision_id = str(uuid.uuid4())[:8]
         escalation_reasons = []
 
+        # Extract context for adaptive thresholds (Task B1)
+        strategy = signal.get('strategy', 'unknown')
+        regime = context.get('regime', 'unknown')
+
         # === CHECK 1: CONSULT SELF-MODEL ===
         # First, ask the self-model: "Am I any good at this?"
         if self.self_model:
-            strategy = signal.get('strategy', 'unknown')
-            regime = context.get('regime', 'unknown')
             if self.self_model.should_stand_down(strategy, regime)[0]:
                 return self._create_stand_down(decision_id, StandDownReason.KNOWN_LIMITATION,
                                                f"Self-model indicates poor performance in {strategy}/{regime}.")
@@ -216,17 +381,21 @@ class MetacognitiveGovernor:
                 escalation_reasons.append(EscalationReason.SELF_MODEL_CONCERN)
 
         # === CHECK 2: INITIAL CONFIDENCE ===
-        # Use the fast confidence score as a primary indicator.
+        # Use adaptive thresholds based on context (Task B1)
         confidence = fast_confidence or context.get('confidence', 0.5)
-        if confidence < self.stand_down_threshold:
+        stand_down_thresh = self.get_adaptive_threshold('stand_down_threshold', strategy, regime)
+        slow_conf_thresh = self.get_adaptive_threshold('slow_confidence_threshold', strategy, regime)
+
+        if confidence < stand_down_thresh:
             return self._create_stand_down(decision_id, StandDownReason.HIGH_UNCERTAINTY,
-                                           f"Initial confidence {confidence:.2f} is below stand-down threshold.")
-        if confidence < self.slow_confidence_threshold:
+                                           f"Initial confidence {confidence:.2f} is below stand-down threshold ({stand_down_thresh:.2f}).")
+        if confidence < slow_conf_thresh:
             escalation_reasons.append(EscalationReason.LOW_CONFIDENCE)
 
         # === CHECK 3: HIGH STAKES ===
         # Is this a particularly large or risky trade? If so, think harder.
-        if signal.get('position_pct', 0) > self.high_stakes_position_pct:
+        high_stakes_thresh = self.get_adaptive_threshold('high_stakes_position_pct', strategy, regime)
+        if signal.get('position_pct', 0) > high_stakes_thresh:
             escalation_reasons.append(EscalationReason.HIGH_STAKES)
 
         # === CHECK 4: NOVELTY ===
@@ -239,10 +408,76 @@ class MetacognitiveGovernor:
         if context.get('conflicting_signals', False):
             escalation_reasons.append(EscalationReason.CONFLICTING_SIGNALS)
 
+        # === CHECK 6: EXTREME MARKET MOOD ===
+        # Is the market in an extreme emotional state (fear/greed)?
+        is_extreme_mood = context.get('is_extreme_mood', False)
+        market_mood_score = context.get('market_mood_score', 0.0)
+
+        if is_extreme_mood:
+            # For very extreme mood (|score| >= 0.9), consider standing down
+            if abs(market_mood_score) >= 0.9:
+                return self._create_stand_down(
+                    decision_id,
+                    StandDownReason.EXTREME_MARKET_MOOD,
+                    f"Market mood is dangerously extreme (score={market_mood_score:.2f}). "
+                    "Recommend waiting for calmer conditions."
+                )
+            # For extreme but not critical, add as escalation reason
+            escalation_reasons.append(EscalationReason.EXTREME_MARKET_MOOD)
+
+        # === CHECK 7: ACTIVE POLICY MODIFICATIONS (Task B3) ===
+        # Evaluate and apply any active trading policy's cognitive modifications
+        active_policy = None
+        policy_force_slow_path = False
+        policy_stand_down_on_uncertainty = False
+
+        try:
+            active_policy = self.policy_generator.evaluate_policy_activation(
+                market_context=context,
+                mood_score=market_mood_score,
+                regime=regime,
+            )
+
+            if active_policy:
+                cog_mods = active_policy.cognitive_modifications
+                # Check if policy requires slow path
+                if cog_mods.get('require_slow_path', False):
+                    policy_force_slow_path = True
+                    logger.debug(f"Policy {active_policy.policy_id} requires slow path")
+
+                # Check if policy requires stand-down on any uncertainty
+                if cog_mods.get('stand_down_on_uncertainty', False) and escalation_reasons:
+                    return self._create_stand_down(
+                        decision_id,
+                        StandDownReason.HIGH_UNCERTAINTY,
+                        f"Policy '{active_policy.policy_id}' requires stand-down on uncertainty. "
+                        f"Escalation reasons: {[r.value for r in escalation_reasons]}"
+                    )
+
+                # Apply policy-specific thresholds if available
+                if 'fast_path_threshold' in cog_mods:
+                    # Use policy threshold temporarily for this decision
+                    policy_fast_thresh = cog_mods['fast_path_threshold']
+                    if policy_fast_thresh > self.fast_confidence_threshold:
+                        # Higher threshold means we're more likely to need slow path
+                        if confidence < policy_fast_thresh:
+                            escalation_reasons.append(EscalationReason.LOW_CONFIDENCE)
+
+        except Exception as e:
+            logger.warning(f"Policy evaluation error (continuing without): {e}")
 
         # === MAKE ROUTING DECISION ===
         # The number of red flags determines the cognitive path.
-        if len(escalation_reasons) >= 2:
+        # Use adaptive thresholds (Task B1)
+        fast_conf_thresh = self.get_adaptive_threshold('fast_confidence_threshold', strategy, regime)
+
+        # Check if active policy forces slow path (Task B3)
+        if policy_force_slow_path:
+            mode = ProcessingMode.SLOW
+            max_compute = self.default_slow_budget_ms
+            self._slow_decisions += 1
+            logger.debug(f"Policy override: forcing slow path for decision {decision_id}")
+        elif len(escalation_reasons) >= 2:
             # Multiple concerns warrant a full, slow deliberation.
             mode = ProcessingMode.SLOW
             max_compute = self.default_slow_budget_ms
@@ -253,7 +488,7 @@ class MetacognitiveGovernor:
             mode = ProcessingMode.HYBRID
             max_compute = self.default_fast_budget_ms + self.default_slow_budget_ms // 2
             self._slow_decisions += 1 # Counted as slow because it involves deliberation.
-        elif confidence >= self.fast_confidence_threshold:
+        elif confidence >= fast_conf_thresh:
             # No red flags and high confidence -> trust the fast path.
             mode = ProcessingMode.FAST
             max_compute = self.default_fast_budget_ms
@@ -274,7 +509,11 @@ class MetacognitiveGovernor:
             escalation_reasons=escalation_reasons,
             stand_down_reason=None,
             max_compute_ms=max_compute,
-            metadata={'input_confidence': confidence}
+            metadata={
+                'input_confidence': confidence,
+                'active_policy': active_policy.policy_id if active_policy else None,
+                'policy_force_slow_path': policy_force_slow_path,
+            }
         )
 
         self._record_decision(routing)

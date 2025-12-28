@@ -45,6 +45,20 @@ from cognitive.knowledge_boundary import KnowledgeBoundary
 from cognitive.curiosity_engine import CuriosityEngine
 from cognitive.cognitive_brain import CognitiveBrain, get_cognitive_brain
 from cognitive.signal_processor import CognitiveSignalProcessor, get_signal_processor
+from cognitive.symbolic_reasoner import (
+    SymbolicReasoner,
+    SymbolicVerdict,
+    SymbolicVerdictType,
+    SymbolicRule,
+    get_symbolic_reasoner,
+)
+from cognitive.dynamic_policy_generator import (
+    DynamicPolicyGenerator,
+    TradingPolicy,
+    PolicyType,
+    PolicyStatus,
+    get_policy_generator,
+)
 
 __all__ = [
     'GlobalWorkspace',
@@ -57,10 +71,20 @@ __all__ = [
     'CuriosityEngine',
     'CognitiveBrain',
     'CognitiveSignalProcessor',
+    'SymbolicReasoner',
+    'SymbolicVerdict',
+    'SymbolicVerdictType',
+    'SymbolicRule',
+    'DynamicPolicyGenerator',
+    'TradingPolicy',
+    'PolicyType',
+    'PolicyStatus',
     'get_workspace',
     'get_self_model',
     'get_episodic_memory',
     'get_semantic_memory',
     'get_cognitive_brain',
     'get_signal_processor',
+    'get_symbolic_reasoner',
+    'get_policy_generator',
 ]
