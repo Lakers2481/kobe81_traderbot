@@ -102,11 +102,18 @@ class TestStructuredLog:
 
         log_file = tmp_path / "events.jsonl"
         monkeypatch.setattr(structured_log, 'LOG_FILE', log_file)
-        # Reset file handler so it uses the new log file
+        # Close existing handler before resetting
+        if structured_log._file_handler is not None:
+            structured_log._file_handler.close()
         monkeypatch.setattr(structured_log, '_file_handler', None)
 
         # Log an event
         structured_log.jlog("test_event", key="value")
+
+        # Close handler to avoid ResourceWarning
+        if structured_log._file_handler is not None:
+            structured_log._file_handler.close()
+            structured_log._file_handler = None
 
         # File should exist
         assert log_file.exists()
@@ -126,7 +133,9 @@ class TestStructuredLog:
 
         log_file = tmp_path / "events.jsonl"
         monkeypatch.setattr(structured_log, 'LOG_FILE', log_file)
-        # Reset file handler so it uses the new log file
+        # Close existing handler before resetting
+        if structured_log._file_handler is not None:
+            structured_log._file_handler.close()
         monkeypatch.setattr(structured_log, '_file_handler', None)
 
         # Log at different levels
@@ -134,6 +143,11 @@ class TestStructuredLog:
         structured_log.jlog("info_event", level="INFO")
         structured_log.jlog("warning_event", level="WARNING")
         structured_log.jlog("error_event", level="ERROR")
+
+        # Close handler to avoid ResourceWarning
+        if structured_log._file_handler is not None:
+            structured_log._file_handler.close()
+            structured_log._file_handler = None
 
         # Count lines
         with open(log_file) as f:
