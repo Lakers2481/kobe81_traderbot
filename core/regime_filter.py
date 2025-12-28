@@ -71,7 +71,7 @@ def compute_regime_mask(
         df["sma_fast"] = np.nan
 
     # Compute realized volatility (annualized)
-    df["returns"] = df["close"].pct_change()
+    df["returns"] = df["close"].pct_change(fill_method=None)
     df["realized_vol"] = df["returns"].rolling(window=vol_window, min_periods=vol_window).std() * np.sqrt(252)
 
     # Trend condition: close > SMA(slow)

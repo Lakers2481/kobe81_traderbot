@@ -426,7 +426,7 @@ class RegimeDetectorML:
 
         # Higher confidence when volatility is stable
         if 'vol_20d' in features_df.columns:
-            vol_change = features_df['vol_20d'].pct_change(5).abs()
+            vol_change = features_df['vol_20d'].pct_change(5, fill_method=None).abs()
             confidence += (1 - vol_change.clip(0, 1)) * 0.2
 
         # Higher confidence when trend is clear

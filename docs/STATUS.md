@@ -1,9 +1,9 @@
 # Kobe81 Traderbot - STATUS
 
-> **Last Updated:** 2025-12-29 09:30 UTC
+> **Last Updated:** 2025-12-28 21:00 UTC
 > **Verified By:** Claude Code (v2.2 QUANT INTERVIEW READY - 60.2% WR, 1.44 PF combined)
 > **Document Type:** AI GOVERNANCE & SYSTEM BLUEPRINT
-> **Audit Status:** FULLY VERIFIED - 413 tests passing, backtest confirmed
+> **Audit Status:** FULLY VERIFIED - 869 tests passing (4 skipped), 0 warnings, all modules importable
 
 ---
 
@@ -321,12 +321,14 @@ conf_score = 0.8 * ML_probability + 0.2 * sentiment_score
 - All 10 ML/AI verification steps passing
 - Scanner with ML+sentiment blending
 - Cognitive evaluation with graceful fallbacks
-- **Cognitive layer fully tested (238 unit tests)**
+- **Cognitive layer fully tested (257 unit tests)**
 - **Cognitive config centralized in base.yaml**
 - EOD_LEARNING scheduled (Friday 17:00 ET)
 - Heartbeat system (every 1 minute)
 - Morning reports with calibration tables
 - **Data pipeline documented (docs/DATA_PIPELINE.md)**
+- **All 869 tests passing (0 warnings)**
+- **All core modules importable (core, oms, cognitive, strategies)**
 
 ### Pending / Known Gaps
 | Item | Status | Notes |
@@ -413,7 +415,42 @@ conf_score = 0.8 * ML_probability + 0.2 * sentiment_score
 
 ## Recent Changes (2025-12-28)
 
-### Strategy Optimization v2.2 (LATEST - QUANT INTERVIEW READY)
+### System Hardening & Warning Fixes (LATEST)
+**869 tests passing, 4 skipped, 0 warnings**
+
+| Fix | File | Description |
+|-----|------|-------------|
+| Missing `__init__.py` | `core/__init__.py` | Created with proper exports (hash_chain, structured_log, config_pin, kill_switch) |
+| Missing `__init__.py` | `oms/__init__.py` | Created with OrderRecord, OrderStatus, IdempotencyStore exports |
+| Tkinter skip | `tests/test_backtest_enhanced.py` | Added pytest skip for GUI-dependent tests |
+| FutureWarning | `core/regime_filter.py:74` | Added `fill_method=None` to `pct_change()` |
+| FutureWarning | `ml_features/regime_ml.py:429` | Added `fill_method=None` to `pct_change(5)` |
+| FutureWarning | `tests/unit/test_ml_features.py:224` | Explicit int cast for volume spike |
+| MarketMoodAnalyzer | `cognitive/signal_processor.py` | Wired VIX+sentiment fusion into build_market_context() |
+| Cognitive test | `tests/test_cognitive_system.py` | Fixed test_record_limitation, test_routing_fast_path |
+
+**New Files Added:**
+- `strategies/ibs_rsi/` - IBS+RSI strategy module with README
+- `strategies/ict/README.md` - ICT Turtle Soup documentation
+- `tests/oms/test_order_state.py` - OMS unit tests
+
+**Core Module Verification (All Pass):**
+```python
+from core import append_block, verify_chain, jlog, sha256_file
+from core import is_kill_switch_active, activate_kill_switch, deactivate_kill_switch
+from oms import OrderRecord, OrderStatus, IdempotencyStore
+from cognitive import CognitiveBrain, GlobalWorkspace, SelfModel, EpisodicMemory
+from strategies.dual_strategy.combined import DualStrategyScanner
+from risk.policy_gate import PolicyGate
+from backtest.engine import Backtester
+from execution.broker_alpaca import get_best_ask, place_ioc_limit
+from data.providers.polygon_eod import fetch_daily_bars_polygon
+from altdata.market_mood_analyzer import MarketMoodAnalyzer
+```
+
+---
+
+### Strategy Optimization v2.2 (QUANT INTERVIEW READY)
 **Target: 55%+ WR, 1.3+ PF - BOTH STRATEGIES PASS**
 
 #### Final Parameter Configuration

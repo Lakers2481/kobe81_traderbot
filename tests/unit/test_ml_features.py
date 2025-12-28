@@ -220,8 +220,8 @@ class TestAnomalyDetection:
         detector = AnomalyDetector()
 
         df = create_ohlcv_data(num_days=100)
-        # Add a volume spike
-        df.loc[80, 'volume'] = df['volume'].mean() * 10
+        # Add a volume spike (explicit cast to avoid dtype warning)
+        df.loc[80, 'volume'] = int(df['volume'].mean() * 10)
 
         result = detector.detect_all(df)
 
