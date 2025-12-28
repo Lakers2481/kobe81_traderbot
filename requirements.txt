@@ -24,8 +24,8 @@ pandas-datareader>=0.10
 
 # Technical Analysis
 ta>=0.11.0
+pandas-ta-classic # For technical indicators on Python 3.11
 # pandas-ta requires Python 3.12+, install manually if needed:
-# pip install pandas-ta  # 150+ technical indicators
 
 # ML & AI Features
 stumpy>=1.12  # Matrix profile for anomaly detection
@@ -43,6 +43,8 @@ plotly>=5.18
 pytest>=7.4
 pytest-cov>=4.1
 pytest-asyncio>=0.21
+pytest-mock>=3.12
+requests-mock>=1.11
 
 # Type Checking
 mypy>=1.7
