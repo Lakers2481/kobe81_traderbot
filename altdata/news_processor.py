@@ -327,7 +327,151 @@ class NewsProcessor:
             'negative': sum(neg_scores) / len(neg_scores),
             'neutral': sum(neu_scores) / len(neu_scores),
         }
-        
+
+    def get_narrative_interpretation(
+        self,
+        symbols: Optional[List[str]] = None,
+        lookback_minutes: int = 60,
+    ) -> Dict[str, Any]:
+        """
+        Get LLM narrative interpretation of recent news using Claude's human-like reasoning.
+
+        This method combines:
+        1. Recent news articles for the specified symbols
+        2. VADER sentiment scores as quantitative baseline
+        3. Claude LLM analysis for qualitative interpretation
+
+        Args:
+            symbols: List of symbols to focus on (optional)
+            lookback_minutes: How far back to look for news
+
+        Returns:
+            Dict containing:
+            - interpretation: Human-readable narrative (from Claude or deterministic)
+            - articles: List of raw article dicts
+            - aggregated_sentiment: VADER aggregated scores
+            - generation_method: "claude" or "deterministic"
+        """
+        # Fetch recent news articles
+        end_date = datetime.now()
+        start_date = end_date - timedelta(minutes=lookback_minutes)
+
+        articles = self.fetch_news(
+            symbols=symbols,
+            start_date=start_date,
+            end_date=end_date,
+            limit=20,
+        )
+
+        # Get aggregated VADER sentiment
+        aggregated = self.get_aggregated_sentiment(symbols=symbols, lookback_minutes=lookback_minutes)
+
+        if not articles:
+            return {
+                'interpretation': 'No recent news articles available for analysis.',
+                'articles': [],
+                'aggregated_sentiment': aggregated,
+                'generation_method': 'none',
+            }
+
+        # Try to use LLM analyzer for narrative interpretation
+        interpretation = ""
+        generation_method = "deterministic"
+
+        try:
+            from cognitive.llm_trade_analyzer import get_trade_analyzer
+            analyzer = get_trade_analyzer()
+
+            # Convert articles to dicts for the analyzer
+            article_dicts = [a.to_dict() for a in articles]
+
+            interpretation = analyzer.interpret_sentiment(
+                articles=article_dicts,
+                aggregated_sentiment=aggregated,
+                symbols=symbols,
+            )
+
+            if analyzer.api_available:
+                generation_method = "claude"
+
+        except ImportError:
+            logger.debug("LLM trade analyzer not available, using deterministic interpretation")
+            interpretation = self._deterministic_interpretation(articles, aggregated)
+        except Exception as e:
+            logger.warning(f"LLM interpretation failed: {e}, using deterministic fallback")
+            interpretation = self._deterministic_interpretation(articles, aggregated)
+
+        return {
+            'interpretation': interpretation,
+            'articles': [a.to_dict() for a in articles],
+            'aggregated_sentiment': aggregated,
+            'generation_method': generation_method,
+        }
+
+    def _deterministic_interpretation(
+        self,
+        articles: List[NewsArticle],
+        aggregated: Dict[str, float],
+    ) -> str:
+        """
+        Generate a deterministic narrative interpretation when LLM is unavailable.
+
+        Uses template-based generation based on sentiment scores and article content.
+        """
+        compound = aggregated.get('compound', 0.0)
+        article_count = len(articles)
+
+        # Determine overall tone
+        if compound > 0.3:
+            tone = "predominantly positive"
+            impact = "supportive of bullish positioning"
+            emoji = "positive"
+        elif compound > 0.1:
+            tone = "mildly positive"
+            impact = "slightly supportive of risk-on trades"
+            emoji = "neutral-positive"
+        elif compound < -0.3:
+            tone = "predominantly negative"
+            impact = "suggesting caution and defensive positioning"
+            emoji = "negative"
+        elif compound < -0.1:
+            tone = "mildly negative"
+            impact = "warranting some caution on new longs"
+            emoji = "neutral-negative"
+        else:
+            tone = "neutral to mixed"
+            impact = "unlikely to significantly drive market direction"
+            emoji = "neutral"
+
+        # Extract key headlines
+        key_headlines = []
+        for article in articles[:3]:
+            headline = article.headline[:60]
+            sent = article.sentiment_score.get('compound', 0)
+            direction = "+" if sent > 0.1 else "-" if sent < -0.1 else "~"
+            key_headlines.append(f"[{direction}] {headline}")
+
+        # Build interpretation
+        interpretation_parts = [
+            f"News flow ({article_count} articles) is {tone} with aggregate sentiment of {compound:.2f}.",
+            f"This reading is {impact}.",
+        ]
+
+        if key_headlines:
+            interpretation_parts.append("Key headlines:")
+            interpretation_parts.extend([f"  {h}" for h in key_headlines])
+
+        # Add symbol-specific notes if articles mention specific tickers
+        mentioned_symbols = set()
+        for article in articles:
+            mentioned_symbols.update(article.symbols)
+
+        if mentioned_symbols:
+            symbols_str = ", ".join(list(mentioned_symbols)[:5])
+            interpretation_parts.append(f"Symbols in focus: {symbols_str}")
+
+        return "\n".join(interpretation_parts)
+
     def introspect(self) -> str:
         """Generates an introspection report for the NewsProcessor."""
         api_status = "connected" if (self._api_available and self._use_real_api) else "simulated"

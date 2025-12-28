@@ -38,6 +38,13 @@ from ml_meta.features import compute_features_frame
 from ml_meta.model import load_model, predict_proba, FEATURE_COLS
 from altdata.sentiment import load_daily_cache, normalize_sentiment_to_conf
 
+# LLM Trade Analyzer (human-like reasoning)
+try:
+    from cognitive.llm_trade_analyzer import get_trade_analyzer, DailyInsightReport
+    LLM_ANALYZER_AVAILABLE = True
+except ImportError:
+    LLM_ANALYZER_AVAILABLE = False
+
 # Quality Gate System (v2.0 - reduces ~50/week to ~5/week)
 try:
     from risk.signal_quality_gate import filter_to_best_signals, get_quality_gate
@@ -293,6 +300,17 @@ Examples:
         "-v",
         action="store_true",
         help="Verbose output",
+    )
+    ap.add_argument(
+        "--narrative",
+        action="store_true",
+        help="Generate Claude LLM narrative analysis for picks (human-like reasoning)",
+    )
+    ap.add_argument(
+        "--out-insights",
+        type=str,
+        default=str(ROOT / "logs" / "daily_insights.json"),
+        help="Output JSON file for daily insights with LLM narratives",
     )
     args = ap.parse_args()
 
@@ -661,6 +679,168 @@ Examples:
                     print(f"\nWrote: {totd_path}")
                 else:
                     print("No TOTD due to low confidence or no picks.")
+
+                # === LLM NARRATIVE ANALYSIS ===
+                # Generate human-like reasoning for picks using Claude
+                if args.narrative and LLM_ANALYZER_AVAILABLE and not out.empty:
+                    print("\n" + "=" * 60)
+                    print("GENERATING LLM ANALYSIS (Claude Human-Like Reasoning)")
+                    print("=" * 60)
+
+                    try:
+                        analyzer = get_trade_analyzer()
+
+                        # Build market context
+                        regime = "NEUTRAL"
+                        regime_conf = 0.5
+                        vix = 20.0
+                        sentiment_data = {}
+
+                        # Get regime from SPY data
+                        if spy_bars is not None and not spy_bars.empty:
+                            try:
+                                spy_close = spy_bars['close'].iloc[-1]
+                                spy_sma200 = spy_bars['close'].rolling(200).mean().iloc[-1]
+                                if spy_close > spy_sma200 * 1.02:
+                                    regime = "BULL"
+                                    regime_conf = min(0.7 + (spy_close / spy_sma200 - 1) * 2, 0.95)
+                                elif spy_close < spy_sma200 * 0.98:
+                                    regime = "BEAR"
+                                    regime_conf = min(0.7 + (1 - spy_close / spy_sma200) * 2, 0.95)
+                                else:
+                                    regime = "NEUTRAL"
+                                    regime_conf = 0.6
+                            except Exception:
+                                pass
+
+                        # Get sentiment if available
+                        try:
+                            end_day = pd.to_datetime(end_date).date().isoformat()
+                            sent_df = load_daily_cache(end_day)
+                            if not sent_df.empty and 'sent_mean' in sent_df.columns:
+                                sentiment_data = {
+                                    'compound': float(sent_df['sent_mean'].mean()),
+                                    'positive': 0.0,
+                                    'negative': 0.0,
+                                }
+                        except Exception:
+                            sentiment_data = {'compound': 0.0}
+
+                        market_context = {
+                            'regime': regime,
+                            'regime_confidence': regime_conf,
+                            'vix': vix,
+                            'sentiment': sentiment_data,
+                            'spy_position': f"{'above' if regime == 'BULL' else 'below' if regime == 'BEAR' else 'near'} SMA(200)",
+                        }
+
+                        # Get news articles if available
+                        news_articles = []
+                        try:
+                            from altdata.news_processor import get_news_processor
+                            news_proc = get_news_processor()
+                            symbols = out['symbol'].tolist() if 'symbol' in out.columns else []
+                            articles = news_proc.fetch_news(symbols=symbols, limit=10)
+                            news_articles = [a.to_dict() for a in articles] if articles else []
+                        except Exception:
+                            pass
+
+                        # Generate full insight report
+                        totd_dict = totd.iloc[0].to_dict() if not totd.empty and approve_totd else None
+                        report = analyzer.generate_daily_insight_report(
+                            picks=out,
+                            totd=totd_dict,
+                            market_context=market_context,
+                            news_articles=news_articles,
+                            sentiment=sentiment_data,
+                            all_signals=signals,
+                        )
+
+                        # Save insights to JSON
+                        insights_path = Path(args.out_insights)
+                        insights_path.parent.mkdir(parents=True, exist_ok=True)
+                        with open(insights_path, 'w', encoding='utf-8') as f:
+                            json.dump(report.to_dict(), f, indent=2, default=str)
+                        print(f"\nInsights saved: {insights_path}")
+
+                        # Print narrative output
+                        print("\n" + "-" * 60)
+                        print("MARKET SUMMARY")
+                        print("-" * 60)
+                        print(report.market_summary)
+
+                        print("\n" + "-" * 60)
+                        print("REGIME ASSESSMENT")
+                        print("-" * 60)
+                        print(report.regime_assessment)
+
+                        if report.top3_narratives:
+                            print("\n" + "-" * 60)
+                            print("TOP 3 PICKS - REASONING")
+                            print("-" * 60)
+                            for i, narr in enumerate(report.top3_narratives, 1):
+                                print(f"\n#{i} {narr.symbol} ({narr.strategy}) [{narr.confidence_rating}]")
+                                print(f"   {narr.narrative}")
+                                if narr.conviction_reasons:
+                                    print("   Conviction:")
+                                    for reason in narr.conviction_reasons[:2]:
+                                        print(f"     - {reason}")
+                                if narr.risk_factors:
+                                    print("   Risks:")
+                                    for risk in narr.risk_factors[:2]:
+                                        print(f"     - {risk}")
+
+                        if report.totd_deep_analysis:
+                            print("\n" + "-" * 60)
+                            print("TRADE OF THE DAY - DEEP ANALYSIS")
+                            print("-" * 60)
+                            # Print first 500 chars of analysis
+                            analysis = report.totd_deep_analysis
+                            if len(analysis) > 600:
+                                print(analysis[:600] + "...")
+                            else:
+                                print(analysis)
+
+                        if report.key_findings:
+                            print("\n" + "-" * 60)
+                            print("KEY FINDINGS")
+                            print("-" * 60)
+                            for finding in report.key_findings[:5]:
+                                print(f"  - {finding}")
+
+                        if report.sentiment_interpretation:
+                            print("\n" + "-" * 60)
+                            print("SENTIMENT INTERPRETATION")
+                            print("-" * 60)
+                            print(report.sentiment_interpretation)
+
+                        if report.risk_warnings:
+                            print("\n" + "-" * 60)
+                            print("RISK WARNINGS")
+                            print("-" * 60)
+                            for warn in report.risk_warnings:
+                                print(f"  [!] {warn}")
+
+                        if report.opportunities:
+                            print("\n" + "-" * 60)
+                            print("OPPORTUNITIES")
+                            print("-" * 60)
+                            for opp in report.opportunities:
+                                print(f"  [+] {opp}")
+
+                        print("\n" + "-" * 60)
+                        gen_method = report.generation_method
+                        print(f"Analysis generated via: {gen_method.upper()} ({report.llm_model})")
+                        print("-" * 60)
+
+                    except Exception as e:
+                        print(f"\n  [WARN] LLM analysis failed: {e}", file=sys.stderr)
+                        if args.verbose:
+                            import traceback
+                            traceback.print_exc()
+
+                elif args.narrative and not LLM_ANALYZER_AVAILABLE:
+                    print("\n  [WARN] LLM analyzer not available (import failed)")
 
     # Log signals
     if not args.no_log and not signals.empty:
