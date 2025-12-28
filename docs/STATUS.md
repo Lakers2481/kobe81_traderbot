@@ -1,277 +1,567 @@
-# Kobe81 Status - 2025-12-27
+# Kobe81 Traderbot - STATUS
 
-## Overview
-- Strategies: Donchian Breakout (trend) + ICT Turtle Soup (mean reversion)
-- Universe: 900 optionable/liquid US equities, 10y coverage
-- Decisioning: ML meta-model + sentiment blending; confidence-gated TOTD
-- Options: Synthetic Black-Scholes pricing with delta-targeted strikes
-
-> **Full System Architecture:** See [ARCHITECTURE.md](ARCHITECTURE.md) for complete ASCII diagram of all 14 layers and components.
-
-## Today's Artifacts
-- Morning Report: pending (morning_report_20251227.html)
-- Morning Check: exists
-- Top-3 Picks: exists
-- Trade of the Day: exists
-- EOD Report: pending (eod_report_20251227.html)
-
-## Recent Journal (last 7 days)
-
-## Work Log
-
-### 2025-12-27 08:00 CST - Claude Opus 4.5
-**Completed:** Live Readiness Enhancements (5-Phase Plan)
-
-**What was done:**
-
-1. **Phase 1: IOC Fill Visibility (CRITICAL)**
-   - Added `fill_price` and `filled_qty` fields to `OrderRecord` in `oms/order_state.py`
-   - Added order status resolution functions to `execution/broker_alpaca.py`:
-     - `get_order_by_id()` - fetch order by broker ID
-     - `get_order_by_client_id()` - fetch by client order ID
-     - `resolve_ioc_status()` - poll until FILLED/CANCELLED or timeout (3s)
-   - Added `log_trade_event()` - writes JSON lines to `logs/trades.jsonl`
-   - Modified `place_ioc_limit()` to resolve status and log trade events
-
-2. **Phase 2: Metrics Completeness**
-   - Extended `monitor/health_endpoints.py` with new counters:
-     - `ioc_submitted`, `ioc_filled`, `ioc_cancelled`, `liquidity_blocked`
-   - Added timestamps: `last_submit_ts`, `last_fill_ts`, `last_trade_event_ts`
-   - Added `update_trade_event(kind)` helper function
-   - Wired metrics updates into broker execution flow
-
-3. **Phase 3: Preflight Hardening**
-   - Enhanced `scripts/preflight.py` with:
-     - `check_quotes_api()` - validates Alpaca Data API accessibility
-     - `check_polygon_freshness()` - validates Polygon EOD data is fresh
-   - Now runs 5 checks: env, config, broker, quotes API, Polygon freshness
-
-4. **Phase 4: Daemon Robustness**
-   - Created `ops/locks.py` - file-based locking with stale detection:
-     - FileLock class with acquire/release/touch
-     - Stale lock detection (>5 min = stale)
-     - Windows (msvcrt) and Unix (fcntl) compatible
-   - Created `monitor/heartbeat.py` - heartbeat tracking:
-     - HeartbeatWriter with background thread (60s interval)
-     - `is_heartbeat_stale()`, `get_heartbeat_age()` checks
-     - Global heartbeat instance for process monitoring
-   - Enhanced `scripts/runner.py`:
-     - Added SIGTERM/SIGINT signal handlers for graceful shutdown
-     - Added file locking integration for single-instance enforcement
-     - Added heartbeat tracking during operation
-   - Fixed `monitor/__init__.py` to use lazy imports for optional components
-
-5. **Test Fixes (Pre-existing issues)**
-   - Fixed `research/alphas.py`: Changed `pd.np.log` to `np.log` (pandas deprecation)
-   - Fixed `research/features.py`: Fixed `_safe_div` and ADX calculation data types
-   - Fixed `research/screener.py`: Fixed groupby/apply returning DataFrame instead of Series
-   - Deleted orphan test files for unimplemented features
-
-**Files created:** 2 (`ops/locks.py`, `monitor/heartbeat.py`)
-**Files modified:** 8 (broker_alpaca.py, health_endpoints.py, preflight.py, runner.py, order_state.py, alphas.py, features.py, screener.py)
-**Tests:** **365 passed** (100% pass rate)
-
-### 2025-12-27 06:00 CST - Claude Opus 4.5
-**Completed:** Critical Security & Runtime Bug Fixes (End-to-End Audit)
-
-**What was done:**
-1. **Security Fixes**:
-   - Added `@require_no_kill_switch` decorator to broker order functions
-   - Protected: `place_ioc_limit()`, `place_order_with_liquidity_check()`, `execute_signal()`
-   - Prevents order placement when emergency halt is active
-
-2. **Runtime Bug Fixes**:
-   - Fixed `PolicyGate.check()` API mismatch in `intelligent_executor.py` (was calling with wrong signature)
-   - Added auto-reset to PolicyGate daily budget (prevents permanent lockout after midnight)
-   - Fixed VIX default from 0.0 to 18.0 (prevents division by zero in position sizing)
-
-3. **Strategy Fixes**:
-   - Fixed ATR calculation to use Wilder's smoothing (EMA alpha=1/period) in both strategies
-   - Updated `turtle_soup.py` and `donchian/strategy.py`
-
-4. **Cleanup**:
-   - Added missing `strategies/donchian/__init__.py`
-   - Deleted obsolete `run_paper_trade.py.bak`
-
-5. **Audit Reports Generated**:
-   - `docs/ICT_STRATEGY_VALIDATION_REPORT.md`
-   - `reports/RISK_SECURITY_AUDIT.md`
-   - `reports/DATA_QUALITY_AUDIT_20251226.md`
-
-**Tests:** 533 passed
-**CI:** Run #53 completed (1m 45s)
-
-### 2025-12-27 05:00 CST - Claude Opus 4.5
-**Completed:** Trading System Architecture Enhancements (8 modules)
-
-**What was done:**
-1. **Adaptive Strategy Evolution** (`evolution/`):
-   - `genetic_optimizer.py` - Genetic algorithm optimizer with tournament selection, crossover, mutation
-   - `strategy_mutator.py` - Strategy mutation with parameter perturbation
-   - `rule_generator.py` - Trading rule generation from templates
-   - `promotion_gate.py` - Walk-forward validation gates for production promotion
-   - 39 tests
-
-2. **Explainability & Reporting** (`explainability/`):
-   - `trade_explainer.py` - Human-readable trade explanations with factor analysis
-   - `narrative_generator.py` - Natural language reports (technical, casual, executive styles)
-   - `decision_tracker.py` - Full audit trail of trading decisions
-   - 32 tests
-
-3. **Dynamic Data Exploration** (`data_exploration/`):
-   - `feature_importance.py` - Correlation, permutation, mutual info importance
-   - `data_registry.py` - Central catalog of data sources and features
-   - `feature_discovery.py` - Automatic feature discovery from market data
-   - 28 tests
-
-4. **Synthetic & Adversarial Testing** (`testing/`):
-   - `monte_carlo.py` - Monte Carlo simulation with VaR, CVaR, drawdown metrics
-   - `stress_test.py` - Standard stress scenarios (Black Monday, COVID crash, VIX spike)
-   - 12 tests
-
-5. **Self-Monitoring & Failure Detection** (`selfmonitor/`):
-   - `circuit_breaker.py` - Auto-halt on losses, errors, API failures
-   - `anomaly_detector.py` - Z-score based anomaly detection for price/volume
-   - 12 tests
-
-6. **Compliance Engine** (`compliance/`):
-   - `rules_engine.py` - Trading rules enforcement (position size, PDT, penny stocks)
-   - `prohibited_list.py` - Restricted symbols management with expiration
-   - `audit_trail.py` - Hash-verified audit logging
-   - 17 tests
-
-**Files created:** 18 new Python files across 6 modules
-**Tests:** 533 passed (140 new tests)
-**CI:** Run #52 completed (1m 39s)
-
-### 2025-12-27 03:00 CST - Claude Opus 4.5
-**Completed:** Drift detection and calibration monitoring
-
-**What was done:**
-- Created `monitor/drift_detector.py`:
-  - Rolling performance metrics (win rate, PF, Sharpe)
-  - Baseline comparison for degradation detection
-  - Consecutive loss tracking, drawdown monitoring
-  - Stand-down recommendations when drift exceeds thresholds
-- Created `monitor/calibration.py`:
-  - Brier score calculation
-  - Bucket-wise calibration analysis with grades (A-F)
-- Created `tests/test_drift_detection.py` - 28 tests
-- Wired `LiquidityGate` into broker execution flow:
-  - `execute_signal()` - high-level entry point with all safety checks
-  - `place_order_with_liquidity_check()` - order placement with gate
-- Created `tests/test_broker_liquidity_integration.py` - 17 tests
-
-**Tests:** **393 passed, 0 warnings**
-
-### 2025-12-27 02:30 CST - Claude Opus 4.5
-**Completed:** Free Reproducible Backtesting System + CI Fixes
-
-**What was done:**
-1. **Synthetic Options Engine** (`options/`):
-   - `volatility.py` - Realized volatility estimation (close-to-close, Parkinson, Yang-Zhang)
-   - `selection.py` - Delta-targeted strike selection via binary search
-   - `position_sizing.py` - 2% risk-per-trade position sizing for options
-   - `backtest.py` - Options-aware backtesting engine
-   - Fixed OTM put strike selection bug (binary search going wrong direction)
-
-2. **Experiment Registry** (`experiments/`):
-   - `registry.py` - Experiment tracking with config hashing
-   - Reproducibility verification with result hashing
-   - Persistence across sessions
-
-3. **Data Quality Gate** (`preflight/data_quality.py`):
-   - Validation, coverage checks, staleness detection
-   - KnowledgeBoundary integration
-
-4. **CLI Tool** (`scripts/run_backtest_options_synth.py`):
-   - Options backtesting from command line
-
-5. **Bug Fixes**:
-   - Fixed TensorFlow crash on Windows (added `.tf_disabled` marker)
-   - Fixed Python 3.12 compatibility (datetime deprecation warnings)
-   - Updated `pytest.ini` with proper warning filters
-
-**Files changed:** 17 files, 3,888 insertions(+)
-**Tests:** 63 new tests, **331 total passing**
-**CI:** All jobs green (Python 3.11, 3.12, lint, smoke-test)
-
-### 2025-12-27 00:30 CST - Claude Opus 4.5
-**Completed:** Production readiness improvements
-
-**What was done:**
-- Created `pytest.ini` - Proper test configuration with warning filters for third-party libraries
-- Fixed `scripts/promote_models.py` - Added missing `datetime` import (bug fix)
-- Created `scripts/run_alpha_screener.py` - CLI for walk-forward alpha screening with leaderboard
-- Created `risk/liquidity_gate.py` - ADV and spread checks for live execution:
-  - Min ADV threshold (default $100k)
-  - Max spread threshold (default 0.50%)
-  - Order impact limits (max % of ADV)
-  - LiquidityCheck result with detailed metrics
-- Created `tests/test_liquidity_gate.py` - 17 tests for liquidity gate
-- Updated `risk/__init__.py` - Export new LiquidityGate
-
-**Files added:** 4 files
-**Tests:** **348 passed, 0 warnings**
-
-### 2025-12-26 23:15 CST - Claude Opus 4.5
-**Completed:** All test failures resolved (commit `ac7cf51`)
-
-**What was done:**
-- Fixed `test_data_quality.py`: Added explicit `end_date=today` to generate fresh test data
-- Fixed `test_options.py`: Changed OTM put assertion to handle ATM edge case correctly
-- Full test suite: **331 passed, 0 failed**
-
-### 2025-12-26 22:49 CST - Claude Opus 4.5
-**Completed:** Quant-interview-grade research infrastructure (commit `033759e`)
-
-**What was done:**
-- Audited full codebase - confirmed Milestone 1 (Data Lake) already complete
-- Created `preflight/evidence_gate.py` - strategy promotion gates
-- Created `research/features.py` - 25 features (momentum, vol, trend, technical)
-- Created `research/alphas.py` - 18 alphas with economic hypotheses
-- Created `research/screener.py` - walk-forward alpha screening with leaderboard
-- Created `tests/test_research.py` - 19 tests (all passing)
-
-**Files added:** 17 files, 5,891 lines
+> **Last Updated:** 2025-12-28 06:45 UTC
+> **Verified By:** Claude Code (Full Test Suite Passing - 766 Tests)
+> **Document Type:** AI GOVERNANCE & SYSTEM BLUEPRINT
 
 ---
 
-## Goals & Next Steps
-- ~~Enforce liquidity/spread gates for live execution~~ (risk/liquidity_gate.py)
-- ~~Alpha screener CLI~~ (scripts/run_alpha_screener.py)
-- ~~Integrate LiquidityGate into execution flow~~ (broker_alpaca.py)
-- ~~Synthetic options pricing~~ (options/)
-- ~~Experiment registry~~ (experiments/)
-- ~~Python 3.12 CI compatibility~~ (pytest.ini)
-- Maintain confidence calibration; monitor Brier/WR/PF/Sharpe on holdout
-- Weekly retrain/promote with promotion gates; rollback on drift/perf drop
-- Extend features (breadth, dispersion) and add SHAP insights to morning report
+## AI GOVERNANCE PROTOCOL
 
-## System Readiness Checklist
-- [x] Data Lake: Frozen, reproducible, SHA256 manifests
-- [x] Free Data: Stooq, Yahoo Finance, Binance (no API keys needed)
-- [x] Options: Synthetic Black-Scholes with Greeks, delta-targeting
-- [x] Research: 25 features, 18 alphas, walk-forward screener
-- [x] Evidence Gate: OOS Sharpe/PF/trades requirements
-- [x] Risk: PolicyGate ($75/order, $1k/day) + LiquidityGate (ADV, spread)
-- [x] Experiments: Reproducible tracking with result hashing
-- [x] Tests: 365 passing, CI green on Python 3.11 & 3.12
-- [x] Live integration: LiquidityGate + IOC fill resolution wired to broker
-- [x] Monitoring: Brier score, drift detection, circuit breaker, heartbeat
-- [x] Evolution: Genetic optimizer, strategy mutation, promotion gates
-- [x] Explainability: Trade explanations, narratives, decision tracking
-- [x] Data Exploration: Feature importance, data registry, auto-discovery
-- [x] Stress Testing: Monte Carlo, VaR/CVaR, standard stress scenarios
-- [x] Compliance: Rules engine, prohibited list, audit trail
-- [x] Security: Kill switch enforcement on all order functions
-- [x] ATR Calculation: Wilder's smoothing (industry standard)
-- [x] IOC Fill Visibility: Order status resolution with trade logging
-- [x] Daemon Robustness: File locking, heartbeat, signal handlers
-- [x] Preflight Hardening: Quotes API + Polygon freshness probes
+> **ANY AI MUST READ AND FOLLOW THIS ENTIRE DOCUMENT BEFORE DOING ANY WORK**
 
-## Test Summary
+### Before ANY Work
+1. **READ** this entire STATUS.md from top to bottom
+2. **UNDERSTAND** the system, strategies, data, and results
+3. **ASK** questions if ANYTHING is unclear
+4. **CONFIRM** understanding before starting any work
+5. **USE** planning mode for any task touching >3 files
+6. **USE** TODO list for ALL tasks - no exceptions
+7. **AGREE** to follow all rules below
+
+### During Work
+- **VERIFY** all code works before marking complete
+- **USE** only real data from verified sources listed below
+- **FOLLOW** the exact workflow - no deviations or "improvements"
+- **CHECK** for duplicates before creating ANY new file
+- **TEST** all changes before considering them done
+- **NEVER** skip verification steps
+
+### After EVERY Job/Code/Change
+- **UPDATE** this STATUS.md with what was done
+- **ARCHIVE** to `docs/history/status_YYYYMMDD_HHMM.md` if major change
+- **VERIFY** the update is accurate and complete
+
+### NEVER DO (VIOLATIONS)
+| Violation | Why It's Bad |
+|-----------|--------------|
+| Create duplicate files/code | Causes confusion, breaks imports |
+| Use fake data or hallucinate results | Destroys trust in system |
+| Apply lookahead bias in backtests | Makes results meaningless |
+| Use strategies other than IBS+RSI / Turtle Soup | Only these 2 are verified |
+| Skip verification steps | Breaks can go unnoticed |
+| Forget to update STATUS.md | Next AI won't know what happened |
+| Make up win rates or metrics | Must use verified numbers only |
+| Do your own thing / deviate from plan | Breaks system coherence |
+| Use 24-hour time format in displays | System uses 12-hour CT/ET |
+| Bypass PolicyGate risk limits | Safety critical |
+
+---
+
+## DATA INTEGRITY RULES
+
+### Real Data Sources (VERIFIED)
+| Source | Type | Count | Status |
+|--------|------|-------|--------|
+| Polygon.io | EOD OHLCV | 900 symbols | Verified |
+| wf_outputs/and/ | Walk-forward trades | 19 splits | Verified |
+| wf_outputs/ibs/ | Walk-forward trades | 19 splits | Verified |
+| wf_outputs/rsi2/ | Walk-forward trades | 20 splits | Verified |
+| data/ml/signal_dataset.parquet | ML training data | 38,825 rows | Verified |
+| state/models/deployed/ | Trained models | 1 model | Verified |
+
+### Performance Summary (Last Verified Walk-Forward)
+| Strategy      | Win Rate | Profit Factor | Notes                 |
+|---------------|----------|---------------|-----------------------|
+| IBS+RSI       | ~62.3%   | ~1.64         | High-frequency MR     |
+| Turtle Soup   | ~61.1%   | ~3.09         | High-conviction MR    |
+
+> These are the last verified WF metrics used in planning. The EOD_LEARNING job will refresh and publish updated metrics weekly. Do not hard-code numeric claims elsewhere; always regenerate from WF outputs when available.
+
+### Lookahead Prevention (CRITICAL)
+```python
+# All indicators MUST use .shift(1) to prevent lookahead
+indicator_signal = indicator.shift(1)  # Signal uses PREVIOUS bar
+
+# Trade execution timing
+# Signal generated at: close(t)
+# Trade executed at: open(t+1)
+# Features computed: BEFORE trade timestamp
 ```
-365 passed in 40.34s (100% pass rate)
-CI: All tests passing on Python 3.11 & 3.12
+
+### Bias Prevention
+- Train/test split by **TIME**, not random
+- Split: 60% train, 20% calibration, 20% test
+- NEVER peek at test data during training
+- NEVER tune parameters on test data
+
+---
+
+## MANDATORY WORKFLOW
+
+### For ANY Code Change
 ```
+1. READ STATUS.md (this file)
+2. CREATE TODO list with all tasks
+3. USE planning mode if touching >3 files
+4. MAKE changes one at a time
+5. VERIFY each change works
+6. UPDATE STATUS.md with what was done
+7. ARCHIVE to history/ if major change
+```
+
+### For ML/Training Pipeline
+```
+1. VERIFY wf_outputs/ has trade data
+2. RUN: python scripts/build_signal_dataset.py --wfdir wf_outputs --dotenv ./.env
+3. VERIFY: data/ml/signal_dataset.parquet exists with rows
+4. RUN: python scripts/train_meta.py --dotenv ./.env
+5. VERIFY: state/models/candidates/*.pkl created
+6. RUN: python scripts/promote_models.py --min-delta 0.01 --min-test 100
+7. UPDATE STATUS.md with training results
+```
+
+### For Scanner/Trading
+```
+1. CHECK: state/KILL_SWITCH does NOT exist
+2. VERIFY: data freshness (EOD bars current)
+3. RUN: python scripts/scan.py --universe data/universe/optionable_liquid_900.csv --dotenv ./.env
+4. VERIFY: logs/daily_picks.csv updated
+5. UPDATE STATUS.md if any issues
+```
+
+### For Any New File
+```
+1. SEARCH for existing similar files first
+2. CHECK if functionality already exists
+3. IF duplicate would be created â†’ DO NOT CREATE
+4. IF truly new â†’ create with clear naming
+5. UPDATE STATUS.md with new file info
+```
+
+---
+
+## CRITICAL: Strategy Alignment
+
+### Active Strategies (ONLY THESE TWO)
+
+| Strategy | Type | Entry Condition | Win Rate | Signals/Day |
+|----------|------|-----------------|----------|-------------|
+| **IBS+RSI** | Mean Reversion | IBS < 0.15 AND RSI(2) < 10 AND Close > SMA(200) | ~62% | ~5–10/day (market dependent) |
+| **ICT Turtle Soup** | Mean Reversion | Sweep below 20-day low, revert inside, sweep > 1 ATR | ~61% | ~0–1/day (rare by design) |
+
+### Deprecated Strategies (DO NOT USE)
+
+| Strategy | Status | Notes |
+|----------|--------|-------|
+| ~~Donchian Breakout~~ | **REMOVED** | Deleted from codebase. Only allowed in: (1) `ml_meta/features.py` as feature math (`don20_width`), (2) `docs/ICT_STRATEGY_VALIDATION_REPORT.md` as legacy analysis |
+
+---
+
+## System Overview
+
+```
+Kobe81 = Dual Strategy Mean-Reversion Trading System
+       = IBS+RSI (high frequency) + ICT Turtle Soup (high conviction)
+       = 900-stock universe, EOD signals, IOC LIMIT execution
+```
+
+### Key Parameters
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| Universe | 900 symbols | Optionable, liquid, 10+ years history |
+| Data Source | Polygon.io | EOD OHLCV with CSV caching |
+| Broker | Alpaca | Paper + Live supported |
+| Order Type | IOC LIMIT | `limit_price = best_ask Ã— 1.001` |
+| ML Blend | `0.8Ã—ML + 0.2Ã—sentiment` | Confidence scoring |
+| Time Zone | Operations: ET | Displays: CT and ET (12-hour format) |
+
+---
+
+## Strategy Details
+
+### 1. IBS+RSI (Internal Bar Strength + RSI)
+
+**File:** `strategies/ibs_rsi/strategy.py`
+
+```
+Entry: IBS < 0.15 AND RSI(2) < 10 AND Close > SMA(200)
+Exit:  IBS > 0.80 OR RSI(2) > 70 OR ATRÃ—1.5 stop OR 5-bar time stop
+
+IBS = (Close - Low) / (High - Low)
+RSI = 2-period Wilder-smoothed RSI
+```
+
+**Strengths:** High signal frequency, captures oversold bounces
+**Best In:** Bull/Neutral regimes
+
+### 2. ICT Turtle Soup
+
+**File:** `strategies/ict/turtle_soup.py`
+
+```
+Entry: Price sweeps below 20-day low by > 1 ATR, then closes back inside
+Exit:  ATRÃ—2.0 stop OR R-multiple target (2:1) OR 5-bar time stop
+
+Sweep = (20-day-low - Low) / ATR > 1.0
+```
+
+**Strengths:** High win rate on failed breakdowns, institutional liquidity concept
+**Best In:** Bear/Choppy regimes (catches false breakdowns)
+
+---
+
+## Architecture
+
+```
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                        KOBE81 SYSTEM                        â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚  Scanner (scan.py)                                          â”‚
+â”‚    â””â”€> Dual Strategy: IBS+RSI + Turtle Soup                â”‚
+â”‚    â””â”€> ML Scoring: 0.8Ã—model + 0.2Ã—sentiment               â”‚
+â”‚    â””â”€> Gates: Regime, Earnings, ADV, Spread                â”‚
+â”‚    â””â”€> Output: daily_picks.csv, trade_of_day.csv           â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚  Execution (broker_alpaca.py)                               â”‚
+â”‚    â””â”€> Order Type: IOC LIMIT only                          â”‚
+â”‚    â””â”€> Limit Price: best_ask Ã— 1.001                       â”‚
+â”‚    â””â”€> Idempotency: Duplicate prevention via hash          â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚  Risk (policy_gate.py)                                      â”‚
+â”‚    â””â”€> Per-Order: $75 max                                  â”‚
+â”‚    â””â”€> Daily: $1,000 max                                   â”‚
+â”‚    â””â”€> Kill Switch: state/KILL_SWITCH halts all            â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚  Scheduler (scheduler_kobe.py + Windows Tasks)              â”‚
+â”‚    â””â”€> 23 registered tasks (Kobe_*)                        â”‚
+â”‚    â””â”€> HEARTBEAT: every 1 minute                           â”‚
+â”‚    â””â”€> SHADOW: 09:45 ET, DIVERGENCE: 10:05 ET              â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+
+---
+
+## Daily Workflow
+
+| Time (ET) | Task | Output |
+|-----------|------|--------|
+| 06:00 | DATA_UPDATE | Fetch latest EOD bars |
+| 06:30 | MORNING_REPORT | `reports/morning_report_YYYYMMDD.html` |
+| 09:45 | FIRST_SCAN + SHADOW | `logs/daily_picks.csv`, `logs/trade_of_day.csv` |
+| 10:05 | DIVERGENCE | Compare shadow vs actual |
+| 12:00 | HALF_TIME | Mid-day check |
+| 15:30 | SWING_SCANNER | EOD swing signals |
+| 16:05 | EOD_REPORT | Daily P&L summary |
+| 17:00 Fri | EOD_LEARNING | ML model retraining |
+
+---
+
+## File Locations
+
+| Artifact | Path |
+|----------|------|
+| Daily Picks | `logs/daily_picks.csv` |
+| Trade of the Day | `logs/trade_of_day.csv` |
+| Heartbeat | `logs/heartbeat.jsonl`, `logs/heartbeat_latest.txt` |
+| Events Log | `logs/events.jsonl` |
+| Morning Report | `reports/morning_report_YYYYMMDD.html` |
+| Kill Switch | `state/KILL_SWITCH` (create to halt) |
+| ML Models (deployed) | `state/models/deployed/meta_ibs_rsi.pkl` |
+| ML Models (candidates) | `state/models/candidates/` |
+| Signal Dataset | `data/ml/signal_dataset.parquet` |
+| Journal | `state/journal.jsonl` |
+| Cognitive State | `state/cognitive/` |
+| Cognitive Tests | `tests/cognitive/` |
+| Data Pipeline Docs | `docs/DATA_PIPELINE.md` |
+| Cognitive Config | `config/base.yaml` (cognitive section) |
+
+---
+
+## ML/AI Pipeline
+
+### Feature Engineering
+**File:** `ml_meta/features.py`
+```
+FEATURE_COLS = ['atr14', 'sma20_over_200', 'rv20', 'don20_width', 'pos_in_don20', 'ret5', 'log_vol']
+```
+
+### Pipeline Flow
+```
+wf_outputs/           â†’  build_signal_dataset.py  â†’  signal_dataset.parquet
+                                                            â†“
+                                                      train_meta.py
+                                                            â†“
+                                               state/models/candidates/*.pkl
+                                                            â†“
+                                                   promote_models.py
+                                                            â†“
+                                               state/models/deployed/*.pkl
+```
+
+### Confidence Scoring
+```python
+# In scripts/scan.py line 425:
+conf_score = 0.8 * ML_probability + 0.2 * sentiment_score
+```
+
+### Graceful Fallbacks (All Components)
+| Component | Fallback Behavior |
+|-----------|-------------------|
+| ML Model | Returns 0.5 confidence if model=None |
+| Sentiment | Returns empty DataFrame if API fails |
+| Cognitive | Approves signal with 0.5 confidence on error |
+| SHAP | Falls back to model coefficients |
+| LLM Narratives | Returns template-based text |
+| VIX Fetch | Returns 20.0 (neutral) on error |
+
+---
+
+## What's Working vs Pending
+
+### Fully Operational
+- IBS+RSI model trained and deployed (38,825 samples)
+- All 10 ML/AI verification steps passing
+- Scanner with ML+sentiment blending
+- Cognitive evaluation with graceful fallbacks
+- **Cognitive layer fully tested (238 unit tests)**
+- **Cognitive config centralized in base.yaml**
+- EOD_LEARNING scheduled (Friday 17:00 ET)
+- Heartbeat system (every 1 minute)
+- Morning reports with calibration tables
+- **Data pipeline documented (docs/DATA_PIPELINE.md)**
+
+### Pending / Known Gaps
+| Item | Status | Notes |
+|------|--------|-------|
+| Turtle Soup Model | **NO DATA** | No `turtle_soup/` or `ict/` in wf_outputs - needs walk-forward run |
+| Live Trading | Ready but untested | Paper mode verified, live needs manual test |
+| Polygon API Key | Warning on fetch | Set `POLYGON_API_KEY` in .env for new data |
+| Cognitive Tutorial | Created | See `notebooks/cognitive_tutorial.ipynb` |
+
+---
+
+## COMPLETE SYSTEM INVENTORY
+
+### Core Modules (22 Verified - ALL OK)
+| Module | Path | Purpose | Status |
+|--------|------|---------|--------|
+| Features | `ml_meta/features.py` | FEATURE_COLS computation | OK |
+| Model IO | `ml_meta/model.py` | load_model, predict_proba | OK |
+| Conf Policy | `ml_meta/conf_policy.py` | Dynamic min confidence | OK |
+| Dataset Builder | `scripts/build_signal_dataset.py` | Build training parquet | OK |
+| Training | `scripts/train_meta.py` | Train LogisticRegression | OK |
+| Promotion | `scripts/promote_models.py` | Promote + drift/rollback | OK |
+| Scanner | `scripts/scan.py` | Daily signal generation | OK |
+| Morning Report | `scripts/morning_report.py` | HTML calibration report | OK |
+| Weekly Training | `scripts/run_weekly_training.py` | Orchestrate ML pipeline | OK |
+| Trade Explainer | `explainability/trade_explainer.py` | Signal explanations | OK |
+| Narrative Gen | `explainability/narrative_gen.py` | Trade narratives | OK |
+| Playbook Gen | `explainability/playbook_generator.py` | LLM with fallback | OK |
+| Decision Tracker | `explainability/decision_tracker.py` | Decision logging | OK |
+| Signal Processor | `cognitive/signal_processor.py` | Cognitive evaluation | OK |
+| Sentiment | `altdata/sentiment.py` | Polygon news sentiment | OK |
+| Timezone Utils | `core/clock/tz_utils.py` | CT/ET formatting | OK |
+| Journal | `core/journal.py` | JSONL event logging | OK |
+| Alerts | `core/alerts.py` | Telegram integration | OK |
+| Drift Detector | `monitor/drift_detector.py` | Model drift detection | OK |
+| Policy Gate | `risk/policy_gate.py` | $75/order, $1k/day limits | OK |
+| Broker Alpaca | `execution/broker_alpaca.py` | IOC LIMIT orders | OK |
+| Scheduler | `ops/windows/register_all_tasks.ps1` | 23 Windows tasks | OK |
+
+### Cognitive Architecture (12 Modules - ALL TESTED)
+| Module | Path | Purpose | Tests |
+|--------|------|---------|-------|
+| CognitiveBrain | `cognitive/cognitive_brain.py` | Main orchestrator | 21 |
+| MetacognitiveGovernor | `cognitive/metacognitive_governor.py` | Fast/slow routing | 19 |
+| ReflectionEngine | `cognitive/reflection_engine.py` | Learning from outcomes | 17 |
+| SelfModel | `cognitive/self_model.py` | Capability tracking | 27 |
+| EpisodicMemory | `cognitive/episodic_memory.py` | Experience storage | 28 |
+| SemanticMemory | `cognitive/semantic_memory.py` | Rule knowledge base | 26 |
+| KnowledgeBoundary | `cognitive/knowledge_boundary.py` | Uncertainty detection | 22 |
+| CuriosityEngine | `cognitive/curiosity_engine.py` | Hypothesis generation | 23 |
+| GlobalWorkspace | `cognitive/global_workspace.py` | Inter-module comms | 20 |
+| SignalProcessor | `cognitive/signal_processor.py` | Signal evaluation | 18 |
+| Adjudicator | `cognitive/adjudicator.py` | Decision arbitration | 19 |
+| LLMNarrativeAnalyzer | `cognitive/llm_narrative_analyzer.py` | LLM integration | 6 |
+
+**Total Cognitive Tests: 238 (all passing)**
+
+### Strategy Files (ONLY THESE TWO - NO OTHERS)
+| Strategy | File | Class | Status |
+|----------|------|-------|--------|
+| IBS+RSI | `strategies/ibs_rsi/strategy.py` | `IbsRsiStrategy` | **ACTIVE** |
+| Turtle Soup | `strategies/ict/turtle_soup.py` | `TurtleSoupStrategy` | **ACTIVE** |
+
+### Deprecated / Removed (DO NOT USE OR RECREATE)
+| Item | Status | Reason |
+|------|--------|--------|
+| Donchian Breakout | **REMOVED** | Not verified, poor performance |
+| `rsi2` alias | **DEPRECATED** | Use `ibs_rsi` only |
+| `ict` alias | **DEPRECATED** | Use `turtle_soup` only |
+| `decision_track.py` | **DELETED** | Duplicate of decision_tracker.py |
+
+---
+
+## Recent Changes (2025-12-28)
+
+### Full Test Suite Passing (LATEST)
+**766 tests passing** - comprehensive cognitive module coverage added:
+
+**New Test Files (12 files, 238 cognitive tests):**
+- `tests/cognitive/test_cognitive_brain.py` - 21 tests
+- `tests/cognitive/test_metacognitive_governor.py` - 19 tests
+- `tests/cognitive/test_reflection_engine.py` - 17 tests
+- `tests/cognitive/test_self_model.py` - 27 tests
+- `tests/cognitive/test_episodic_memory.py` - 28 tests
+- `tests/cognitive/test_semantic_memory.py` - 26 tests
+- `tests/cognitive/test_knowledge_boundary.py` - 22 tests
+- `tests/cognitive/test_curiosity_engine.py` - 23 tests
+- `tests/cognitive/test_global_workspace.py` - 20 tests
+- `tests/cognitive/test_signal_processor.py` - 18 tests
+- `tests/cognitive/test_adjudicator.py` - 19 tests
+- `tests/cognitive/test_llm_narrative_analyzer.py` - 6 tests
+
+**Bug Fixes:**
+| File | Fix |
+|------|-----|
+| `tests/test_broker_liquidity_integration.py` | Fixed mocks to return BrokerExecutionResult |
+| `tests/test_broker_liquidity_integration.py` | Added missing get_best_bid mock |
+| `execution/tca/transaction_cost_analyzer.py` | Fixed OrderStatus.UNDEFINED → PENDING |
+| `altdata/news_processor.py` | Fixed unterminated string literal |
+
+### Cognitive Layer Enhancement (Earlier)
+
+**Configuration Centralized** in `config/base.yaml`:
+- Added `cognitive` section with 60+ configurable parameters
+- Added 8 config accessor functions to `config/settings_loader.py`
+- `MetacognitiveGovernor` now loads settings from config
+
+**Bug Fixes in Cognitive Modules:**
+| File | Fix |
+|------|-----|
+| `cognitive/self_model.py` | Added missing `threading` import |
+| `cognitive/self_model.py` | Added missing `get_calibration_error()` method |
+| `cognitive/self_model.py` | Added missing `known_limitations()` method |
+| `cognitive/semantic_memory.py` | Added missing `threading` and `statistics` imports |
+| `cognitive/semantic_memory.py` | Fixed `SemanticRule` dataclass defaults |
+| `cognitive/reflection_engine.py` | Fixed dataclass field ordering |
+| `cognitive/knowledge_boundary.py` | Added missing `metadata` field to `KnowledgeAssessment` |
+| `cognitive/episodic_memory.py` | Added `add_concerns()` method, fixed `add_reasoning()` |
+
+**New Documentation:**
+- Created `docs/DATA_PIPELINE.md` - comprehensive data flow documentation
+
+### Verification Completed (Earlier)
+- All 766 unit tests pass (528 core + 238 cognitive)
+- 23 Windows tasks registered
+- CT|ET timestamps verified (12-hour format)
+- Heartbeat system operational
+
+### ML Training Success
+- Dataset: 38,825 trade samples built from wf_outputs
+- IBS_RSI model: **DEPLOYED** (acc=0.514, win_rate=54%, profit_factor=1.44)
+- 10-step ML/AI verification: **ALL PASSED**
+- Files fixed: `scripts/build_signal_dataset.py` (DIR_TO_STRATEGY mapping, BUY/SELL pairing)
+- Files fixed: `ml_meta/features.py` (pandas compatibility)
+
+### Codebase Cleanup (Line-by-Line Audit)
+**22 ML/AI components audited - 3 issues fixed:**
+1. **DELETED** `explainability/decision_track.py` (duplicate of decision_tracker.py)
+2. **FIXED** `scripts/scan.py` lines 403,405,536 - removed deprecated `rsi2`/`ict` aliases
+3. **FIXED** `scripts/train_meta.py` line 115 - changed to `json.dumps()` for proper serialization
+
+**10-Step Codex Verification Results:**
+| Step | Component | Status |
+|------|-----------|--------|
+| 1 | Feature Computation | PASS |
+| 2 | Dataset Builders | PASS (38,825 rows) |
+| 3 | Model IO | PASS (CalibratedClassifierCV) |
+| 4 | Training Pipeline | PASS (3 artifacts) |
+| 5 | Promotion/Drift | PASS (deployed) |
+| 6 | Dynamic Confidence | PASS (0.6, 1.0) |
+| 7 | Sentiment Blending | PASS (0.8Ã—ML + 0.2Ã—sent) |
+| 8 | Explainability | PASS |
+| 9 | Cognitive Eval | PASS |
+| 10 | Scheduling | PASS (17:00 ET) |
+
+### Donchian Removal
+Files cleaned:
+- `evolution/rule_generator.py` - Template commented out
+- `evolution/strategy_mutator.py` - Removed from alternatives
+- `state/cognitive/curiosity_state.json` - Stale entries removed
+- `audit_report.json` - Updated to reference IBS+RSI
+
+---
+
+## For AI Collaborators
+
+### DO
+- Use only `IbsRsiStrategy` and `TurtleSoupStrategy`
+- Reference strategies as "IBS+RSI" and "ICT Turtle Soup"
+- Use `fmt_ct()` and `fmt_et()` for timestamps (12-hour format)
+- Check `state/KILL_SWITCH` before any execution
+
+### DO NOT
+- Reference or implement "Donchian" strategy (deprecated)
+- Use 24-hour time format in displays
+- Skip ML confidence scoring
+- Bypass PolicyGate risk limits
+
+### Key Imports
+```python
+from strategies.ibs_rsi.strategy import IbsRsiStrategy, IbsRsiParams
+from strategies.ict.turtle_soup import TurtleSoupStrategy
+from core.clock.tz_utils import fmt_ct, fmt_et, now_et
+from risk.policy_gate import PolicyGate
+```
+
+---
+
+## Quick Commands
+
+```bash
+# Run scanner
+python scripts/scan.py --universe data/universe/optionable_liquid_900.csv --dotenv ./.env
+
+# Paper trade
+python scripts/runner.py --mode paper --dotenv ./.env
+
+# Check system status
+python scripts/status.py --dotenv ./.env
+
+# Verify tests
+python -m pytest tests/unit -q
+
+# Heartbeat check
+python scripts/heartbeat.py --dotenv ./.env
+```
+
+---
+
+## Verification Run (2025-12-28)
+
+This section documents today’s quick checks with exact commands and artifact paths so any AI can reproduce. These are smoke runs for operational verification; the canonical Performance Summary above remains the source of truth until a full WF refresh completes.
+
+- Window and caps
+  - Ultra‑quick WF: Aug 15–Dec 26, 2025; `cap=20`; 3 splits
+  - Quick WF attempt: Mar 1–Dec 26, 2025; `cap=60`; partial before timeout (kept outputs)
+- Commands
+  - `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2025-08-15 --end 2025-12-26 --train-days 84 --test-days 21 --cap 20 --outdir wf_outputs_verify_quick --fallback-free --dotenv ./.env`
+  - `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2025-03-01 --end 2025-12-26 --train-days 126 --test-days 42 --cap 60 --outdir wf_outputs_verify --fallback-free --dotenv ./.env`
+- Artifacts
+  - `wf_outputs_verify_quick/wf_summary_compare.csv`
+  - `wf_outputs_verify_quick/ibs_rsi/wf_splits.csv`, `wf_outputs_verify_quick/turtle_soup/wf_splits.csv`
+  - `wf_outputs_verify/ibs_rsi/split_01/summary.json`, `wf_outputs_verify/ibs_rsi/split_02/summary.json`
+- Scanner evidence
+  - Last scan recorded: see `python scripts/status.py --json --dotenv ./.env`
+  - Latest picks on disk: `logs/daily_picks.csv`, `logs/trade_of_day.csv` (from prior successful run)
+  - Re‑run (example): `python scripts/scan.py --universe data/universe/optionable_liquid_900.csv --cap 120 --ensure-top3 --date 2025-12-26 --dotenv ./.env`
+  - Faster smoke: add `--no-filters`; ML scoring: add `--ml --min-conf 0.55`
+- Follow‑ups to refresh KPIs (overnight job)
+  - Full month WF refresh: `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2025-01-02 --end 2025-12-26 --train-days 126 --test-days 42 --cap 150 --outdir wf_outputs_verify_fullmonth --fallback-free --dotenv ./.env`
+  - Rebuild dataset + metrics: `python scripts/build_signal_dataset.py --wfdir wf_outputs_verify_fullmonth --dotenv ./.env`; `python scripts/metrics.py --wfdir wf_outputs_verify_fullmonth --strategy TURTLE_SOUP`; `python scripts/metrics.py --wfdir wf_outputs_verify_fullmonth --strategy IBS_RSI`
+  - Optional HTML: `python scripts/aggregate_wf_report.py --wfdir wf_outputs_verify_fullmonth --out wf_outputs_verify_fullmonth/wf_report.html`
+
+## Contacts & Resources
+
+- **Repo:** `C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot`
+- **Env File:** `./.env` (fallback: `C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env`)
+- **CLAUDE.md:** Full project guidance for Claude Code
+- **Skills:** 70 slash commands in `.claude/skills/`
+
+---
+
+*This document is the single source of truth for Kobe81 system alignment.*
+
