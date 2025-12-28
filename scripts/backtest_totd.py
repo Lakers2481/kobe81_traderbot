@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 TOTD Backtest - Single Trade-of-the-Day simulation for 2025.
 

@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Parameter Optimization for Kobe81 Trading Bot (IBS+RSI / Turtle Soup).
 

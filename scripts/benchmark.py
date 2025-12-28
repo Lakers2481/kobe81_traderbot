@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Benchmark Comparison Tool for Kobe Trading System.
 

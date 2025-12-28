@@ -1,4 +1,4 @@
-﻿"""
+"""
 Kobe Trading System - Professional Quant Dashboard v3.0
 
 Bloomberg Terminal-inspired design with:
