@@ -25,21 +25,21 @@ def main() -> None:
 
     if not status.exists():
         # Create minimal STATUS.md if it doesn't exist
-        content = f"""# Kobe81 Traderbot — STATUS
+        content = f"""# Kobe81 Traderbot - STATUS
 
 > **Last Updated:** {now}
-> **Verified By:** Claude Code
+> **Verified By:** Initial Bootstrap
 
 ---
 
 ## CRITICAL: Strategy Alignment
 
-### Active Strategies (ONLY THESE TWO)
+### Active Strategies (ONLY THESE TWO) - v2.2 QUANT INTERVIEW READY
 
-| Strategy | Type | Entry Condition | Win Rate | Signals/Day |
-|----------|------|-----------------|----------|-------------|
-| **IBS+RSI** | Mean Reversion | IBS < 0.15 AND RSI(2) < 10 AND Close > SMA(200) | 62.3% | 5.3 |
-| **ICT Turtle Soup** | Mean Reversion | Sweep below 20-day low, revert inside, sweep > 1 ATR | 61.1% | 0.2 |
+| Strategy | Type | Entry Condition | Win Rate | Profit Factor |
+|----------|------|-----------------|----------|---------------|
+| **IBS+RSI v2.2** | Mean Reversion | IBS < 0.08 AND RSI(2) < 5 AND Close > SMA(200) | 59.9% | 1.46 |
+| **Turtle Soup v2.2** | Mean Reversion | Sweep > 0.3 ATR below 20-day low (3+ bars aged), revert inside | 61.0% | 1.37 |
 
 ### Deprecated Strategies (DO NOT USE)
 
@@ -49,7 +49,7 @@ def main() -> None:
 
 ---
 
-For full documentation, see CLAUDE.md
+For complete replication steps and evidence, see docs/STATUS.md.
 """
         status.write_text(content, encoding='utf-8')
         print(f'Created: {status}')

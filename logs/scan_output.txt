@@ -1,0 +1,14 @@
+
+Kobe Scanner - SCAN_20251228_210237
+Scanning 20 symbols with Dual Strategy (IBS+RSI + Turtle Soup)...
+------------------------------------------------------------
+
+Fetched: 20 symbols, skipped: 0
+Total bars: 5,440
+
+Running strategies...
+
+  No signals generated.
+
+============================================================
+Scan complete: 0 signal(s) generated

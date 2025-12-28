@@ -43,13 +43,13 @@ def ibs(df: pd.DataFrame) -> pd.Series:
     return (df['close'] - df['low']) / (df['high'] - df['low'] + 1e-8)
 
 
-def wilder_rsi(series: pd.Series, period: int = 2) -> pd.Series:
-    """RSI using Wilder's smoothing."""
+def simple_rsi(series: pd.Series, period: int = 2) -> pd.Series:
+    """RSI using simple rolling mean (matches IbsRsiStrategy)."""
     delta = series.diff()
     gain = delta.clip(lower=0)
     loss = (-delta).clip(lower=0)
-    avg_gain = gain.ewm(alpha=1/period, min_periods=period, adjust=False).mean()
-    avg_loss = loss.ewm(alpha=1/period, min_periods=period, adjust=False).mean()
+    avg_gain = gain.rolling(period, min_periods=period).mean()
+    avg_loss = loss.rolling(period, min_periods=period).mean()
     rs = avg_gain / avg_loss.replace(0, np.nan)
     return (100 - 100/(1+rs)).fillna(50)
 
@@ -147,7 +147,7 @@ class DualStrategyScanner:
 
             # IBS + RSI indicators
             g['ibs'] = ibs(g)
-            g['rsi2'] = wilder_rsi(c, self.params.rsi_period)
+            g['rsi2'] = simple_rsi(c, self.params.rsi_period)
             g['sma200'] = c.rolling(self.params.sma_period).mean()
             g['atr14'] = atr(g, self.params.atr_period)
 

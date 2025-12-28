@@ -85,7 +85,7 @@ def explain_rsi2_signal(
     """
     Explain Connors RSI(2) signal for a specific date.
     RSI(2) typically signals:
-    - Long when RSI(2) < 10 (oversold)
+    - Long when RSI(2) < 5 (oversold, v2.2)
     - Short when RSI(2) > 90 (overbought)
     """
     if df is None or df.empty:

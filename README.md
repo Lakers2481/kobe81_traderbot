@@ -18,12 +18,12 @@ python scripts/backtest_dual_strategy.py --cap 200 --start 2015-01-01 --end 2024
 ---
 
 Overview
-- Strategies: ICT Turtle Soup (failed breakout mean reversion) and IBS+RSI mean reversion.
+- Strategies: Turtle Soup (liquidity sweep mean reversion) and IBS+RSI mean reversion (v2.2).
 - Data: Polygon daily OHLCV with caching.
 - Universe: optionable + liquid candidates filtered to final 900 with 10y coverage.
-- Backtesting: deterministic next-bar fills, ATR(14) x2 stop, 5-bar time stop, no lookahead.
+- Backtesting: deterministic next-bar fills; strategy-specific time stops (IBS 7 bars, Turtle 3 bars); no lookahead.
 - Outputs: trade_list.csv, equity_curve.csv, summary.json per run/split.
-- walk-forward: rolling splits, side-by-side comparison (IBS_RSI vs ICT), HTML report.
+- Walk-forward: rolling splits, side-by-side comparison (IBS_RSI vs TurtleSoup), HTML report.
 - Execution: Alpaca IOC LIMIT submission (paper or live), kill switch, budgets, idempotency, audit log.
 
 Project Map
