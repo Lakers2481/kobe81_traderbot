@@ -1,4 +1,4 @@
-﻿**Alignment Note**: The canonical strategies are Donchian Breakout (trend) and ICT Turtle Soup (mean reversion). Universe size is 900. Any mentions of RSI/Donchian/ICT or 900 symbols are legacy examples. Use README.md and AI_HANDOFF_PROMPT.md for source-of-truth commands.
+﻿**Alignment Note**: The canonical strategies are IBS+RSI (mean reversion) and ICT Turtle Soup (mean reversion). Universe size is 900. Any mentions of RSI/IBS+RSI/ICT or 900 symbols are legacy examples. Use README.md and AI_HANDOFF_PROMPT.md for source-of-truth commands.
 
 # Kobe81 Traderbot â€” Complete Architecture Blueprint
 
@@ -18,10 +18,10 @@ This document maps the endâ€‘toâ€‘end trading blueprint to the Kobe co
 
 ## Layer 3: Strategy Engine
 - Canonical strategies (two only):
-  - Donchian Breakout — strategies/donchian/strategy.py
+  - IBS+RSI mean reversion — strategies/ibs_rsi/strategy.py
   - ICT Turtle Soup — strategies/ict/turtle_soup.py
 - Notes:
-  - Selection/TOPN is disabled; Top-3 logic is handled in scripts/scan.py (2×ICT + 1×Donchian)
+  - Selection/TOPN is disabled; Top-3 logic is handled in scripts/scan.py (2×ICT + 1×IBS+RSI)
   - Indicators are computed with lookahead prevention (shift(1)); fills are next-bar open in backtests
 
 ## Layer 4: Signal Generation
@@ -100,7 +100,7 @@ All features below are **disabled by default** to preserve existing behavior:
 ### 7. Signal Selection (Portfolio)
 - Config: `selection.enabled: true`
 - Module: Uses `config/settings_loader.py`
-- Ranks signals by composite score (Donchian/ICT, Donchian/ICT, liquidity, vol penalty)
+- Ranks signals by composite score (IBS+RSI/ICT, IBS+RSI/ICT, liquidity, vol penalty)
 - Picks top_n signals per day (default: 10)
 
 ### 8. Volatility-Targeted Sizing (Portfolio)
@@ -114,7 +114,7 @@ All features below are **disabled by default** to preserve existing behavior:
 
 ### Parameter Optimization
 - Script: `scripts/optimize.py`
-- Grid search over Donchian/ICT and Donchian/ICT parameters
+- Grid search over IBS+RSI/ICT and IBS+RSI/ICT parameters
 - Outputs: heatmap CSV, HTML report, best_params.json
 - Finds robust parameter plateaus (not single spikes)
 
@@ -129,7 +129,7 @@ All features below are **disabled by default** to preserve existing behavior:
 - Outputs: distributions CSV, robustness_score.json, HTML report
 
 ## Crypto Backtesting (Research-Only)
-Crypto strategies mirror equities (Donchian/ICT, Donchian/ICT, AND) using hourly bars.
+Crypto strategies mirror equities (IBS+RSI/ICT, IBS+RSI/ICT, AND) using hourly bars.
 
 - Data Provider: `data/providers/polygon_crypto.py`
   - `fetch_crypto_bars()` for X:BTCUSD, X:ETHUSD, etc.
@@ -137,7 +137,7 @@ Crypto strategies mirror equities (Donchian/ICT, Donchian/ICT, AND) using hourly
 - Universe: `data/universe/crypto_top3.csv`, `crypto_top10.csv`
 - Scripts: `scripts/run_wf_crypto.py`, `scripts/run_showdown_crypto.py`
 - Outputs: Same structure as equities (wf_outputs_crypto/, showdown_outputs_crypto/)
-- Donchian/ICT guard: Flat bars (high==low) excluded to prevent division by zero
+- IBS+RSI/ICT guard: Flat bars (high==low) excluded to prevent division by zero
 - No live crypto execution
 
 ## Deployment Pipeline
@@ -160,6 +160,8 @@ Crypto strategies mirror equities (Donchian/ICT, Donchian/ICT, AND) using hourly
 ## Notes
 - Strategies are canonical; indicators shifted one bar; fills at next open; ATR(14)Ã—2 stop and 5â€‘bar time stop.
 - Default concurrency is conservative; adjust based on your Polygon plan.
+
+
 
 
 

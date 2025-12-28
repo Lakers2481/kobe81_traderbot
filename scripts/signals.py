@@ -20,6 +20,7 @@ import argparse
 import json
 import sys
 from datetime import datetime
+from core.clock.tz_utils import to_ct
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -205,7 +206,8 @@ def print_signals_table(signals: List[Dict[str, Any]], detailed: bool = False):
     for sig in signals:
         # Timestamp
         ts = parse_timestamp(sig.get("timestamp") or sig.get("ts"))
-        ts_str = ts.strftime("%Y-%m-%d %H:%M:%S") if ts else "-"
+        ts_ct = to_ct(ts) if ts else None
+        ts_str = ts_ct.strftime("%Y-%m-%d %I:%M:%S %p CT").lstrip('0') if ts_ct else "-"
 
         symbol = sig.get("symbol", "???")
         side = sig.get("side", "-")

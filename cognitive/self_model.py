@@ -1,42 +1,49 @@
 """
-Self Model - Robot's Self-Awareness
-=====================================
+Self-Model - The AI's Sense of Self
+=======================================
 
-Persistent model of the robot's own capabilities, limits, and recent errors.
+This module provides the cognitive architecture with a model of its own
+capabilities, traits, and limitations. It is the foundation of the AI's
+self-awareness, allowing it to answer questions like:
+- "What am I good at?"
+- "What are my weaknesses?"
+- "How trustworthy is my own confidence score right now?"
 
-Based on AI self-awareness research (arXiv):
-- Self-knowledge (traits, capabilities, limits)
-- Knowledge-boundary awareness (what it doesn't know)
-- Introspection and self-reflection
-- Objective stance on itself as an agent
+Based on AI self-awareness research, this component enables the agent to take
+an objective stance on itself, leading to more robust and safer decision-making.
+It moves the AI from simply *making* decisions to *understanding its ability*
+to make decisions.
 
 Features:
-- Tracks which strategies/regimes the robot excels at
-- Maintains confidence calibration history
-- Records recent errors and drift signals
-- Updates based on performance feedback
-- Persists across sessions
+- Tracks and categorizes its performance across different strategies and market regimes.
+- Maintains a list of its own known limitations and weaknesses.
+- Monitors its confidence calibration (i.e., when it says it's 80% confident,
+  is it actually correct 80% of the time?).
+- Generates a natural language "self-description" of its strengths and weaknesses.
+- Persists this self-knowledge across sessions.
 
 Usage:
     from cognitive.self_model import get_self_model
 
     self_model = get_self_model()
 
-    # Record capability
-    self_model.record_capability('donchian', 'BULL', win_rate=0.68)
+    # The ReflectionEngine updates the self-model after a trade.
+    self_model.record_trade_outcome('ibs_rsi', 'BULL', won=True, pnl=150.0)
 
-    # Record error/limitation
-    self_model.record_limitation('high_volatility', 'poor_exits')
+    # The MetacognitiveGovernor queries it before making a decision.
+    should_i_act, reason = self_model.should_stand_down('ibs_rsi', 'CHOPPY')
+    if should_i_act:
+        print(f"Standing down because: {reason}")
 
-    # Query self-knowledge
-    my_strength = self_model.best_regime()
-    my_weakness = self_model.known_limitations()
+    # The brain can introspect by reading its own self-description.
+    print(self_model.get_self_description())
 """
 
 import json
 import logging
+import threading
 from dataclasses import dataclass, field, asdict
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
 from enum import Enum
@@ -46,18 +53,18 @@ logger = logging.getLogger(__name__)
 
 
 class Capability(Enum):
-    """Capability categories."""
+    """A qualitative rating of the AI's performance in a specific context."""
     EXCELLENT = "excellent"      # > 65% win rate
     GOOD = "good"                # 55-65% win rate
     ADEQUATE = "adequate"        # 45-55% win rate
     WEAK = "weak"                # 35-45% win rate
     POOR = "poor"                # < 35% win rate
-    UNKNOWN = "unknown"          # Insufficient data
+    UNKNOWN = "unknown"          # Not enough data to form an opinion.
 
 
 @dataclass
 class StrategyPerformance:
-    """Track performance for a strategy-regime combination."""
+    """Tracks the AI's historical performance for a specific strategy/regime pair."""
     strategy: str
     regime: str
     total_trades: int = 0
@@ -65,34 +72,32 @@ class StrategyPerformance:
     losing_trades: int = 0
     total_pnl: float = 0.0
     avg_r_multiple: float = 0.0
-    max_drawdown: float = 0.0
     last_updated: datetime = field(default_factory=datetime.now)
     notes: List[str] = field(default_factory=list)
 
     @property
     def win_rate(self) -> float:
+        """Calculates the win rate for this context."""
         if self.total_trades == 0:
             return 0.0
         return self.winning_trades / self.total_trades
 
     @property
     def capability(self) -> Capability:
+        """Assigns a qualitative capability rating based on the win rate."""
         if self.total_trades < 10:
             return Capability.UNKNOWN
         wr = self.win_rate
-        if wr >= 0.65:
-            return Capability.EXCELLENT
-        elif wr >= 0.55:
-            return Capability.GOOD
-        elif wr >= 0.45:
-            return Capability.ADEQUATE
-        elif wr >= 0.35:
-            return Capability.WEAK
-        else:
-            return Capability.POOR
+        if wr >= 0.65: return Capability.EXCELLENT
+        elif wr >= 0.55: return Capability.GOOD
+        elif wr >= 0.45: return Capability.ADEQUATE
+        elif wr >= 0.35: return Capability.WEAK
+        else: return Capability.POOR
 
     def to_dict(self) -> Dict:
+        """Serializes the performance record to a dictionary."""
         d = asdict(self)
+        # Add computed properties to the dictionary for easy access.
         d['win_rate'] = self.win_rate
         d['capability'] = self.capability.value
         d['last_updated'] = self.last_updated.isoformat()
@@ -101,90 +106,73 @@ class StrategyPerformance:
 
 @dataclass
 class Limitation:
-    """A known limitation or weakness."""
-    context: str          # When does this limitation apply
-    description: str      # What the limitation is
-    severity: str         # 'minor', 'moderate', 'severe'
+    """Represents a known weakness or failure mode of the AI."""
+    context: str          # When this limitation typically occurs.
+    description: str      # What the limitation is.
+    severity: str         # 'minor', 'moderate', or 'severe'.
     occurrences: int = 1
     first_observed: datetime = field(default_factory=datetime.now)
     last_observed: datetime = field(default_factory=datetime.now)
-    mitigation: Optional[str] = None  # How to handle this limitation
+    mitigation: Optional[str] = None  # A suggested way to handle this limitation.
 
     def to_dict(self) -> Dict:
-        return {
-            'context': self.context,
-            'description': self.description,
-            'severity': self.severity,
-            'occurrences': self.occurrences,
-            'first_observed': self.first_observed.isoformat(),
-            'last_observed': self.last_observed.isoformat(),
-            'mitigation': self.mitigation,
-        }
+        """Serializes the limitation to a dictionary."""
+        d = asdict(self)
+        d['first_observed'] = self.first_observed.isoformat()
+        d['last_observed'] = self.last_observed.isoformat()
+        return d
 
 
 @dataclass
 class ConfidenceCalibration:
-    """Track how well-calibrated predictions are."""
+    """Tracks how well the AI's stated confidence matches its actual accuracy."""
     confidence_bucket: str  # e.g., "70-80%"
     predictions: int = 0
     correct: int = 0
-    last_updated: datetime = field(default_factory=datetime.now)
 
     @property
     def actual_accuracy(self) -> float:
-        if self.predictions == 0:
-            return 0.0
-        return self.correct / self.predictions
+        """The actual success rate for this confidence bucket."""
+        return self.correct / self.predictions if self.predictions > 0 else 0.0
 
     @property
     def calibration_error(self) -> float:
-        """Difference between stated confidence and actual accuracy."""
-        # Extract middle of bucket (e.g., "70-80%" -> 0.75)
-        parts = self.confidence_bucket.replace('%', '').split('-')
-        expected = (float(parts[0]) + float(parts[1])) / 200
-        return abs(expected - self.actual_accuracy)
+        """
+        The difference between stated confidence and actual accuracy.
+        A lower number is better.
+        """
+        # e.g., for bucket "70-80%", the expected accuracy is 75%.
+        low, high = map(int, self.confidence_bucket.replace('%', '').split('-'))
+        expected_accuracy = (low + high) / 200.0
+        return abs(expected_accuracy - self.actual_accuracy)
 
 
 class SelfModel:
     """
-    Robot's model of its own capabilities, limits, and calibration.
-
-    This is the "Model of Self" component from the cognitive architecture.
+    Manages the AI's persistent model of its own capabilities, limits, and
+    calibration. This is the core of the agent's self-awareness.
     """
 
-    def __init__(
-        self,
-        state_dir: str = "state/cognitive",
-        auto_persist: bool = True,
-    ):
+    def __init__(self, state_dir: str = "state/cognitive", auto_persist: bool = True):
         self.state_dir = Path(state_dir)
         self.state_dir.mkdir(parents=True, exist_ok=True)
         self.auto_persist = auto_persist
 
-        # Performance by strategy-regime
+        # --- Core Self-Knowledge Stores ---
         self._performance: Dict[str, StrategyPerformance] = {}
-
-        # Known limitations
-        self._limitations: List[Limitation] = []
-
-        # Confidence calibration buckets
+        self._limitations: Dict[str, Limitation] = {}
         self._calibration: Dict[str, ConfidenceCalibration] = {}
-
-        # Recent errors (for pattern detection)
         self._recent_errors: List[Dict] = []
         self._error_limit = 100
 
-        # Self-description (natural language summary)
-        self._self_description: str = ""
+        self._self_description: str = "" # A cached natural language summary.
 
-        # Load persisted state
         self._load_state()
-
-        logger.info("SelfModel initialized")
+        logger.info(f"SelfModel initialized, loaded {len(self._performance)} performance records.")
 
     def _make_key(self, strategy: str, regime: str) -> str:
-        """Create key for strategy-regime combination."""
-        return f"{strategy}|{regime}"
+        """Creates a consistent dictionary key for a strategy-regime pair."""
+        return f"{strategy.lower()}|{regime.lower()}"
 
     def record_trade_outcome(
         self,
@@ -196,413 +184,219 @@ class SelfModel:
         notes: Optional[str] = None,
     ) -> None:
         """
-        Record a trade outcome to update self-knowledge.
-
-        Args:
-            strategy: Strategy used
-            regime: Market regime
-            won: Whether trade was profitable
-            pnl: P&L of the trade
-            r_multiple: R-multiple achieved
-            notes: Optional notes
+        The primary method for updating the self-model. The ReflectionEngine
+        calls this after every trade to provide feedback.
         """
         key = self._make_key(strategy, regime)
-
         if key not in self._performance:
-            self._performance[key] = StrategyPerformance(
-                strategy=strategy,
-                regime=regime,
-            )
+            self._performance[key] = StrategyPerformance(strategy=strategy, regime=regime)
 
         perf = self._performance[key]
         perf.total_trades += 1
-        if won:
-            perf.winning_trades += 1
-        else:
-            perf.losing_trades += 1
+        if won: perf.winning_trades += 1
+        else: perf.losing_trades += 1
         perf.total_pnl += pnl
-        perf.avg_r_multiple = (
-            (perf.avg_r_multiple * (perf.total_trades - 1) + r_multiple) /
-            perf.total_trades
-        )
+        # Update rolling average for R-multiple
+        perf.avg_r_multiple = ((perf.avg_r_multiple * (perf.total_trades - 1)) + r_multiple) / perf.total_trades
         perf.last_updated = datetime.now()
         if notes:
             perf.notes.append(notes)
+            perf.notes = perf.notes[-10:] # Keep last 10 notes
 
-        # Update self-description
+        # After updating performance, regenerate the summary description.
         self._update_self_description()
 
         if self.auto_persist:
             self._save_state()
 
-        logger.info(
-            f"Self-model updated: {strategy} in {regime} - "
-            f"Win rate: {perf.win_rate:.1%} ({perf.total_trades} trades)"
-        )
+        logger.info(f"Self-model updated for {key}: Win Rate is now {perf.win_rate:.1%} over {perf.total_trades} trades.")
 
-    def record_limitation(
-        self,
-        context: str,
-        description: str,
-        severity: str = "moderate",
-        mitigation: Optional[str] = None,
-    ) -> None:
-        """
-        Record a known limitation.
-
-        Args:
-            context: When this limitation applies
-            description: What the limitation is
-            severity: 'minor', 'moderate', or 'severe'
-            mitigation: How to handle this
-        """
-        # Check if limitation already exists
-        for lim in self._limitations:
-            if lim.context == context and lim.description == description:
-                lim.occurrences += 1
-                lim.last_observed = datetime.now()
-                if mitigation:
-                    lim.mitigation = mitigation
-                if self.auto_persist:
-                    self._save_state()
-                return
-
-        # New limitation
-        self._limitations.append(Limitation(
-            context=context,
-            description=description,
-            severity=severity,
-            mitigation=mitigation,
-        ))
-
-        logger.info(f"New limitation recorded: {context} - {description}")
-
-        if self.auto_persist:
-            self._save_state()
-
-    def record_error(
-        self,
-        error_type: str,
-        context: Dict[str, Any],
-        description: str,
-    ) -> None:
-        """Record an error for pattern detection."""
-        self._recent_errors.append({
-            'error_type': error_type,
-            'context': context,
-            'description': description,
-            'timestamp': datetime.now().isoformat(),
-        })
-
-        # Limit size
-        if len(self._recent_errors) > self._error_limit:
-            self._recent_errors = self._recent_errors[-self._error_limit:]
-
-        # Check for patterns
-        self._detect_error_patterns()
-
-        if self.auto_persist:
-            self._save_state()
-
-    def record_prediction(
-        self,
-        confidence: float,
-        correct: bool,
-    ) -> None:
-        """
-        Record a prediction for calibration tracking.
-
-        Args:
-            confidence: Stated confidence (0-1)
-            correct: Whether prediction was correct
-        """
-        # Bucket confidence
-        bucket_ranges = [
-            (0.0, 0.5), (0.5, 0.6), (0.6, 0.7),
-            (0.7, 0.8), (0.8, 0.9), (0.9, 1.01)
-        ]
-        for low, high in bucket_ranges:
-            if low <= confidence < high:
-                bucket = f"{int(low*100)}-{int(high*100)}%"
-                break
+    def record_limitation(self, context: str, description: str, severity: str = "moderate") -> None:
+        """Records a new weakness or updates an existing one."""
+        key = f"{context.lower()}|{description.lower()}"
+        if key in self._limitations:
+            self._limitations[key].occurrences += 1
+            self._limitations[key].last_observed = datetime.now()
         else:
-            bucket = "90-100%"
+            self._limitations[key] = Limitation(context=context, description=description, severity=severity)
+        
+        logger.info(f"Recorded new limitation: '{description}' in context '{context}'.")
+        self._update_self_description()
+        if self.auto_persist: self._save_state()
 
+    def record_prediction(self, confidence: float, correct: bool) -> None:
+        """Records a prediction to track confidence calibration."""
+        bucket = f"{int(confidence*10) * 10}-{int(confidence*10)*10+10}%"
+        
         if bucket not in self._calibration:
-            self._calibration[bucket] = ConfidenceCalibration(
-                confidence_bucket=bucket
-            )
-
+            self._calibration[bucket] = ConfidenceCalibration(confidence_bucket=bucket)
+            
         cal = self._calibration[bucket]
         cal.predictions += 1
-        if correct:
-            cal.correct += 1
-        cal.last_updated = datetime.now()
-
-        if self.auto_persist:
-            self._save_state()
-
-    def get_capability(self, strategy: str, regime: str) -> Capability:
-        """Get capability rating for strategy-regime combination."""
-        key = self._make_key(strategy, regime)
-        perf = self._performance.get(key)
-        if perf:
-            return perf.capability
-        return Capability.UNKNOWN
+        if correct: cal.correct += 1
+        
+        if self.auto_persist: self._save_state()
 
     def get_performance(self, strategy: str, regime: str) -> Optional[StrategyPerformance]:
-        """Get detailed performance for strategy-regime."""
-        key = self._make_key(strategy, regime)
-        return self._performance.get(key)
+        """Gets the detailed performance record for a given context."""
+        return self._performance.get(self._make_key(strategy, regime))
 
-    def best_strategy_for_regime(self, regime: str) -> Optional[Tuple[str, float]]:
-        """Find best performing strategy for a regime."""
-        best = None
-        best_wr = 0.0
-
-        for key, perf in self._performance.items():
-            if perf.regime == regime and perf.total_trades >= 10:
-                if perf.win_rate > best_wr:
-                    best = perf.strategy
-                    best_wr = perf.win_rate
-
-        return (best, best_wr) if best else None
-
-    def best_regime_for_strategy(self, strategy: str) -> Optional[Tuple[str, float]]:
-        """Find best regime for a strategy."""
-        best = None
-        best_wr = 0.0
-
-        for key, perf in self._performance.items():
-            if perf.strategy == strategy and perf.total_trades >= 10:
-                if perf.win_rate > best_wr:
-                    best = perf.regime
-                    best_wr = perf.win_rate
-
-        return (best, best_wr) if best else None
-
-    def known_limitations(self, context: Optional[str] = None) -> List[Limitation]:
-        """Get known limitations, optionally filtered by context."""
-        if context:
-            return [l for l in self._limitations if context.lower() in l.context.lower()]
-        return self._limitations.copy()
-
-    def get_calibration_error(self) -> float:
-        """Get overall calibration error (lower is better)."""
-        if not self._calibration:
-            return 0.0
-        errors = [cal.calibration_error for cal in self._calibration.values()
-                  if cal.predictions >= 10]
-        if not errors:
-            return 0.0
-        return statistics.mean(errors)
-
-    def is_well_calibrated(self) -> bool:
-        """Check if predictions are well-calibrated (error < 10%)."""
-        return self.get_calibration_error() < 0.10
-
-    def get_self_description(self) -> str:
-        """Get natural language description of self."""
-        return self._self_description or self._generate_self_description()
+    def get_capability(self, strategy: str, regime: str) -> Capability:
+        """Gets the capability rating for a given strategy/regime context."""
+        perf = self.get_performance(strategy, regime)
+        if perf is None:
+            return Capability.UNKNOWN
+        return perf.capability
 
     def get_strengths(self) -> List[str]:
-        """Get list of strengths."""
-        strengths = []
-        for key, perf in self._performance.items():
-            if perf.capability in [Capability.EXCELLENT, Capability.GOOD]:
-                strengths.append(
-                    f"{perf.strategy} in {perf.regime} regime "
-                    f"({perf.win_rate:.1%} win rate)"
-                )
-        return strengths
+        """Returns a list of contexts where the AI has EXCELLENT or GOOD capability."""
+        return [
+            f"{p.strategy} in {p.regime} ({p.win_rate:.1%})"
+            for p in self._performance.values()
+            if p.capability in [Capability.EXCELLENT, Capability.GOOD]
+        ]
 
     def get_weaknesses(self) -> List[str]:
-        """Get list of weaknesses."""
-        weaknesses = []
-
-        # From performance
-        for key, perf in self._performance.items():
-            if perf.capability in [Capability.WEAK, Capability.POOR]:
-                weaknesses.append(
-                    f"{perf.strategy} in {perf.regime} regime "
-                    f"({perf.win_rate:.1%} win rate)"
-                )
-
-        # From limitations
-        for lim in self._limitations:
-            if lim.severity in ['moderate', 'severe']:
-                weaknesses.append(f"{lim.context}: {lim.description}")
-
+        """Returns a list of contexts where the AI has WEAK or POOR capability."""
+        weaknesses = [
+            f"{p.strategy} in {p.regime} ({p.win_rate:.1%})"
+            for p in self._performance.values()
+            if p.capability in [Capability.WEAK, Capability.POOR]
+        ]
+        weaknesses.extend([
+            f"{lim.context}: {lim.description}"
+            for lim in self._limitations.values()
+            if lim.severity in ['moderate', 'severe']
+        ])
         return weaknesses
+
+    def known_limitations(self) -> List[Limitation]:
+        """Returns the list of known limitations as Limitation objects."""
+        return list(self._limitations.values())
+
+    def is_well_calibrated(self) -> bool:
+        """Checks if the AI's confidence is trustworthy (average error < 10%)."""
+        if not self._calibration: return True # Assume calibrated if no data
+        errors = [c.calibration_error for c in self._calibration.values() if c.predictions >= 10]
+        return statistics.mean(errors) < 0.10 if errors else True
+
+    def get_calibration_error(self) -> float:
+        """Returns the average calibration error across all confidence buckets."""
+        if not self._calibration:
+            return 0.0
+        errors = [c.calibration_error for c in self._calibration.values() if c.predictions >= 10]
+        return statistics.mean(errors) if errors else 0.0
 
     def should_stand_down(self, strategy: str, regime: str) -> Tuple[bool, str]:
         """
-        Check if robot should stand down for this context.
-
-        Returns:
-            Tuple of (should_stand_down, reason)
+        Advises if the AI should stand down in a given context due to self-assessed weakness.
+        This is a critical input for the MetacognitiveGovernor.
         """
-        # Check capability
-        cap = self.get_capability(strategy, regime)
-        if cap == Capability.POOR:
-            return True, f"Poor performance in {strategy}/{regime}"
+        # 1. Check if performance in this context is known to be POOR.
+        perf = self.get_performance(strategy, regime)
+        if perf and perf.capability == Capability.POOR:
+            return True, f"Self-assessed capability is POOR for {strategy} in {regime}."
 
-        # Check for severe limitations
-        for lim in self._limitations:
-            if lim.severity == 'severe':
-                if regime.lower() in lim.context.lower():
-                    return True, f"Known limitation: {lim.description}"
+        # 2. Check for any severe limitations related to this context.
+        for lim in self._limitations.values():
+            if lim.severity == 'severe' and (strategy in lim.context or regime in lim.context):
+                return True, f"Severe known limitation: {lim.description}."
 
-        # Check calibration
-        if not self.is_well_calibrated():
-            cal_error = self.get_calibration_error()
-            if cal_error > 0.20:
-                return True, f"Poor calibration (error: {cal_error:.1%})"
+        # 3. Check if confidence is known to be badly miscalibrated.
+        if self.get_calibration_error() > 0.25:
+             return True, f"Confidence calibration error is critically high ({self.get_calibration_error():.1%})."
 
         return False, ""
 
-    def _detect_error_patterns(self) -> None:
-        """Detect patterns in recent errors and record as limitations."""
-        if len(self._recent_errors) < 5:
-            return
-
-        # Count error types
-        error_counts: Dict[str, int] = {}
-        for err in self._recent_errors[-20:]:
-            et = err['error_type']
-            error_counts[et] = error_counts.get(et, 0) + 1
-
-        # If any error type appears 3+ times, record as limitation
-        for error_type, count in error_counts.items():
-            if count >= 3:
-                self.record_limitation(
-                    context=f"Repeated {error_type}",
-                    description=f"Error occurred {count} times in recent trades",
-                    severity="moderate",
-                )
-
-    def _update_self_description(self) -> None:
-        """Update natural language self-description."""
+    def _update_self_description(self):
+        """Forces a regeneration of the cached natural language summary."""
         self._self_description = self._generate_self_description()
+        
+    def get_self_description(self) -> str:
+        """Returns a cached, human-readable summary of the AI's self-knowledge."""
+        return self._self_description or self._generate_self_description()
 
     def _generate_self_description(self) -> str:
-        """Generate natural language self-description."""
-        lines = ["I am Kobe, a trading robot with the following self-knowledge:"]
+        """Generates a fresh natural language summary of the AI's self-knowledge."""
+        lines = ["I am a trading agent. Based on my experience, I have the following characteristics:"]
+        
+        if strengths := self.get_strengths():
+            lines.append("\nMy Strengths:")
+            lines.extend([f"  - I am effective at {s}." for s in strengths[:3]])
+        else:
+            lines.append("\nI have not yet identified any statistically significant strengths.")
 
-        # Strengths
-        strengths = self.get_strengths()
-        if strengths:
-            lines.append("\nStrengths:")
-            for s in strengths[:3]:
-                lines.append(f"  - {s}")
+        if weaknesses := self.get_weaknesses():
+            lines.append("\nMy Weaknesses:")
+            lines.extend([f"  - I am not effective at {w}." for w in weaknesses[:3]])
+        else:
+            lines.append("\nI have not yet identified any statistically significant weaknesses.")
 
-        # Weaknesses
-        weaknesses = self.get_weaknesses()
-        if weaknesses:
-            lines.append("\nWeaknesses:")
-            for w in weaknesses[:3]:
-                lines.append(f"  - {w}")
-
-        # Calibration
         cal_error = self.get_calibration_error()
-        if cal_error > 0:
-            lines.append(f"\nCalibration error: {cal_error:.1%}")
-            if self.is_well_calibrated():
-                lines.append("  (Well-calibrated)")
-            else:
-                lines.append("  (Need recalibration)")
-
-        # Trade count
+        cal_status = "well-calibrated" if self.is_well_calibrated() else "in need of calibration"
+        lines.append(f"\nMy confidence is currently {cal_status} (error: {cal_error:.1%}).")
+        
         total_trades = sum(p.total_trades for p in self._performance.values())
-        lines.append(f"\nTotal trades analyzed: {total_trades}")
-
+        lines.append(f"\nI have analyzed a total of {total_trades} trades to form this self-assessment.")
         return "\n".join(lines)
 
     def get_status(self) -> Dict[str, Any]:
-        """Get current self-model status."""
+        """Returns a dictionary of the self-model's current statistics."""
         return {
-            'strategies_tracked': len(set(p.strategy for p in self._performance.values())),
-            'regimes_tracked': len(set(p.regime for p in self._performance.values())),
-            'total_trades': sum(p.total_trades for p in self._performance.values()),
+            'performance_records': len(self._performance),
             'known_limitations': len(self._limitations),
-            'calibration_buckets': len(self._calibration),
             'calibration_error': self.get_calibration_error(),
             'is_well_calibrated': self.is_well_calibrated(),
-            'recent_errors': len(self._recent_errors),
         }
 
     def _save_state(self) -> None:
-        """Persist state to disk."""
-        state_file = self.state_dir / "self_model.json"
+        """Persists the self-model's state to a JSON file."""
         state = {
             'performance': {k: v.to_dict() for k, v in self._performance.items()},
-            'limitations': [l.to_dict() for l in self._limitations],
+            'limitations': {k: v.to_dict() for k, v in self._limitations.items()},
             'calibration': {k: asdict(v) for k, v in self._calibration.items()},
-            'recent_errors': self._recent_errors,
             'self_description': self._self_description,
-            'saved_at': datetime.now().isoformat(),
         }
-        with open(state_file, 'w') as f:
-            json.dump(state, f, indent=2, default=str)
+        try:
+            with open(self.state_dir / "self_model.json", 'w') as f:
+                json.dump(state, f, indent=2)
+        except Exception as e:
+            logger.error(f"Failed to save self-model state: {e}")
 
     def _load_state(self) -> None:
-        """Load state from disk."""
+        """Loads the self-model's state from a JSON file on startup."""
         state_file = self.state_dir / "self_model.json"
-        if not state_file.exists():
-            return
+        if not state_file.exists(): return
 
         try:
             with open(state_file, 'r') as f:
                 state = json.load(f)
-
-            # Load performance
+            
             for key, data in state.get('performance', {}).items():
-                self._performance[key] = StrategyPerformance(
-                    strategy=data['strategy'],
-                    regime=data['regime'],
-                    total_trades=data['total_trades'],
-                    winning_trades=data['winning_trades'],
-                    losing_trades=data['losing_trades'],
-                    total_pnl=data['total_pnl'],
-                    avg_r_multiple=data.get('avg_r_multiple', 0),
-                    notes=data.get('notes', []),
-                )
+                self._performance[key] = StrategyPerformance(**{k:v for k,v in data.items() if k not in ['win_rate', 'capability', 'last_updated']})
+            
+            for key, data in state.get('limitations', {}).items():
+                self._limitations[key] = Limitation(**{k:v for k,v in data.items() if k not in ['first_observed', 'last_observed']})
 
-            # Load limitations
-            for data in state.get('limitations', []):
-                self._limitations.append(Limitation(
-                    context=data['context'],
-                    description=data['description'],
-                    severity=data['severity'],
-                    occurrences=data.get('occurrences', 1),
-                    mitigation=data.get('mitigation'),
-                ))
-
-            # Load calibration
             for key, data in state.get('calibration', {}).items():
-                self._calibration[key] = ConfidenceCalibration(
-                    confidence_bucket=data['confidence_bucket'],
-                    predictions=data['predictions'],
-                    correct=data['correct'],
-                )
+                self._calibration[key] = ConfidenceCalibration(**data)
 
-            # Load errors
-            self._recent_errors = state.get('recent_errors', [])
             self._self_description = state.get('self_description', '')
-
-            logger.info("Self-model loaded from disk")
-
+            logger.info("SelfModel state loaded successfully.")
         except Exception as e:
-            logger.warning(f"Failed to load self-model state: {e}")
+            logger.warning(f"Failed to load self-model state from {state_file}: {e}. Starting with a blank slate.")
+            self._performance, self._limitations, self._calibration = {}, {}, {}
 
 
-# Singleton
+# --- Singleton Implementation ---
 _self_model: Optional[SelfModel] = None
-
+_lock = threading.Lock()
 
 def get_self_model() -> SelfModel:
-    """Get or create the self-model singleton."""
+    """Factory function to get the singleton instance of the SelfModel."""
     global _self_model
     if _self_model is None:
-        _self_model = SelfModel()
+        with _lock:
+            if _self_model is None:
+                _self_model = SelfModel()
     return _self_model

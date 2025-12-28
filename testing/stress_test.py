@@ -1,215 +1,114 @@
-"""
-Stress Testing for Trading Strategies
-======================================
-
-Simulates adverse market conditions to test strategy robustness.
-"""
-
+#!/usr/bin/env python3
 from __future__ import annotations
 
-import logging
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
-from enum import Enum
-import numpy as np
+"""
+Testing: Stress scenarios for equity paths or returns.
+
+Provides canned scenarios:
+- black_monday: single-day -22%
+- covid_crash: multi-day cumulative -34%
+- vix_spike: double volatility for N days
+- flash_crash: intraday-like -9% shock (approximated as EOD drop)
+
+Outputs a simple summary of final equity and drawdown impact.
+"""
+
+import argparse
+from pathlib import Path
+from typing import List
 import pandas as pd
-
-logger = logging.getLogger(__name__)
-
-
-class ScenarioType(Enum):
-    """Type of stress scenario."""
-    CRASH = "crash"           # Sudden market crash
-    RALLY = "rally"           # Sharp rally
-    VOLATILITY_SPIKE = "volatility_spike"
-    VOLATILITY_CRUSH = "volatility_crush"
-    CORRELATION_BREAK = "correlation_break"
-    LIQUIDITY_CRISIS = "liquidity_crisis"
-    FLASH_CRASH = "flash_crash"
-    SIDEWAYS = "sideways"     # Extended choppy market
+import numpy as np
 
 
-@dataclass
-class StressScenario:
-    """Definition of a stress scenario."""
-    name: str
-    scenario_type: ScenarioType
-    description: str = ""
-
-    # Return modifications
-    return_shock: float = 0.0  # One-time return shock
-    volatility_mult: float = 1.0  # Multiply volatility
-    trend_bias: float = 0.0  # Daily bias
-
-    # Duration
-    duration_days: int = 5
-
-    # Spread/liquidity
-    spread_mult: float = 1.0
-    slippage_mult: float = 1.0
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            'name': self.name,
-            'type': self.scenario_type.value,
-            'return_shock': self.return_shock,
-            'volatility_mult': self.volatility_mult,
-            'duration_days': self.duration_days,
-        }
+def apply_shock_returns(returns: np.ndarray, shock_idx: int, shock_drop: float) -> np.ndarray:
+    out = returns.copy()
+    if 0 <= shock_idx < len(out):
+        out[shock_idx] = (1 + out[shock_idx]) * (1 + shock_drop) - 1
+    return out
 
 
-@dataclass
-class StressTestResult:
-    """Result of stress test."""
-    scenario: StressScenario
-    original_return: float
-    stressed_return: float
-    original_sharpe: float
-    stressed_sharpe: float
-    max_drawdown: float
-    survived: bool
-    details: Dict[str, Any] = field(default_factory=dict)
+def scale_volatility(returns: np.ndarray, start_idx: int, days: int, scale: float) -> np.ndarray:
+    out = returns.copy()
+    end_idx = min(len(out), start_idx + days)
+    out[start_idx:end_idx] = out[start_idx:end_idx] * scale
+    return out
 
 
-class StressTester:
-    """
-    Applies stress scenarios to trading strategies.
-    """
-
-    # Standard stress scenarios
-    STANDARD_SCENARIOS = [
-        StressScenario(
-            name="Black Monday",
-            scenario_type=ScenarioType.CRASH,
-            return_shock=-0.20,
-            volatility_mult=3.0,
-            duration_days=3,
-        ),
-        StressScenario(
-            name="2020 COVID Crash",
-            scenario_type=ScenarioType.CRASH,
-            return_shock=-0.35,
-            volatility_mult=4.0,
-            duration_days=20,
-        ),
-        StressScenario(
-            name="Flash Crash",
-            scenario_type=ScenarioType.FLASH_CRASH,
-            return_shock=-0.10,
-            volatility_mult=5.0,
-            duration_days=1,
-        ),
-        StressScenario(
-            name="VIX Spike",
-            scenario_type=ScenarioType.VOLATILITY_SPIKE,
-            volatility_mult=3.0,
-            duration_days=10,
-        ),
-        StressScenario(
-            name="Sideways Chop",
-            scenario_type=ScenarioType.SIDEWAYS,
-            volatility_mult=0.5,
-            duration_days=60,
-        ),
-        StressScenario(
-            name="Bull Rally",
-            scenario_type=ScenarioType.RALLY,
-            return_shock=0.15,
-            trend_bias=0.002,
-            duration_days=20,
-        ),
-    ]
-
-    def __init__(self, ruin_threshold: float = -0.50):
-        self.ruin_threshold = ruin_threshold
-        logger.info("StressTester initialized")
-
-    def apply_scenario(
-        self,
-        returns: pd.Series,
-        scenario: StressScenario,
-    ) -> pd.Series:
-        """Apply stress scenario to return series."""
-        stressed = returns.copy()
-        n = len(stressed)
-
-        # Apply shock at start
-        if scenario.return_shock != 0:
-            shock_days = min(scenario.duration_days, n)
-            stressed.iloc[:shock_days] = (
-                stressed.iloc[:shock_days] * scenario.volatility_mult +
-                scenario.return_shock / shock_days
-            )
-
-        # Apply volatility multiplier
-        if scenario.volatility_mult != 1.0:
-            mean = stressed.mean()
-            stressed = (stressed - mean) * scenario.volatility_mult + mean
-
-        # Apply trend bias
-        if scenario.trend_bias != 0:
-            stressed = stressed + scenario.trend_bias
-
-        return stressed
-
-    def run_test(
-        self,
-        returns: pd.Series,
-        scenario: StressScenario,
-    ) -> StressTestResult:
-        """Run single stress test."""
-        # Original metrics
-        orig_total = (1 + returns).prod() - 1
-        orig_sharpe = returns.mean() / returns.std() * np.sqrt(252) if returns.std() > 0 else 0
-
-        # Apply stress
-        stressed = self.apply_scenario(returns, scenario)
-        stressed_total = (1 + stressed).prod() - 1
-        stressed_sharpe = stressed.mean() / stressed.std() * np.sqrt(252) if stressed.std() > 0 else 0
-
-        # Max drawdown
-        cumulative = (1 + stressed).cumprod()
-        running_max = cumulative.cummax()
-        drawdown = (cumulative - running_max) / running_max
-        max_dd = drawdown.min()
-
-        survived = stressed_total > self.ruin_threshold
-
-        return StressTestResult(
-            scenario=scenario,
-            original_return=orig_total,
-            stressed_return=stressed_total,
-            original_sharpe=orig_sharpe,
-            stressed_sharpe=stressed_sharpe,
-            max_drawdown=max_dd,
-            survived=survived,
-        )
-
-    def run_all_scenarios(
-        self,
-        returns: pd.Series,
-    ) -> List[StressTestResult]:
-        """Run all standard stress scenarios."""
-        results = []
-        for scenario in self.STANDARD_SCENARIOS:
-            result = self.run_test(returns, scenario)
-            results.append(result)
-        return results
+def equity_from_returns(returns: np.ndarray, initial: float) -> np.ndarray:
+    eq = np.empty(len(returns) + 1)
+    eq[0] = initial
+    for i, r in enumerate(returns):
+        eq[i + 1] = eq[i] * (1 + r)
+    return eq
 
 
-def run_stress_test(
-    returns: pd.Series,
-    scenario_name: str = "Black Monday",
-) -> StressTestResult:
-    """Convenience function for stress testing."""
-    tester = StressTester()
-    scenario = next(
-        (s for s in tester.STANDARD_SCENARIOS if s.name == scenario_name),
-        tester.STANDARD_SCENARIOS[0]
-    )
-    return tester.run_test(returns, scenario)
+def max_drawdown_pct(equity: np.ndarray) -> float:
+    peak = equity[0]
+    max_dd = 0.0
+    for x in equity:
+        if x > peak:
+            peak = x
+        dd = (peak - x) / peak if peak > 0 else 0
+        if dd > max_dd:
+            max_dd = dd
+    return max_dd * 100
 
 
-def get_standard_scenarios() -> List[StressScenario]:
-    """Get list of standard stress scenarios."""
-    return StressTester.STANDARD_SCENARIOS.copy()
+def run_scenarios(returns: np.ndarray, initial: float = 100000.0) -> pd.DataFrame:
+    scenarios = []
+    n = len(returns)
+    mid = n // 2 if n > 0 else 0
+
+    # Black Monday: -22% at midpoint
+    r1 = apply_shock_returns(returns, mid, -0.22)
+    e1 = equity_from_returns(r1, initial)
+    scenarios.append({"scenario": "black_monday", "final_equity": float(e1[-1]), "max_dd": max_drawdown_pct(e1)})
+
+    # COVID Crash: spread -34% over 10 days
+    spread = (-0.34) / 10.0
+    r2 = returns.copy()
+    for i in range(10):
+        idx = min(n - 1, mid + i)
+        r2[idx] = (1 + r2[idx]) * (1 + spread) - 1
+    e2 = equity_from_returns(r2, initial)
+    scenarios.append({"scenario": "covid_crash", "final_equity": float(e2[-1]), "max_dd": max_drawdown_pct(e2)})
+
+    # VIX Spike: double volatility for 5 days
+    r3 = scale_volatility(returns, max(0, mid - 2), 5, 2.0)
+    e3 = equity_from_returns(r3, initial)
+    scenarios.append({"scenario": "vix_spike_2x", "final_equity": float(e3[-1]), "max_dd": max_drawdown_pct(e3)})
+
+    # Flash Crash: -9% single-day shock
+    r4 = apply_shock_returns(returns, mid, -0.09)
+    e4 = equity_from_returns(r4, initial)
+    scenarios.append({"scenario": "flash_crash", "final_equity": float(e4[-1]), "max_dd": max_drawdown_pct(e4)})
+
+    return pd.DataFrame(scenarios)
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description="Stress scenarios on returns series")
+    ap.add_argument("--returns", type=str, help="CSV with a 'ret' column OR trades with pnl_pct")
+    ap.add_argument("--initial", type=float, default=100000.0)
+    ap.add_argument("--out", type=str, default="outputs/stress_summary.csv")
+    args = ap.parse_args()
+
+    p = Path(args.returns)
+    df = pd.read_csv(p)
+    if 'ret' in df.columns:
+        rets = df['ret'].astype(float).values
+    elif 'pnl_pct' in df.columns:
+        rets = df['pnl_pct'].astype(float).values
+    else:
+        raise SystemExit("Input CSV must have 'ret' or 'pnl_pct' column")
+
+    summary = run_scenarios(rets, initial=args.initial)
+    outp = Path(args.out)
+    outp.parent.mkdir(parents=True, exist_ok=True)
+    summary.to_csv(outp, index=False)
+    print("Wrote:", outp)
+
+
+if __name__ == "__main__":
+    main()
+

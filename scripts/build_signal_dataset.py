@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 """
-Build a labeled ML dataset from walk-forward trade outputs for Donchian and ICT.
+Build a labeled ML dataset from walk-forward trade outputs for IBS+RSI and ICT.
 
 For each trade, fetch bars up to the entry date to compute rolling features,
 and label by realized outcome (win/loss by net PnL if available or forward return).
@@ -12,9 +12,20 @@ Outputs: data/ml/signal_dataset.parquet
 
 import argparse
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 import pandas as pd
+
+
+# Directory name mapping: old WF output names -> canonical strategy name
+DIR_TO_STRATEGY = {
+    'ibs_rsi': 'IBS_RSI',
+    'ibs': 'IBS_RSI',
+    'rsi2': 'IBS_RSI',
+    'and': 'IBS_RSI',
+    'turtle_soup': 'TURTLE_SOUP',
+    'ict': 'TURTLE_SOUP',
+}
 
 import sys
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,62 +36,111 @@ from data.providers.multi_source import fetch_daily_bars_multi
 from ml_meta.features import compute_features_frame
 
 
-def find_trade_lists(wfdir: Path) -> List[Path]:
-    paths: List[Path] = []
-    for strat in ("donchian", "turtle_soup"):
-        sdir = wfdir / strat
-        if not sdir.exists():
+def find_trade_lists(wfdir: Path) -> List[Tuple[Path, str]]:
+    """Find all trade_list.csv files and their canonical strategy names."""
+    paths: List[Tuple[Path, str]] = []
+    if not wfdir.exists():
+        return paths
+    for subdir in wfdir.iterdir():
+        if not subdir.is_dir():
             continue
-        for p in sdir.rglob("trade_list.csv"):
-            paths.append(p)
-    return sorted(paths)
+        dir_name = subdir.name.lower()
+        if dir_name not in DIR_TO_STRATEGY:
+            continue
+        strategy = DIR_TO_STRATEGY[dir_name]
+        for p in subdir.rglob("trade_list.csv"):
+            paths.append((p, strategy))
+    return sorted(paths, key=lambda x: str(x[0]))
 
 
-def load_trades(trade_files: List[Path]) -> pd.DataFrame:
-    frames = []
-    for tf in trade_files:
+def _pair_buy_sell(df: pd.DataFrame, strategy: str) -> List[dict]:
+    """Pair consecutive BUY/SELL rows for the same symbol into trade records.
+
+    The backtester outputs BUY row (entry) followed by SELL row (exit) for longs.
+    """
+    trades: List[dict] = []
+    pending: Dict[str, dict] = {}  # symbol -> pending BUY row
+
+    for _, row in df.sort_values('timestamp').iterrows():
+        sym = str(row.get('symbol', '')).upper()
+        side = str(row.get('side', '')).upper()
+
+        if side == 'BUY':
+            # Entry: store for later pairing
+            pending[sym] = {
+                'timestamp': row['timestamp'],
+                'symbol': sym,
+                'qty': int(row.get('qty', 1)),
+                'entry_price': float(row['price']),
+                'strategy': strategy,
+            }
+        elif side == 'SELL' and sym in pending:
+            # Exit: pair with pending BUY
+            entry = pending.pop(sym)
+            exit_price = float(row['price'])
+            qty = entry['qty']
+            pnl = (exit_price - entry['entry_price']) * qty
+            trades.append({
+                'timestamp': entry['timestamp'],
+                'symbol': sym,
+                'side': 'long',
+                'qty': qty,
+                'entry_price': entry['entry_price'],
+                'exit_price': exit_price,
+                'pnl': pnl,
+                'strategy': strategy,
+            })
+    return trades
+
+
+def load_trades(trade_files: List[Tuple[Path, str]]) -> pd.DataFrame:
+    """Load trades from WF outputs, handling both BUY/SELL pair format and legacy format."""
+    all_trades: List[dict] = []
+
+    for tf, strategy in trade_files:
         try:
             df = pd.read_csv(tf)
             if df.empty:
                 continue
             df.columns = df.columns.str.lower()
-            # Expected columns: timestamp, symbol, side, entry_price, exit_price, pnl, strategy (varies by writer)
-            if 'strategy' not in df.columns:
-                # infer from path
-                strategy = 'donchian' if 'donchian' in str(tf).lower() else 'turtle_soup'
-                df['strategy'] = strategy.upper()
-            frames.append(df)
+            df['timestamp'] = pd.to_datetime(df.get('timestamp', pd.NaT), errors='coerce')
+
+            # Detect format: BUY/SELL pairs (price column) vs legacy (entry_price column)
+            if 'price' in df.columns and 'entry_price' not in df.columns:
+                # BUY/SELL pair format from backtester
+                trades = _pair_buy_sell(df, strategy)
+                all_trades.extend(trades)
+            else:
+                # Legacy format with entry_price, exit_price, pnl already present
+                for _, row in df.iterrows():
+                    all_trades.append({
+                        'timestamp': row.get('timestamp'),
+                        'symbol': str(row.get('symbol', '')).upper(),
+                        'side': str(row.get('side', 'long')).lower(),
+                        'qty': int(row.get('qty', 1)),
+                        'entry_price': float(row.get('entry_price', 0)),
+                        'exit_price': float(row.get('exit_price', 0)) if pd.notna(row.get('exit_price')) else None,
+                        'pnl': float(row.get('pnl', 0)) if pd.notna(row.get('pnl')) else None,
+                        'strategy': strategy,
+                    })
         except Exception:
             continue
-    if not frames:
+
+    if not all_trades:
         return pd.DataFrame()
-    out = pd.concat(frames, ignore_index=True)
-    # Normalize timestamp to datetime (entry time or signal time)
-    if 'timestamp' in out.columns:
-        out['timestamp'] = pd.to_datetime(out['timestamp'], errors='coerce')
-    elif 'entry_time' in out.columns:
-        out['timestamp'] = pd.to_datetime(out['entry_time'], errors='coerce')
+
+    out = pd.DataFrame(all_trades)
+    out['timestamp'] = pd.to_datetime(out['timestamp'], errors='coerce')
+    out = out.dropna(subset=['timestamp', 'symbol', 'entry_price'])
+
+    # Compute return percentage
+    if 'pnl' in out.columns and 'entry_price' in out.columns:
+        with pd.option_context('mode.use_inf_as_na', True):
+            out['ret'] = (out['pnl'] / (out['entry_price'] * out.get('qty', 1))).astype(float)
+        out['ret'] = out['ret'].fillna(0.0)
     else:
-        out['timestamp'] = pd.NaT
-    # Normalized side
-    out['side'] = out.get('side', 'long').astype(str).str.lower()
-    # Keep essential columns only
-    keep = ['timestamp','symbol','side','entry_price','exit_price','pnl','strategy']
-    for k in keep:
-        if k not in out.columns:
-            out[k] = pd.NA
-    out = out[keep].dropna(subset=['timestamp','symbol','entry_price'])
-    out['symbol'] = out['symbol'].astype(str).str.upper()
-    # Compute simple return estimate per trade (used for PF/Sharpe)
-    ret = out['pnl']
-    if ret.isna().all():
-        # Use exit-entry; normalize by entry to get percentage
-        if 'exit_price' in out.columns:
-            ret = (out.get('exit_price', pd.Series(index=out.index, dtype=float)) - out['entry_price'])
-    # Normalize to return % by entry where possible
-    with pd.option_context('mode.use_inf_as_na', True):
-        out['ret'] = (ret / out['entry_price']).astype(float)
-    out['ret'] = out['ret'].fillna(0.0)
+        out['ret'] = 0.0
+
     return out
 
 

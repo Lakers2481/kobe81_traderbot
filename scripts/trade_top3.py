@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 """
-Submit Top-3 daily picks (2 MR + 1 Donchian) as IOC LIMIT orders via Alpaca (paper by default).
+Submit Top-3 daily picks (2 ICT + 1 IBS_RSI) as IOC LIMIT orders via Alpaca (paper by default).
 
 Flow:
 - Load .env for credentials

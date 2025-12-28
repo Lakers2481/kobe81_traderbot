@@ -21,6 +21,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from ml_meta.model import CANDIDATE_DIR, DEPLOYED_DIR, model_paths
+from monitor.drift_detector import DriftThresholds, compare_metrics
+from core.alerts import send_telegram
+from core.clock.tz_utils import fmt_ct, now_et
 from core.journal import append_journal
 
 
@@ -33,12 +36,46 @@ def load_json(p: Path) -> Dict:
         return {}
 
 
+def _backup_deployed(timestamp: str) -> Path:
+    """Backup current deployed models into timestamped folder, return path."""
+    bdir = DEPLOYED_DIR / 'backup' / timestamp
+    bdir.mkdir(parents=True, exist_ok=True)
+    for strat in ('ibs_rsi','turtle_soup'):
+        pkl, meta = model_paths(strat, kind='deployed')
+        if pkl.exists():
+            (bdir / pkl.name).write_bytes(pkl.read_bytes())
+        if meta.exists():
+            (bdir / meta.name).write_text(meta.read_text(encoding='utf-8'), encoding='utf-8')
+    # also copy meta_current.json if present
+    cur = DEPLOYED_DIR / 'meta_current.json'
+    if cur.exists():
+        (bdir / 'meta_current.json').write_text(cur.read_text(encoding='utf-8'), encoding='utf-8')
+    return bdir
+
+
+def _restore_from_backup(backup_dir: Path) -> None:
+    """Restore deployed models from a given backup directory."""
+    for item in backup_dir.iterdir():
+        if item.is_file():
+            dst = DEPLOYED_DIR / item.name
+            if item.suffix.lower() in ('.pkl', '.json') or item.name == 'meta_current.json':
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                if item.suffix.lower() == '.pkl':
+                    dst.write_bytes(item.read_bytes())
+                else:
+                    dst.write_text(item.read_text(encoding='utf-8'), encoding='utf-8')
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description='Promote candidate ML models if better')
     ap.add_argument('--min-delta', type=float, default=0.01, help='Min accuracy improvement to promote')
     ap.add_argument('--min-test', type=int, default=100, help='Minimum test rows required')
     ap.add_argument('--min-wr', type=float, default=0.5, help='Minimum win rate threshold on test')
     ap.add_argument('--min-pf', type=float, default=1.1, help='Minimum profit factor threshold on test')
+    ap.add_argument('--drift-acc', type=float, default=-0.02, help='Max allowed delta in accuracy vs previous (negative)')
+    ap.add_argument('--drift-wr', type=float, default=-0.02, help='Max allowed delta in win-rate vs previous (negative)')
+    ap.add_argument('--drift-pf', type=float, default=-0.10, help='Max allowed delta in profit factor vs previous (negative)')
+    ap.add_argument('--drift-sharpe', type=float, default=-0.10, help='Max allowed delta in sharpe vs previous (negative)')
     args = ap.parse_args()
 
     cand_summary = CANDIDATE_DIR / 'meta_train_summary.json'
@@ -47,7 +84,20 @@ def main() -> None:
     curr = load_json(curr_summary)
 
     promoted_any = False
-    for strat in ('donchian','turtle_soup'):
+    timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+    # Prepare previous meta for drift comparison and backup before any promotion
+    prev_meta_path = DEPLOYED_DIR / 'meta_prev.json'
+    curr_meta_path = DEPLOYED_DIR / 'meta_current.json'
+    prev_meta = load_json(prev_meta_path)
+    curr_before = load_json(curr_meta_path)
+    if curr_before:
+        # Save a copy of current to prev
+        DEPLOYED_DIR.mkdir(parents=True, exist_ok=True)
+        prev_meta_path.write_text(json.dumps(curr_before, indent=2), encoding='utf-8')
+        backup_dir = _backup_deployed(timestamp)
+    else:
+        backup_dir = None
+    for strat in ('ibs_rsi','turtle_soup'):
         c = cand.get(strat, {}) if isinstance(cand, dict) else {}
         d = curr.get(strat, {}) if isinstance(curr, dict) else {}
         c_acc = float(c.get('accuracy', 0.0) or 0.0)
@@ -68,6 +118,11 @@ def main() -> None:
             curr[strat] = c
             promoted_any = True
             print(f'Promoted {strat}: acc {d_acc:.3f} -> {c_acc:.3f} (rows={c_rows}, wr={c_wr:.2f}, pf={c_pf:.2f})')
+            try:
+                nowmsg = now_et(); stamp = f"{fmt_ct(nowmsg)} | {nowmsg.strftime('%I:%M %p').lstrip('0')} ET"
+                send_telegram(f"<b>Model Promoted</b> {strat}: acc {d_acc:.3f} -> {c_acc:.3f} (rows={c_rows}, wr={c_wr:.2f}, pf={c_pf:.2f}) [{stamp}]")
+            except Exception:
+                pass
         else:
             print(f'Skipped {strat}: cand acc={c_acc:.3f}, rows={c_rows}, current acc={d_acc:.3f}')
 
@@ -95,6 +150,44 @@ def main() -> None:
             pass
     else:
         print('No promotions.')
+
+    # Drift detection vs previous deployed meta; rollback if degraded beyond thresholds
+    try:
+        prev = load_json(prev_meta_path)
+        cur = load_json(curr_meta_path)
+        if prev and cur:
+            thr = DriftThresholds(
+                min_delta_accuracy=float(args.drift_acc),
+                min_delta_wr=float(args.drift_wr),
+                min_delta_pf=float(args.drift_pf),
+                min_delta_sharpe=float(args.drift_sharpe),
+            )
+            rolled_back = []
+            for strat in ('ibs_rsi','turtle_soup'):
+                p = prev.get(strat, {}) if isinstance(prev, dict) else {}
+                q = cur.get(strat, {}) if isinstance(cur, dict) else {}
+                if not p or not q:
+                    continue
+                flags = compare_metrics(p, q, thr)
+                if flags.get('any_drift'):
+                    # Restore from backup if available
+                    if backup_dir and backup_dir.exists():
+                        _restore_from_backup(backup_dir)
+                        rolled_back.append(strat)
+            if rolled_back:
+                msg = '<b>Model Rollback</b> due to drift: ' + ', '.join(rolled_back)
+                print(msg)
+                try:
+                    nowrb = now_et(); stamprb = f"{fmt_ct(nowrb)} | {nowrb.strftime('%I:%M %p').lstrip('0')} ET"
+                    send_telegram(f"{msg} [{stamprb}]")
+                except Exception:
+                    pass
+                try:
+                    append_journal('model_rollback', {'backup': str(backup_dir), 'strategies': rolled_back})
+                except Exception:
+                    pass
+    except Exception as e:
+        print('Drift/rollback stage error:', e)
 
 
 if __name__ == '__main__':

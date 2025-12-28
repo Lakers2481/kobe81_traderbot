@@ -12,7 +12,7 @@ import pandas as pd
 import sys
 sys.path.insert(0, str(_P(__file__).resolve().parents[1]))
 
-from strategies.donchian.strategy import DonchianBreakoutStrategy, DonchianParams
+from strategies.ibs_rsi.strategy import IbsRsiStrategy, IbsRsiParams
 from strategies.ict.turtle_soup import TurtleSoupStrategy, TurtleSoupParams
 from data.universe.loader import load_universe
 from data.providers.polygon_eod import fetch_daily_bars_polygon
@@ -31,7 +31,7 @@ from core.earnings_filter import filter_signals_by_earnings
 
 
 def main():
-    ap = argparse.ArgumentParser(description='Walk-forward backtest (Polygon) with Donchian and ICT Turtle Soup')
+    ap = argparse.ArgumentParser(description='Walk-forward backtest (Polygon) with IBS+RSI and ICT Turtle Soup')
     ap.add_argument('--universe', type=str, required=True)
     ap.add_argument('--start', type=str, required=True, help='YYYY-MM-DD')
     ap.add_argument('--end', type=str, required=True, help='YYYY-MM-DD')
@@ -45,12 +45,13 @@ def main():
     ap.add_argument('--dotenv', type=str, default='./.env')
     ap.add_argument('--regime-on', action='store_true', default=False, help='Force regime filter ON (overrides config)')
     # Streamlined CLI (no RSI2/IBS/CRSI/TOPN knobs in two-strategy setup)
-    # Donchian breakout params
-    ap.add_argument('--donchian-on', action='store_true', default=False, help='Run Donchian breakout overlay')
-    ap.add_argument('--donchian-lookback', type=int, default=55)
-    ap.add_argument('--donchian-stop-mult', type=float, default=2.0)
-    ap.add_argument('--donchian-time-stop', type=int, default=20)
-    ap.add_argument('--donchian-r-mult', type=float, default=2.5, help='Take-profit multiple of risk (entry-stop)')
+    # IBS+RSI params
+    ap.add_argument('--ibs-on', action='store_true', default=False, help='Run IBS+RSI overlay')
+    ap.add_argument('--ibs-max', type=float, default=0.15)
+    ap.add_argument('--rsi-max', type=float, default=10.0)
+    ap.add_argument('--ibs-atr-mult', type=float, default=1.0)
+    ap.add_argument('--ibs-r-mult', type=float, default=2.0)
+    ap.add_argument('--ibs-time-stop', type=int, default=5)
     # Turtle Soup (ICT Liquidity Sweep) params
     ap.add_argument('--turtle-soup-on', action='store_true', default=False, help='Run Turtle Soup (ICT liquidity sweep) strategy')
     ap.add_argument('--turtle-soup-lookback', type=int, default=20, help='N-day channel lookback (default 20)')
@@ -106,14 +107,15 @@ def main():
         print(f'Loaded {len(spy_bars)} SPY bars for regime filtering')
 
     # Strategies
-    don_params = DonchianParams(
-        lookback=int(args.donchian_lookback),
-        stop_mult=float(args.donchian_stop_mult),
-        time_stop_bars=int(args.donchian_time_stop),
-        min_price=float(get_setting('selection.min_price', 5.0)),
-        r_multiple=float(args.donchian_r_mult),
+    ibs_params = IbsRsiParams(
+        ibs_max=float(args.ibs_max),
+        rsi_max=float(args.rsi_max),
+        atr_mult=float(args.ibs_atr_mult),
+        r_multiple=float(args.ibs_r_mult),
+        time_stop_bars=int(args.ibs_time_stop),
+        min_price=float(get_setting('selection.min_price', 10.0)),
     )
-    don = DonchianBreakoutStrategy(don_params)
+    ibs = IbsRsiStrategy(ibs_params)
 
     # Turtle Soup (ICT Liquidity Sweep) strategy
     ts_params = TurtleSoupParams(
@@ -146,12 +148,10 @@ def main():
 
     # No cross-sectional TOPN ranking in this two-strategy setup
 
-    def get_donchian(df: pd.DataFrame) -> pd.DataFrame:
-        sigs = don.scan_signals_over_time(df)
+    def get_ibs(df: pd.DataFrame) -> pd.DataFrame:
+        sigs = ibs.generate_signals(df)
         sigs = apply_regime_filter(sigs)
         sigs = apply_earnings_filter(sigs)
-        # Selection can apply here too if desired; for now, take all donchian signals
-        # and rely on regime/vol gating to limit trades.
         return sigs
 
     def get_turtle_soup(df: pd.DataFrame) -> pd.DataFrame:
@@ -162,26 +162,26 @@ def main():
         return sigs
 
     # Run WF per selected strategies
-    print('\nRunning Donchian Breakout...')
-    don_results = run_walk_forward(symbols, fetcher, get_donchian, splits, outdir=str(outdir / 'donchian'), config_factory=make_bt_cfg)
+    print('\nRunning IBS+RSI Mean Reversion...')
+    don_results = run_walk_forward(symbols, fetcher, get_ibs, splits, outdir=str(outdir / 'ibs_rsi'), config_factory=make_bt_cfg)
     print('Running ICT Turtle Soup...')
     ts_results = run_walk_forward(symbols, fetcher, get_turtle_soup, splits, outdir=str(outdir / 'turtle_soup'), config_factory=make_bt_cfg)
 
     # Ensure subdirs exist for CSV outputs
-    (outdir / 'donchian').mkdir(parents=True, exist_ok=True)
+    (outdir / 'ibs_rsi').mkdir(parents=True, exist_ok=True)
     (outdir / 'turtle_soup').mkdir(parents=True, exist_ok=True)
 
     # Summaries
     # Combined side-by-side CSV
     rows = []
-    rows.append({'strategy': 'DONCHIAN', **summarize_results(don_results)})
+    rows.append({'strategy': 'IBS_RSI', **summarize_results(don_results)})
     rows.append({'strategy': 'TURTLE_SOUP', **summarize_results(ts_results)})
 
     compare_df = pd.DataFrame(rows)
     compare_df.to_csv(outdir / 'wf_summary_compare.csv', index=False)
 
     # Also write detailed split metrics
-    pd.DataFrame(don_results).to_csv(outdir / 'donchian' / 'wf_splits.csv', index=False)
+    pd.DataFrame(don_results).to_csv(outdir / 'ibs_rsi' / 'wf_splits.csv', index=False)
     pd.DataFrame(ts_results).to_csv(outdir / 'turtle_soup' / 'wf_splits.csv', index=False)
 
     print('\nWalk-forward complete. Summary:')

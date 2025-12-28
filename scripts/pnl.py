@@ -13,7 +13,7 @@ Usage:
     python pnl.py --period today     # Today's P&L only
     python pnl.py --period week      # This week's P&L
     python pnl.py --period month     # This month's P&L
-    python pnl.py --strategy donchian    # Filter by strategy
+    python pnl.py --strategy ibs_rsi    # Filter by strategy
     python pnl.py --dotenv /path/to/.env
 """
 from __future__ import annotations
@@ -158,7 +158,7 @@ def filter_trades_by_strategy(
         # Match by keyword
         if strategy_lower in trade_strat:
             filtered.append(trade)
-        elif strategy_lower == "donchian" and "rsi" in trade_strat:
+        elif strategy_lower == "ibs_rsi" and ("ibs" in trade_strat or "rsi" in trade_strat):
             filtered.append(trade)
         elif strategy_lower == "TURTLE_SOUP" and "TURTLE_SOUP" in trade_strat:
             filtered.append(trade)
@@ -450,7 +450,7 @@ def main():
         "--strategy",
         type=str,
         default=None,
-        help="Filter by strategy name (e.g., donchian, TURTLE_SOUP)",
+        help="Filter by strategy name (e.g., ibs_rsi, TURTLE_SOUP)",
     )
     args = ap.parse_args()
 
@@ -465,4 +465,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
 

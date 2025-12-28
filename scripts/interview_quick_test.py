@@ -94,7 +94,7 @@ def main():
     summary_csv = ROOT / args.outdir / "wf_summary_compare.csv"
     df = pd.read_csv(summary_csv) if summary_csv.exists() else pd.DataFrame()
     # Keep key rows if present
-    keep = ["DONCHIAN", "TURTLE_SOUP"]
+    keep = ["IBS_RSI", "TURTLE_SOUP"]
     if not df.empty and "strategy" in df.columns:
         df = df[df["strategy"].astype(str).isin(keep)]
     summary = {

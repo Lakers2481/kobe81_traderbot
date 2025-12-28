@@ -43,13 +43,23 @@ class AlpacaConfig:
     key_id: str
     secret: str
 
+@dataclass
+class BrokerExecutionResult:
+    """
+    Result returned by Alpaca broker functions, including market context.
+    Used for Transaction Cost Analysis (TCA).
+    """
+    order: OrderRecord
+    market_bid_at_execution: Optional[float] = None
+    market_ask_at_execution: Optional[float] = None
+
 
 def _alpaca_cfg() -> AlpacaConfig:
     base = os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets")
     return AlpacaConfig(
         base_url=base.rstrip("/"),
-        key_id=os.getenv("ALPACA_API_KEY_ID", ""),
-        secret=os.getenv("ALPACA_API_SECRET_KEY", ""),
+        key_id=os.getenv("APCA_API_KEY_ID", ""),
+        secret=os.getenv("APCA_API_SECRET_KEY", ""),
     )
 
 
@@ -142,7 +152,6 @@ def get_quote_with_sizes(symbol: str, timeout: int = 5) -> Tuple[Optional[float]
         return bid, ask, bid_size, ask_size
     except Exception:
         return None, None, None, None
-
 
 def get_avg_volume(symbol: str, lookback_days: int = 20, timeout: int = 10) -> Optional[int]:
     """
@@ -415,7 +424,7 @@ def resolve_ioc_status(
     return order
 
 
-def log_trade_event(order: OrderRecord) -> None:
+def log_trade_event(order: OrderRecord, market_bid: Optional[float] = None, market_ask: Optional[float] = None) -> None:
     """
     Log trade event to logs/trades.jsonl for audit and analysis.
 
@@ -436,6 +445,10 @@ def log_trade_event(order: OrderRecord) -> None:
         "fill_price": order.fill_price,
         "filled_qty": order.filled_qty,
         "notes": order.notes,
+        "market_bid_at_execution": market_bid,
+        "market_ask_at_execution": market_ask,
+        "entry_price_decision": order.entry_price_decision, # Add benchmark price
+        "strategy_used": order.strategy_used, # Add strategy for TCA context
     }
 
     try:
@@ -447,25 +460,38 @@ def log_trade_event(order: OrderRecord) -> None:
 
 
 @require_no_kill_switch
-def place_ioc_limit(order: OrderRecord, resolve_status: bool = True) -> OrderRecord:
+def place_ioc_limit(order: OrderRecord, resolve_status: bool = True) -> BrokerExecutionResult:
     """
-    Place an IOC LIMIT order via Alpaca. Returns updated OrderRecord.
+    Place an IOC LIMIT order via Alpaca. Returns updated OrderRecord
+    along with market bid/ask at the time of order submission.
 
     Args:
         order: The order to place
         resolve_status: If True, poll for final status and log trade event (default: True)
 
     Returns:
-        Updated OrderRecord with final status if resolve_status=True
+        BrokerExecutionResult containing the updated OrderRecord and market bid/ask.
     """
     cfg = _alpaca_cfg()
     store = IdempotencyStore()
+
+    # Get current market quote BEFORE placing the order for TCA benchmarking
+    market_bid_at_execution, market_ask_at_execution, _, _ = get_quote_with_sizes(order.symbol)
+
+    # If quotes are unavailable, we cannot reliably place order or perform TCA.
+    if market_bid_at_execution is None or market_ask_at_execution is None:
+        logger.warning(f"Unable to fetch quotes for {order.symbol}. Cannot place order.")
+        order.status = OrderStatus.REJECTED
+        order.notes = "no_quotes_available"
+        log_trade_event(order, market_bid=None, market_ask=None)
+        return BrokerExecutionResult(order=order, market_bid_at_execution=None, market_ask_at_execution=None)
+
     # Idempotency guard
     if store.exists(order.decision_id):
         order.status = OrderStatus.CLOSED
         order.notes = "duplicate_decision_id"
-        log_trade_event(order)
-        return order
+        log_trade_event(order, market_bid=market_bid_at_execution, market_ask=market_ask_at_execution)
+        return BrokerExecutionResult(order=order, market_bid_at_execution=market_bid_at_execution, market_ask_at_execution=market_ask_at_execution)
 
     url = f"{cfg.base_url}{ALPACA_ORDERS_URL}"
     payload = {
@@ -486,8 +512,8 @@ def place_ioc_limit(order: OrderRecord, resolve_status: bool = True) -> OrderRec
         if r.status_code not in (200, 201):
             order.status = OrderStatus.REJECTED
             order.notes = f"alpaca_http_{r.status_code}"
-            log_trade_event(order)
-            return order
+            log_trade_event(order, market_bid=market_bid_at_execution, market_ask=market_ask_at_execution)
+            return BrokerExecutionResult(order=order, market_bid_at_execution=market_bid_at_execution, market_ask_at_execution=market_ask_at_execution)
         data = r.json()
         order.broker_order_id = data.get("id")
         order.status = OrderStatus.SUBMITTED
@@ -497,14 +523,14 @@ def place_ioc_limit(order: OrderRecord, resolve_status: bool = True) -> OrderRec
         # Resolve IOC status and log trade event
         if resolve_status and order.broker_order_id:
             order = resolve_ioc_status(order)
-        log_trade_event(order)
+        log_trade_event(order, market_bid=market_bid_at_execution, market_ask=market_ask_at_execution)
 
-        return order
+        return BrokerExecutionResult(order=order, market_bid_at_execution=market_bid_at_execution, market_ask_at_execution=market_ask_at_execution)
     except Exception as e:
         order.status = OrderStatus.REJECTED
         order.notes = f"exception:{e}"
-        log_trade_event(order)
-        return order
+        log_trade_event(order, market_bid=market_bid_at_execution, market_ask=market_ask_at_execution)
+        return BrokerExecutionResult(order=order, market_bid_at_execution=market_bid_at_execution, market_ask_at_execution=market_ask_at_execution)
 
 
 def _apply_clamp(raw_limit: float, best_quote: float, atr_value: Optional[float] = None) -> float:
@@ -592,6 +618,8 @@ class OrderResult:
     order: OrderRecord
     liquidity_check: Optional[LiquidityCheck] = None
     blocked_by_liquidity: bool = False
+    market_bid_at_execution: Optional[float] = None # Added for TCA
+    market_ask_at_execution: Optional[float] = None # Added for TCA
 
     @property
     def success(self) -> bool:
@@ -628,8 +656,14 @@ def place_order_with_liquidity_check(
     # Check if liquidity gate is enabled
     if not is_liquidity_gate_enabled() and bypass_if_disabled:
         logger.debug(f"Liquidity gate disabled, bypassing check for {order.symbol}")
-        placed_order = place_ioc_limit(order)
-        return OrderResult(order=placed_order, liquidity_check=None, blocked_by_liquidity=False)
+        broker_result = place_ioc_limit(order)
+        return OrderResult(
+            order=broker_result.order,
+            liquidity_check=None,
+            blocked_by_liquidity=False,
+            market_bid_at_execution=broker_result.market_bid_at_execution,
+            market_ask_at_execution=broker_result.market_ask_at_execution,
+        )
 
     # Run liquidity check
     liq_check = check_liquidity_for_order(
@@ -652,20 +686,24 @@ def place_order_with_liquidity_check(
         # Reject the order
         order.status = OrderStatus.REJECTED
         order.notes = f"liquidity_gate:{liq_check.reason}"
-        update_trade_event("liquidity_blocked")
+        log_trade_event(order, market_bid=None, market_ask=None) # Log rejection
         return OrderResult(
             order=order,
             liquidity_check=liq_check,
             blocked_by_liquidity=True,
+            market_bid_at_execution=None,
+            market_ask_at_execution=None,
         )
 
     # Liquidity check passed - place the order
-    placed_order = place_ioc_limit(order)
+    broker_result = place_ioc_limit(order)
 
     return OrderResult(
-        order=placed_order,
+        order=broker_result.order,
         liquidity_check=liq_check,
         blocked_by_liquidity=False,
+        market_bid_at_execution=broker_result.market_bid_at_execution,
+        market_ask_at_execution=broker_result.market_ask_at_execution,
     )
 
 
@@ -709,8 +747,9 @@ def execute_signal(
     """
     # Fetch best ask for limit price construction
     best_ask = get_best_ask(symbol)
+    best_bid = get_best_bid(symbol) # Also fetch best bid for context
 
-    if best_ask is None:
+    if best_ask is None or best_bid is None:
         # Can't proceed without a quote
         order = OrderRecord(
             decision_id=f"DEC_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{symbol}_NOQUOTE",
@@ -733,7 +772,7 @@ def execute_signal(
         symbol=symbol,
         side=side,
         qty=qty,
-        best_ask=best_ask,
+        best_ask=best_ask, # Use ask for buy limit, bid for sell limit
         atr_value=atr_value,
     )
 
@@ -744,5 +783,11 @@ def execute_signal(
             strict=strict_liquidity,
         )
     else:
-        placed_order = place_ioc_limit(order)
-        return OrderResult(order=placed_order, liquidity_check=None, blocked_by_liquidity=False)
+        broker_result = place_ioc_limit(order)
+        return OrderResult(
+            order=broker_result.order,
+            liquidity_check=None,
+            blocked_by_liquidity=False,
+            market_bid_at_execution=broker_result.market_bid_at_execution,
+            market_ask_at_execution=broker_result.market_ask_at_execution,
+        )

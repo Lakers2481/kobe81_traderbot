@@ -10,6 +10,7 @@ Outputs: reports/eod_report_YYYYMMDD.html
 import argparse
 from pathlib import Path
 from datetime import datetime
+from core.clock.tz_utils import now_et, fmt_ct
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,7 +30,9 @@ def main() -> None:
 
     outdir = ROOT / args.outdir
     outdir.mkdir(parents=True, exist_ok=True)
-    date_tag = datetime.now().strftime('%Y%m%d')
+    # Internal ET, display CT 12-hour in header
+    now = now_et()
+    date_tag = now.strftime('%Y%m%d')
     out = outdir / f'eod_report_{date_tag}.html'
 
     # Load daily picks and TOTD
@@ -62,9 +65,10 @@ def main() -> None:
         '<style>body{font-family:Arial;margin:20px} table{border-collapse:collapse} th,td{border:1px solid #ddd;padding:6px} th{background:#f3f3f3}</style>',
         '</head><body>',
         f'<h1>Kobe EOD Report - {date_tag}</h1>',
+        f'<p><em>Display: {fmt_ct(now)} | {now.strftime("%I:%M %p").lstrip("0")} ET (12-hour); operations run in ET.</em></p>',
         html_table(picks, 'Top-3 Picks'),
         html_table(totd, 'Trade of the Day'),
-        html_table(wf, 'Walk-Forward Summary (Donchian vs ICT)'),
+        html_table(wf, 'Walk-Forward Summary (IBS+RSI vs ICT)'),
         '</body></html>'
     ]
     out.write_text('\n'.join(html_parts), encoding='utf-8')
@@ -73,4 +77,3 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
-

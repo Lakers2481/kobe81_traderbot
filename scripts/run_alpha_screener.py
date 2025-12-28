@@ -55,7 +55,7 @@ Examples:
     python scripts/run_alpha_screener.py --universe data/universe/optionable_liquid_900.csv
 
     # Screen specific alphas with custom settings
-    python scripts/run_alpha_screener.py --alphas rsi2_oversold,donchian_breakout --train-days 504 --test-days 126
+    python scripts/run_alpha_screener.py --alphas rsi2_oversold,ibs_rsi_oversold --train-days 504 --test-days 126
 
     # Output detailed results
     python scripts/run_alpha_screener.py --top 25 --verbose --output reports/alpha_results.csv

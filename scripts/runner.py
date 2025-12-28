@@ -23,6 +23,7 @@ import os
 import signal
 from pathlib import Path
 from datetime import datetime, timedelta, time as dtime
+from core.clock.tz_utils import fmt_ct, now_et
 import subprocess
 import sys
 import time
@@ -339,6 +340,11 @@ def main():
                  discrepancies=reconcile_result['discrepancies'])
         if not reconcile_result.get('success'):
             msg = f"Kobe reconcile failed: {reconcile_result.get('error','unknown')}"
+            try:
+                now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                msg = f"{msg} [{stamp}]"
+            except Exception:
+                pass
             send_telegram(msg)
 
     # Check kill switch on startup
@@ -347,7 +353,11 @@ def main():
         jlog('runner_kill_switch_active', level='CRITICAL',
              reason=info.get('reason') if info else 'Unknown')
         print("ERROR: Kill switch is active. Trading halted.")
-        send_telegram(f"Kobe halted by kill switch: {info.get('reason') if info else 'Unknown'}")
+        try:
+            now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+            send_telegram(f"Kobe halted by kill switch: {info.get('reason') if info else 'Unknown'} [{stamp}]")
+        except Exception:
+            send_telegram(f"Kobe halted by kill switch: {info.get('reason') if info else 'Unknown'}")
         print(f"Reason: {info.get('reason') if info else 'Unknown'}")
         print("Use /resume skill to deactivate after investigation.")
         _cleanup()
@@ -361,13 +371,13 @@ def main():
 
     jlog('runner_start', mode=args.mode, scan_times=args.scan_times, universe=str(universe))
     _heartbeat.update("started")
-    last_reconcile_date = datetime.now().date()
+    last_reconcile_date = now_et().date()
 
     while not _shutdown_requested:
-        now = datetime.now()
+        now = now_et()
 
         # Update heartbeat
-        _heartbeat.update(f"monitoring_{now.strftime('%H:%M')}")
+        _heartbeat.update("monitoring_" + fmt_ct(now, include_tz=False))
 
         # Touch lock to prevent stale detection
         if _lock:
@@ -406,7 +416,11 @@ def main():
                     update_request_counter('total', 1)
                     mark_ran(tag, today_str)
                     jlog('runner_done', mode=args.mode, schedule=tag, returncode=rc)
-                    send_telegram(f"Kobe run {tag} completed rc={rc}")
+                    try:
+                        now2 = now_et(); stamp2 = f"{fmt_ct(now2)} | {now2.strftime('%I:%M %p').lstrip('0')} ET"
+                        send_telegram(f"Kobe run {tag} completed rc={rc} [{stamp2}]")
+                    except Exception:
+                        send_telegram(f"Kobe run {tag} completed rc={rc}")
 
         # Sleep in small intervals for faster shutdown response
         for _ in range(30):

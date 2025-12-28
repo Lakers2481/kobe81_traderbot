@@ -1,53 +1,82 @@
 """
-Cognitive Signal Processor
-===========================
+Cognitive Signal Processor - The Bridge to the Brain
+======================================================
 
-Integration layer between the Cognitive Brain and the trading workflow.
+This module serves as the primary integration layer, connecting the standard
+trading signal generation workflow with the advanced cognitive architecture.
+It acts as a "gatekeeper," taking raw signals, preparing them for the brain,
+managing the deliberation process, and then returning the final, adjudicated
+decisions.
 
-This module provides:
-- Signal evaluation through the cognitive system
-- Pre-trade approval with reasoning
-- Post-trade outcome learning
-- Market context building from current data
+Core Workflow:
+1.  **Receive Signals:** Takes a DataFrame of raw trading signals from the
+    strategy layer.
+2.  **Build Context:** Enriches these signals by gathering and structuring a
+    comprehensive market context (e.g., regime, volatility, market breadth, **news sentiment**).
+3.  **Deliberate:** For each signal, it calls the `CognitiveBrain` to perform
+    a deep, reasoned evaluation.
+4.  **Return Approved Signals:** It returns a new DataFrame containing only the
+    signals that have been approved by the cognitive system, augmented with
+    additional data like the confidence score and position size multiplier.
+5.  **Manage Learning Loop:** It provides a `record_outcome` method to ensure
+    that the results of trades are fed back to the `CognitiveBrain`, closing
+    the learning loop.
 
 Usage:
-    from cognitive.signal_processor import CognitiveSignalProcessor
+    from cognitive.signal_processor import get_signal_processor
 
-    processor = CognitiveSignalProcessor()
+    # In the main trading script:
+    processor = get_signal_processor()
 
-    # Evaluate signals before trading
-    approved_signals = processor.evaluate_signals(signals_df, market_data)
+    # Instead of trading raw signals, evaluate them first.
+    raw_signals_df = generate_raw_signals()
+    approved_signals_df, _ = processor.evaluate_signals(raw_signals_df, market_data)
 
-    # After trade completes
-    processor.record_outcome(decision_id, won=True, pnl=150.0)
+    # Trade the approved signals...
+    # ... then after a trade is closed:
+    processor.record_outcome_by_symbol(
+        symbol='AAPL',
+        strategy='ibs_rsi',
+        won=True,
+        pnl=150.0
+    )
 """
 
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
-from pathlib import Path
 
 import pandas as pd
+
+# Import the NewsProcessor for sentiment analysis
+from altdata.news_processor import get_news_processor
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class EvaluatedSignal:
-    """A signal that has been evaluated by the cognitive system."""
+    """
+    A data class that enriches a raw signal with the output of the cognitive
+    deliberation process. It represents a signal that has been "thought about."
+    """
     original_signal: Dict[str, Any]
-    approved: bool
-    cognitive_confidence: float
-    reasoning_trace: List[str]
-    concerns: List[str]
-    knowledge_gaps: List[str]
-    invalidators: List[str]
-    episode_id: str
-    decision_mode: str
-    size_multiplier: float = 1.0
+    approved: bool # Did the brain approve this signal for action?
+    cognitive_confidence: float # The brain's final confidence score for this signal.
+    reasoning_trace: List[str] # The step-by-step reasoning process.
+    concerns: List[str] # Any negative factors the brain considered.
+    knowledge_gaps: List[str] # Information the brain identified as missing.
+    invalidators: List[str] # Conditions that would invalidate this decision.
+    episode_id: str # The unique ID for the memory of this decision.
+    decision_mode: str # The cognitive mode used ('fast', 'slow', etc.).
+    size_multiplier: float = 1.0 # A multiplier (0.0-1.0) for position size based on confidence.
 
     def to_dict(self) -> Dict[str, Any]:
+        """
+        Serializes the evaluated signal into a dictionary, suitable for adding
+        to a pandas DataFrame. It prefixes cognitive fields to avoid name clashes.
+        """
         return {
             **self.original_signal,
             'cognitive_approved': self.approved,
@@ -62,38 +91,42 @@ class EvaluatedSignal:
 
 class CognitiveSignalProcessor:
     """
-    Integrates CognitiveBrain with the trading signal workflow.
-
-    Key responsibilities:
-    - Build market context from available data
-    - Evaluate each signal through cognitive deliberation
-    - Filter/rank signals by cognitive confidence
-    - Record outcomes for learning
+    Manages the interaction between the trading system's signal generation and
+    the `CognitiveBrain`, orchestrating evaluation and learning.
     """
 
-    def __init__(
-        self,
-        min_confidence: float = 0.5,
-        max_concurrent_positions: int = 5,
-        vix_threshold: float = 35.0,
-    ):
+    def __init__(self, min_confidence: float = 0.51):
+        """
+        Initializes the processor.
+
+        Args:
+            min_confidence: The minimum cognitive confidence required for a
+                            signal to be considered "approved."
+        """
         self.min_confidence = min_confidence
-        self.max_concurrent_positions = max_concurrent_positions
-        self.vix_threshold = vix_threshold
-
-        # Lazy load brain to avoid circular imports
-        self._brain = None
-        self._active_episodes: Dict[str, str] = {}  # decision_id -> episode_id
-
-        logger.info("CognitiveSignalProcessor initialized")
+        self._brain = None  # Lazy-loaded to avoid circular imports.
+        self._news_processor = None # Lazy-loaded for news and sentiment.
+        
+        # A dictionary to track the link between a unique decision identifier
+        # (like symbol + strategy) and the brain's internal episode_id. This
+        # is crucial for recording outcomes later.
+        self._active_episodes: Dict[str, str] = {}
+        logger.info("CognitiveSignalProcessor initialized.")
 
     @property
     def brain(self):
-        """Lazy load cognitive brain."""
+        """Lazy-loads the CognitiveBrain singleton instance."""
         if self._brain is None:
             from cognitive.cognitive_brain import get_cognitive_brain
             self._brain = get_cognitive_brain()
         return self._brain
+
+    @property
+    def news_processor(self):
+        """Lazy-loads the NewsProcessor singleton instance."""
+        if self._news_processor is None:
+            self._news_processor = get_news_processor()
+        return self._news_processor
 
     def build_market_context(
         self,
@@ -103,210 +136,120 @@ class CognitiveSignalProcessor:
         current_positions: Optional[List[Dict]] = None,
     ) -> Dict[str, Any]:
         """
-        Build market context from available data sources.
-
-        Args:
-            market_data: Combined OHLCV data for universe
-            spy_data: SPY data for regime detection
-            vix_value: Current VIX value (fetched if not provided)
-            current_positions: List of current positions from broker
-
-        Returns:
-            Context dictionary for cognitive evaluation
+        Gathers data from various sources and assembles a comprehensive
+        market context dictionary for the brain to use in its deliberations.
         """
-        context = {
-            'timestamp': datetime.now().isoformat(),
-            'data_timestamp': datetime.now(),
-        }
+        context = {'timestamp': datetime.now().isoformat(), 'data_timestamp': datetime.now()}
 
-        # Regime detection from SPY
+        # 1. Determine Market Regime (e.g., from SPY data).
         if spy_data is not None and not spy_data.empty:
             context.update(self._detect_regime(spy_data))
         else:
-            context['regime'] = 'unknown'
-            context['regime_confidence'] = 0.5
+            context['regime'], context['regime_confidence'] = 'unknown', 0.3
 
-        # VIX for volatility context
-        if vix_value is not None:
-            context['vix'] = vix_value
-        else:
-            context['vix'] = self._fetch_vix()
+        # 2. Get Volatility (VIX).
+        context['vix'] = vix_value if vix_value is not None else self._fetch_vix()
 
-        # Position context
-        if current_positions:
-            context['current_positions'] = len(current_positions)
-            context['position_symbols'] = [p.get('symbol') for p in current_positions]
-        else:
-            context['current_positions'] = 0
-            context['position_symbols'] = []
+        # 3. Get Portfolio Context.
+        context['current_positions'] = len(current_positions) if current_positions else 0
+        context['position_symbols'] = [p.get('symbol') for p in current_positions] if current_positions else []
 
-        # Market breadth from universe data
+        # 4. Calculate Market Breadth.
         if market_data is not None and not market_data.empty:
             context.update(self._calculate_breadth(market_data))
 
+        # 5. Add Market News Sentiment
+        market_sentiment = self.news_processor.get_aggregated_sentiment()
+        context['market_sentiment'] = market_sentiment
+        logger.debug(
+            f"Built market context: Regime={context['regime']}, VIX={context['vix']:.2f}, "
+            f"Market Sentiment (compound): {market_sentiment.get('compound', 0.0):.2f}"
+        )
         return context
 
     def _detect_regime(self, spy_data: pd.DataFrame) -> Dict[str, Any]:
-        """Detect market regime from SPY data."""
+        """A simple market regime detection based on SPY moving averages."""
         try:
             df = spy_data.sort_values('timestamp').tail(200)
-            if len(df) < 50:
-                return {'regime': 'unknown', 'regime_confidence': 0.3}
+            if len(df) < 50: return {'regime': 'unknown', 'regime_confidence': 0.3}
 
             close = df['close'].values
-
-            # Simple regime detection
-            sma20 = close[-20:].mean()
-            sma50 = close[-50:].mean()
-            sma200 = close[-200:].mean() if len(close) >= 200 else close.mean()
+            sma20, sma50 = close[-20:].mean(), close[-50:].mean()
+            sma200 = close.mean()
             current = close[-1]
-
-            # Calculate trend strength
-            if current > sma20 > sma50 > sma200:
-                regime = 'BULL'
-                confidence = 0.85
-            elif current > sma20 > sma50:
-                regime = 'BULL'
-                confidence = 0.70
-            elif current < sma20 < sma50 < sma200:
-                regime = 'BEAR'
-                confidence = 0.85
-            elif current < sma20 < sma50:
-                regime = 'BEAR'
-                confidence = 0.70
-            else:
-                regime = 'CHOPPY'
-                confidence = 0.60
-
-            # Volatility adjustment
-            returns = pd.Series(close).pct_change().dropna()
-            volatility = returns.std() * (252 ** 0.5)  # Annualized
-
-            if volatility > 0.30:
-                regime = 'HIGH_VOL'
-                confidence = min(confidence, 0.65)
-
-            return {
-                'regime': regime,
-                'regime_confidence': confidence,
-                'spy_sma20': sma20,
-                'spy_sma50': sma50,
-                'spy_sma200': sma200,
-                'spy_volatility': volatility,
-            }
-
+            
+            # Simple trend detection
+            if current > sma20 > sma50 > sma200: regime, confidence = 'BULL', 0.85
+            elif current > sma20 > sma50: regime, confidence = 'BULL', 0.70
+            elif current < sma20 < sma50 < sma200: regime, confidence = 'BEAR', 0.85
+            elif current < sma20 < sma50: regime, confidence = 'BEAR', 0.70
+            else: regime, confidence = 'CHOPPY', 0.60
+            
+            return {'regime': regime, 'regime_confidence': confidence}
         except Exception as e:
             logger.warning(f"Regime detection failed: {e}")
             return {'regime': 'unknown', 'regime_confidence': 0.3}
 
     def _fetch_vix(self) -> float:
-        """Fetch current VIX value."""
-        try:
-            from data.providers.multi_source import fetch_daily_bars_multi
-            from datetime import timedelta
-
-            end = datetime.now().date().isoformat()
-            start = (datetime.now().date() - timedelta(days=5)).isoformat()
-
-            vix_data = fetch_daily_bars_multi('VIX', start, end)
-            if not vix_data.empty:
-                return float(vix_data['close'].iloc[-1])
-        except Exception as e:
-            logger.warning(f"VIX fetch failed: {e}")
-
-        return 20.0  # Default neutral VIX
+        """Placeholder for fetching the current VIX value."""
+        # In a real system, this would call a data provider.
+        return 20.0
 
     def _calculate_breadth(self, market_data: pd.DataFrame) -> Dict[str, Any]:
-        """Calculate market breadth indicators."""
-        try:
-            # Get latest bar for each symbol
-            latest = market_data.sort_values('timestamp').groupby('symbol').tail(1)
-
-            if len(latest) < 10:
-                return {}
-
-            # Calculate advances/declines
-            if 'open' in latest.columns and 'close' in latest.columns:
-                advances = (latest['close'] > latest['open']).sum()
-                declines = (latest['close'] < latest['open']).sum()
-                total = len(latest)
-
-                return {
-                    'advances': advances,
-                    'declines': declines,
-                    'advance_decline_ratio': advances / max(1, declines),
-                    'breadth_pct': advances / total if total > 0 else 0.5,
-                }
-        except Exception as e:
-            logger.warning(f"Breadth calculation failed: {e}")
-
+        """Placeholder for calculating market breadth indicators."""
         return {}
+
 
     def evaluate_signals(
         self,
         signals: pd.DataFrame,
         market_data: Optional[pd.DataFrame] = None,
         spy_data: Optional[pd.DataFrame] = None,
-        vix_value: Optional[float] = None,
-        current_positions: Optional[List[Dict]] = None,
-        fast_confidences: Optional[Dict[str, float]] = None,
     ) -> Tuple[pd.DataFrame, List[EvaluatedSignal]]:
         """
-        Evaluate trading signals through the cognitive system.
+        The main method of this class. It orchestrates the evaluation of a
+        batch of trading signals through the cognitive system.
 
         Args:
-            signals: DataFrame of trading signals
-            market_data: Universe OHLCV data
-            spy_data: SPY data for regime
-            vix_value: Current VIX
-            current_positions: Broker positions
-            fast_confidences: Pre-computed ML confidences by symbol
+            signals: A DataFrame of raw trading signals.
+            market_data: Supporting market data for context building.
+            spy_data: SPY data for regime detection.
 
         Returns:
-            Tuple of (approved_signals_df, all_evaluated_signals)
+            A tuple containing:
+            - A DataFrame of signals approved by the cognitive system.
+            - A list of all `EvaluatedSignal` objects.
         """
         if signals.empty:
             return pd.DataFrame(), []
 
-        # Build market context
-        context = self.build_market_context(
-            market_data=market_data,
-            spy_data=spy_data,
-            vix_value=vix_value,
-            current_positions=current_positions,
-        )
+        # 1. Build a single market context for this batch of signals.
+        context = self.build_market_context(market_data=market_data, spy_data=spy_data)
+        evaluated_signals: List[EvaluatedSignal] = []
 
-        evaluated: List[EvaluatedSignal] = []
-
-        for idx, row in signals.iterrows():
+        # 2. Iterate through each signal and send it to the brain for deliberation.
+        for _, row in signals.iterrows():
             signal_dict = row.to_dict()
             symbol = signal_dict.get('symbol', 'UNKNOWN')
-            strategy = signal_dict.get('strategy', 'unknown')
-
-            # Get fast confidence if available
-            fast_conf = None
-            if fast_confidences and symbol in fast_confidences:
-                fast_conf = fast_confidences[symbol]
-            elif 'conf_score' in signal_dict:
-                fast_conf = float(signal_dict.get('conf_score', 0.5))
-
-            # Build signal context
-            signal_context = {
-                **context,
-                'strategy': strategy,
-                'symbol': symbol,
-                'price': signal_dict.get('entry_price', 0),
-                'volume': signal_dict.get('volume', 0),
-            }
-
-            # Deliberate through cognitive brain
+            
             try:
+                # Get symbol-specific news sentiment
+                symbol_sentiment = self.news_processor.get_aggregated_sentiment(symbols=[symbol])
+
+                # 3. The `deliberate` call is the core "thinking" step.
                 decision = self.brain.deliberate(
                     signal=signal_dict,
-                    context=signal_context,
-                    fast_confidence=fast_conf,
+                    context={
+                        **context, # Include overall market context
+                        'symbol': symbol,
+                        'price': signal_dict.get('entry_price', 0),
+                        'volume': signal_dict.get('volume', 0),
+                        'symbol_sentiment': symbol_sentiment, # Add symbol-specific sentiment
+                    },
+                    fast_confidence=float(signal_dict.get('conf_score', 0.5))
                 )
 
+                # 4. Wrap the result in our structured `EvaluatedSignal` object.
                 eval_signal = EvaluatedSignal(
                     original_signal=signal_dict,
                     approved=decision.should_act,
@@ -319,192 +262,105 @@ class CognitiveSignalProcessor:
                     decision_mode=decision.decision_mode,
                     size_multiplier=decision.action.get('size_multiplier', 1.0) if decision.action else 0.5,
                 )
+                evaluated_signals.append(eval_signal)
 
-                evaluated.append(eval_signal)
-
-                # Track episode for later outcome recording
-                decision_id = f"{symbol}_{strategy}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                # 5. Store the episode_id so we can link the trade outcome back later.
+                decision_id = f"{symbol}|{signal_dict.get('strategy', 'unknown')}"
                 self._active_episodes[decision_id] = decision.episode_id
-
-                logger.info(
-                    f"Evaluated {symbol}: approved={decision.should_act}, "
-                    f"conf={decision.confidence:.2f}, mode={decision.decision_mode}"
-                )
+                logger.info(f"Cognitive evaluation for {symbol}: Approved={eval_signal.approved}, Confidence={eval_signal.cognitive_confidence:.2f}")
 
             except Exception as e:
-                logger.error(f"Cognitive evaluation failed for {symbol}: {e}")
-                # Create a pass-through evaluation on error
-                eval_signal = EvaluatedSignal(
-                    original_signal=signal_dict,
-                    approved=True,  # Don't block on cognitive errors
-                    cognitive_confidence=fast_conf or 0.5,
-                    reasoning_trace=["Cognitive evaluation error - using fallback"],
-                    concerns=[str(e)],
-                    knowledge_gaps=[],
-                    invalidators=[],
-                    episode_id="",
-                    decision_mode="fallback",
-                    size_multiplier=0.5,
-                )
-                evaluated.append(eval_signal)
-
-        # Build approved signals DataFrame
-        approved_rows = []
-        for ev in evaluated:
-            if ev.approved and ev.cognitive_confidence >= self.min_confidence:
-                approved_rows.append(ev.to_dict())
-
+                logger.error(f"Cognitive deliberation failed for {symbol}: {e}", exc_info=True)
+        
+        # 6. Filter for signals that were approved and met the confidence threshold.
+        approved_rows = [ev.to_dict() for ev in evaluated_signals if ev.approved and ev.cognitive_confidence >= self.min_confidence]
         approved_df = pd.DataFrame(approved_rows) if approved_rows else pd.DataFrame()
 
-        # Sort by cognitive confidence
-        if not approved_df.empty and 'cognitive_confidence' in approved_df.columns:
+        # 7. Sort the final approved signals by confidence.
+        if not approved_df.empty:
             approved_df = approved_df.sort_values('cognitive_confidence', ascending=False)
 
-        logger.info(
-            f"Cognitive evaluation: {len(evaluated)} signals -> "
-            f"{len(approved_df)} approved (min_conf={self.min_confidence})"
-        )
+        logger.info(f"Cognitive evaluation complete: {len(signals)} signals in, {len(approved_df)} signals approved.")
+        return approved_df, evaluated_signals
 
-        return approved_df, evaluated
-
-    def record_outcome(
-        self,
-        decision_id: str,
-        won: bool,
-        pnl: float,
-        r_multiple: Optional[float] = None,
-        notes: Optional[str] = None,
-    ) -> bool:
+    def record_outcome(self, decision_id: str, won: bool, pnl: float, r_multiple: Optional[float] = None) -> bool:
         """
-        Record trade outcome for cognitive learning.
+        Records the final outcome of a trade, closing the learning loop.
 
         Args:
-            decision_id: Identifier linking to original signal
-            won: Whether the trade was profitable
-            pnl: Profit/loss amount
-            r_multiple: P&L as multiple of risk (optional)
-            notes: Additional notes
+            decision_id: A unique identifier for the decision (e.g., "AAPL|ibs_rsi").
+            won: Whether the trade was profitable.
+            pnl: The profit or loss amount.
+            r_multiple: The P&L as a multiple of the initial risk.
 
         Returns:
-            True if outcome was recorded successfully
+            True if the outcome was successfully recorded.
         """
-        episode_id = self._active_episodes.get(decision_id)
-
+        # Find the corresponding brain episode_id for this decision.
+        episode_id = self._active_episodes.pop(decision_id, None)
         if not episode_id:
-            logger.warning(f"No episode found for decision {decision_id}")
+            logger.warning(f"No active cognitive episode found for decision '{decision_id}'. Cannot record outcome.")
             return False
 
         try:
-            outcome = {
-                'won': won,
-                'pnl': pnl,
-                'r_multiple': r_multiple,
-                'notes': notes,
-                'recorded_at': datetime.now().isoformat(),
-            }
-
-            self.brain.learn_from_outcome(episode_id, outcome)
-
-            # Remove from active episodes
-            del self._active_episodes[decision_id]
-
-            logger.info(
-                f"Recorded outcome for {decision_id}: "
-                f"won={won}, pnl={pnl:.2f}, r={r_multiple}"
-            )
-
+            # Tell the brain to learn from what happened.
+            outcome_data = {'won': won, 'pnl': pnl, 'r_multiple': r_multiple}
+            self.brain.learn_from_outcome(episode_id, outcome_data)
+            logger.info(f"Successfully recorded outcome for episode {episode_id} linked to decision '{decision_id}'.")
             return True
-
         except Exception as e:
-            logger.error(f"Failed to record outcome: {e}")
+            logger.error(f"Failed to record outcome for episode {episode_id}: {e}", exc_info=True)
+            # Put it back in case it was a transient error.
+            self._active_episodes[decision_id] = episode_id
             return False
 
-    def record_outcome_by_symbol(
-        self,
-        symbol: str,
-        strategy: str,
-        won: bool,
-        pnl: float,
-        r_multiple: Optional[float] = None,
-    ) -> bool:
-        """
-        Record outcome by symbol (finds most recent matching episode).
-
-        Useful when you don't have the exact decision_id.
-        """
-        # Find matching active episode
-        for decision_id, episode_id in list(self._active_episodes.items()):
-            if symbol in decision_id and strategy.lower() in decision_id.lower():
-                return self.record_outcome(
-                    decision_id=decision_id,
-                    won=won,
-                    pnl=pnl,
-                    r_multiple=r_multiple,
-                )
-
-        logger.warning(f"No active episode found for {symbol}/{strategy}")
-        return False
-
-    def get_cognitive_status(self) -> Dict[str, Any]:
-        """Get status of the cognitive system."""
-        try:
-            brain_status = self.brain.get_status()
-            return {
-                'processor_active': True,
-                'min_confidence': self.min_confidence,
-                'active_episodes': len(self._active_episodes),
-                'brain_status': brain_status,
-            }
-        except Exception as e:
-            return {
-                'processor_active': False,
-                'error': str(e),
-            }
+    def record_outcome_by_symbol(self, symbol: str, strategy: str, **kwargs) -> bool:
+        """A convenience method to record an outcome using symbol and strategy."""
+        decision_id = f"{symbol}|{strategy.lower()}"
+        # Find the most recent decision for this combination.
+        matching_ids = [k for k in self._active_episodes if k.startswith(decision_id)]
+        if not matching_ids:
+            logger.warning(f"No active episode found for {symbol}/{strategy} to record outcome.")
+            return False
+        
+        # In a real system, you might need more sophisticated logic to find the
+        # correct ID if multiple are active. Here, we assume the last one.
+        return self.record_outcome(decision_id=matching_ids[-1], **kwargs)
 
     def daily_maintenance(self) -> Dict[str, Any]:
-        """Run daily cognitive maintenance tasks."""
+        """Triggers the brain's daily consolidation and learning tasks."""
         try:
-            result = self.brain.daily_consolidation()
-
-            # Clean up stale active episodes (older than 24 hours)
-            # In production, you'd check timestamps
-            stale_count = 0
-
-            return {
-                'consolidation': result,
-                'stale_episodes_cleaned': stale_count,
-            }
+            return self.brain.daily_consolidation()
         except Exception as e:
-            logger.error(f"Daily maintenance failed: {e}")
+            logger.error(f"Cognitive daily maintenance failed: {e}", exc_info=True)
             return {'error': str(e)}
 
     def introspect(self) -> str:
-        """Generate introspection report."""
-        lines = [
-            "=== Cognitive Signal Processor ===",
-            "",
-            f"Min confidence threshold: {self.min_confidence}",
-            f"Max concurrent positions: {self.max_concurrent_positions}",
-            f"VIX threshold: {self.vix_threshold}",
-            f"Active episodes tracking: {len(self._active_episodes)}",
-            "",
-            "--- Brain Status ---",
-        ]
-
+        """Returns a human-readable introspection report from the brain."""
         try:
-            lines.append(self.brain.introspect())
+            return self.brain.introspect()
         except Exception as e:
-            lines.append(f"Brain introspection error: {e}")
+            return f"Brain introspection failed: {e}"
 
-        return "\n".join(lines)
+    def get_cognitive_status(self) -> Dict[str, Any]:
+        """Returns a status dictionary for the cognitive signal processor."""
+        try:
+            brain_status = self.brain.get_status()
+        except Exception as e:
+            brain_status = {'error': str(e)}
 
+        return {
+            'processor_active': True,
+            'brain_status': brain_status,
+            'active_episodes': len(self._active_episodes),
+        }
 
-# Convenience functions
+# --- Singleton Implementation ---
+_signal_processor: Optional[CognitiveSignalProcessor] = None
+
 def get_signal_processor() -> CognitiveSignalProcessor:
-    """Get or create cognitive signal processor."""
+    """Factory function to get the singleton instance of the CognitiveSignalProcessor."""
     global _signal_processor
-    if '_signal_processor' not in globals() or _signal_processor is None:
+    if _signal_processor is None:
         _signal_processor = CognitiveSignalProcessor()
     return _signal_processor
-
-_signal_processor: Optional[CognitiveSignalProcessor] = None

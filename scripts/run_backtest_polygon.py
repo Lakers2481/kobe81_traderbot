@@ -10,7 +10,7 @@ import pandas as pd
 import sys, os
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from strategies.donchian.strategy import DonchianBreakoutStrategy
+from strategies.ibs_rsi.strategy import IbsRsiStrategy
 from strategies.ict.turtle_soup import TurtleSoupStrategy
 from backtest.engine import Backtester, BacktestConfig
 from data.universe.loader import load_universe
@@ -23,7 +23,7 @@ def main():
     ap.add_argument('--universe', type=str, required=True, help='CSV with symbol column')
     ap.add_argument('--start', type=str, required=True, help='YYYY-MM-DD')
     ap.add_argument('--end', type=str, required=True, help='YYYY-MM-DD')
-    ap.add_argument('--strategy', type=str, default='donchian', choices=['donchian','turtle_soup','ict'])
+    ap.add_argument('--strategy', type=str, default='ibs_rsi', choices=['ibs_rsi','turtle_soup','ict'])
     ap.add_argument('--cache', type=str, default='data/cache')
     ap.add_argument('--cap', type=int, default=900, help='Max symbols to use')
     ap.add_argument('--dotenv', type=str, default='./.env')
@@ -40,14 +40,14 @@ def main():
     cache_dir = _P(args.cache)
 
     # Strategy setup
-    don = DonchianBreakoutStrategy()
+    don = IbsRsiStrategy()
     ict = TurtleSoupStrategy()
 
     def fetcher(sym: str) -> pd.DataFrame:
         return fetch_daily_bars_polygon(sym, args.start, args.end, cache_dir=cache_dir)
 
     # Select get_signals function
-    if args.strategy in ('donchian',):
+    if args.strategy in ('ibs_rsi',):
         def get_signals(df: pd.DataFrame) -> pd.DataFrame:
             return don.scan_signals_over_time(df)
     else:  # 'turtle_soup' or alias 'ict'

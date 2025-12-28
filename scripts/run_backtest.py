@@ -6,7 +6,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-from strategies.donchian.strategy import DonchianBreakoutStrategy
+from strategies.ibs_rsi.strategy import IbsRsiStrategy
 from strategies.ict.turtle_soup import TurtleSoupStrategy
 from backtest.engine import Backtester, BacktestConfig
 
@@ -33,8 +33,8 @@ def fetch_bars(symbol: str) -> pd.DataFrame:
 
 
 def main():
-    # Choose one strategy at a time (Donchian or ICT Turtle Soup)
-    strat = DonchianBreakoutStrategy()
+    # Choose one strategy at a time (IBS_RSI or ICT Turtle Soup)
+    strat = IbsRsiStrategy()
     # strat = TurtleSoupStrategy()
 
     def get_signals(df: pd.DataFrame) -> pd.DataFrame:

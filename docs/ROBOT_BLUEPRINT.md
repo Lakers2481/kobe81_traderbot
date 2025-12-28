@@ -1,4 +1,4 @@
-# Kobe Trading Robot - Complete System Blueprint
+﻿# Kobe Trading Robot - Complete System Blueprint
 
 > **Purpose:** Complete reference for understanding the Kobe trading system.
 > Any AI reading this document should fully understand the architecture, data flow, and all components.
@@ -6,7 +6,7 @@
 ## Executive Summary
 
 **Kobe** is a production-grade algorithmic trading system for US equities with:
-- **Strategies:** Donchian Breakout (trend-following) + ICT Turtle Soup (mean-reversion)
+- **Strategies:** IBS+RSI (trend-following) + ICT Turtle Soup (mean-reversion)
 - **Universe:** 900 optionable, liquid US stocks with 10+ years of history
 - **Data:** Polygon.io (EOD), Alpaca (execution, quotes)
 - **Risk:** Multi-layer safety (PolicyGate, LiquidityGate, Kill Switch)
@@ -17,30 +17,30 @@
 ## System Architecture Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           KOBE TRADING SYSTEM                                │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌────────────┐ │
-│  │  DATA LAYER  │───▶│  STRATEGIES  │───▶│   RISK GATE  │───▶│  EXECUTION │ │
-│  │              │    │              │    │              │    │            │ │
-│  │ • Polygon    │    │ • Donchian   │    │ • PolicyGate │    │ • Alpaca   │ │
-│  │ • Universe   │    │ • TurtleSoup │    │ • Liquidity  │    │ • IOC Limit│ │
-│  │ • Cache      │    │ • ML Meta    │    │ • Kill Switch│    │ • Logging  │ │
-│  └──────────────┘    └──────────────┘    └──────────────┘    └────────────┘ │
-│         │                   │                   │                   │       │
-│         ▼                   ▼                   ▼                   ▼       │
-│  ┌─────────────────────────────────────────────────────────────────────────┐│
-│  │                           STATE & AUDIT                                  ││
-│  │  • OMS (order state, idempotency)  • Hash Chain (tamper detection)      ││
-│  │  • Heartbeat (process health)       • Structured Logs (events.jsonl)    ││
-│  └─────────────────────────────────────────────────────────────────────────┘│
-│                                                                              │
-│  ┌─────────────────────────────────────────────────────────────────────────┐│
-│  │                           MONITORING                                     ││
-│  │  • Health Endpoints (:8000)  • Drift Detection  • Calibration Tracking  ││
-│  └─────────────────────────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                           KOBE TRADING SYSTEM                                â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚                                                                              â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚
+â”‚  â”‚  DATA LAYER  â”‚â”€â”€â”€â–¶â”‚  STRATEGIES  â”‚â”€â”€â”€â–¶â”‚   RISK GATE  â”‚â”€â”€â”€â–¶â”‚  EXECUTION â”‚ â”‚
+â”‚  â”‚              â”‚    â”‚              â”‚    â”‚              â”‚    â”‚            â”‚ â”‚
+â”‚  â”‚ â€¢ Polygon    â”‚    â”‚ â€¢ IBS+RSI   â”‚    â”‚ â€¢ PolicyGate â”‚    â”‚ â€¢ Alpaca   â”‚ â”‚
+â”‚  â”‚ â€¢ Universe   â”‚    â”‚ â€¢ TurtleSoup â”‚    â”‚ â€¢ Liquidity  â”‚    â”‚ â€¢ IOC Limitâ”‚ â”‚
+â”‚  â”‚ â€¢ Cache      â”‚    â”‚ â€¢ ML Meta    â”‚    â”‚ â€¢ Kill Switchâ”‚    â”‚ â€¢ Logging  â”‚ â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â”‚
+â”‚         â”‚                   â”‚                   â”‚                   â”‚       â”‚
+â”‚         â–¼                   â–¼                   â–¼                   â–¼       â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”â”‚
+â”‚  â”‚                           STATE & AUDIT                                  â”‚â”‚
+â”‚  â”‚  â€¢ OMS (order state, idempotency)  â€¢ Hash Chain (tamper detection)      â”‚â”‚
+â”‚  â”‚  â€¢ Heartbeat (process health)       â€¢ Structured Logs (events.jsonl)    â”‚â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜â”‚
+â”‚                                                                              â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”â”‚
+â”‚  â”‚                           MONITORING                                     â”‚â”‚
+â”‚  â”‚  â€¢ Health Endpoints (:8000)  â€¢ Drift Detection  â€¢ Calibration Tracking  â”‚â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
@@ -49,124 +49,124 @@
 
 ```
 kobe81_traderbot/
-├── backtest/           # Backtesting engine
-│   ├── engine.py       # Core backtester with equity curve, stops
-│   ├── walk_forward.py # Walk-forward validation splits
-│   ├── vectorized.py   # Fast vectorized backtester
-│   └── monte_carlo.py  # Monte Carlo simulation
-│
-├── cognitive/          # AI decision-making layer
-│   ├── brain.py        # Central cognitive coordinator
-│   ├── global_workspace.py  # Publish-subscribe messaging
-│   ├── episodic_memory.py   # Trade episode tracking
-│   ├── semantic_memory.py   # Trading rules/knowledge
-│   ├── reflection.py        # Self-introspection
-│   └── curiosity.py         # Hypothesis generation
-│
-├── core/               # Core utilities
-│   ├── hash_chain.py   # Tamper-evident audit chain
-│   ├── structured_log.py    # JSON logging
-│   ├── kill_switch.py  # Emergency halt mechanism
-│   └── config.py       # Configuration management
-│
-├── data/               # Data management
-│   ├── providers/
-│   │   └── polygon_eod.py   # Polygon.io EOD data with caching
-│   ├── universe/
-│   │   ├── loader.py        # Symbol list loading
-│   │   └── optionable_liquid_900.csv  # 900-stock universe
-│   └── lake/
-│       └── dataset.py       # Data lake manifests
-│
-├── execution/          # Order execution
-│   └── broker_alpaca.py     # Alpaca broker integration
-│       # Key functions:
-│       # - place_ioc_limit()     IOC limit order
-│       # - get_best_ask()        Quote fetching
-│       # - resolve_ioc_status()  Fill confirmation
-│       # - execute_signal()      High-level entry point
-│
-├── ml_meta/            # ML meta-model
-│   ├── features.py     # Technical feature extraction
-│   ├── trainer.py      # Model training pipeline
-│   └── ensemble.py     # Multi-model ensemble
-│
-├── monitor/            # System monitoring
-│   ├── health_endpoints.py  # HTTP health checks (/health, /metrics)
-│   ├── drift_detector.py    # Performance drift detection
-│   ├── calibration.py       # Probability calibration
-│   └── heartbeat.py         # Process heartbeat tracking
-│
-├── oms/                # Order Management System
-│   ├── order_state.py       # OrderRecord dataclass
-│   └── idempotency_store.py # Duplicate order prevention
-│
-├── ops/                # Operations utilities
-│   ├── locks.py        # File-based locking
-│   └── windows/        # Windows Task Scheduler XML
-│
-├── options/            # Options pricing (synthetic)
-│   ├── black_scholes.py     # BS pricing with Greeks
-│   ├── volatility.py        # Realized vol estimation
-│   └── selection.py         # Strike selection
-│
-├── preflight/          # Pre-trading validation
-│   ├── evidence_gate.py     # Strategy promotion gates
-│   └── data_quality.py      # Data validation
-│
-├── research/           # Alpha research
-│   ├── features.py     # Research features (25+)
-│   ├── alphas.py       # Alpha signals (18+)
-│   └── screener.py     # Walk-forward screening
-│
-├── risk/               # Risk management
-│   ├── policy_gate.py       # Budget enforcement
-│   │   # Per-order: $75 max
-│   │   # Daily: $1,000 max
-│   ├── liquidity_gate.py    # ADV/spread checks
-│   └── advanced/            # Advanced risk
-│       ├── monte_carlo_var.py
-│       ├── kelly_position_sizer.py
-│       └── correlation_limits.py
-│
-├── scripts/            # Runnable scripts
-│   ├── runner.py            # 24/7 scheduler daemon
-│   ├── scan.py              # Daily stock scanner
-│   ├── preflight.py         # Pre-trade validation
-│   ├── run_paper_trade.py   # Paper trading
-│   ├── run_live_trade_micro.py  # Live trading (micro)
-│   └── reconcile_alpaca.py  # Position reconciliation
-│
-├── strategies/         # Trading strategies
-│   ├── donchian/
-│   │   └── strategy.py      # Donchian Breakout
-│   └── ict/
-│       └── turtle_soup.py   # ICT Turtle Soup
-│
-├── state/              # Runtime state files
-│   ├── KILL_SWITCH          # Emergency halt marker (if exists)
-│   ├── heartbeat.json       # Process heartbeat
-│   ├── kobe.lock            # Single-instance lock
-│   └── positions.json       # Current positions
-│
-├── logs/               # Log files
-│   ├── events.jsonl         # Structured event log
-│   ├── trades.jsonl         # Trade execution log
-│   └── daily_picks.csv      # Scanner output
-│
-├── tests/              # Test suite
-│   ├── unit/                # Unit tests
-│   ├── integration/         # Integration tests
-│   └── test_*.py            # Module tests
-│
-├── docs/               # Documentation
-│   ├── STATUS.md            # Current status & work log
-│   ├── ARCHITECTURE.md      # ASCII architecture diagram
-│   └── ROBOT_BLUEPRINT.md   # This file
-│
-├── CLAUDE.md           # Claude Code guidance
-├── requirements.txt    # Python dependencies
-└── pytest.ini          # Test configuration
+â”œâ”€â”€ backtest/           # Backtesting engine
+â”‚   â”œâ”€â”€ engine.py       # Core backtester with equity curve, stops
+â”‚   â”œâ”€â”€ walk_forward.py # Walk-forward validation splits
+â”‚   â”œâ”€â”€ vectorized.py   # Fast vectorized backtester
+â”‚   â””â”€â”€ monte_carlo.py  # Monte Carlo simulation
+â”‚
+â”œâ”€â”€ cognitive/          # AI decision-making layer
+â”‚   â”œâ”€â”€ brain.py        # Central cognitive coordinator
+â”‚   â”œâ”€â”€ global_workspace.py  # Publish-subscribe messaging
+â”‚   â”œâ”€â”€ episodic_memory.py   # Trade episode tracking
+â”‚   â”œâ”€â”€ semantic_memory.py   # Trading rules/knowledge
+â”‚   â”œâ”€â”€ reflection.py        # Self-introspection
+â”‚   â””â”€â”€ curiosity.py         # Hypothesis generation
+â”‚
+â”œâ”€â”€ core/               # Core utilities
+â”‚   â”œâ”€â”€ hash_chain.py   # Tamper-evident audit chain
+â”‚   â”œâ”€â”€ structured_log.py    # JSON logging
+â”‚   â”œâ”€â”€ kill_switch.py  # Emergency halt mechanism
+â”‚   â””â”€â”€ config.py       # Configuration management
+â”‚
+â”œâ”€â”€ data/               # Data management
+â”‚   â”œâ”€â”€ providers/
+â”‚   â”‚   â””â”€â”€ polygon_eod.py   # Polygon.io EOD data with caching
+â”‚   â”œâ”€â”€ universe/
+â”‚   â”‚   â”œâ”€â”€ loader.py        # Symbol list loading
+â”‚   â”‚   â””â”€â”€ optionable_liquid_900.csv  # 900-stock universe
+â”‚   â””â”€â”€ lake/
+â”‚       â””â”€â”€ dataset.py       # Data lake manifests
+â”‚
+â”œâ”€â”€ execution/          # Order execution
+â”‚   â””â”€â”€ broker_alpaca.py     # Alpaca broker integration
+â”‚       # Key functions:
+â”‚       # - place_ioc_limit()     IOC limit order
+â”‚       # - get_best_ask()        Quote fetching
+â”‚       # - resolve_ioc_status()  Fill confirmation
+â”‚       # - execute_signal()      High-level entry point
+â”‚
+â”œâ”€â”€ ml_meta/            # ML meta-model
+â”‚   â”œâ”€â”€ features.py     # Technical feature extraction
+â”‚   â”œâ”€â”€ trainer.py      # Model training pipeline
+â”‚   â””â”€â”€ ensemble.py     # Multi-model ensemble
+â”‚
+â”œâ”€â”€ monitor/            # System monitoring
+â”‚   â”œâ”€â”€ health_endpoints.py  # HTTP health checks (/health, /metrics)
+â”‚   â”œâ”€â”€ drift_detector.py    # Performance drift detection
+â”‚   â”œâ”€â”€ calibration.py       # Probability calibration
+â”‚   â””â”€â”€ heartbeat.py         # Process heartbeat tracking
+â”‚
+â”œâ”€â”€ oms/                # Order Management System
+â”‚   â”œâ”€â”€ order_state.py       # OrderRecord dataclass
+â”‚   â””â”€â”€ idempotency_store.py # Duplicate order prevention
+â”‚
+â”œâ”€â”€ ops/                # Operations utilities
+â”‚   â”œâ”€â”€ locks.py        # File-based locking
+â”‚   â””â”€â”€ windows/        # Windows Task Scheduler XML
+â”‚
+â”œâ”€â”€ options/            # Options pricing (synthetic)
+â”‚   â”œâ”€â”€ black_scholes.py     # BS pricing with Greeks
+â”‚   â”œâ”€â”€ volatility.py        # Realized vol estimation
+â”‚   â””â”€â”€ selection.py         # Strike selection
+â”‚
+â”œâ”€â”€ preflight/          # Pre-trading validation
+â”‚   â”œâ”€â”€ evidence_gate.py     # Strategy promotion gates
+â”‚   â””â”€â”€ data_quality.py      # Data validation
+â”‚
+â”œâ”€â”€ research/           # Alpha research
+â”‚   â”œâ”€â”€ features.py     # Research features (25+)
+â”‚   â”œâ”€â”€ alphas.py       # Alpha signals (18+)
+â”‚   â””â”€â”€ screener.py     # Walk-forward screening
+â”‚
+â”œâ”€â”€ risk/               # Risk management
+â”‚   â”œâ”€â”€ policy_gate.py       # Budget enforcement
+â”‚   â”‚   # Per-order: $75 max
+â”‚   â”‚   # Daily: $1,000 max
+â”‚   â”œâ”€â”€ liquidity_gate.py    # ADV/spread checks
+â”‚   â””â”€â”€ advanced/            # Advanced risk
+â”‚       â”œâ”€â”€ monte_carlo_var.py
+â”‚       â”œâ”€â”€ kelly_position_sizer.py
+â”‚       â””â”€â”€ correlation_limits.py
+â”‚
+â”œâ”€â”€ scripts/            # Runnable scripts
+â”‚   â”œâ”€â”€ runner.py            # 24/7 scheduler daemon
+â”‚   â”œâ”€â”€ scan.py              # Daily stock scanner
+â”‚   â”œâ”€â”€ preflight.py         # Pre-trade validation
+â”‚   â”œâ”€â”€ run_paper_trade.py   # Paper trading
+â”‚   â”œâ”€â”€ run_live_trade_micro.py  # Live trading (micro)
+â”‚   â””â”€â”€ reconcile_alpaca.py  # Position reconciliation
+â”‚
+â”œâ”€â”€ strategies/         # Trading strategies
+â”‚   â”œâ”€â”€ IBS+RSI/
+â”‚   â”‚   â””â”€â”€ strategy.py      # IBS+RSI
+â”‚   â””â”€â”€ ict/
+â”‚       â””â”€â”€ turtle_soup.py   # ICT Turtle Soup
+â”‚
+â”œâ”€â”€ state/              # Runtime state files
+â”‚   â”œâ”€â”€ KILL_SWITCH          # Emergency halt marker (if exists)
+â”‚   â”œâ”€â”€ heartbeat.json       # Process heartbeat
+â”‚   â”œâ”€â”€ kobe.lock            # Single-instance lock
+â”‚   â””â”€â”€ positions.json       # Current positions
+â”‚
+â”œâ”€â”€ logs/               # Log files
+â”‚   â”œâ”€â”€ events.jsonl         # Structured event log
+â”‚   â”œâ”€â”€ trades.jsonl         # Trade execution log
+â”‚   â””â”€â”€ daily_picks.csv      # Scanner output
+â”‚
+â”œâ”€â”€ tests/              # Test suite
+â”‚   â”œâ”€â”€ unit/                # Unit tests
+â”‚   â”œâ”€â”€ integration/         # Integration tests
+â”‚   â””â”€â”€ test_*.py            # Module tests
+â”‚
+â”œâ”€â”€ docs/               # Documentation
+â”‚   â”œâ”€â”€ STATUS.md            # Current status & work log
+â”‚   â”œâ”€â”€ ARCHITECTURE.md      # ASCII architecture diagram
+â”‚   â””â”€â”€ ROBOT_BLUEPRINT.md   # This file
+â”‚
+â”œâ”€â”€ CLAUDE.md           # Claude Code guidance
+â”œâ”€â”€ requirements.txt    # Python dependencies
+â””â”€â”€ pytest.ini          # Test configuration
 ```
 
 ---
@@ -175,50 +175,50 @@ kobe81_traderbot/
 
 ```
 1. SCAN (scripts/scan.py)
-   │
-   ├── Load Universe (900 stocks from data/universe/)
-   │
-   ├── Fetch EOD Data (Polygon.io with CSV caching)
-   │
-   ├── Generate Signals (strategies/)
-   │   ├── Donchian Breakout: Entry on price > upper band
-   │   └── Turtle Soup: Entry on IBS < 0.2 after setup
-   │
-   └── Output: logs/daily_picks.csv
+   â”‚
+   â”œâ”€â”€ Load Universe (900 stocks from data/universe/)
+   â”‚
+   â”œâ”€â”€ Fetch EOD Data (Polygon.io with CSV caching)
+   â”‚
+   â”œâ”€â”€ Generate Signals (strategies/)
+   â”‚   â”œâ”€â”€ IBS+RSI: Entry on price > upper band
+   â”‚   â””â”€â”€ Turtle Soup: Entry on IBS < 0.2 after setup
+   â”‚
+   â””â”€â”€ Output: logs/daily_picks.csv
 
 2. RISK CHECK (risk/)
-   │
-   ├── PolicyGate.check()
-   │   ├── Per-order budget ($75 max)
-   │   └── Daily budget ($1,000 max)
-   │
-   ├── LiquidityGate.check()
-   │   ├── ADV threshold ($100k min)
-   │   ├── Spread threshold (0.5% max)
-   │   └── Order impact (% of ADV)
-   │
-   └── Kill Switch check (core/kill_switch.py)
+   â”‚
+   â”œâ”€â”€ PolicyGate.check()
+   â”‚   â”œâ”€â”€ Per-order budget ($75 max)
+   â”‚   â””â”€â”€ Daily budget ($1,000 max)
+   â”‚
+   â”œâ”€â”€ LiquidityGate.check()
+   â”‚   â”œâ”€â”€ ADV threshold ($100k min)
+   â”‚   â”œâ”€â”€ Spread threshold (0.5% max)
+   â”‚   â””â”€â”€ Order impact (% of ADV)
+   â”‚
+   â””â”€â”€ Kill Switch check (core/kill_switch.py)
 
 3. EXECUTION (execution/broker_alpaca.py)
-   │
-   ├── Get Best Ask (quote API)
-   │
-   ├── Place IOC Limit Order
-   │   └── Limit = best_ask × 1.001
-   │
-   ├── Resolve Status (poll for FILLED/CANCELLED)
-   │
-   ├── Log Trade Event (logs/trades.jsonl)
-   │
-   └── Update Metrics (monitor/health_endpoints.py)
+   â”‚
+   â”œâ”€â”€ Get Best Ask (quote API)
+   â”‚
+   â”œâ”€â”€ Place IOC Limit Order
+   â”‚   â””â”€â”€ Limit = best_ask Ã— 1.001
+   â”‚
+   â”œâ”€â”€ Resolve Status (poll for FILLED/CANCELLED)
+   â”‚
+   â”œâ”€â”€ Log Trade Event (logs/trades.jsonl)
+   â”‚
+   â””â”€â”€ Update Metrics (monitor/health_endpoints.py)
 
 4. STATE UPDATE (oms/, core/)
-   │
-   ├── Update OrderRecord
-   │
-   ├── Append Hash Chain (tamper detection)
-   │
-   └── Update Positions
+   â”‚
+   â”œâ”€â”€ Update OrderRecord
+   â”‚
+   â”œâ”€â”€ Append Hash Chain (tamper detection)
+   â”‚
+   â””â”€â”€ Update Positions
 ```
 
 ---
@@ -227,15 +227,15 @@ kobe81_traderbot/
 
 ### 1. Strategies
 
-**Donchian Breakout** (`strategies/donchian/strategy.py`)
-- Entry: Close crosses above upper Donchian channel
-- Exit: ATR(14)×2 stop loss OR 5-bar time stop
+**IBS+RSI** (`strategies/IBS+RSI/strategy.py`)
+- Entry: Close crosses above upper IBS+RSI channel
+- Exit: ATR(14)Ã—2 stop loss OR 5-bar time stop
 - Filter: Above SMA(200)
 - Indicator shift: All signals delayed 1 bar (no lookahead)
 
 **ICT Turtle Soup** (`strategies/ict/turtle_soup.py`)
 - Entry: IBS < 0.2 after false breakout of prior low
-- Exit: ATR(14)×2 stop OR 5-bar time stop
+- Exit: ATR(14)Ã—2 stop OR 5-bar time stop
 - Filter: Above SMA(200)
 - Indicator shift: Signals shifted 1 bar
 
@@ -442,3 +442,4 @@ python -m pytest tests/ -v -k "test_import"
 | Run tests | `python -m pytest tests/ -v` |
 | Daily picks | `cat logs/daily_picks.csv` |
 | Positions | `cat state/positions.json` |
+

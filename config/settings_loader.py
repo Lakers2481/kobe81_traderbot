@@ -183,3 +183,88 @@ def get_sizing_config() -> Dict[str, Any]:
 def is_sizing_enabled() -> bool:
     """Check if volatility sizing is enabled."""
     return bool(get_setting("sizing.enabled", False))
+
+
+# ============================================================================
+# Cognitive Architecture Settings
+# ============================================================================
+
+def is_cognitive_enabled() -> bool:
+    """Check if cognitive layer is enabled."""
+    return bool(get_setting("cognitive.enabled", True))
+
+
+def get_cognitive_brain_config() -> Dict[str, Any]:
+    """Get CognitiveBrain configuration."""
+    return {
+        "min_confidence_to_act": float(get_setting("cognitive.brain.min_confidence_to_act", 0.5)),
+        "max_processing_time_ms": int(get_setting("cognitive.brain.max_processing_time_ms", 5000)),
+    }
+
+
+def get_cognitive_governor_config() -> Dict[str, Any]:
+    """Get MetacognitiveGovernor configuration."""
+    return {
+        "fast_confidence_threshold": float(get_setting("cognitive.governor.fast_confidence_threshold", 0.75)),
+        "slow_confidence_threshold": float(get_setting("cognitive.governor.slow_confidence_threshold", 0.50)),
+        "stand_down_threshold": float(get_setting("cognitive.governor.stand_down_threshold", 0.30)),
+        "default_fast_budget_ms": int(get_setting("cognitive.governor.default_fast_budget_ms", 100)),
+        "default_slow_budget_ms": int(get_setting("cognitive.governor.default_slow_budget_ms", 5000)),
+        "high_stakes_position_pct": float(get_setting("cognitive.governor.high_stakes_position_pct", 0.03)),
+    }
+
+
+def get_cognitive_reflection_config() -> Dict[str, Any]:
+    """Get ReflectionEngine configuration."""
+    return {
+        "max_reflections": int(get_setting("cognitive.reflection.max_reflections", 100)),
+        "lookback_hours": int(get_setting("cognitive.reflection.lookback_hours", 24)),
+    }
+
+
+def get_cognitive_self_model_config() -> Dict[str, Any]:
+    """Get SelfModel configuration."""
+    return {
+        "state_dir": str(get_setting("cognitive.self_model.state_dir", "state/cognitive")),
+        "auto_persist": bool(get_setting("cognitive.self_model.auto_persist", True)),
+        "poor_capability_threshold": float(get_setting("cognitive.self_model.poor_capability_threshold", 0.35)),
+        "excellent_capability_threshold": float(get_setting("cognitive.self_model.excellent_capability_threshold", 0.65)),
+        "min_trades_for_rating": int(get_setting("cognitive.self_model.min_trades_for_rating", 10)),
+        "max_calibration_error": float(get_setting("cognitive.self_model.max_calibration_error", 0.25)),
+    }
+
+
+def get_cognitive_knowledge_boundary_config() -> Dict[str, Any]:
+    """Get KnowledgeBoundary configuration."""
+    return {
+        "uncertainty_threshold": float(get_setting("cognitive.knowledge_boundary.uncertainty_threshold", 0.3)),
+        "stand_down_threshold": float(get_setting("cognitive.knowledge_boundary.stand_down_threshold", 0.6)),
+        "min_samples_for_confidence": int(get_setting("cognitive.knowledge_boundary.min_samples_for_confidence", 5)),
+    }
+
+
+def get_cognitive_episodic_memory_config() -> Dict[str, Any]:
+    """Get EpisodicMemory configuration."""
+    return {
+        "storage_dir": str(get_setting("cognitive.episodic_memory.storage_dir", "state/cognitive/episodes")),
+        "max_active_episodes": int(get_setting("cognitive.episodic_memory.max_active_episodes", 100)),
+        "max_completed_episodes": int(get_setting("cognitive.episodic_memory.max_completed_episodes", 1000)),
+        "auto_persist": bool(get_setting("cognitive.episodic_memory.auto_persist", True)),
+    }
+
+
+def get_cognitive_semantic_memory_config() -> Dict[str, Any]:
+    """Get SemanticMemory configuration."""
+    return {
+        "state_dir": str(get_setting("cognitive.semantic_memory.state_dir", "state/cognitive")),
+        "min_rule_confidence": float(get_setting("cognitive.semantic_memory.min_rule_confidence", 0.4)),
+        "max_rules": int(get_setting("cognitive.semantic_memory.max_rules", 500)),
+    }
+
+
+def get_cognitive_curiosity_config() -> Dict[str, Any]:
+    """Get CuriosityEngine configuration."""
+    return {
+        "max_hypotheses": int(get_setting("cognitive.curiosity.max_hypotheses", 50)),
+        "validation_threshold": float(get_setting("cognitive.curiosity.validation_threshold", 0.7)),
+    }

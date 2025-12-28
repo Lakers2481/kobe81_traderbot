@@ -55,15 +55,15 @@ def compute_features_frame(df: pd.DataFrame) -> pd.DataFrame:
         rv20 = _realized_vol(g['close'], 20)
         d_hi20 = _donchian_hi(g['low'], g['high'], 20)
         d_lo20 = _donchian_lo(g['low'], g['high'], 20)
-        width = (d_hi20 - d_lo20).replace(0, pd.NA)
+        width = (d_hi20 - d_lo20).replace(0, float('nan'))
         pos = (g['close'] - d_lo20) / width
         ret5 = g['close'].pct_change(5)
-        log_vol = (g['volume'].replace(0, pd.NA)).apply(lambda x: math.log(x) if pd.notna(x) and x > 0 else pd.NA)
+        log_vol = g['volume'].apply(lambda x: math.log(x) if pd.notna(x) and x > 0 else float('nan'))
         return pd.DataFrame({
             'timestamp': g['timestamp'],
             'symbol': g['symbol'],
             'atr14': atr14,
-            'sma20_over_200': (sma20 / sma200).replace([pd.NA, pd.NaT, pd.nan], 0.0),
+            'sma20_over_200': (sma20 / sma200).fillna(0.0),
             'rv20': rv20,
             'don20_width': width,
             'pos_in_don20': pos,

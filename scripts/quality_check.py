@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Kobe Trading System - Quality Check Script
 
@@ -188,7 +188,7 @@ def check_flake8(root: Path) -> CheckResult:
 def check_imports(root: Path) -> CheckResult:
     """Check that critical modules can be imported."""
     critical_modules = [
-        'strategies.donchian.strategy',
+        'strategies.ibs_rsi.strategy',
         'strategies.ict.turtle_soup',
         'backtest.engine',
         'data.providers.polygon_eod',
@@ -937,3 +937,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

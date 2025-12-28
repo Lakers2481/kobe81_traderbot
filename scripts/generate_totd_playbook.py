@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Generate Trade of the Day (TOTD) Playbook.
 
@@ -189,7 +189,7 @@ def main():
         packet = build_decision_packet(
             symbol=args.symbol or "SAMPLE",
             side="buy",
-            strategy_name="DonchianBreakout",
+            strategy_name="IBS_RSI",
             signal={
                 "reasons": ["20-day high breakout", "Volume confirmation"],
                 "description": "Price broke above 20-day high with above-average volume",
@@ -252,3 +252,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

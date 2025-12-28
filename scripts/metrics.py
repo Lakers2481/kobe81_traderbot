@@ -6,8 +6,8 @@ Calculates win rate, profit factor, Sharpe ratio, returns analysis,
 and max drawdown from trade history.
 
 Usage:
-    python metrics.py --period 30d --strategy donchian
-    python metrics.py --wfdir wf_outputs/donchian --dotenv
+    python metrics.py --period 30d --strategy ibs_rsi
+    python metrics.py --wfdir wf_outputs/ibs_rsi --dotenv
 """
 from __future__ import annotations
 
@@ -528,7 +528,7 @@ def main():
     parser.add_argument(
         '--strategy',
         type=str,
-        help='Filter by strategy name (e.g., donchian, TURTLE_SOUP)'
+        help='Filter by strategy name (e.g., ibs_rsi, TURTLE_SOUP)'
     )
     parser.add_argument(
         '--dotenv',
@@ -658,4 +658,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 

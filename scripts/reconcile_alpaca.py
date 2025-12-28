@@ -16,7 +16,7 @@ from config.env_loader import load_env
 def main():
     ap = argparse.ArgumentParser(description='Reconcile local vs Alpaca (dump broker state)')
     ap.add_argument('--outdir', type=str, default='state/reconcile')
-    ap.add_argument('--dotenv', type=str, default='C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env')
+    ap.add_argument('--dotenv', type=str, default='./.env')
     args = ap.parse_args()
 
     dotenv = Path(args.dotenv)

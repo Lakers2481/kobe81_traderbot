@@ -1,41 +1,45 @@
 """
-Curiosity Engine - Pattern Discovery
-======================================
+Curiosity Engine - Autonomous Pattern Discovery
+=================================================
 
-Autonomous hypothesis generation and testing.
+This module provides the cognitive architecture with the ability to "get smarter"
+over time through autonomous hypothesis generation and testing. It acts as the
+research and development department for the AI, constantly seeking new,
+quantifiable trading edges.
 
-This is how the robot "gets smarter" without human intervention:
-- Proposes hypotheses about market behavior
-- Tests them against data
-- Maintains leaderboard of robust edges
-- Runs as background process
+Core Workflow:
+1.  **Generate Hypotheses:** Proposes new, testable ideas about market behavior
+    based on recent trade episodes, market observations, or combinatorial exploration.
+2.  **Test Hypotheses:** Runs statistical tests on these hypotheses against
+    historical data stored in Episodic Memory.
+3.  **Validate Edges:** If a hypothesis is validated with statistical significance,
+    it is promoted to an "Edge".
+4.  **Inform the Brain:** Validated edges are converted into new rules in
+    Semantic Memory, directly influencing the CognitiveBrain's future decisions.
 
-Features:
-- Hypothesis generation from observations
-- Automated testing framework
-- Edge discovery and validation
-- Continuous learning loop
+This engine allows the trading bot to adapt to changing market dynamics and
+discover novel strategies without human intervention.
 
 Usage:
     from cognitive.curiosity_engine import CuriosityEngine
 
     engine = CuriosityEngine()
 
-    # Generate hypotheses from recent data
-    hypotheses = engine.generate_hypotheses(market_data)
+    # Periodically, the system can ask the engine to generate new ideas.
+    new_hypotheses = engine.generate_hypotheses()
 
-    # Test hypotheses
-    results = engine.test_hypotheses(hypotheses, historical_data)
+    # The engine can then test all its pending ideas.
+    test_results = engine.test_all_pending()
 
-    # Get proven edges
-    edges = engine.get_validated_edges()
+    # The brain can then query for proven, high-confidence strategies.
+    proven_edges = engine.get_validated_edges()
 """
 
 import logging
 import hashlib
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple, Callable
+from typing import Any, Dict, List, Optional, Tuple
 from enum import Enum
 import json
 from pathlib import Path
@@ -44,33 +48,38 @@ logger = logging.getLogger(__name__)
 
 
 class HypothesisStatus(Enum):
-    """Status of a hypothesis."""
-    PROPOSED = "proposed"       # Just generated
-    TESTING = "testing"         # Currently being tested
-    VALIDATED = "validated"     # Proven with significance
-    REJECTED = "rejected"       # Failed testing
-    INCONCLUSIVE = "inconclusive"  # Needs more data
+    """Enumerates the lifecycle status of a hypothesis."""
+    PROPOSED = "proposed"       # Newly generated, not yet tested.
+    TESTING = "testing"         # Currently undergoing statistical validation.
+    VALIDATED = "validated"     # Statistically significant and proven.
+    REJECTED = "rejected"       # Statistically proven to be false.
+    INCONCLUSIVE = "inconclusive"  # Not enough data to make a confident conclusion.
 
 
 @dataclass
 class Hypothesis:
-    """A testable hypothesis about market behavior."""
-    hypothesis_id: str
-    description: str
-    condition: str  # When to test (e.g., "regime = BULL")
-    prediction: str  # What we predict (e.g., "win_rate > 0.6")
-    rationale: str
+    """
+    Represents a testable idea about market behavior. It's a question the
+    engine poses, e.g., "Does strategy X work well in market regime Y?"
+    """
+    hypothesis_id: str  # Unique identifier.
+    description: str  # Human-readable summary of the idea.
+    condition: str  # The context in which the hypothesis applies (e.g., "regime = BULL").
+    prediction: str  # The expected outcome (e.g., "win_rate > 0.6").
+    rationale: str  # Why the engine thought this was a good idea to test.
     status: HypothesisStatus = HypothesisStatus.PROPOSED
     created_at: datetime = field(default_factory=datetime.now)
     tested_at: Optional[datetime] = None
-    sample_size: int = 0
-    observed_value: float = 0.0
-    expected_value: float = 0.0
-    p_value: Optional[float] = None
+    # --- Test Results ---
+    sample_size: int = 0  # Number of data points used in the test.
+    observed_value: float = 0.0  # The actual value measured from the data.
+    expected_value: float = 0.0  # The value predicted by the hypothesis.
+    p_value: Optional[float] = None  # The statistical significance of the result.
     confidence_interval: Optional[Tuple[float, float]] = None
-    source: str = ""  # Where this came from
+    source: str = ""  # How the hypothesis was generated (e.g., "episode_pattern").
 
     def to_dict(self) -> Dict:
+        """Serializes the hypothesis to a dictionary."""
         return {
             'hypothesis_id': self.hypothesis_id,
             'description': self.description,
@@ -90,20 +99,25 @@ class Hypothesis:
 
 @dataclass
 class Edge:
-    """A validated trading edge."""
+    """
+    Represents a validated, statistically significant trading pattern or advantage.
+    An "Edge" is a `Hypothesis` that has been proven true. It is an actionable
+    piece of knowledge that can be used to improve trading decisions.
+    """
     edge_id: str
-    description: str
-    condition: str
-    expected_win_rate: float
-    expected_profit_factor: float
-    sample_size: int
-    confidence: float  # 0-1
-    first_discovered: datetime
-    last_validated: datetime
-    times_validated: int = 1
+    description: str  # Human-readable summary of the edge.
+    condition: str  # The specific market condition where this edge applies.
+    expected_win_rate: float  # The validated win rate.
+    expected_profit_factor: float  # The validated profit factor.
+    sample_size: int  # The sample size that validated this edge.
+    confidence: float  # Confidence score (0-1) based on statistical significance.
+    first_discovered: datetime  # When this edge was first validated.
+    last_validated: datetime  # The last time this edge was re-validated.
+    times_validated: int = 1  # How many times this edge has been confirmed.
     notes: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict:
+        """Serializes the edge to a dictionary."""
         return {
             'edge_id': self.edge_id,
             'description': self.description,
@@ -120,9 +134,9 @@ class Edge:
 
 class CuriosityEngine:
     """
-    Autonomous pattern discovery and hypothesis testing.
-
-    This is the "curiosity" component that drives continuous learning.
+    Manages the lifecycle of hypothesis generation, testing, and promotion to
+    validated edges. This engine persists its state to disk, allowing it to
+    build a long-term understanding of the market.
     """
 
     def __init__(
@@ -132,27 +146,37 @@ class CuriosityEngine:
         significance_level: float = 0.05,
         min_edge_win_rate: float = 0.55,
     ):
+        """
+        Initializes the CuriosityEngine.
+
+        Args:
+            storage_dir: Directory to save and load the engine's state.
+            min_sample_size: The minimum number of trades required to test a hypothesis.
+            significance_level: The p-value threshold for validating a hypothesis.
+            min_edge_win_rate: The minimum win rate for a pattern to be considered an edge.
+        """
         self.storage_dir = Path(storage_dir)
         self.storage_dir.mkdir(parents=True, exist_ok=True)
         self.min_sample_size = min_sample_size
         self.significance_level = significance_level
         self.min_edge_win_rate = min_edge_win_rate
 
-        # Hypothesis storage
+        # In-memory storage for hypotheses and discovered edges.
         self._hypotheses: Dict[str, Hypothesis] = {}
         self._edges: Dict[str, Edge] = {}
 
-        # Lazy dependencies
+        # Dependencies on other cognitive components are lazy-loaded.
         self._episodic_memory = None
         self._semantic_memory = None
         self._workspace = None
 
         self._load_state()
         logger.info(
-            f"CuriosityEngine initialized with {len(self._hypotheses)} hypotheses, "
-            f"{len(self._edges)} edges"
+            f"CuriosityEngine initialized, loaded {len(self._hypotheses)} hypotheses "
+            f"and {len(self._edges)} edges from state."
         )
 
+    # --- Lazy-loaded properties for dependencies ---
     @property
     def episodic_memory(self):
         if self._episodic_memory is None:
@@ -179,370 +203,332 @@ class CuriosityEngine:
         observations: Optional[Dict[str, Any]] = None,
     ) -> List[Hypothesis]:
         """
-        Generate hypotheses from observations or recent episodes.
+        The main entry point for generating new hypotheses. It combines several
+        strategies to create a diverse set of testable ideas.
 
         Args:
-            observations: Optional dict of current observations
+            observations: Optional dictionary of current market observations
+                          (e.g., VIX, volume spikes) to inspire new hypotheses.
 
         Returns:
-            List of new hypotheses
+            A list of newly generated Hypothesis objects.
         """
         new_hypotheses = []
 
-        # === Strategy 1: From Recent Episodes ===
+        # Strategy 1: Look for interesting patterns in recent trade history.
         episodes = self.episodic_memory.get_recent_episodes(limit=50)
         new_hypotheses.extend(self._hypotheses_from_episodes(episodes))
 
-        # === Strategy 2: From Observations ===
+        # Strategy 2: Generate ideas based on real-time market observations.
         if observations:
             new_hypotheses.extend(self._hypotheses_from_observations(observations))
 
-        # === Strategy 3: Combinatorial ===
+        # Strategy 3: Create hypotheses by combining known factors in new ways.
         new_hypotheses.extend(self._combinatorial_hypotheses())
 
-        # Deduplicate and store
+        # Add new, unique hypotheses to the internal collection.
+        added_count = 0
         for hyp in new_hypotheses:
             if hyp.hypothesis_id not in self._hypotheses:
                 self._hypotheses[hyp.hypothesis_id] = hyp
-                logger.info(f"New hypothesis: {hyp.description}")
-
-        self._save_state()
+                logger.info(f"Generated new hypothesis: '{hyp.description}'")
+                added_count += 1
+        
+        if added_count > 0:
+            self._save_state()
 
         return new_hypotheses
 
     def _hypotheses_from_episodes(self, episodes: List[Any]) -> List[Hypothesis]:
-        """Generate hypotheses from episode patterns."""
+        """Generate hypotheses by finding patterns in recent episodes."""
         from cognitive.episodic_memory import EpisodeOutcome
-
         hypotheses = []
 
-        # Group by context
+        # Group episodes by their context (e.g., regime and strategy).
         by_context: Dict[str, List[Any]] = {}
         for ep in episodes:
             key = f"{ep.market_context.get('regime', 'unknown')}|{ep.signal_context.get('strategy', 'unknown')}"
-            if key not in by_context:
-                by_context[key] = []
-            by_context[key].append(ep)
+            by_context.setdefault(key, []).append(ep)
 
-        # Look for interesting patterns
+        # Analyze each context group for interesting performance.
         for key, context_episodes in by_context.items():
-            if len(context_episodes) < 5:
+            if len(context_episodes) < 5:  # Need a minimum number of examples.
                 continue
 
             regime, strategy = key.split('|')
-
             wins = [e for e in context_episodes if e.outcome == EpisodeOutcome.WIN]
             losses = [e for e in context_episodes if e.outcome == EpisodeOutcome.LOSS]
+            total_trades = len(wins) + len(losses)
 
-            if len(wins) + len(losses) < 5:
+            if total_trades < 5:
                 continue
 
-            win_rate = len(wins) / (len(wins) + len(losses))
+            win_rate = len(wins) / total_trades
 
-            # High win rate hypothesis
+            # If a high win rate is observed, create a hypothesis about it.
             if win_rate > 0.65:
                 hyp_id = hashlib.md5(f"high_wr_{key}".encode()).hexdigest()[:8]
                 if hyp_id not in self._hypotheses:
                     hypotheses.append(Hypothesis(
                         hypothesis_id=hyp_id,
-                        description=f"{strategy} has high win rate in {regime} regime",
+                        description=f"Performance of {strategy} seems high in {regime} regime",
                         condition=f"regime = {regime} AND strategy = {strategy}",
                         prediction="win_rate > 0.6",
-                        rationale=f"Observed {win_rate:.1%} win rate in {len(context_episodes)} episodes",
+                        rationale=f"Observed {win_rate:.1%} win rate over {total_trades} trades.",
                         source="episode_pattern",
                     ))
-
-            # Low win rate hypothesis
+            # If a low win rate is observed, create a hypothesis to avoid this context.
             elif win_rate < 0.35:
                 hyp_id = hashlib.md5(f"low_wr_{key}".encode()).hexdigest()[:8]
                 if hyp_id not in self._hypotheses:
                     hypotheses.append(Hypothesis(
                         hypothesis_id=hyp_id,
-                        description=f"{strategy} underperforms in {regime} regime",
+                        description=f"{strategy} seems to underperform in {regime} regime",
                         condition=f"regime = {regime} AND strategy = {strategy}",
                         prediction="win_rate < 0.4",
-                        rationale=f"Observed {win_rate:.1%} win rate in {len(context_episodes)} episodes",
+                        rationale=f"Observed {win_rate:.1%} win rate over {total_trades} trades.",
                         source="episode_pattern",
                     ))
-
         return hypotheses
 
     def _hypotheses_from_observations(self, observations: Dict) -> List[Hypothesis]:
-        """Generate hypotheses from current observations."""
+        """Generate hypotheses from current market observations (e.g., high VIX)."""
         hypotheses = []
-
-        # VIX-based hypothesis
+        # Example: If VIX is high, hypothesize that mean reversion is more effective.
         vix = observations.get('vix', 20)
         if vix > 30:
-            hyp_id = hashlib.md5(f"high_vix_{vix:.0f}".encode()).hexdigest()[:8]
-            hypotheses.append(Hypothesis(
-                hypothesis_id=hyp_id,
-                description=f"Mean reversion works better when VIX > 30",
-                condition="vix > 30",
-                prediction="mean_reversion_win_rate > 0.6",
-                rationale=f"High VIX ({vix}) often indicates oversold conditions",
-                source="observation",
-            ))
-
-        # Volume-based hypothesis
-        volume_ratio = observations.get('volume_ratio', 1.0)
-        if volume_ratio > 2.0:
-            hyp_id = hashlib.md5(f"high_vol_{volume_ratio:.1f}".encode()).hexdigest()[:8]
-            hypotheses.append(Hypothesis(
-                hypothesis_id=hyp_id,
-                description="High volume precedes trend continuation",
-                condition="volume_ratio > 2.0",
-                prediction="trend_following_success > 0.55",
-                rationale=f"Volume {volume_ratio:.1f}x average suggests conviction",
-                source="observation",
-            ))
-
-        return hypotheses
-
-    def _combinatorial_hypotheses(self) -> List[Hypothesis]:
-        """Generate hypotheses by combining factors."""
-        hypotheses = []
-
-        # Combine regime + strategy + volatility
-        regimes = ['BULL', 'BEAR', 'CHOPPY']
-        strategies = ['donchian', 'turtle_soup']
-        vol_conditions = ['vix < 20', 'vix >= 20 AND vix < 30', 'vix >= 30']
-
-        # Only generate a few at a time to avoid explosion
-        import random
-        combinations = [
-            (r, s, v) for r in regimes for s in strategies for v in vol_conditions
-        ]
-        sample = random.sample(combinations, min(3, len(combinations)))
-
-        for regime, strategy, vol_cond in sample:
-            hyp_id = hashlib.md5(f"{regime}_{strategy}_{vol_cond}".encode()).hexdigest()[:8]
+            hyp_id = hashlib.md5(f"high_vix_mr_perf".encode()).hexdigest()[:8]
             if hyp_id not in self._hypotheses:
                 hypotheses.append(Hypothesis(
                     hypothesis_id=hyp_id,
-                    description=f"{strategy} performance in {regime} with {vol_cond}",
-                    condition=f"regime = {regime} AND strategy = {strategy} AND {vol_cond}",
-                    prediction="win_rate > 0.55",
-                    rationale="Exploring factor combination",
-                    source="combinatorial",
+                    description=f"Mean reversion strategies might work better when VIX > 30",
+                    condition="vix > 30 AND is_mean_reversion",
+                    prediction="win_rate > 0.6",
+                    rationale=f"High VIX ({vix}) often signals fear and oversold conditions, ideal for bounces.",
+                    source="observation",
                 ))
-
         return hypotheses
 
-    def test_hypothesis(
-        self,
-        hypothesis: Hypothesis,
-        test_data: Optional[List[Any]] = None,
-    ) -> Hypothesis:
+    def _combinatorial_hypotheses(self) -> List[Hypothesis]:
+        """Generate hypotheses by combining known factors in novel ways."""
+        hypotheses = []
+        import random
+        
+        # Define known factors to combine.
+        regimes = ['BULL', 'BEAR', 'CHOPPY']
+        strategies = ['ibs_rsi', 'turtle_soup']
+        vol_conditions = ['vix < 20', 'vix >= 20 AND vix < 30', 'vix >= 30']
+
+        # To avoid a combinatorial explosion, only generate a few random combinations at a time.
+        combinations = [(r, s, v) for r in regimes for s in strategies for v in vol_conditions]
+        sample = random.sample(combinations, min(3, len(combinations)))
+
+        for regime, strategy, vol_cond in sample:
+            hyp_id = hashlib.md5(f"combo_{regime}_{strategy}_{vol_cond}".encode()).hexdigest()[:8]
+            if hyp_id not in self._hypotheses:
+                hypotheses.append(Hypothesis(
+                    hypothesis_id=hyp_id,
+                    description=f"Explore {strategy} in {regime} regime when {vol_cond}",
+                    condition=f"regime = {regime} AND strategy = {strategy} AND {vol_cond}",
+                    prediction="win_rate > 0.55", # A generic "let's see if this works" prediction
+                    rationale="Exploring a new combination of known factors.",
+                    source="combinatorial",
+                ))
+        return hypotheses
+
+    def test_hypothesis(self, hypothesis: Hypothesis) -> Hypothesis:
         """
-        Test a hypothesis against data.
+        Tests a single hypothesis against historical data from episodic memory.
 
         Args:
-            hypothesis: Hypothesis to test
-            test_data: Optional list of episodes to test against
+            hypothesis: The Hypothesis object to be tested.
 
         Returns:
-            Updated hypothesis with test results
+            The updated Hypothesis object with test results and a new status.
         """
         from cognitive.episodic_memory import EpisodeOutcome
-
         hypothesis.status = HypothesisStatus.TESTING
         hypothesis.tested_at = datetime.now()
 
-        # Get test data
-        if test_data is None:
-            test_data = self.episodic_memory.get_recent_episodes(limit=200)
+        # 1. Get a large sample of historical data to test against.
+        test_data = self.episodic_memory.get_recent_episodes(limit=1000)
 
-        # Filter to matching condition
-        matching = self._filter_by_condition(test_data, hypothesis.condition)
+        # 2. Filter the data to only include episodes that match the hypothesis condition.
+        matching_episodes = self._filter_by_condition(test_data, hypothesis.condition)
+        hypothesis.sample_size = len(matching_episodes)
 
-        hypothesis.sample_size = len(matching)
-
+        # 3. If the sample size is too small, the result is inconclusive.
         if hypothesis.sample_size < self.min_sample_size:
             hypothesis.status = HypothesisStatus.INCONCLUSIVE
+            logger.info(f"Hypothesis '{hypothesis.description}' is inconclusive: sample size {hypothesis.sample_size} is below threshold {self.min_sample_size}.")
             return hypothesis
 
-        # Calculate observed value
-        wins = [e for e in matching if e.outcome == EpisodeOutcome.WIN]
-        losses = [e for e in matching if e.outcome == EpisodeOutcome.LOSS]
-        total = len(wins) + len(losses)
-
-        if total == 0:
+        # 4. Calculate the observed metric (e.g., win rate) from the matching episodes.
+        wins = [e for e in matching_episodes if e.outcome == EpisodeOutcome.WIN]
+        total_relevant = len([e for e in matching_episodes if e.outcome is not None])
+        if total_relevant == 0:
             hypothesis.status = HypothesisStatus.INCONCLUSIVE
             return hypothesis
+        hypothesis.observed_value = len(wins) / total_relevant
 
-        hypothesis.observed_value = len(wins) / total
-
-        # Parse expected value from prediction
+        # 5. Parse the expected value from the prediction string (e.g., "win_rate > 0.6" -> 0.6).
         hypothesis.expected_value = self._parse_expected_value(hypothesis.prediction)
 
-        # Statistical test (simple binomial)
+        # 6. Perform a statistical test to get a p-value.
         hypothesis.p_value = self._calculate_p_value(
-            hypothesis.observed_value,
-            hypothesis.expected_value,
-            total
+            hypothesis.observed_value, hypothesis.expected_value, total_relevant
         )
 
-        # Determine status
+        # 7. Determine the final status based on the p-value.
         if hypothesis.p_value < self.significance_level:
             if hypothesis.observed_value >= hypothesis.expected_value:
                 hypothesis.status = HypothesisStatus.VALIDATED
-                # Create edge
+                # This is a real edge! Promote it.
                 self._create_edge_from_hypothesis(hypothesis)
             else:
                 hypothesis.status = HypothesisStatus.REJECTED
         else:
             hypothesis.status = HypothesisStatus.INCONCLUSIVE
-
+        
         self._save_state()
-
         logger.info(
-            f"Hypothesis {hypothesis.hypothesis_id}: {hypothesis.status.value} "
-            f"(observed={hypothesis.observed_value:.3f}, n={hypothesis.sample_size})"
+            f"Tested hypothesis '{hypothesis.description}': {hypothesis.status.value} "
+            f"(p-value={hypothesis.p_value:.3f}, observed={hypothesis.observed_value:.3f}, n={hypothesis.sample_size})"
         )
-
         return hypothesis
 
     def _filter_by_condition(self, episodes: List[Any], condition: str) -> List[Any]:
-        """Filter episodes matching a condition."""
+        """Filters a list of episodes based on a condition string."""
         from cognitive.semantic_memory import ConditionMatcher
         matcher = ConditionMatcher()
-
+        
         matching = []
         for ep in episodes:
+            # Create a context dictionary for the matcher from the episode data.
             context = {
                 'regime': ep.market_context.get('regime', '').lower(),
                 'strategy': ep.signal_context.get('strategy', '').lower(),
                 'vix': ep.market_context.get('vix', 20),
+                'is_mean_reversion': 'rsi' in ep.signal_context.get('strategy', ''), # Example
             }
             if matcher.matches(condition, context):
                 matching.append(ep)
-
         return matching
 
     def _parse_expected_value(self, prediction: str) -> float:
-        """Parse expected value from prediction string."""
-        # Simple parsing for "metric > value" or "metric >= value"
+        """Parses the numerical value from a prediction string like 'win_rate > 0.6'."""
         for op in ['>=', '>', '<=', '<']:
             if op in prediction:
                 parts = prediction.split(op)
                 try:
                     return float(parts[1].strip())
-                except:
+                except (ValueError, IndexError):
                     pass
-        return 0.5  # Default
+        return 0.5  # Default expectation if parsing fails.
 
-    def _calculate_p_value(
-        self,
-        observed: float,
-        expected: float,
-        n: int,
-    ) -> float:
-        """Calculate p-value for observed vs expected proportion."""
+    def _calculate_p_value(self, observed: float, expected: float, n: int) -> float:
+        """
+        Calculates a one-tailed p-value for an observed proportion using a
+        normal approximation to the binomial test.
+        """
         import math
-
-        if n == 0:
-            return 1.0
-
-        # Standard error
+        if n == 0: return 1.0
+        
+        # Standard error of a proportion
         se = math.sqrt(expected * (1 - expected) / n)
-        if se == 0:
-            return 0.0 if observed != expected else 1.0
+        if se == 0: return 0.0 if observed == expected else 1.0
 
-        # Z-score
+        # Z-score: how many standard deviations the observation is from the expectation.
         z = (observed - expected) / se
-
-        # One-tailed p-value (simplified)
-        # Using normal approximation
-        p = 0.5 * (1 + math.erf(-abs(z) / math.sqrt(2)))
-
+        
+        # One-tailed p-value from Z-score.
+        p = 1.0 - (0.5 * (1 + math.erf(z / math.sqrt(2))))
         return p
 
     def _create_edge_from_hypothesis(self, hypothesis: Hypothesis) -> None:
-        """Create a validated edge from a hypothesis."""
+        """
+        Promotes a validated hypothesis into an actionable Edge and creates a
+        corresponding rule in Semantic Memory.
+        """
         edge_id = f"edge_{hypothesis.hypothesis_id}"
 
         if edge_id in self._edges:
-            # Update existing edge
+            # If edge already exists, update its validation stats.
             edge = self._edges[edge_id]
             edge.last_validated = datetime.now()
             edge.times_validated += 1
             edge.sample_size = hypothesis.sample_size
             edge.expected_win_rate = hypothesis.observed_value
+            edge.confidence = 1 - (hypothesis.p_value or 1.0)
+            logger.info(f"Re-validated existing edge: '{edge.description}'")
         else:
-            # Create new edge
+            # Create a new Edge object.
             edge = Edge(
                 edge_id=edge_id,
                 description=hypothesis.description,
                 condition=hypothesis.condition,
                 expected_win_rate=hypothesis.observed_value,
+                # Simple heuristic for profit factor.
                 expected_profit_factor=1.0 + (hypothesis.observed_value - 0.5) * 2,
                 sample_size=hypothesis.sample_size,
-                confidence=1 - hypothesis.p_value if hypothesis.p_value else 0.5,
+                confidence=1 - (hypothesis.p_value or 1.0),
                 first_discovered=datetime.now(),
                 last_validated=datetime.now(),
             )
             self._edges[edge_id] = edge
+            logger.info(f"*** New trading edge discovered: '{edge.description}' ***")
 
-            # Create semantic rule
+            # **Crucial Step:** Convert this new knowledge into an active rule
+            # for the CognitiveBrain to use in future decisions.
             self.semantic_memory.add_rule(
                 condition=edge.condition,
                 action="increase_confidence",
                 parameters={'edge_win_rate': edge.expected_win_rate},
                 confidence=edge.confidence,
-                source=f"Edge discovery: {edge.description}",
-                tags=['edge', 'validated'],
+                source=f"Curiosity Engine: {edge.description}",
+                tags=['edge', 'validated', 'auto-generated'],
             )
 
-            # Publish discovery
+            # Announce the discovery on the global workspace.
             self.workspace.publish(
                 topic='insight',
-                data={
-                    'type': 'edge_discovered',
-                    'edge': edge.to_dict(),
-                },
+                data={'type': 'edge_discovered', 'edge': edge.to_dict()},
                 source='curiosity_engine',
             )
 
-            logger.info(f"New edge discovered: {edge.description}")
-
     def test_all_pending(self) -> Dict[str, int]:
-        """Test all pending hypotheses."""
-        results = {
-            'tested': 0,
-            'validated': 0,
-            'rejected': 0,
-            'inconclusive': 0,
-        }
+        """Finds and tests all hypotheses with 'proposed' status."""
+        results = {'tested': 0, 'validated': 0, 'rejected': 0, 'inconclusive': 0}
+        pending = [h for h in self._hypotheses.values() if h.status == HypothesisStatus.PROPOSED]
+        
+        if not pending:
+            logger.info("No pending hypotheses to test.")
+            return results
 
-        pending = [h for h in self._hypotheses.values()
-                   if h.status == HypothesisStatus.PROPOSED]
-
+        logger.info(f"Testing {len(pending)} pending hypotheses...")
         for hyp in pending:
             self.test_hypothesis(hyp)
             results['tested'] += 1
             results[hyp.status.value] = results.get(hyp.status.value, 0) + 1
-
+        
+        logger.info(f"Hypothesis testing round complete: {results}")
         return results
 
     def get_validated_edges(self) -> List[Edge]:
-        """Get all validated edges, sorted by confidence."""
+        """Returns all validated edges, sorted by confidence."""
         edges = list(self._edges.values())
         edges.sort(key=lambda e: e.confidence, reverse=True)
         return edges
 
     def get_active_hypotheses(self) -> List[Hypothesis]:
-        """Get hypotheses that are not yet rejected."""
-        return [h for h in self._hypotheses.values()
-                if h.status != HypothesisStatus.REJECTED]
+        """Returns hypotheses that are still under consideration (not rejected)."""
+        return [h for h in self._hypotheses.values() if h.status != HypothesisStatus.REJECTED]
 
     def get_stats(self) -> Dict[str, Any]:
-        """Get curiosity engine statistics."""
-        hypotheses = list(self._hypotheses.values())
-        statuses = [h.status for h in hypotheses]
-
+        """Returns statistics about the engine's knowledge base."""
+        statuses = [h.status for h in self._hypotheses.values()]
         return {
-            'total_hypotheses': len(hypotheses),
+            'total_hypotheses': len(self._hypotheses),
             'proposed': statuses.count(HypothesisStatus.PROPOSED),
             'validated': statuses.count(HypothesisStatus.VALIDATED),
             'rejected': statuses.count(HypothesisStatus.REJECTED),
@@ -551,75 +537,71 @@ class CuriosityEngine:
         }
 
     def _save_state(self) -> None:
-        """Save state to disk."""
-        state = {
-            'hypotheses': {k: v.to_dict() for k, v in self._hypotheses.items()},
-            'edges': {k: v.to_dict() for k, v in self._edges.items()},
-            'saved_at': datetime.now().isoformat(),
-        }
-        state_file = self.storage_dir / "curiosity_state.json"
-        with open(state_file, 'w') as f:
-            json.dump(state, f, indent=2)
+        """Saves the current state of all hypotheses and edges to a JSON file."""
+        try:
+            state = {
+                'hypotheses': {k: v.to_dict() for k, v in self._hypotheses.items()},
+                'edges': {k: v.to_dict() for k, v in self._edges.items()},
+                'saved_at': datetime.now().isoformat(),
+            }
+            state_file = self.storage_dir / "curiosity_state.json"
+            with open(state_file, 'w') as f:
+                json.dump(state, f, indent=2)
+        except Exception as e:
+            logger.error(f"Failed to save curiosity engine state: {e}")
 
     def _load_state(self) -> None:
-        """Load state from disk."""
+        """Loads the engine's state from a JSON file upon initialization."""
         state_file = self.storage_dir / "curiosity_state.json"
         if not state_file.exists():
+            logger.info("No curiosity state file found. Starting fresh.")
             return
 
         try:
             with open(state_file, 'r') as f:
                 state = json.load(f)
 
-            # Load hypotheses
             for hid, hdata in state.get('hypotheses', {}).items():
+                # Reconstruct Hypothesis objects from the saved dictionary data.
                 self._hypotheses[hid] = Hypothesis(
-                    hypothesis_id=hdata['hypothesis_id'],
-                    description=hdata['description'],
-                    condition=hdata['condition'],
-                    prediction=hdata['prediction'],
-                    rationale=hdata['rationale'],
+                    **{k: v for k, v in hdata.items() if k not in ['status', 'created_at', 'tested_at']},
                     status=HypothesisStatus(hdata.get('status', 'proposed')),
-                    source=hdata.get('source', ''),
+                    created_at=datetime.fromisoformat(hdata['created_at']) if hdata.get('created_at') else datetime.now(),
+                    tested_at=datetime.fromisoformat(hdata['tested_at']) if hdata.get('tested_at') else None
                 )
 
-            # Load edges
             for eid, edata in state.get('edges', {}).items():
+                # Reconstruct Edge objects.
                 self._edges[eid] = Edge(
-                    edge_id=edata['edge_id'],
-                    description=edata['description'],
-                    condition=edata['condition'],
-                    expected_win_rate=edata['expected_win_rate'],
-                    expected_profit_factor=edata['expected_profit_factor'],
-                    sample_size=edata['sample_size'],
-                    confidence=edata['confidence'],
-                    first_discovered=datetime.fromisoformat(edata['first_discovered']),
-                    last_validated=datetime.fromisoformat(edata['last_validated']),
-                    times_validated=edata.get('times_validated', 1),
+                     **{k: v for k, v in edata.items() if k not in ['first_discovered', 'last_validated']},
+                     first_discovered=datetime.fromisoformat(edata['first_discovered']),
+                     last_validated=datetime.fromisoformat(edata['last_validated']),
                 )
-
         except Exception as e:
-            logger.warning(f"Failed to load curiosity state: {e}")
+            logger.warning(f"Failed to load curiosity state from {state_file}: {e}. Starting fresh.")
+            self._hypotheses = {}
+            self._edges = {}
 
     def introspect(self) -> str:
-        """Generate introspective report."""
+        """Generates a human-readable report of the engine's current state."""
         stats = self.get_stats()
-
         lines = [
-            "=== Curiosity Engine Introspection ===",
-            "",
-            f"Total hypotheses generated: {stats['total_hypotheses']}",
-            f"  - Validated: {stats['validated']}",
-            f"  - Rejected: {stats['rejected']}",
-            f"  - Inconclusive: {stats['inconclusive']}",
-            f"  - Pending: {stats['proposed']}",
-            f"",
-            f"Total edges discovered: {stats['total_edges']}",
-            "",
-            "I am curious about:",
-            "- Which strategy-regime combinations work best",
-            "- How volatility affects performance",
-            "- What patterns repeat in winning trades",
+            "--- Curiosity Engine Introspection ---",
+            f"I have {stats['total_hypotheses']} hypotheses about the market.",
+            f"  - {stats['validated']} have been validated and are now trading edges.",
+            f"  - {stats['rejected']} have been proven false.",
+            f"  - {stats['inconclusive']} need more data.",
+            f"  - {stats['proposed']} are waiting to be tested.",
+            f"I have discovered a total of {stats['total_edges']} trading edges.",
+            "\nMy top 3 curiosities right now are:",
         ]
-
+        
+        pending = sorted(
+            [h for h in self._hypotheses.values() if h.status == HypothesisStatus.PROPOSED],
+            key=lambda h: h.created_at, reverse=True
+        )
+        
+        for h in pending[:3]:
+            lines.append(f"  - I wonder if '{h.description}'")
+            
         return "\n".join(lines)

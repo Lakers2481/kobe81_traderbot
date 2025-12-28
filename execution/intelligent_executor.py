@@ -5,10 +5,10 @@ Intelligent Trade Executor
 Central orchestrator that wires together all advanced components:
 1. AdaptiveStrategySelector - picks strategy based on HMM regime
 2. Strategy - generates trading signals
-3. ConfidenceIntegrator - scores signals with ML confidence
+3. CognitiveSignalProcessor - scores signals with AI confidence (now integrated)
 4. PortfolioRiskManager - approves and sizes trades
-5. TrailingStopManager - manages dynamic exits
-6. Broker - executes orders
+5. OrderManager - executes orders intelligently (new)
+6. TrailingStopManager - manages dynamic exits
 
 This is THE integration layer that makes all our advanced components
 work together in production.
@@ -41,6 +41,10 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime
 import pandas as pd
+
+# Import the new OrderManager
+from execution.order_manager import get_order_manager
+from oms.order_state import OrderRecord, OrderStatus
 
 logger = logging.getLogger(__name__)
 
@@ -116,8 +120,8 @@ class IntelligentExecutor:
     - AdaptiveStrategySelector (regime-based strategy selection)
     - ConfidenceIntegrator (ML confidence scoring)
     - PortfolioRiskManager (position sizing and risk checks)
+    - OrderManager (intelligent order routing and execution)
     - TrailingStopManager (dynamic exit management)
-    - Broker (order execution)
     """
 
     def __init__(
@@ -138,6 +142,7 @@ class IntelligentExecutor:
         self._risk_manager = None
         self._trailing_stop_manager = None
         self._policy_gate = None
+        self._order_manager = None # New lazy-loaded component
 
         logger.info(f"IntelligentExecutor initialized (paper_mode={paper_mode})")
 
@@ -196,6 +201,13 @@ class IntelligentExecutor:
                 logger.warning(f"PolicyGate not available: {e}")
         return self._policy_gate
 
+    @property
+    def order_manager(self):
+        """Lazy load OrderManager."""
+        if self._order_manager is None:
+            self._order_manager = get_order_manager()
+        return self._order_manager
+
     def update_equity(self, new_equity: float):
         """Update equity across all components."""
         self.equity = new_equity
@@ -219,7 +231,7 @@ class IntelligentExecutor:
         1. Calculate ML confidence
         2. Evaluate through PortfolioRiskManager
         3. Check PolicyGate budgets
-        4. Execute through broker (if not dry_run)
+        4. Submit order via OrderManager (if not dry_run)
 
         Args:
             signal: Trade signal dict
@@ -233,6 +245,7 @@ class IntelligentExecutor:
             ExecutionResult with full details
         """
         symbol = signal.get('symbol', 'UNKNOWN')
+        strategy = signal.get('strategy', 'unknown')
         current_positions = current_positions or []
 
         # === Step 1: Calculate ML Confidence ===
@@ -258,8 +271,8 @@ class IntelligentExecutor:
                 shares=0,
                 position_size=0,
                 ml_confidence=ml_confidence,
-                regime="unknown",
-                strategy_used=signal.get('strategy', 'unknown'),
+                regime="unknown", # This should be derived from context if available
+                strategy_used=strategy,
                 rejection_reason=f"ML confidence {ml_confidence:.2f} below threshold {self.min_confidence}",
             )
 
@@ -286,7 +299,7 @@ class IntelligentExecutor:
                 position_size=0,
                 ml_confidence=ml_confidence,
                 regime="unknown",
-                strategy_used=signal.get('strategy', 'unknown'),
+                strategy_used=strategy,
                 rejection_reason=decision.rejection_reason,
                 warnings=decision.warnings if decision.warnings else [],
             )
@@ -294,12 +307,11 @@ class IntelligentExecutor:
         # === Step 4: Check PolicyGate ===
         shares = decision.shares if decision else 0
         position_size = decision.position_size if decision else 0
+        entry_price = signal.get('entry_price', 0)
+        side = signal.get('side', 'long')
 
         if self.policy_gate and shares > 0:
             try:
-                entry_price = signal.get('entry_price', 0)
-                side = signal.get('side', 'long')
-
                 # PolicyGate.check() signature: (symbol, side, price, qty) -> (bool, str)
                 allowed, reason = self.policy_gate.check(
                     symbol=symbol,
@@ -317,48 +329,46 @@ class IntelligentExecutor:
                         position_size=0,
                         ml_confidence=ml_confidence,
                         regime="unknown",
-                        strategy_used=signal.get('strategy', 'unknown'),
+                        strategy_used=strategy,
                         rejection_reason=f"PolicyGate blocked: {reason}",
                     )
             except Exception as e:
                 logger.warning(f"PolicyGate check failed for {symbol}: {e}")
 
-        # === Step 5: Execute (if not dry_run) ===
+        # === Step 5: Submit Order via OrderManager (if not dry_run) ===
         executed = False
         broker_order_id = None
+        final_order_status = OrderStatus.PENDING # Default
 
         if not dry_run and shares > 0:
             try:
-                if self.paper_mode:
-                    # Paper trade - just log it
-                    broker_order_id = f"PAPER-{symbol}-{datetime.now().strftime('%H%M%S')}"
-                    executed = True
-                    logger.info(f"[PAPER] Executed {shares} shares of {symbol} at ${signal.get('entry_price', 0):.2f}")
-                else:
-                    # Live trade - use broker
-                    from execution.broker_alpaca import place_ioc_limit, get_best_ask
-                    from oms.order_state import OrderRecord, OrderStatus
-
-                    # Get fresh ask price
-                    best_ask = get_best_ask(symbol)
-                    limit_price = best_ask * 1.001 if best_ask else signal.get('entry_price', 0) * 1.001
-
-                    order = OrderRecord(
-                        symbol=symbol,
-                        side='BUY' if signal.get('side', 'long').lower() == 'long' else 'SELL',
-                        qty=shares,
-                        limit_price=limit_price,
-                        decision_id=f"{symbol}-{datetime.now().strftime('%Y%m%d%H%M%S')}",
-                    )
-
-                    result = place_ioc_limit(order)
-                    if result.status == OrderStatus.FILLED:
-                        executed = True
-                        broker_order_id = result.broker_order_id
+                # Construct OrderRecord for the OrderManager
+                order_record = OrderRecord(
+                    decision_id=f"DEC_{datetime.now().strftime('%Y%m%d%H%M%S')}_{symbol}_EXEC",
+                    signal_id=signal.get('signal_id', 'unknown'),
+                    symbol=symbol,
+                    side=side.upper(),
+                    qty=shares,
+                    limit_price=entry_price, # Use entry price as initial limit for intelligent executor
+                    tif="IOC", # IntelligentExecutor will determine actual TIF
+                    order_type="LIMIT", # IntelligentExecutor will determine actual order type
+                    idempotency_key=f"IDEMP_{uuid.uuid4().hex[:6].upper()}",
+                    created_at=datetime.now(),
+                    entry_price_decision=entry_price, # Benchmark for TCA
+                    strategy_used=strategy,
+                )
+                # The OrderManager handles the actual submission and status updates
+                execution_id = self.order_manager.submit_order(order_record)
+                
+                # After submit_order, the order_record object is updated by OrderManager
+                final_order_status = order_record.status
+                broker_order_id = order_record.broker_order_id
+                executed = (order_record.status == OrderStatus.FILLED)
 
             except Exception as e:
-                logger.error(f"Execution failed for {symbol}: {e}")
-
+                logger.error(f"OrderManager submission failed for {symbol}: {e}")
+                final_order_status = OrderStatus.FAILED
+                
         return ExecutionResult(
             symbol=symbol,
             signal=signal,
@@ -367,10 +377,11 @@ class IntelligentExecutor:
             shares=shares,
             position_size=position_size,
             ml_confidence=ml_confidence,
-            regime="unknown",
-            strategy_used=signal.get('strategy', 'unknown'),
+            regime="unknown", # This should be derived from context if available
+            strategy_used=strategy,
             broker_order_id=broker_order_id,
             warnings=decision.warnings if decision and decision.warnings else [],
+            rejection_reason=None if executed else f"Order submission failed with status: {final_order_status.value}",
         )
 
     def execute_pipeline(
@@ -387,9 +398,9 @@ class IntelligentExecutor:
         Steps:
         1. Detect regime and select strategy
         2. Generate signals from selected strategy
-        3. Score each signal with ML confidence
+        3. Score each signal with ML confidence (via CognitiveSignalProcessor)
         4. Evaluate and size through risk manager
-        5. Execute approved signals
+        5. Submit orders via OrderManager
         6. Update trailing stops on existing positions
 
         Args:
@@ -539,6 +550,7 @@ class IntelligentExecutor:
                 'risk_manager': self._risk_manager is not None,
                 'trailing_stop_manager': self._trailing_stop_manager is not None,
                 'policy_gate': self._policy_gate is not None,
+                'order_manager': self._order_manager is not None,
             }
         }
 

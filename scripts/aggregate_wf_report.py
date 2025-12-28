@@ -25,7 +25,7 @@ def main():
     compare_df = pd.read_csv(summary_path)
 
     # Load per-split details if present
-    don_split = wfdir / 'donchian' / 'wf_splits.csv'
+    don_split = wfdir / 'ibs_rsi' / 'wf_splits.csv'
     ts_split = wfdir / 'turtle_soup' / 'wf_splits.csv'
     don_df = pd.read_csv(don_split) if don_split.exists() else pd.DataFrame()
     ts_df = pd.read_csv(ts_split) if ts_split.exists() else pd.DataFrame()
@@ -39,12 +39,12 @@ def main():
     parts.append(f'<h1>Walk-Forward Report</h1><p>Generated: {ts}</p>')
 
     # Dynamic heading reflecting presence of TOPN
-    heading = 'Summary (Donchian vs ICT Turtle Soup)'
+    heading = 'Summary (IBS+RSI vs ICT Turtle Soup)'
     parts.append(f'<h2>{heading}</h2>')
     parts.append(compare_df.to_html(index=False))
 
     if not don_df.empty:
-        parts.append('<h2>Donchian Breakout Per-Split Metrics</h2>')
+        parts.append('<h2>IBS+RSI Per-Split Metrics</h2>')
         parts.append(don_df.to_html(index=False))
     if not ts_df.empty:
         parts.append('<h2>Turtle Soup (ICT Liquidity Sweep) Per-Split Metrics</h2>')

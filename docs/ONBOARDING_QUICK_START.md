@@ -1,6 +1,6 @@
 ﻿# Kobe81 Traderbot - Onboarding Quick Start
 
-> Note: This guide contains references to legacy RSI2/ICT content and a 900-stock universe. The system is now standardized to two strategies (Donchian Breakout + ICT Turtle Soup) and a 900-stock universe. For up-to-date commands, see `README.md` and the scripts in `scripts/`.
+> Note: This guide contains references to legacy RSI2/ICT content and a 900-stock universe. The system is now standardized to two strategies (IBS+RSI + ICT Turtle Soup) and a 900-stock universe. For up-to-date commands, see `README.md` and the scripts in `scripts/`.
 
 **Target Audience:** New developers, operators, quantitative analysts
 **Prerequisites:** Basic Python, understanding of trading concepts
@@ -12,7 +12,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -35,7 +35,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -46,7 +46,7 @@ Use these commands as the source of truth:
 ### What is Kobe81?
 
 Kobe81 is an **institutional-grade quantitative trading system** that:
-- Implements proven mean-reversion strategies (Donchian Breakout + ICT Turtle Soup)
+- Implements proven mean-reversion strategies (IBS+RSI + ICT Turtle Soup)
 - Backtests with 10 years of historical data (900 stocks)
 - Executes trades automatically via Alpaca broker
 - Enforces strict risk controls (kill switch, budgets, audit trail)
@@ -65,7 +65,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -77,7 +77,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -89,7 +89,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -101,7 +101,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -113,7 +113,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -123,7 +123,7 @@ Use these commands as the source of truth:
 | `scripts/runner.py` | 24/7 scheduler - main entry point |
 | `scripts/run_paper_trade.py` | Paper trading execution |
 | `scripts/run_backtest_polygon.py` | Historical simulation |
-| `strategies/donchian/strategy.py` | Donchian Breakout implementation |
+| `strategies/IBS+RSI/strategy.py` | IBS+RSI implementation |
 | `risk/policy_gate.py` | Budget enforcement |
 | `execution/broker_alpaca.py` | Alpaca API integration |
 | `state/KILL_SWITCH` | Emergency stop (create file to activate) |
@@ -136,7 +136,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -189,7 +189,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -207,7 +207,7 @@ Layer 7:  EXECUTION       - Broker API (Alpaca)
 Layer 6:  OMS             - Order management, idempotency
 Layer 5:  RISK            - Policy gate, kill switch
 Layer 4:  BACKTEST        - Historical simulation
-Layer 3:  STRATEGY        - Signal generation (Donchian Breakout + ICT Turtle Soup)
+Layer 3:  STRATEGY        - Signal generation (IBS+RSI + ICT Turtle Soup)
 Layer 2:  UNIVERSE        - Stock filtering (900 symbols)
 Layer 1:  DATA            - Market data ingestion (Polygon)
 Layer 0:  EXTERNAL        - APIs, configuration
@@ -220,7 +220,7 @@ Layer 0:  EXTERNAL        - APIs, configuration
    â†“
 2. Load 900-stock universe
    â†“
-3. Generate Donchian/ICT signals (see scan.py)
+3. Generate IBS+RSI/ICT signals (see scan.py)
    â†“
 4. (legacy ICT content removed)
    â†“
@@ -251,7 +251,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -297,18 +297,18 @@ python scripts/prefetch_polygon_universe.py \
 
 **Benefit:** walk-forward backtests run 10x faster with cached data.
 
-### Step 3: Run Simple Backtest (Donchian or ICT)
+### Step 3: Run Simple Backtest (IBS+RSI or ICT)
 
 ```bash
-# Donchian Backtest (single strategy)
+# IBS+RSI Backtest (single strategy)
 python scripts/run_backtest_polygon.py \
-  --strategy donchian \
+  --strategy IBS+RSI \
   --universe data/universe/optionable_liquid_900.csv \
   --start 2020-01-01 \
   --end 2024-12-31 \
   --cap 900 \
   --cache data/cache \
-  --outdir backtest_outputs_donchian
+  --outdir backtest_outputs_IBS+RSI
 
 # ICT Turtle Soup Backtest (single strategy)
 python scripts/run_backtest_polygon.py \
@@ -332,7 +332,7 @@ python scripts/run_backtest_polygon.py \
 # View summary
 cat backtest_outputs/summary.json
 
-# Expected metrics (Donchian/ICT on 2020-2024):
+# Expected metrics (IBS+RSI/ICT on 2020-2024):
 # {
 #   "total_return": 0.45,     (45% gain)
 #   "sharpe_ratio": 1.5,
@@ -353,7 +353,7 @@ python scripts/run_wf_polygon.py \
   --end 2024-12-31 \
   --train-days 252 \
   --test-days 63 \
-  --donchian-on --turtle-soup-on \
+  --IBS+RSI-on --turtle-soup-on \
   --cache data/cache \
   --outdir wf_outputs
 ```
@@ -389,7 +389,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -416,7 +416,7 @@ python scripts/run_paper_trade.py \
 
 **What happens:**
 1. Fetches latest 540 days of data for 50 stocks
-2. Generates Donchian/ICT and ICT signals
+2. Generates IBS+RSI/ICT and ICT signals
 3. Filters to AND signals (both agree)
 4. Checks kill switch
 5. For each signal:
@@ -478,7 +478,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -488,7 +488,7 @@ Use these commands as the source of truth:
 
 ### 1. Strategies
 
-**Donchian/ICT Notes:**
+**IBS+RSI/ICT Notes:**
 - **Indicator:** 2-period RSI with Wilder smoothing
 - **Entry:** RSI â‰¤ 10 (oversold) + above SMA(200) trend
 - **Exit:** ATR(14) Ã— 2.0 stop OR 5 bars OR RSI â‰¥ 70
@@ -501,7 +501,7 @@ Use these commands as the source of truth:
 - **Philosophy:** Buy stocks closing near daily low in uptrends
 
 **AND Filter:**
-- Requires BOTH Donchian/ICT AND ICT to signal on same day
+- Requires BOTH IBS+RSI/ICT AND ICT to signal on same day
 - Higher win rate (~62% vs ~58% for individual strategies)
 - Lower trade frequency (50% fewer signals)
 - Better risk-adjusted returns
@@ -604,7 +604,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -727,7 +727,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -845,7 +845,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -895,7 +895,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -907,7 +907,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -919,7 +919,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -931,7 +931,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -943,7 +943,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -955,7 +955,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -967,7 +967,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -979,7 +979,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -991,7 +991,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -1003,7 +1003,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -1021,7 +1021,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -1050,7 +1050,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -1121,7 +1121,7 @@ Use these commands as the source of truth:
 
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
-- Walk-forward (Donchian vs ICT):
+- Walk-forward (IBS+RSI vs ICT):
   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
@@ -1137,6 +1137,7 @@ Use these commands as the source of truth:
 5. Keep kill switch handy (emergency)
 
 **Happy Trading!**
+
 
 
 

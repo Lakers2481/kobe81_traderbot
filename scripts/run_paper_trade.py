@@ -19,8 +19,7 @@ from config.settings_loader import is_earnings_filter_enabled
 from core.earnings_filter import filter_signals_by_earnings
 from data.universe.loader import load_universe
 from data.providers.polygon_eod import fetch_daily_bars_polygon
-from strategies.donchian.strategy import DonchianBreakoutStrategy
-from strategies.ict.turtle_soup import TurtleSoupStrategy
+from strategies.dual_strategy import DualStrategyScanner, DualStrategyParams
 from execution.broker_alpaca import get_best_ask, get_best_bid, construct_decision, place_ioc_limit
 from risk.policy_gate import PolicyGate, RiskLimits
 from oms.order_state import OrderStatus
@@ -63,9 +62,8 @@ def main():
     symbols = load_universe(Path(args.universe), cap=args.cap)
     cache_dir = Path(args.cache)
 
-    # Strategies (Donchian + ICT Turtle Soup)
-    don = DonchianBreakoutStrategy()
-    ict = TurtleSoupStrategy()
+    # Strategies (IBS+RSI + ICT Turtle Soup) via dual scanner
+    scanner = DualStrategyScanner(DualStrategyParams())
 
     # Risk/Policy
     policy = PolicyGate(RiskLimits(max_notional_per_order=75.0, max_daily_notional=1000.0, min_price=3.0, allow_shorts=False))
@@ -83,20 +81,15 @@ def main():
         return
     data = pd.concat(frames, ignore_index=True).sort_values(['symbol','timestamp'])
 
-    # Generate Donchian and ICT signals; select only current bar
-    a = don.scan_signals_over_time(data)
-    b = ict.scan_signals_over_time(data)
-    if a.empty and b.empty:
-        print('No signals today (Donchian/ICT).')
+    # Generate combined signals; select only current bar
+    sigs = scanner.generate_signals(data)
+    if sigs.empty:
+        print('No signals today (IBS+RSI/ICT).')
         return
     # Reduce to last date only to avoid replaying history
-    last_ts = max([x['timestamp'].max() for x in [a, b] if not x.empty])
-    cols = ['timestamp','symbol','side','entry_price','stop_loss','take_profit','reason']
-    a = a[a['timestamp'] == last_ts][cols].copy() if not a.empty else pd.DataFrame(columns=cols)
-    a['strategy'] = 'DONCHIAN'
-    b = b[b['timestamp'] == last_ts][cols].copy() if not b.empty else pd.DataFrame(columns=cols)
-    b['strategy'] = 'TURTLE_SOUP'
-    todays = pd.concat([a, b], ignore_index=True)
+    last_ts = sigs['timestamp'].max()
+    cols = ['timestamp','symbol','side','entry_price','stop_loss','take_profit','reason','strategy']
+    todays = sigs[sigs['timestamp'] == last_ts][cols].copy()
     # Apply earnings filter if enabled
     if not todays.empty and is_earnings_filter_enabled():
         todays = pd.DataFrame(filter_signals_by_earnings(todays.to_dict('records')))

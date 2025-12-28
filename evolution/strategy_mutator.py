@@ -117,7 +117,7 @@ class StrategyMutator:
             'ema': ['sma', 'wma', 'dema'],
             'atr': ['true_range', 'average_range'],
             'macd': ['ppo', 'trix'],
-            'bollinger': ['keltner', 'donchian'],
+            'bollinger': ['keltner'],  # donchian removed - strategy deprecated
         }
 
         logger.info(

@@ -35,6 +35,7 @@ from datetime import datetime, time as dtime, timedelta
 from pathlib import Path
 from typing import Dict, List, Tuple
 from zoneinfo import ZoneInfo
+from core.clock.tz_utils import fmt_ct, now_et
 from core.journal import append_journal
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -122,7 +123,7 @@ def do_weekly_learning(wfdir: str, dotenv: str, min_delta: float, min_test: int)
 
 
 def now_et_date_time() -> Tuple[str, dtime]:
-    now = datetime.now(ET)
+    now = now_et()
     return now.date().isoformat(), dtime(now.hour, now.minute)
 
 
@@ -172,11 +173,18 @@ def main() -> None:
             send_fn = None
 
     state = load_state()
-    start_msg = 'Kobe Master Scheduler started. Times in America/New_York (ET).'
+    try:
+        from core.clock.tz_utils import fmt_ct, now_et
+        now = now_et()
+        start_msg = f"Kobe Master Scheduler started. Display: {fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+    except Exception:
+        start_msg = 'Kobe Master Scheduler started. Times in America/New_York (ET).'
     print(start_msg)
     if send_fn:
         try:
-            send_fn('<b>Kobe Scheduler</b> started (ET)')
+            from core.clock.tz_utils import fmt_ct
+            now = now_et()
+            send_fn(f"<b>Kobe Scheduler</b> started • {fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET")
         except Exception:
             pass
     try:
@@ -190,7 +198,7 @@ def main() -> None:
             try:
                 if hhmm.hour == entry.time.hour and hhmm.minute == entry.time.minute:
                     if not already_ran(state, entry.tag, ymd):
-                        print(f'[{ymd} {hhmm}] Running {entry.tag}...')
+                        print(f"[{fmt_ct(now_et())} | {hhmm.strftime('%I:%M %p').lstrip('0')} ET] Running {entry.tag}...")
                         # Determine scan_date default (yesterday to avoid partial bar unless pre/post market)
                         # For FIRST_SCAN and later intraday slots, use previous business day by default
                         scan_date = (datetime.now(ET) - timedelta(days=1)).date().isoformat()
@@ -200,36 +208,72 @@ def main() -> None:
                         if entry.tag == 'MORNING_REPORT':
                             rc = run_cmd([sys.executable, str(ROOT / 'scripts/morning_report.py')])
                             if send_fn:
-                                send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et()
+                                    stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if rc == 0 else 'failed'}")
+                                except Exception:
+                                    send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
                         elif entry.tag == 'MORNING_CHECK':
                             rc = run_cmd([sys.executable, str(ROOT / 'scripts/morning_check.py'), '--dotenv', args.dotenv])
                             if send_fn:
-                                send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if rc == 0 else 'failed'}")
+                                except Exception:
+                                    send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
                         elif entry.tag == 'PRE_GAME':
                             do_pregame(args.universe, args.dotenv, scan_date)
                             # Generate pre-game plan document
                             rc = run_cmd([sys.executable, str(ROOT / 'scripts/pre_game_plan.py'), '--universe', args.universe, '--cap', str(args.cap), '--dotenv', args.dotenv, '--date', scan_date])
                             if send_fn:
-                                send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if rc == 0 else 'failed'}")
+                                except Exception:
+                                    send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
                         elif entry.tag == 'MARKET_NEWS':
                             do_pregame(args.universe, args.dotenv, scan_date)
                         elif entry.tag == 'PREMARKET_SCAN':
                             # Build plan without submitting
                             rc = run_cmd([sys.executable, str(ROOT / 'scripts/pre_game_plan.py'), '--universe', args.universe, '--cap', str(args.cap), '--dotenv', args.dotenv, '--date', scan_date])
                             if send_fn:
-                                send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if rc == 0 else 'failed'}")
+                                except Exception:
+                                    send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
                         elif entry.tag == 'FIRST_SCAN':
                             do_first_scan(args.universe, args.dotenv, args.cap, args.min_conf, scan_date)
                             if send_fn:
-                                send_fn(f"<b>{entry.tag}</b> completed")
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    send_fn(f"<b>{entry.tag}</b> [{stamp}] completed")
+                                except Exception:
+                                    send_fn(f"<b>{entry.tag}</b> completed")
                         elif entry.tag in ('HALF_TIME','AFTERNOON_SCAN','SWING_SCANNER'):
                             rc = do_refresh_top3(args.universe, args.dotenv, args.cap, scan_date)
                             if send_fn:
-                                send_fn(f"<b>{entry.tag}</b> {'completed' if (rc is None or rc == 0) else 'failed'}")
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if (rc is None or rc == 0) else 'failed'}")
+                                except Exception:
+                                    send_fn(f"<b>{entry.tag}</b> {'completed' if (rc is None or rc == 0) else 'failed'}")
                         elif entry.tag == 'DB_BACKUP':
                             rc = run_cmd([sys.executable, str(ROOT / 'scripts/backup_state.py')])
                             if send_fn:
-                                send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if rc == 0 else 'failed'}")
+                                except Exception:
+                                    send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
                         elif entry.tag == 'DATA_UPDATE':
                             # Prefetch last 730 days to warm the cache
                             start = (datetime.now(ET).date() - timedelta(days=730)).isoformat()
@@ -237,13 +281,30 @@ def main() -> None:
                             rc = run_cmd([sys.executable, str(ROOT / 'scripts/prefetch_polygon_universe.py'),
                                      '--universe', args.universe, '--start', start, '--end', end, '--concurrency', '3', '--dotenv', args.dotenv])
                             if send_fn:
-                                send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if rc == 0 else 'failed'}")
+                                except Exception:
+                                    send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
                         elif entry.tag == 'EOD_REPORT':
                             rc = run_cmd([sys.executable, str(ROOT / 'scripts/eod_report.py')])
                             if send_fn:
-                                send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if rc == 0 else 'failed'}")
+                                except Exception:
+                                    send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
                         elif entry.tag == 'EOD_LEARNING':
                             do_weekly_learning(args.wfdir, args.dotenv, args.min_delta, args.min_test)
+                            if send_fn:
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    send_fn(f"<b>{entry.tag}</b> [{stamp}] completed (weekly promote)")
+                                except Exception:
+                                    send_fn(f"<b>{entry.tag}</b> completed (weekly promote)")
                         # Placeholders: DB_BACKUP, DATA_UPDATE, POST_GAME, EOD_REPORT, OVERNIGHT_ANALYSIS
 
                         mark_ran(state, entry.tag, ymd)
@@ -256,7 +317,12 @@ def main() -> None:
                 print(f'Error in schedule {entry.tag}: {e}')
                 if send_fn:
                     try:
-                        send_fn(f"<b>{entry.tag}</b> failed: {e}")
+                        try:
+                            from core.clock.tz_utils import fmt_ct
+                            now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                            send_fn(f"<b>{entry.tag}</b> [{stamp}] failed: {e}")
+                        except Exception:
+                            send_fn(f"<b>{entry.tag}</b> failed: {e}")
                     except Exception:
                         pass
                 try:
@@ -268,3 +334,6 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
+
+
+

@@ -7,3 +7,7 @@
 - Paper/Live Trading: `scripts/run_paper_trade.py`, `scripts/run_live_trade_micro.py`
 
 
+
+Time Zones
+---------
+- Policy: All schedules operate in ET; all displays (UI and Telegram) show CT and ET in 12-hour format (e.g., "8:45 AM CT | 9:45 AM ET").

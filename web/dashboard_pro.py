@@ -1,4 +1,4 @@
-"""
+﻿"""
 Kobe Trading System - Professional Quant Dashboard v3.0
 
 Bloomberg Terminal-inspired design with:
@@ -787,7 +787,7 @@ class ProDashboardData:
         except:
             pass
         return {
-            "strategy": "BB_RSI_LSTM_UNIFIED",
+            "strategy": "IBS+RSI + ICT",
             "win_rate": 66.96,
             "profit_factor": 1.53,
             "total_trades": 1501,
@@ -897,19 +897,19 @@ class ProDashboardData:
         """Get next scheduled events with professional names (user's CT routine)."""
         # User's requested CT schedule for Mon-Fri trading days
         weekday_schedules = [
-            ("05:00", "🔧 System Wake + Health Check"),
-            ("06:00", "📊 Fresh Data Update"),
-            ("07:00", "📈 Pre-Market Report"),
-            ("08:30", "🔍 Market Open Scan + Live Trade"),
-            ("09:30", "✅ System/Position Check"),
-            ("14:30", "🌊 Swing Scan (1 trade max)"),
-            ("16:30", "📋 After-Market Report"),
-            ("19:30", "🌙 Evening Scan + Watchlist"),
+            ("05:00", "ðŸ”§ System Wake + Health Check"),
+            ("06:00", "ðŸ“Š Fresh Data Update"),
+            ("07:00", "ðŸ“ˆ Pre-Market Report"),
+            ("08:30", "ðŸ” Market Open Scan + Live Trade"),
+            ("09:30", "âœ… System/Position Check"),
+            ("14:30", "ðŸŒŠ Swing Scan (1 trade max)"),
+            ("16:30", "ðŸ“‹ After-Market Report"),
+            ("19:30", "ðŸŒ™ Evening Scan + Watchlist"),
         ]
 
         # Saturday weekly report
         saturday_schedules = [
-            ("08:30", "📊 Weekly Full Report + Discovery"),
+            ("08:30", "ðŸ“Š Weekly Full Report + Discovery"),
         ]
 
         # Determine if today is Saturday
@@ -919,7 +919,7 @@ class ProDashboardData:
         if is_sunday:
             # On Sunday, next task is Monday 05:00
             schedules = weekday_schedules
-            next_job = {"time": "05:00 CT (Mon)", "name": "🔧 System Wake + Health Check"}
+            next_job = {"time": "05:00 CT (Mon)", "name": "ðŸ”§ System Wake + Health Check"}
         elif is_saturday:
             schedules = saturday_schedules
             current_time = now_ct.strftime("%H:%M")
@@ -929,7 +929,7 @@ class ProDashboardData:
                     next_job = {"time": f"{time_str} CT", "name": name}
                     break
             if not next_job:
-                next_job = {"time": "05:00 CT (Mon)", "name": "🔧 System Wake + Health Check"}
+                next_job = {"time": "05:00 CT (Mon)", "name": "ðŸ”§ System Wake + Health Check"}
         else:
             # Weekday
             schedules = weekday_schedules
@@ -942,11 +942,11 @@ class ProDashboardData:
             if not next_job:
                 # After last task, next is tomorrow's first task (or Saturday if Friday)
                 if now_ct.weekday() == 4:  # Friday
-                    next_job = {"time": "08:30 CT (Sat)", "name": "📊 Weekly Full Report + Discovery"}
+                    next_job = {"time": "08:30 CT (Sat)", "name": "ðŸ“Š Weekly Full Report + Discovery"}
                 else:
-                    next_job = {"time": "05:00 CT", "name": "🔧 System Wake + Health Check"}
+                    next_job = {"time": "05:00 CT", "name": "ðŸ”§ System Wake + Health Check"}
 
-        return {"next": next_job, "all": weekday_schedules + [("Sat 08:30", "📊 Weekly Report")]}
+        return {"next": next_job, "all": weekday_schedules + [("Sat 08:30", "ðŸ“Š Weekly Report")]}
 
     def _load_ai_brain(self) -> Dict:
         """Load AI brain state and generate rule-based scanner insights."""
@@ -1006,20 +1006,20 @@ class ProDashboardData:
 
         # Signal quality insights
         if total_signals == 0:
-            insights.append("📉 No setups detected - no extreme oversold conditions found")
+            insights.append("ðŸ“‰ No setups detected - no extreme oversold conditions found")
             caveats.append("Consider waiting for extreme RSI < 3 readings")
         elif total_signals < 5:
-            insights.append(f"📊 {total_signals} setups found - selective market conditions")
+            insights.append(f"ðŸ“Š {total_signals} setups found - selective market conditions")
             recommendations.append("Focus on highest confidence signals only")
         elif total_signals < 15:
-            insights.append(f"✅ {total_signals} quality setups - healthy market structure")
+            insights.append(f"âœ… {total_signals} quality setups - healthy market structure")
         else:
-            insights.append(f"⚡ {total_signals} signals - high activity, be selective")
+            insights.append(f"âš¡ {total_signals} signals - high activity, be selective")
             caveats.append("Too many signals can indicate choppy conditions")
 
         # Signal count analysis (LONG ONLY strategy)
         if long_count > 0:
-            insights.append(f"📈 {long_count} LONG setups found (LONG ONLY strategy)")
+            insights.append(f"ðŸ“ˆ {long_count} LONG setups found (LONG ONLY strategy)")
             if long_count >= 10:
                 recommendations.append("Multiple extreme oversold setups - prioritize highest confidence")
             elif long_count >= 5:
@@ -1032,16 +1032,16 @@ class ProDashboardData:
             top_signal = top_3[0]
             conf = top_signal.get("confidence", 0)
             if conf >= 90:
-                insights.append(f"⭐ High-confidence leader: {top_signal.get('symbol')} at {conf:.0f}%")
+                insights.append(f"â­ High-confidence leader: {top_signal.get('symbol')} at {conf:.0f}%")
             elif conf >= 80:
-                insights.append(f"🎯 Quality leader: {top_signal.get('symbol')} at {conf:.0f}%")
+                insights.append(f"ðŸŽ¯ Quality leader: {top_signal.get('symbol')} at {conf:.0f}%")
             else:
                 caveats.append(f"Top signal only {conf:.0f}% confidence - borderline")
 
             # Check RSI extremes in top signals
             avg_rsi = sum((s.get("rsi_5") or 5) for s in top_3) / len(top_3)
             if avg_rsi < 2.5:
-                insights.append(f"🔥 Extreme oversold conditions in Top 3 - avg RSI: {avg_rsi:.1f}")
+                insights.append(f"ðŸ”¥ Extreme oversold conditions in Top 3 - avg RSI: {avg_rsi:.1f}")
             elif avg_rsi > 4.0:
                 caveats.append(f"Top signals RSI above 4.0 (avg: {avg_rsi:.1f}) - less extreme")
 
@@ -1207,7 +1207,7 @@ class ProDashboardData:
         else:
             season = "Fall"
 
-        context = f"{time_period} • {quarter} {season}"
+        context = f"{time_period} â€¢ {quarter} {season}"
 
         return {
             "status": status,
@@ -1222,19 +1222,19 @@ class ProDashboardData:
 
         # VIX interpretation
         if vix < 12:
-            volatility = "📉 Very Low Volatility - Potential breakout brewing"
+            volatility = "ðŸ“‰ Very Low Volatility - Potential breakout brewing"
             stress = "CALM"
         elif vix < 15:
-            volatility = "✅ Low Volatility - Normal market conditions"
+            volatility = "âœ… Low Volatility - Normal market conditions"
             stress = "NORMAL"
         elif vix < 20:
-            volatility = "⚠️ Elevated Volatility - Increased caution"
+            volatility = "âš ï¸ Elevated Volatility - Increased caution"
             stress = "ELEVATED"
         elif vix < 30:
-            volatility = "🔥 High Volatility - Active opportunity window"
+            volatility = "ðŸ”¥ High Volatility - Active opportunity window"
             stress = "HIGH"
         else:
-            volatility = "⚡ Extreme Volatility - Risk-off mode"
+            volatility = "âš¡ Extreme Volatility - Risk-off mode"
             stress = "EXTREME"
 
         # Time-based game plan
@@ -1242,38 +1242,38 @@ class ProDashboardData:
 
         if market_status == "CLOSED":
             if hour_et < 4:
-                game_plan = "🌙 After-hours - Review EOD data, prepare watchlist"
+                game_plan = "ðŸŒ™ After-hours - Review EOD data, prepare watchlist"
             elif hour_et < 9:
-                game_plan = "🌅 Pre-market prep - Monitor gaps, news, overseas markets"
+                game_plan = "ðŸŒ… Pre-market prep - Monitor gaps, news, overseas markets"
             else:
-                game_plan = "📊 Post-close - Analyze today's setups, backtest adjustments"
+                game_plan = "ðŸ“Š Post-close - Analyze today's setups, backtest adjustments"
         else:
             if 9 <= hour_et < 10:
-                game_plan = "🔥 Opening Range - High volatility, wait for clear structure"
+                game_plan = "ðŸ”¥ Opening Range - High volatility, wait for clear structure"
             elif 10 <= hour_et < 11:
-                game_plan = "📈 Morning Session - Prime mean reversion window"
+                game_plan = "ðŸ“ˆ Morning Session - Prime mean reversion window"
             elif 11 <= hour_et < 14:
-                game_plan = "⏸️ Midday Chop - Reduced activity, avoid low-quality setups"
+                game_plan = "â¸ï¸ Midday Chop - Reduced activity, avoid low-quality setups"
             elif 14 <= hour_et < 15:
-                game_plan = "⚡ Power Hour Setup - Watch for extreme oversold bounces"
+                game_plan = "âš¡ Power Hour Setup - Watch for extreme oversold bounces"
             else:
-                game_plan = "🎯 Final Hour - Last chance setups, manage open positions"
+                game_plan = "ðŸŽ¯ Final Hour - Last chance setups, manage open positions"
 
         # What to look for
         lookfor = []
         if vix < 15:
-            lookfor.append("✓ Extreme RSI < 3 readings in uptrends")
-            lookfor.append("✓ BB breakdown with tight stops")
+            lookfor.append("âœ“ Extreme RSI < 3 readings in uptrends")
+            lookfor.append("âœ“ BB breakdown with tight stops")
         else:
-            lookfor.append("⚠️ Wait for volatility stabilization")
-            lookfor.append("⚠️ Wider stops due to increased noise")
+            lookfor.append("âš ï¸ Wait for volatility stabilization")
+            lookfor.append("âš ï¸ Wider stops due to increased noise")
 
         if market_status == "OPEN":
-            lookfor.append("🎯 Price below BB(20,2) + RSI(5) < 3")
-            lookfor.append("🔍 Stocks in uptrends (above SMA 200)")
+            lookfor.append("ðŸŽ¯ Price below BB(20,2) + RSI(5) < 3")
+            lookfor.append("ðŸ” Stocks in uptrends (above SMA 200)")
         else:
-            lookfor.append("📋 Review completed trades for patterns")
-            lookfor.append("🔬 Backtest parameter sensitivity")
+            lookfor.append("ðŸ“‹ Review completed trades for patterns")
+            lookfor.append("ðŸ”¬ Backtest parameter sensitivity")
 
         # Regime detection based on VIX (using centralized SSOT)
         # VIX_THRESHOLDS: NORMAL <16, ELEVATED 16-24, HIGH 24-32, EXTREME >=32
@@ -1500,7 +1500,7 @@ async def metrics_endpoint():
 @app.post("/api/scan")
 async def trigger_scan():
     """
-    Trigger BB_RSI_LSTM_UNIFIED scanner on PROVEN_900 universe.
+    Trigger IBS+RSI + ICT scanner on PROVEN_900 universe.
 
     Signal Detection Logic (validated production strategy - SSOT v2.1.0):
     - Entry: Close < Lower BB(20,2) AND RSI(5) < 3 (EXTREME) AND Close > SMA(200)
@@ -1662,7 +1662,7 @@ async def trigger_scan():
                     f"RSI(5) = {rsi5:.2f} (< {RSI_THRESHOLD} threshold) - EXTREME oversold",
                     f"Close ${current_price:.2f} below Lower BB ${bb_lower:.2f} ({bb_distance_pct:.1f}% below)",
                     f"Uptrend confirmed: Close > SMA(200) ${sma200:.2f}",
-                    f"R:R = {rr_ratio:.1f}:1 (${risk_dollars:.2f} risk → ${reward_dollars:.2f} reward)",
+                    f"R:R = {rr_ratio:.1f}:1 (${risk_dollars:.2f} risk â†’ ${reward_dollars:.2f} reward)",
                     f"Daily change: {daily_change_pct:+.2f}%"
                 ]
 
@@ -1734,7 +1734,7 @@ async def trigger_scan():
 
         return JSONResponse({
             "status": "success",
-            "message": f"🔍 Found {len(signals)} setups ({long_count}L/{short_count}S) from {len(scan_symbols)} stocks in {elapsed_seconds}s",
+            "message": f"ðŸ” Found {len(signals)} setups ({long_count}L/{short_count}S) from {len(scan_symbols)} stocks in {elapsed_seconds}s",
             "signals_found": len(signals),
             "long_count": long_count,
             "short_count": short_count,
@@ -1929,7 +1929,7 @@ async def trigger_enhanced_scan():
                 "freshness_badge": score.freshness_badge,
                 "why_take_trade": why.to_dict() if why else None,
                 "conviction_reasons": [
-                    f"RSI(5) = {score.rsi5:.2f} {'< 3 ✓' if score.rsi_met else '>= 3'}",
+                    f"RSI(5) = {score.rsi5:.2f} {'< 3 âœ“' if score.rsi_met else '>= 3'}",
                     f"Close {'<=' if score.band_met else '>'} BB Lower (${score.bb_lower:.2f})",
                     f"{'Above' if score.trend_met else 'Below'} SMA(200) (${score.sma200:.2f})",
                     f"Readiness Score: {score.total_score}/100",
@@ -1982,7 +1982,7 @@ async def trigger_enhanced_scan():
 
         return JSONResponse({
             "status": "success",
-            "message": f"🔍 Phase 16B scan: {ready_count} ready, {summary.watchlist_count} watchlist from {summary.total_symbols} stocks in {elapsed}s",
+            "message": f"ðŸ” Phase 16B scan: {ready_count} ready, {summary.watchlist_count} watchlist from {summary.total_symbols} stocks in {elapsed}s",
             "signals_found": ready_count,
             "ready_count": summary.ready_count,
             "watchlist_count": summary.watchlist_count,
@@ -3016,7 +3016,7 @@ DASHBOARD_HTML = """
             <div class="logo">
                 <div>
                     <div class="logo-text">KOBE</div>
-                    <div class="logo-sub">{{ data.validation?.strategy || 'BB_RSI_LSTM_UNIFIED' }} • {{ data.universe?.name || 'PROVEN_950' }} ({{ data.universe?.count || 832 }} stocks)</div>
+                    <div class="logo-sub">{{ data.validation?.strategy || 'IBS+RSI + ICT' }} â€¢ {{ data.universe?.name || 'OPTIONABLE_LIQUID_900' }} ({{ data.universe?.count || 900 }} stocks)</div>
                 </div>
             </div>
             <div class="header-right">
@@ -3036,18 +3036,18 @@ DASHBOARD_HTML = """
                             minWidth: '140px'
                         }">
                     <span v-if="isScanning">
-                        ⏳ Scanning... {{ scanElapsed.toFixed(1) }}s
+                        â³ Scanning... {{ scanElapsed.toFixed(1) }}s
                     </span>
                     <span v-else>
-                        🔍 Scan Now
+                        ðŸ” Scan Now
                     </span>
                 </button>
                 <div class="status-badge" :class="data.market?.status === 'OPEN' ? 'status-live' : 'status-closed'">
-                    {{ data.market?.status === 'OPEN' ? '🟢 MARKET OPEN' : '🔴 MARKET CLOSED' }}
+                    {{ data.market?.status === 'OPEN' ? 'ðŸŸ¢ MARKET OPEN' : 'ðŸ”´ MARKET CLOSED' }}
                 </div>
                 <div class="time-display">
                     <div class="time-main">{{ data.time_ct || '--:--:--' }} CT</div>
-                    <div class="time-date">{{ data.date || 'Loading...' }} • {{ data.market?.context || '' }}</div>
+                    <div class="time-date">{{ data.date || 'Loading...' }} â€¢ {{ data.market?.context || '' }}</div>
                 </div>
             </div>
         </header>
@@ -3083,8 +3083,8 @@ DASHBOARD_HTML = """
                 <!-- Portfolio Value -->
                 <div class="section">
                     <div class="section-header" @click="toggleSection('portfolio')">
-                        <span class="section-title">💰 Portfolio</span>
-                        <span class="section-toggle">▼</span>
+                        <span class="section-title">ðŸ’° Portfolio</span>
+                        <span class="section-toggle">â–¼</span>
                     </div>
                     <div class="section-content">
                         <div class="big-number">
@@ -3092,28 +3092,28 @@ DASHBOARD_HTML = """
                                 ${{ formatNumber(data.account?.equity) }}
                             </div>
                             <div class="big-number-change" :class="data.account?.total_pnl >= 0 ? 'positive' : 'negative'">
-                                {{ data.account?.total_pnl >= 0 ? '📈 +' : '📉 ' }}${{ formatNumber(Math.abs(data.account?.total_pnl)) }}
+                                {{ data.account?.total_pnl >= 0 ? 'ðŸ“ˆ +' : 'ðŸ“‰ ' }}${{ formatNumber(Math.abs(data.account?.total_pnl)) }}
                                 ({{ data.account?.total_pnl_pct?.toFixed(2) || '0.00' }}%)
                             </div>
                             <div class="big-number-label">Total Account Value</div>
                         </div>
 
                         <div class="metric-row">
-                            <span class="metric-label">💵 Cash</span>
+                            <span class="metric-label">ðŸ’µ Cash</span>
                             <span class="metric-value">${{ formatNumber(data.account?.cash) }}</span>
                         </div>
                         <div class="metric-row">
-                            <span class="metric-label">⚡ Buying Power</span>
+                            <span class="metric-label">âš¡ Buying Power</span>
                             <span class="metric-value accent">${{ formatNumber(data.account?.buying_power) }}</span>
                         </div>
                         <div class="metric-row">
-                            <span class="metric-label">📊 Unrealized P&L</span>
+                            <span class="metric-label">ðŸ“Š Unrealized P&L</span>
                             <span class="metric-value" :class="data.account?.unrealized_pnl >= 0 ? 'positive' : 'negative'">
                                 {{ data.account?.unrealized_pnl >= 0 ? '+' : '' }}${{ data.account?.unrealized_pnl?.toFixed(2) || '0.00' }}
                             </span>
                         </div>
                         <div class="metric-row">
-                            <span class="metric-label">📈 Open Positions</span>
+                            <span class="metric-label">ðŸ“ˆ Open Positions</span>
                             <span class="metric-value accent">{{ data.position_count || 0 }}</span>
                         </div>
                     </div>
@@ -3122,12 +3122,12 @@ DASHBOARD_HTML = """
                 <!-- Paper Session Stats -->
                 <div class="section">
                     <div class="section-header" @click="toggleSection('stats')">
-                        <span class="section-title">📊 Paper Session</span>
-                        <span class="section-toggle">▼</span>
+                        <span class="section-title">ðŸ“Š Paper Session</span>
+                        <span class="section-toggle">â–¼</span>
                     </div>
                     <div class="section-content">
                         <div class="metric-row">
-                            <span class="metric-label">🎯 Win Rate</span>
+                            <span class="metric-label">ðŸŽ¯ Win Rate</span>
                             <span class="metric-value" :class="(data.stats?.win_rate || 0) >= 0.65 ? 'positive' : 'warning'">
                                 {{ ((data.stats?.win_rate || 0) * 100).toFixed(1) }}%
                             </span>
@@ -3138,28 +3138,28 @@ DASHBOARD_HTML = """
                         </div>
 
                         <div class="metric-row" style="margin-top: 8px;">
-                            <span class="metric-label">📈 Total Trades</span>
+                            <span class="metric-label">ðŸ“ˆ Total Trades</span>
                             <span class="metric-value">{{ data.stats?.total_trades || 0 }}</span>
                         </div>
                         <div class="metric-row">
-                            <span class="metric-label">⚔️ W / L</span>
+                            <span class="metric-label">âš”ï¸ W / L</span>
                             <span class="metric-value">
                                 <span class="positive">{{ data.stats?.wins || 0 }}</span> /
                                 <span class="negative">{{ data.stats?.losses || 0 }}</span>
                             </span>
                         </div>
                         <div class="metric-row">
-                            <span class="metric-label">⚡ Profit Factor</span>
+                            <span class="metric-label">âš¡ Profit Factor</span>
                             <span class="metric-value" :class="(data.stats?.profit_factor || 0) >= 1.5 ? 'positive' : ''">
                                 {{ (data.stats?.profit_factor || 0).toFixed(2) }}
                             </span>
                         </div>
                         <div class="metric-row">
-                            <span class="metric-label">✅ Avg Winner</span>
+                            <span class="metric-label">âœ… Avg Winner</span>
                             <span class="metric-value positive">+${{ formatNumber(data.stats?.avg_winner) }}</span>
                         </div>
                         <div class="metric-row">
-                            <span class="metric-label">❌ Avg Loser</span>
+                            <span class="metric-label">âŒ Avg Loser</span>
                             <span class="metric-value negative">-${{ formatNumber(Math.abs(data.stats?.avg_loser || 0)) }}</span>
                         </div>
                     </div>
@@ -3168,8 +3168,8 @@ DASHBOARD_HTML = """
                 <!-- Risk Dashboard Section -->
                 <div class="section">
                     <div class="section-header" @click="toggleSection('risk')">
-                        <span class="section-title">🛡️ Risk Dashboard</span>
-                        <span class="section-toggle">▼</span>
+                        <span class="section-title">ðŸ›¡ï¸ Risk Dashboard</span>
+                        <span class="section-toggle">â–¼</span>
                     </div>
                     <div class="section-content">
                         <!-- Portfolio Heat Indicator -->
@@ -3185,7 +3185,7 @@ DASHBOARD_HTML = """
                         </div>
 
                         <div class="metric-row">
-                            <span class="metric-label">📊 Positions</span>
+                            <span class="metric-label">ðŸ“Š Positions</span>
                             <span class="metric-value">
                                 {{ data.risk_dashboard?.current_positions || 0 }} / {{ data.risk_dashboard?.max_positions || 5 }}
                             </span>
@@ -3197,31 +3197,31 @@ DASHBOARD_HTML = """
                         </div>
 
                         <div class="metric-row">
-                            <span class="metric-label">💰 Risk/Trade</span>
+                            <span class="metric-label">ðŸ’° Risk/Trade</span>
                             <span class="metric-value">
                                 {{ data.risk_dashboard?.risk_per_trade_pct || 1 }}% (${{ formatNumber(data.risk_dashboard?.risk_per_trade_usd) }})
                             </span>
                         </div>
                         <div class="metric-row">
-                            <span class="metric-label">🔥 At Risk</span>
+                            <span class="metric-label">ðŸ”¥ At Risk</span>
                             <span class="metric-value" :class="(data.risk_dashboard?.capital_at_risk_pct || 0) > 4 ? 'warning' : ''">
                                 ${{ formatNumber(data.risk_dashboard?.capital_at_risk_usd) }}
                             </span>
                         </div>
                         <div class="metric-row">
-                            <span class="metric-label">🚨 Max Daily Loss</span>
+                            <span class="metric-label">ðŸš¨ Max Daily Loss</span>
                             <span class="metric-value negative">
                                 {{ data.risk_dashboard?.max_daily_loss_pct || 3 }}% (${{ formatNumber(data.risk_dashboard?.max_daily_loss_usd) }})
                             </span>
                         </div>
                         <div class="metric-row">
-                            <span class="metric-label">📉 Current DD</span>
+                            <span class="metric-label">ðŸ“‰ Current DD</span>
                             <span class="metric-value" :class="(data.risk_dashboard?.current_drawdown_pct || 0) > 5 ? 'negative' : ''">
                                 {{ data.risk_dashboard?.current_drawdown_pct?.toFixed(2) || 0 }}%
                             </span>
                         </div>
                         <div class="metric-row">
-                            <span class="metric-label">⛔ Max DD Limit</span>
+                            <span class="metric-label">â›” Max DD Limit</span>
                             <span class="metric-value">{{ data.risk_dashboard?.max_drawdown_pct || 10 }}%</span>
                         </div>
                     </div>
@@ -3231,7 +3231,7 @@ DASHBOARD_HTML = """
                 <div class="section">
                     <div class="section-header" @click="toggleSection('validation')">
                         <span class="section-title">Ground Truth (Backtest)</span>
-                        <span class="section-toggle">▼</span>
+                        <span class="section-toggle">â–¼</span>
                     </div>
                     <div class="section-content" style="background: rgba(0,255,136,0.05); border-radius: 4px; padding: 8px;">
                         <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 6px;">
@@ -3265,8 +3265,8 @@ DASHBOARD_HTML = """
                 <!-- Schedule -->
                 <div class="section">
                     <div class="section-header" @click="toggleSection('schedule')">
-                        <span class="section-title">📅 Schedule (CT)</span>
-                        <span class="section-toggle">▼</span>
+                        <span class="section-title">ðŸ“… Schedule (CT)</span>
+                        <span class="section-toggle">â–¼</span>
                     </div>
                     <div class="section-content">
                         <template v-for="(item, idx) in data.schedule?.all || []" :key="idx">
@@ -3284,7 +3284,7 @@ DASHBOARD_HTML = """
                 <!-- Top 10 Signals Section -->
                 <div style="margin-bottom: 20px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <h2 style="font-size: 14px; font-weight: 600;">📊 Strategy Signals (Top 10)</h2>
+                        <h2 style="font-size: 14px; font-weight: 600;">ðŸ“Š Strategy Signals (Top 10)</h2>
                         <span style="font-size: 12px; color: var(--text-secondary);">{{ data.scanner?.top_10?.length || 0 }} signals</span>
                     </div>
 
@@ -3308,7 +3308,7 @@ DASHBOARD_HTML = """
                                 </div>
                                 <div style="font-size: 11px; font-weight: 600;"
                                      :style="{ color: sig.direction === 'long' ? 'var(--accent-green)' : 'var(--accent-red)' }">
-                                    {{ sig.direction === 'long' ? '↑' : '↓' }}
+                                    {{ sig.direction === 'long' ? 'â†‘' : 'â†“' }}
                                 </div>
                                 <!-- Phase 16B: Readiness Score (0-100) instead of confidence -->
                                 <div class="top10-confidence" :class="(sig.readiness_score || sig.confidence) >= 90 ? 'positive' : ''"
@@ -3325,7 +3325,7 @@ DASHBOARD_HTML = """
                                 <div class="mono negative" style="text-align: right;">${{ sig.stop_loss?.toFixed(2) }}</div>
                                 <div class="mono positive" style="text-align: right;">${{ sig.take_profit?.toFixed(2) }}</div>
                                 <div class="mono" style="text-align: center; cursor: help;"
-                                     title="Risk-to-Reward ratio (target ≥1.5:1)">
+                                     title="Risk-to-Reward ratio (target â‰¥1.5:1)">
                                     {{ sig.rr_ratio?.toFixed(1) }}:1
                                 </div>
                             </div>
@@ -3333,7 +3333,7 @@ DASHBOARD_HTML = """
                     </template>
                     <template v-else>
                         <div class="empty-state">
-                            <div class="empty-state-icon">🔍</div>
+                            <div class="empty-state-icon">ðŸ”</div>
                             <div>No signals found</div>
                         </div>
                     </template>
@@ -3390,7 +3390,7 @@ DASHBOARD_HTML = """
                     </template>
                     <template v-else>
                         <div class="empty-state">
-                            <div class="empty-state-icon">📊</div>
+                            <div class="empty-state-icon">ðŸ“Š</div>
                             <div>No open positions</div>
                             <div style="font-size: 11px; margin-top: 4px;">Waiting for scanner signals</div>
                         </div>
@@ -3400,13 +3400,13 @@ DASHBOARD_HTML = """
                 <!-- System Insights Section (Rule-Based + Trade Performance) -->
                 <div style="margin-bottom: 20px;">
                     <h2 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">
-                        🧠 System & AI Insights
+                        ðŸ§  System & AI Insights
                         <span style="font-size: 10px; color: var(--text-muted); font-weight: 400;">(honest)</span>
                     </h2>
                     <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; padding: 12px;">
                         <!-- Trade Performance Stats -->
                         <div v-if="data.ai_brain?.trade_performance" style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);">
-                            <div style="font-size: 10px; color: var(--accent-green); margin-bottom: 6px; font-weight: 600;">📊 LIVE TRADE PERFORMANCE</div>
+                            <div style="font-size: 10px; color: var(--accent-green); margin-bottom: 6px; font-weight: 600;">ðŸ“Š LIVE TRADE PERFORMANCE</div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
                                 <div class="ai-metric" style="border: none; padding: 4px 0;">
                                     <span style="color: var(--text-secondary); font-size: 10px;">Total Trades</span>
@@ -3433,7 +3433,7 @@ DASHBOARD_HTML = """
                                 </div>
                             </div>
                             <div v-if="data.ai_brain.trade_performance.sample_warning" class="ai-caveat" style="font-size: 9px; padding: 4px 6px;">
-                                ⚠️ Small sample size (n={{ data.ai_brain.trade_performance.total_trades }}) - statistics unstable until 30+ trades
+                                âš ï¸ Small sample size (n={{ data.ai_brain.trade_performance.total_trades }}) - statistics unstable until 30+ trades
                             </div>
                         </div>
 
@@ -3457,14 +3457,14 @@ DASHBOARD_HTML = """
                         <div v-if="data.ai_brain?.signal_breakdown" style="margin-top: 10px; padding: 8px; background: var(--bg-primary); border-radius: 4px;">
                             <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 6px;">SIGNAL BREAKDOWN (LONG ONLY)</div>
                             <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                                <span>📈 Long Setups: <span class="positive">{{ data.ai_brain.signal_breakdown.long || 0 }}</span></span>
+                                <span>ðŸ“ˆ Long Setups: <span class="positive">{{ data.ai_brain.signal_breakdown.long || 0 }}</span></span>
                                 <span style="color: var(--text-muted);">/ {{ data.ai_brain.signal_breakdown.scanned || 0 }} scanned</span>
                             </div>
                         </div>
 
                         <!-- Regime Detection Panel -->
                         <div v-if="data.market_intelligence?.regime" style="margin-top: 12px; padding: 10px; background: var(--bg-primary); border-radius: 6px; border-left: 3px solid var(--accent-blue);">
-                            <div style="font-size: 10px; color: var(--accent-blue); margin-bottom: 8px; font-weight: 600;">📊 REGIME DETECTION</div>
+                            <div style="font-size: 10px; color: var(--accent-blue); margin-bottom: 8px; font-weight: 600;">ðŸ“Š REGIME DETECTION</div>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                 <span style="font-size: 14px; font-weight: 700;"
                                       :style="{ color: data.market_intelligence.regime.color === 'green' ? 'var(--accent-green)' : data.market_intelligence.regime.color === 'yellow' ? 'var(--accent-yellow)' : data.market_intelligence.regime.color === 'orange' ? 'var(--accent-yellow)' : 'var(--accent-red)' }">
@@ -3496,7 +3496,7 @@ DASHBOARD_HTML = """
                                 </span>
                             </div>
                             <div v-if="data.market_intelligence.regime.recommendation" style="margin-top: 8px; padding: 6px; background: var(--bg-secondary); border-radius: 4px; font-size: 10px; color: var(--text-secondary);">
-                                💡 {{ data.market_intelligence.regime.recommendation }}
+                                ðŸ’¡ {{ data.market_intelligence.regime.recommendation }}
                             </div>
                         </div>
 
@@ -3511,16 +3511,16 @@ DASHBOARD_HTML = """
 
                         <!-- Recommendations -->
                         <div v-if="data.ai_brain?.recommendations && data.ai_brain.recommendations.length > 0" style="margin-top: 10px;">
-                            <div style="font-size: 10px; color: var(--accent-green); margin-bottom: 6px;">💡 RECOMMENDATIONS</div>
+                            <div style="font-size: 10px; color: var(--accent-green); margin-bottom: 6px;">ðŸ’¡ RECOMMENDATIONS</div>
                             <div v-for="(rec, idx) in data.ai_brain.recommendations" :key="idx"
                                  style="font-size: 11px; color: var(--text-secondary); padding: 3px 0;">
-                                → {{ rec }}
+                                â†’ {{ rec }}
                             </div>
                         </div>
 
                         <!-- Caveats -->
                         <div v-if="data.ai_brain?.caveats && data.ai_brain.caveats.length > 0" style="margin-top: 10px;">
-                            <div style="font-size: 10px; color: var(--accent-yellow); margin-bottom: 6px;">⚠️ CAVEATS</div>
+                            <div style="font-size: 10px; color: var(--accent-yellow); margin-bottom: 6px;">âš ï¸ CAVEATS</div>
                             <div v-for="(caveat, idx) in data.ai_brain.caveats" :key="idx" class="ai-caveat">
                                 {{ caveat }}
                             </div>
@@ -3530,13 +3530,13 @@ DASHBOARD_HTML = """
 
                 <!-- News Section - Watchlist Filtered -->
                 <div>
-                    <h2 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">📰 Watchlist News</h2>
+                    <h2 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">ðŸ“° Watchlist News</h2>
                     <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 10px;">
                         <span v-if="data.news && data.news.length > 0 && data.news[0].is_general_news">
-                            📡 General market news (no watchlist matches)
+                            ðŸ“¡ General market news (no watchlist matches)
                         </span>
                         <span v-else-if="data.news && data.news.length > 0 && data.news[0].matched_watchlist">
-                            ✓ Filtered for {{ data.scanner?.top_10?.length || 0 }} watchlist tickers
+                            âœ“ Filtered for {{ data.scanner?.top_10?.length || 0 }} watchlist tickers
                         </span>
                         <span v-else>
                             Scanning for watchlist ticker news...
@@ -3569,7 +3569,7 @@ DASHBOARD_HTML = """
                         </template>
                         <template v-else>
                             <div style="color: var(--text-muted); font-size: 11px; text-align: center; padding: 20px;">
-                                <div style="margin-bottom: 6px;">📭 No news for watchlist tickers</div>
+                                <div style="margin-bottom: 6px;">ðŸ“­ No news for watchlist tickers</div>
                                 <div style="font-size: 10px;">News will appear when articles mention scanner tickers</div>
                             </div>
                         </template>
@@ -3578,24 +3578,24 @@ DASHBOARD_HTML = """
 
                 <!-- Daily Reports Section (PRE-GAME, HALF-TIME, POST-GAME) -->
                 <div style="margin-top: 20px;">
-                    <h2 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">📊 Daily Reports</h2>
+                    <h2 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">ðŸ“Š Daily Reports</h2>
                     <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; overflow: hidden;">
                         <!-- Report Tabs -->
                         <div style="display: flex; border-bottom: 1px solid var(--border);">
                             <div @click="activeReportTab = 'pregame'"
                                  :style="{ flex: 1, padding: '8px', textAlign: 'center', fontSize: '11px', fontWeight: 600, cursor: 'pointer', background: activeReportTab === 'pregame' ? 'var(--bg-tertiary)' : 'transparent', borderBottom: activeReportTab === 'pregame' ? '2px solid var(--accent-green)' : 'none', color: activeReportTab === 'pregame' ? 'var(--accent-green)' : 'var(--text-secondary)' }">
-                                🎯 PRE-GAME
-                                <span v-if="data.daily_reports?.pregame?.available" style="margin-left: 4px; color: var(--accent-green);">●</span>
+                                ðŸŽ¯ PRE-GAME
+                                <span v-if="data.daily_reports?.pregame?.available" style="margin-left: 4px; color: var(--accent-green);">â—</span>
                             </div>
                             <div @click="activeReportTab = 'halftime'"
                                  :style="{ flex: 1, padding: '8px', textAlign: 'center', fontSize: '11px', fontWeight: 600, cursor: 'pointer', background: activeReportTab === 'halftime' ? 'var(--bg-tertiary)' : 'transparent', borderBottom: activeReportTab === 'halftime' ? '2px solid var(--accent-blue)' : 'none', color: activeReportTab === 'halftime' ? 'var(--accent-blue)' : 'var(--text-secondary)' }">
-                                ⏸️ HALF-TIME
-                                <span v-if="data.daily_reports?.halftime?.available" style="margin-left: 4px; color: var(--accent-blue);">●</span>
+                                â¸ï¸ HALF-TIME
+                                <span v-if="data.daily_reports?.halftime?.available" style="margin-left: 4px; color: var(--accent-blue);">â—</span>
                             </div>
                             <div @click="activeReportTab = 'postgame'"
                                  :style="{ flex: 1, padding: '8px', textAlign: 'center', fontSize: '11px', fontWeight: 600, cursor: 'pointer', background: activeReportTab === 'postgame' ? 'var(--bg-tertiary)' : 'transparent', borderBottom: activeReportTab === 'postgame' ? '2px solid var(--accent-yellow)' : 'none', color: activeReportTab === 'postgame' ? 'var(--accent-yellow)' : 'var(--text-secondary)' }">
-                                🏁 POST-GAME
-                                <span v-if="data.daily_reports?.postgame?.available" style="margin-left: 4px; color: var(--accent-yellow);">●</span>
+                                ðŸ POST-GAME
+                                <span v-if="data.daily_reports?.postgame?.available" style="margin-left: 4px; color: var(--accent-yellow);">â—</span>
                             </div>
                         </div>
                         <!-- Report Content -->
@@ -3609,7 +3609,7 @@ DASHBOARD_HTML = """
                                     <div v-html="formatMarkdown(data.daily_reports.pregame.full_content)" style="font-size: 11px; line-height: 1.5;"></div>
                                 </div>
                                 <div v-else style="text-align: center; padding: 40px; color: var(--text-muted);">
-                                    <div style="font-size: 14px; margin-bottom: 8px;">📋</div>
+                                    <div style="font-size: 14px; margin-bottom: 8px;">ðŸ“‹</div>
                                     <div>No PRE-GAME report available yet</div>
                                     <div style="font-size: 10px; margin-top: 4px;">Report generates at 8:30 AM ET</div>
                                 </div>
@@ -3623,7 +3623,7 @@ DASHBOARD_HTML = """
                                     <div v-html="formatMarkdown(data.daily_reports.halftime.full_content)" style="font-size: 11px; line-height: 1.5;"></div>
                                 </div>
                                 <div v-else style="text-align: center; padding: 40px; color: var(--text-muted);">
-                                    <div style="font-size: 14px; margin-bottom: 8px;">⏸️</div>
+                                    <div style="font-size: 14px; margin-bottom: 8px;">â¸ï¸</div>
                                     <div>No HALF-TIME report available yet</div>
                                     <div style="font-size: 10px; margin-top: 4px;">Report generates at 12:00 PM ET</div>
                                 </div>
@@ -3637,7 +3637,7 @@ DASHBOARD_HTML = """
                                     <div v-html="formatMarkdown(data.daily_reports.postgame.full_content)" style="font-size: 11px; line-height: 1.5;"></div>
                                 </div>
                                 <div v-else style="text-align: center; padding: 40px; color: var(--text-muted);">
-                                    <div style="font-size: 14px; margin-bottom: 8px;">🏁</div>
+                                    <div style="font-size: 14px; margin-bottom: 8px;">ðŸ</div>
                                     <div>No POST-GAME report available yet</div>
                                     <div style="font-size: 10px; margin-top: 4px;">Report generates at 5:00 PM ET</div>
                                 </div>
@@ -3652,18 +3652,18 @@ DASHBOARD_HTML = """
                 <!-- Top Signals -->
                 <div class="section">
                     <div class="section-header" @click="toggleSection('signals')">
-                        <span class="section-title">🎯 Scanner Signals</span>
-                        <span class="section-toggle">▼</span>
+                        <span class="section-title">ðŸŽ¯ Scanner Signals</span>
+                        <span class="section-toggle">â–¼</span>
                     </div>
                     <div class="section-content">
                         <div style="margin-bottom: 8px; font-size: 11px; color: var(--text-muted);">
                             <span v-if="isScanning" style="color: var(--accent-yellow);">
-                                ⏳ Scanning {{ data.scanner?.total_scanned || 710 }} stocks... {{ scanElapsed.toFixed(1) }}s
+                                â³ Scanning {{ data.scanner?.total_scanned || 710 }} stocks... {{ scanElapsed.toFixed(1) }}s
                             </span>
                             <span v-else>
                                 Last scan: {{ data.scanner?.scan_time ? formatTime(data.scanner.scan_time) : 'N/A' }}
                                 <span v-if="data.scanner?.scanner_age_seconds"> ({{ formatAge(data.scanner.scanner_age_seconds) }}<span v-if="data.scanner?.scan_runtime_seconds">, {{ data.scanner.scan_runtime_seconds }}s runtime</span>)</span>
-                                • {{ data.scanner?.total_signals || 0 }} signals from {{ data.scanner?.total_scanned || 0 }} stocks
+                                â€¢ {{ data.scanner?.total_signals || 0 }} signals from {{ data.scanner?.total_scanned || 0 }} stocks
                             </span>
                         </div>
 
@@ -3674,18 +3674,18 @@ DASHBOARD_HTML = """
                                  style="cursor: pointer;">
                                 <div class="signal-header">
                                     <div>
-                                        <span v-if="idx === 0" style="color: var(--accent-green); font-size: 10px;">⭐ TOP PICK</span>
+                                        <span v-if="idx === 0" style="color: var(--accent-green); font-size: 10px;">â­ TOP PICK</span>
                                         <span v-else style="color: var(--text-muted); font-size: 10px;">#{{ idx + 1 }}</span>
                                         <span class="signal-symbol" style="margin-left: 6px;">{{ sig.symbol }}</span>
                                         <span style="font-size: 11px; margin-left: 6px;"
                                               :style="{ color: sig.direction === 'long' ? 'var(--accent-green)' : 'var(--accent-red)' }">
-                                            {{ sig.direction === 'long' ? '↑' : '↓' }} {{ sig.direction?.toUpperCase() }}
+                                            {{ sig.direction === 'long' ? 'â†‘' : 'â†“' }} {{ sig.direction?.toUpperCase() }}
                                         </span>
                                     </div>
                                     <span class="signal-confidence" :class="sig.confidence >= 90 ? 'positive' : ''"
                                           style="cursor: help;"
                                           title="Confidence score (0-100%). Based on RSI extremity and distance below BB. Lower RSI = higher confidence.">
-                                        {{ sig.confidence >= 90 ? '⭐ ' : '' }}{{ sig.confidence?.toFixed(0) }}%
+                                        {{ sig.confidence >= 90 ? 'â­ ' : '' }}{{ sig.confidence?.toFixed(0) }}%
                                     </span>
                                 </div>
                                 <div class="signal-prices">
@@ -3702,14 +3702,14 @@ DASHBOARD_HTML = """
                                         <div class="signal-price-value positive">${{ sig.take_profit?.toFixed(2) }}</div>
                                     </div>
                                     <div class="signal-price" style="cursor: help;"
-                                         title="Risk-to-Reward ratio. Example: 2.0:1 means risking $1 to potentially make $2. Target: ≥1.5:1 for quality setups.">
+                                         title="Risk-to-Reward ratio. Example: 2.0:1 means risking $1 to potentially make $2. Target: â‰¥1.5:1 for quality setups.">
                                         <div class="signal-price-label">R:R</div>
                                         <div class="signal-price-value">{{ sig.rr_ratio?.toFixed(1) }}:1</div>
                                     </div>
                                 </div>
                                 <!-- Multi-Targets (T1, T2, T3) Panel -->
                                 <div v-if="sig.targets" style="margin-top: 8px; padding: 8px; background: var(--bg-secondary); border-radius: 4px; border-left: 2px solid var(--accent-green);">
-                                    <div style="font-size: 10px; color: var(--accent-green); margin-bottom: 6px; font-weight: 600;">🎯 PROFIT TARGETS</div>
+                                    <div style="font-size: 10px; color: var(--accent-green); margin-bottom: 6px; font-weight: 600;">ðŸŽ¯ PROFIT TARGETS</div>
                                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; font-size: 10px;">
                                         <div style="text-align: center; padding: 4px; background: var(--bg-primary); border-radius: 3px;">
                                             <div style="color: var(--text-muted); margin-bottom: 2px;">T1 (1R)</div>
@@ -3738,7 +3738,7 @@ DASHBOARD_HTML = """
                                          title="Expected 1-week price movement based on ATR. Used to assess if target is reachable.">
                                         <span style="font-size: 10px; color: var(--text-muted);">Exp. Move:</span>
                                         <span style="font-size: 11px; color: var(--accent-blue); font-weight: 500; margin-left: 4px;">
-                                            ±{{ sig.expected_move_weekly_pct?.toFixed(1) }}%
+                                            Â±{{ sig.expected_move_weekly_pct?.toFixed(1) }}%
                                         </span>
                                     </div>
                                 </div>
@@ -3764,32 +3764,32 @@ DASHBOARD_HTML = """
                                 <div v-if="sig.why_take_trade && sig.why_take_trade.length > 0"
                                      style="margin-top: 8px; padding: 8px; background: var(--bg-primary); border-radius: 4px; border-left: 2px solid var(--accent-green);">
                                     <div style="font-size: 10px; color: var(--accent-green); margin-bottom: 6px; font-weight: 600;">
-                                        💡 WHY TAKE THIS TRADE
+                                        ðŸ’¡ WHY TAKE THIS TRADE
                                     </div>
                                     <div v-for="(reason, rIdx) in sig.why_take_trade" :key="rIdx"
                                          style="font-size: 10px; color: var(--text-secondary); padding: 2px 0;">
-                                        ✓ {{ reason }}
+                                        âœ“ {{ reason }}
                                     </div>
                                 </div>
                                 <!-- Entry Checks Grid (Compact) -->
                                 <div v-if="sig.entry_checks" style="margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap;">
                                     <span :class="sig.entry_checks.rsi_below_3 ? 'positive' : 'neutral'"
                                           style="font-size: 9px; padding: 2px 6px; background: var(--bg-secondary); border-radius: 3px;">
-                                        {{ sig.entry_checks.rsi_below_3 ? '✓' : '✗' }} RSI&lt;3
+                                        {{ sig.entry_checks.rsi_below_3 ? 'âœ“' : 'âœ—' }} RSI&lt;3
                                     </span>
                                     <span :class="sig.entry_checks.close_at_bb_lower ? 'positive' : 'neutral'"
                                           style="font-size: 9px; padding: 2px 6px; background: var(--bg-secondary); border-radius: 3px;">
-                                        {{ sig.entry_checks.close_at_bb_lower ? '✓' : '✗' }} BB Touch
+                                        {{ sig.entry_checks.close_at_bb_lower ? 'âœ“' : 'âœ—' }} BB Touch
                                     </span>
                                     <span :class="sig.entry_checks.above_sma200 ? 'positive' : 'neutral'"
                                           style="font-size: 9px; padding: 2px 6px; background: var(--bg-secondary); border-radius: 3px;">
-                                        {{ sig.entry_checks.above_sma200 ? '✓' : '✗' }} &gt;SMA200
+                                        {{ sig.entry_checks.above_sma200 ? 'âœ“' : 'âœ—' }} &gt;SMA200
                                     </span>
                                 </div>
                                 <!-- Historical Edge (Compact) -->
                                 <div v-if="sig.historical"
                                      style="margin-top: 6px; padding: 4px 8px; background: var(--bg-secondary); border-radius: 4px; display: flex; justify-content: space-between; font-size: 9px; color: var(--text-muted);">
-                                    <span>📊 Historical: <span class="positive">{{ sig.historical.strategy_win_rate?.toFixed(1) || '66.96' }}% WR</span></span>
+                                    <span>ðŸ“Š Historical: <span class="positive">{{ sig.historical.strategy_win_rate?.toFixed(1) || '66.96' }}% WR</span></span>
                                     <span>PF: <span class="positive">{{ sig.historical.strategy_profit_factor?.toFixed(2) || '1.53' }}</span></span>
                                 </div>
                             </div>
@@ -3797,7 +3797,7 @@ DASHBOARD_HTML = """
 
                         <template v-else>
                             <div class="empty-state">
-                                <div class="empty-state-icon">🔍</div>
+                                <div class="empty-state-icon">ðŸ”</div>
                                 <div>No signals yet</div>
                                 <div style="font-size: 11px; margin-top: 4px;">Next scan at {{ data.schedule?.next?.time || '--' }}</div>
                             </div>
@@ -3808,8 +3808,8 @@ DASHBOARD_HTML = """
                 <!-- Market Intelligence -->
                 <div class="section">
                     <div class="section-header" @click="toggleSection('market')">
-                        <span class="section-title">🧠 Market Intelligence</span>
-                        <span class="section-toggle">▼</span>
+                        <span class="section-title">ðŸ§  Market Intelligence</span>
+                        <span class="section-toggle">â–¼</span>
                     </div>
                     <div class="section-content">
                         <!-- Volatility Analysis -->
@@ -3853,37 +3853,37 @@ DASHBOARD_HTML = """
                 <div class="section">
                     <div class="section-header" @click="toggleSection('system')">
                         <span class="section-title">System Status</span>
-                        <span class="section-toggle">▼</span>
+                        <span class="section-toggle">â–¼</span>
                     </div>
                     <div class="section-content">
                         <div class="metric-row">
                             <span class="metric-label">Connection</span>
                             <span class="metric-value" :class="data.health_status?.connection_ok ? 'positive' : 'negative'">
-                                {{ data.health_status?.connection_ok ? '● Connected' : '● Disconnected' }}
+                                {{ data.health_status?.connection_ok ? 'â— Connected' : 'â— Disconnected' }}
                             </span>
                         </div>
                         <div class="metric-row">
                             <span class="metric-label">Data Feed</span>
                             <span class="metric-value" :class="data.health_status?.data_feed_ok ? 'positive' : 'warning'">
-                                {{ data.health_status?.data_feed_ok ? '● Live' : '● Offline' }}
+                                {{ data.health_status?.data_feed_ok ? 'â— Live' : 'â— Offline' }}
                             </span>
                         </div>
                         <div class="metric-row">
                             <span class="metric-label">Pre-Open Gate</span>
                             <span class="metric-value" :class="data.health_status?.gate_open ? 'positive' : 'warning'">
-                                {{ data.health_status?.gate_open ? '● Open' : '● Blocked' }}
+                                {{ data.health_status?.gate_open ? 'â— Open' : 'â— Blocked' }}
                             </span>
                         </div>
                         <div class="metric-row">
                             <span class="metric-label">Circuit Breaker</span>
                             <span class="metric-value" :class="data.health_status?.circuit_breaker_ok ? 'positive' : 'negative'">
-                                {{ data.health_status?.circuit_breaker_ok ? '● Normal' : '● TRIPPED' }}
+                                {{ data.health_status?.circuit_breaker_ok ? 'â— Normal' : 'â— TRIPPED' }}
                             </span>
                         </div>
                         <div class="metric-row">
                             <span class="metric-label">Scanner</span>
                             <span class="metric-value" :class="getScannerFreshnessClass()">
-                                ● {{ data.scanner?.scanner_freshness || 'Unknown' }}
+                                â— {{ data.scanner?.scanner_freshness || 'Unknown' }}
                                 <span v-if="data.scanner?.scanner_age_seconds" style="font-size: 10px; color: var(--text-muted);">
                                     ({{ formatAge(data.scanner.scanner_age_seconds) }})
                                 </span>
@@ -3910,7 +3910,7 @@ DASHBOARD_HTML = """
             <div class="modal-content">
                 <div class="modal-header">
                     <div class="modal-title">
-                        {{ selectedSignal.symbol }} • {{ selectedSignal.direction?.toUpperCase() }}
+                        {{ selectedSignal.symbol }} â€¢ {{ selectedSignal.direction?.toUpperCase() }}
                         <!-- Phase 16B: Status Badge in Modal -->
                         <span class="status-badge"
                               :class="selectedSignal.status === 'ready' ? 'status-ready' : selectedSignal.status === 'watchlist' ? 'status-watchlist' : 'status-ineligible'"
@@ -3918,7 +3918,7 @@ DASHBOARD_HTML = """
                             {{ selectedSignal.status || 'SCANNED' }}
                         </span>
                     </div>
-                    <div class="modal-close" @click="closeSignalDetail">✕</div>
+                    <div class="modal-close" @click="closeSignalDetail">âœ•</div>
                 </div>
 
                 <!-- Phase 16B: Readiness Score instead of Quality Score -->
@@ -3965,7 +3965,7 @@ DASHBOARD_HTML = """
 
                 <div v-if="selectedSignal.conviction_reasons && selectedSignal.conviction_reasons.length > 0"
                      style="border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-bottom: 16px;">
-                    <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">💡 Conviction Reasons</div>
+                    <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">ðŸ’¡ Conviction Reasons</div>
                     <div v-for="(reason, idx) in selectedSignal.conviction_reasons" :key="idx"
                          style="padding: 6px 0; border-bottom: 1px solid var(--bg-tertiary); font-size: 11px;">
                         {{ reason }}
@@ -3973,7 +3973,7 @@ DASHBOARD_HTML = """
                 </div>
 
                 <div v-if="selectedSignal.strategy_5ws" style="border: 1px solid var(--border); border-radius: 6px; padding: 12px;">
-                    <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">📋 Strategy 5Ws Analysis</div>
+                    <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">ðŸ“‹ Strategy 5Ws Analysis</div>
                     <div style="margin-bottom: 8px;">
                         <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 2px;">WHO</div>
                         <div style="font-size: 11px;">{{ selectedSignal.strategy_5ws.who || 'N/A' }}</div>
@@ -4000,7 +4000,7 @@ DASHBOARD_HTML = """
                 <div class="why-panel" style="margin-top: 16px;">
                     <div class="why-panel-header" @click="toggleWhyPanel" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
                         <span class="why-panel-title">WHY TAKE THIS TRADE?</span>
-                        <span>{{ whyPanelExpanded ? '▼' : '►' }}</span>
+                        <span>{{ whyPanelExpanded ? 'â–¼' : 'â–º' }}</span>
                     </div>
                     <div v-if="whyPanelExpanded" class="why-panel-content" style="margin-top: 12px;">
                         <!-- Strategy Summary -->
@@ -4013,7 +4013,7 @@ DASHBOARD_HTML = """
                             <div class="why-section-title">Entry Checks</div>
                             <div class="why-check-item">
                                 <span class="why-check-icon" :class="getEntryCheck(selectedSignal, 'rsi') ? 'check-pass' : 'check-fail'">
-                                    {{ getEntryCheck(selectedSignal, 'rsi') ? '✓' : '✗' }}
+                                    {{ getEntryCheck(selectedSignal, 'rsi') ? 'âœ“' : 'âœ—' }}
                                 </span>
                                 <span>RSI(5) &lt; 3</span>
                                 <span style="color: var(--text-muted); margin-left: auto;">
@@ -4022,16 +4022,16 @@ DASHBOARD_HTML = """
                             </div>
                             <div class="why-check-item">
                                 <span class="why-check-icon" :class="getEntryCheck(selectedSignal, 'bb_touch') ? 'check-pass' : 'check-fail'">
-                                    {{ getEntryCheck(selectedSignal, 'bb_touch') ? '✓' : '✗' }}
+                                    {{ getEntryCheck(selectedSignal, 'bb_touch') ? 'âœ“' : 'âœ—' }}
                                 </span>
-                                <span>Close ≤ BB Lower</span>
+                                <span>Close â‰¤ BB Lower</span>
                                 <span style="color: var(--text-muted); margin-left: auto;">
                                     (${{ selectedSignal.entry_price?.toFixed(2) || 'N/A' }} vs ${{ selectedSignal.bb_lower?.toFixed(2) || 'N/A' }})
                                 </span>
                             </div>
                             <div class="why-check-item">
                                 <span class="why-check-icon" :class="getEntryCheck(selectedSignal, 'above_sma200') ? 'check-pass' : 'check-fail'">
-                                    {{ getEntryCheck(selectedSignal, 'above_sma200') ? '✓' : '✗' }}
+                                    {{ getEntryCheck(selectedSignal, 'above_sma200') ? 'âœ“' : 'âœ—' }}
                                 </span>
                                 <span>Close &gt; SMA(200)</span>
                                 <span style="color: var(--text-muted); margin-left: auto;">
@@ -4102,7 +4102,7 @@ DASHBOARD_HTML = """
         <!-- Refresh Indicator with Live Countdown -->
         <div class="refresh-indicator">
             <div class="refresh-dot"></div>
-            <span>Live • Data: {{ refreshCountdown }}s • Scan: {{ isScanning ? 'Running...' : scanCountdown + 's' }}</span>
+            <span>Live â€¢ Data: {{ refreshCountdown }}s â€¢ Scan: {{ isScanning ? 'Running...' : scanCountdown + 's' }}</span>
         </div>
     </div>
 
@@ -4132,7 +4132,7 @@ DASHBOARD_HTML = """
                 const expandedPositions = reactive({});
                 const collapsedSections = reactive({});
                 const selectedSignal = ref(null);
-                const heartbeatMessage = ref('🧠 Analyzing market structure...');
+                const heartbeatMessage = ref('ðŸ§  Analyzing market structure...');
 
                 // Daily reports active tab
                 const activeReportTab = ref('pregame');
@@ -4159,14 +4159,14 @@ DASHBOARD_HTML = """
 
                 // Heartbeat messages that rotate
                 const heartbeatMessages = [
-                    '🧠 Analyzing market structure...',
-                    '📊 Monitoring 832 tickers (SSOT v2.1.0)...',
-                    '🎯 Scanning for BB_RSI setups...',
-                    '⚡ Checking RSI < 3 extreme oversold...',
-                    '🔍 Validating Bollinger Band positions...',
-                    '📈 Confirming SMA(200) trend filter...',
-                    '💡 Computing confidence scores...',
-                    '🎲 Running LSTM predictions...'
+                    'ðŸ§  Analyzing market structure...',
+                    'ðŸ“Š Monitoring 832 tickers (SSOT v2.1.0)...',
+                    'ðŸŽ¯ Scanning for BB_RSI setups...',
+                    'âš¡ Checking RSI < 3 extreme oversold...',
+                    'ðŸ” Validating Bollinger Band positions...',
+                    'ðŸ“ˆ Confirming SMA(200) trend filter...',
+                    'ðŸ’¡ Computing confidence scores...',
+                    'ðŸŽ² Running LSTM predictions...'
                 ];
                 let heartbeatIndex = 0;
 
@@ -4174,9 +4174,9 @@ DASHBOARD_HTML = """
                     // Update with dynamic info if available
                     if (data.scanner?.top_3?.length > 0) {
                         const topSignal = data.scanner.top_3[0];
-                        heartbeatMessage.value = `🎯 Top setup: ${topSignal.symbol} confidence ${topSignal.confidence?.toFixed(0)}%`;
+                        heartbeatMessage.value = `ðŸŽ¯ Top setup: ${topSignal.symbol} confidence ${topSignal.confidence?.toFixed(0)}%`;
                     } else if (data.market?.vix) {
-                        heartbeatMessage.value = `⚡ VIX ${data.market.vix.toFixed(1)} - ${data.market_intelligence?.stress_level || 'Normal'} conditions`;
+                        heartbeatMessage.value = `âš¡ VIX ${data.market.vix.toFixed(1)} - ${data.market_intelligence?.stress_level || 'Normal'} conditions`;
                     } else {
                         heartbeatMessage.value = heartbeatMessages[heartbeatIndex];
                         heartbeatIndex = (heartbeatIndex + 1) % heartbeatMessages.length;
@@ -4355,9 +4355,9 @@ DASHBOARD_HTML = """
                             Object.assign(data, freshData);
 
                             // Show brief success notification (no alert - less intrusive)
-                            heartbeatMessage.value = `✅ Scan complete: ${result.signals_found} signals in ${result.elapsed_seconds}s`;
+                            heartbeatMessage.value = `âœ… Scan complete: ${result.signals_found} signals in ${result.elapsed_seconds}s`;
                         } else {
-                            heartbeatMessage.value = '❌ Scan failed: ' + result.message;
+                            heartbeatMessage.value = 'âŒ Scan failed: ' + result.message;
                         }
                     } catch (error) {
                         // Stop timer on error
@@ -4366,7 +4366,7 @@ DASHBOARD_HTML = """
                             scanTimer = null;
                         }
                         isScanning.value = false;
-                        heartbeatMessage.value = '❌ Scan error: ' + error.message;
+                        heartbeatMessage.value = 'âŒ Scan error: ' + error.message;
                     }
                 };
 
@@ -4482,3 +4482,5 @@ DASHBOARD_HTML = """
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8889, log_level="info")
+
+

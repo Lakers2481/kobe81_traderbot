@@ -5,10 +5,11 @@ from __future__ import annotations
 Train per-strategy ML meta-models to score signals (success probability).
 
 Inputs: data/ml/signal_dataset.parquet (from build_signal_dataset.py)
-Outputs: state/models/meta_donchian.pkl/.json, meta_turtle_soup.pkl/.json
+Outputs: state/models/meta_ibs_rsi.pkl/.json, meta_turtle_soup.pkl/.json
 """
 
 import argparse
+import json
 from pathlib import Path
 from typing import Dict
 
@@ -90,7 +91,7 @@ def train_for_strategy(df: pd.DataFrame, strategy_name: str) -> Dict:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description='Train ML meta-models for Donchian/ICT')
+    ap = argparse.ArgumentParser(description='Train ML meta-models for IBS+RSI/ICT')
     ap.add_argument('--dataset', type=str, default='data/ml/signal_dataset.parquet')
     ap.add_argument('--outdir', type=str, default=str(CANDIDATE_DIR))
     args = ap.parse_args()
@@ -106,12 +107,12 @@ def main() -> None:
             df[c] = 0.0
 
     results = {
-        'donchian': train_for_strategy(df, 'donchian'),
+        'ibs_rsi': train_for_strategy(df, 'ibs_rsi'),
         'turtle_soup': train_for_strategy(df, 'turtle_soup'),
     }
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
-    (outdir / 'meta_train_summary.json').write_text(pd.Series(results).to_json(indent=2))
+    (outdir / 'meta_train_summary.json').write_text(json.dumps(results, indent=2))
     print('Training complete. Summary written to', outdir / 'meta_train_summary.json')
 
 

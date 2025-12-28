@@ -55,9 +55,16 @@ def main() -> None:
             picks_df = pd.read_csv(picks_out)
         except Exception:
             picks_df = None
+    # CT|ET stamp for display
+    try:
+        from core.clock.tz_utils import fmt_ct, now_et
+        _now = now_et()
+        stamp = f"Display: {fmt_ct(_now)} | {_now.strftime('%I:%M %p').lstrip('0')} ET"
+    except Exception:
+        stamp = ''
     html = ['<html><head><meta charset="utf-8"><title>Kobe Pre-Game Plan</title>',
             '<style>body{font-family:Arial;margin:20px} table{border-collapse:collapse} th,td{border:1px solid #ddd;padding:6px} th{background:#f3f3f3}</style>',
-            '</head><body>', f'<h1>Pre-Game Plan - {day}</h1>']
+            '</head><body>', f'<h1>Pre-Game Plan - {day}</h1>', f'<p><em>{stamp}</em></p>']
     if picks_df is not None and not picks_df.empty:
         html.append('<h2>Top-3 (Pre-Market Plan)</h2>')
         html.append(picks_df[['strategy','symbol','side','entry_price','stop_loss','take_profit','conf_score']].to_html(index=False))

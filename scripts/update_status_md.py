@@ -2,137 +2,78 @@
 from __future__ import annotations
 
 """
-Generate a living STATUS markdown and date-stamped history snapshot from journal + state.
+Update docs/STATUS.md timestamp only.
 
-Outputs:
-- docs/STATUS.md (latest)
-- docs/history/status_YYYYMMDD.md (snapshot)
+The STATUS.md file is a comprehensive alignment document for all AI and human
+collaborators. This script only updates the timestamp line, preserving all
+other content.
+
+Usage:
+    python scripts/update_status_md.py
 """
 
-import argparse
-import json
-from collections import Counter
-from datetime import datetime, timedelta
+import re
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List
-
-import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def load_jsonl(path: Path) -> List[Dict[str, Any]]:
-    if not path.exists():
-        return []
-    rows: List[Dict[str, Any]] = []
-    for line in path.read_text(encoding='utf-8').splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            rows.append(json.loads(line))
-        except Exception:
-            continue
-    return rows
-
-
-def summarize_journal(j: List[Dict[str, Any]], days: int = 7) -> Dict[str, Any]:
-    if not j:
-        return {'events_last_7d': {}, 'recent': []}
-    now = datetime.utcnow()
-    recent = []
-    for rec in j:
-        ts = rec.get('utc_ts') or rec.get('timestamp')
-        try:
-            dt = datetime.fromisoformat(ts) if isinstance(ts, str) else None
-        except Exception:
-            dt = None
-        if dt and (now - dt) <= timedelta(days=days):
-            recent.append(rec)
-    events = Counter([r.get('event','unknown') for r in recent])
-    return {'events_last_7d': dict(events), 'recent': recent}
-
-
-def load_model_summary() -> Dict[str, Any]:
-    dep = ROOT / 'state' / 'models' / 'deployed' / 'meta_current.json'
-    if not dep.exists():
-        return {}
-    try:
-        return json.loads(dep.read_text(encoding='utf-8'))
-    except Exception:
-        return {}
-
-
-def render_status(today: datetime, journal_sum: Dict[str, Any]) -> str:
-    date_tag = today.strftime('%Y-%m-%d')
-    # Current artifacts
-    picks = ROOT / 'logs' / 'daily_picks.csv'
-    totd = ROOT / 'logs' / 'trade_of_day.csv'
-    mrep = ROOT / 'reports' / f'morning_report_{today.strftime("%Y%m%d")}.html'
-    mchk = ROOT / 'reports' / 'morning_check.json'
-    eod = ROOT / 'reports' / f'eod_report_{today.strftime("%Y%m%d")}.html'
-    model = load_model_summary()
-
-    lines: List[str] = []
-    lines.append(f"# Kobe81 Status — {date_tag}")
-    lines.append("")
-    lines.append("## Overview")
-    lines.append("- Strategies: Donchian Breakout (trend) + ICT Turtle Soup (mean reversion)")
-    lines.append("- Universe: 900 optionable/liquid US equities, 10y coverage")
-    lines.append("- Decisioning: ML meta-model + sentiment blending; confidence-gated TOTD")
-    lines.append("")
-    lines.append("## Today's Artifacts")
-    lines.append(f"- Morning Report: {'exists' if mrep.exists() else 'pending'} ({mrep.name})")
-    lines.append(f"- Morning Check: {'exists' if mchk.exists() else 'pending'}")
-    lines.append(f"- Top-3 Picks: {'exists' if picks.exists() else 'pending'}")
-    lines.append(f"- Trade of the Day: {'exists' if totd.exists() else 'pending'}")
-    lines.append(f"- EOD Report: {'exists' if eod.exists() else 'pending'} ({eod.name})")
-    lines.append("")
-    if model:
-        lines.append("## Model (Deployed Summary)")
-        df = pd.DataFrame([
-            {'strategy': k, **v} for k, v in model.items()
-        ]) if isinstance(model, dict) else pd.DataFrame()
-        if not df.empty:
-            # Show key metrics
-            cols = [c for c in ['strategy','accuracy','brier','wr','pf','sharpe','test_rows'] if c in df.columns]
-            if cols:
-                show = df[cols].copy()
-                lines.append(show.to_markdown(index=False))
-                lines.append("")
-    lines.append("## Recent Journal (last 7 days)")
-    for k, v in sorted(journal_sum.get('events_last_7d', {}).items(), key=lambda x: (-x[1], x[0])):
-        lines.append(f"- {k}: {v}")
-    lines.append("")
-    lines.append("## Goals & Next Steps")
-    lines.append("- Maintain confidence calibration; monitor Brier/WR/PF/Sharpe on holdout")
-    lines.append("- Enforce liquidity/spread gates for live execution; expand ADV/spread checks")
-    lines.append("- Weekly retrain/promote with promotion gates; rollback on drift/perf drop")
-    lines.append("- Extend features (breadth, dispersion) and add SHAP insights to morning report")
-    lines.append("")
-    return "\n".join(lines)
-
-
 def main() -> None:
-    ap = argparse.ArgumentParser(description='Update Kobe STATUS.md and daily history from journal/state')
-    ap.add_argument('--days', type=int, default=7)
-    args = ap.parse_args()
+    now = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
+    status = ROOT / 'docs' / 'STATUS.md'
 
-    today = datetime.utcnow()
-    journal = load_jsonl(ROOT / 'state' / 'journal.jsonl')
-    js = summarize_journal(journal, days=args.days)
-    md = render_status(today, js)
+    if not status.exists():
+        # Create minimal STATUS.md if it doesn't exist
+        content = f"""# Kobe81 Traderbot — STATUS
 
-    out = ROOT / 'docs' / 'STATUS.md'
-    hist_dir = ROOT / 'docs' / 'history'
-    hist_dir.mkdir(parents=True, exist_ok=True)
-    snap = hist_dir / f'status_{today.strftime("%Y%m%d")}.md'
-    out.write_text(md, encoding='utf-8')
-    snap.write_text(md, encoding='utf-8')
-    print('Updated:', out)
-    print('Snapshot:', snap)
+> **Last Updated:** {now}
+> **Verified By:** Claude Code
+
+---
+
+## CRITICAL: Strategy Alignment
+
+### Active Strategies (ONLY THESE TWO)
+
+| Strategy | Type | Entry Condition | Win Rate | Signals/Day |
+|----------|------|-----------------|----------|-------------|
+| **IBS+RSI** | Mean Reversion | IBS < 0.15 AND RSI(2) < 10 AND Close > SMA(200) | 62.3% | 5.3 |
+| **ICT Turtle Soup** | Mean Reversion | Sweep below 20-day low, revert inside, sweep > 1 ATR | 61.1% | 0.2 |
+
+### Deprecated Strategies (DO NOT USE)
+
+| Strategy | Status | Notes |
+|----------|--------|-------|
+| ~~Donchian Breakout~~ | **REMOVED** | Deleted from codebase |
+
+---
+
+For full documentation, see CLAUDE.md
+"""
+        status.write_text(content, encoding='utf-8')
+        print(f'Created: {status}')
+    else:
+        # Update timestamp only
+        content = status.read_text(encoding='utf-8')
+
+        # Update the "Last Updated" line
+        content = re.sub(
+            r'\*\*Last Updated:\*\* \d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC',
+            f'**Last Updated:** {now}',
+            content
+        )
+
+        status.write_text(content, encoding='utf-8')
+        print(f'Updated timestamp: {status}')
+
+    # Archive to history
+    hist = ROOT / 'docs' / 'history'
+    hist.mkdir(parents=True, exist_ok=True)
+    archive = hist / f'status_{datetime.utcnow().strftime("%Y%m%d_%H%M")}.md'
+    archive.write_text(status.read_text(encoding='utf-8'), encoding='utf-8')
+    print(f'Archived: {archive}')
 
 
 if __name__ == '__main__':
     main()
-

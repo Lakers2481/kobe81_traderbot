@@ -256,7 +256,7 @@ def run_import_check() -> CheckResult:
         ("config.env_loader", "load_env"),
         ("data.universe.loader", "load_universe"),
         ("data.providers.polygon_eod", "fetch_daily_bars_polygon"),
-        ("strategies.donchian.strategy", "DonchianBreakoutStrategy"),
+        ("strategies.ibs_rsi.strategy", "IbsRsiStrategy"),
         ("strategies.ict.turtle_soup", "TurtleSoupStrategy"),
         ("backtest.engine", "Backtester"),
         ("risk.policy_gate", "PolicyGate"),

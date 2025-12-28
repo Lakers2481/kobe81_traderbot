@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Showdown backtest for crypto: Donchian vs ICT Turtle Soup over full period.
+Showdown backtest for crypto: IBS_RSI vs ICT Turtle Soup over full period.
 Uses Polygon hourly crypto data.
 """
 from __future__ import annotations
@@ -13,7 +13,7 @@ import pandas as pd
 import sys
 sys.path.insert(0, str(_P(__file__).resolve().parents[1]))
 
-from strategies.donchian.strategy import DonchianBreakoutStrategy
+from strategies.ibs_rsi.strategy import IbsRsiStrategy
 from strategies.ict.turtle_soup import TurtleSoupStrategy
 from backtest.engine import Backtester, BacktestConfig
 from data.universe.loader import load_universe
@@ -22,7 +22,7 @@ from config.env_loader import load_env
 
 
 def main():
-    ap = argparse.ArgumentParser(description='Showdown backtest: Donchian vs ICT over full period (Crypto)')
+    ap = argparse.ArgumentParser(description='Showdown backtest: IBS_RSI vs ICT over full period (Crypto)')
     ap.add_argument('--universe', type=str, required=True, help='Path to crypto universe CSV')
     ap.add_argument('--start', type=str, required=True, help='YYYY-MM-DD')
     ap.add_argument('--end', type=str, required=True, help='YYYY-MM-DD')
@@ -53,20 +53,20 @@ def main():
         return df
 
     # Strategies
-    don = DonchianBreakoutStrategy()
+    don = IbsRsiStrategy()
     ict = TurtleSoupStrategy()
 
-    def get_donchian(df: pd.DataFrame) -> pd.DataFrame:
+    def get_ibs_rsi(df: pd.DataFrame) -> pd.DataFrame:
         return don.scan_signals_over_time(df)
 
     def get_turtle_soup(df: pd.DataFrame) -> pd.DataFrame:
         return ict.scan_signals_over_time(df)
 
     # Run per strategy
-    print('Running Donchian...')
+    print('Running IBS_RSI...')
     cfg = BacktestConfig(initial_cash=100_000.0)
-    bt_don = Backtester(cfg, get_donchian, fetcher)
-    r1 = bt_don.run(symbols, outdir=str(outdir / 'donchian'))
+    bt_don = Backtester(cfg, get_ibs_rsi, fetcher)
+    r1 = bt_don.run(symbols, outdir=str(outdir / 'ibs_rsi'))
 
     print('Running ICT Turtle Soup...')
     bt_ict = Backtester(cfg, get_turtle_soup, fetcher)
@@ -74,7 +74,7 @@ def main():
 
     # Combined summary
     rows = []
-    for name, res in (('DONCHIAN_crypto', r1), ('TURTLE_SOUP_crypto', r2)):
+    for name, res in (('IBS_RSI_crypto', r1), ('TURTLE_SOUP_crypto', r2)):
         m = res.get('metrics', {})
         rows.append({
             'strategy': name,
@@ -101,7 +101,7 @@ def main():
         '</body></html>'
     ]
     (outdir / 'showdown_report.html').write_text('\n'.join(html), encoding='utf-8')
-    print('Showdown (crypto) complete. Summary (Donchian vs ICT):')
+    print('Showdown (crypto) complete. Summary (IBS_RSI vs ICT):')
     print(df)
 
 

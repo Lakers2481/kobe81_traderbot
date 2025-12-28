@@ -5,6 +5,11 @@ Overview
 - Use Windows Task Scheduler or NSSM to run it on boot.
 - Safety: kill switch (`state/KILL_SWITCH`), budgets via PolicyGate, structured logs, audit chain.
 
+Time Zones
+- Trading operations run on New York time (ET). Windows Task registrations created via `ops/windows/register_all_tasks.ps1` use ET times converted to your local clock (DST handled).
+- The live dashboard shows Central Time (CT) by default and uses 12-hour times with AM/PM.
+- Policy: All schedules operate in ET; all displays (UI and Telegram) show CT and ET in 12-hour format (e.g., "8:45 AM CT | 9:45 AM ET").
+
 Runner Options
 - Paper micro (default):
   python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv --cap 50 --scan-times 09:35,10:30,15:55 --lookback-days 540 --dotenv ./.env
@@ -19,7 +24,7 @@ Task Scheduler Setup (quick)
 3) Triggers: At startup (or at 8:55AM every weekday) â†’ Enabled.
 4) Actions: Start a program:
    Program/script: C:\\Windows\\System32\\cmd.exe
-   Add arguments: /c "cd /d C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot && C:\\Users\\Owner\\AppData\\Local\\Programs\\Python\\Python311\\python.exe scripts\\runner.py --mode paper --universe data\\universe\\optionable_liquid_900.csv --cap 50 --scan-times 09:35,10:30,15:55 --lookback-days 540 --dotenv C:\\Users\\Owner\\OneDrive\\Desktop\\.\\.env"
+   Add arguments: /c "cd /d C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot && C:\\Users\\Owner\\AppData\\Local\\Programs\\Python\\Python311\\python.exe scripts\\runner.py --mode paper --universe data\\universe\\optionable_liquid_900.csv --cap 50 --scan-times 09:35,10:30,15:55 --lookback-days 540 --dotenv .\\.env"
 5) Conditions: Uncheck "Start the task only if the computer is on AC power" if desired.
 6) Settings: Restart on failure; If the task is already running, do not start a new instance.
 

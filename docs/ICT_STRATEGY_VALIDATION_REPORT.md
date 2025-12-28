@@ -2,7 +2,9 @@
 **System:** Kobe81 Traderbot
 **Date:** 2025-12-26
 **Reviewer:** ICT Expert Analysis
-**Scope:** Complete validation of ICT Turtle Soup & Donchian Breakout strategies
+> Alignment Note (Dec 2025): Donchian Breakout is deprecated in Kobe. The two canonical production strategies are IBS+RSI (mean reversion) and ICT Turtle Soup (mean reversion). Any Donchian references below are historical for comparison only.
+
+**Scope:** Complete validation of ICT Turtle Soup & IBS+RSI strategies
 
 ---
 

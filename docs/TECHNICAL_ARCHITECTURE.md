@@ -1,6 +1,6 @@
 ﻿# Kobe81 Traderbot - Technical Architecture Documentation
 
-> Note: Strategy set is standardized to Donchian Breakout + ICT Turtle Soup and universe size is 900. Any mentions of RSI2/ICT or 950 symbols are legacy and will be updated. See `README.md` for the canonical setup.
+> Note: Strategy set is standardized to IBS+RSI (mean reversion) + ICT Turtle Soup (mean reversion) and universe size is 900. Any mentions of IBS+RSI/950 symbols are legacy and will be updated. See `README.md` for the canonical setup.
 
 **Version:** 1.0
 **Last Updated:** 2025-12-26
@@ -25,7 +25,7 @@
 
 ## Executive Summary
 
-Kobe81 is a production-grade quantitative trading system implementing canonical two complementary strategies: Donchian Breakout (trend) and ICT Turtle Soup (mean reversion) with institutional-level risk management, compliance, and audit capabilities. The system supports backtesting, walk-forward validation, paper trading, and live execution with micro-budgets.
+Kobe81 is a production-grade quantitative trading system implementing canonical two complementary strategies: IBS+RSI (trend) and ICT Turtle Soup (mean reversion) with institutional-level risk management, compliance, and audit capabilities. The system supports backtesting, walk-forward validation, paper trading, and live execution with micro-budgets.
 
 **Core Characteristics:**
 - **Language:** Python 3.11+
@@ -135,7 +135,7 @@ load_universe(path: Path, cap: int = None) -> List[str]
 
 **Implemented Strategies:**
 
-#### Strategies (Donchian + ICT)
+#### Strategies (IBS+RSI + ICT)
 **Parameters:**
 ```python
 @dataclass
@@ -184,10 +184,10 @@ ICT = (Close - Low) / (High - Low)
 - **Long:** ICT < 0.2 AND Close > SMA(200)
 - **Short:** ICT > 0.8 AND Close < SMA(200)
 
-**Exit Logic:** Same as Donchian/ICT (ATR stop + time stop)
+**Exit Logic:** Same as IBS+RSI/ICT (ATR stop + time stop)
 
 #### 3. AND Filter (Combined Strategy)
-**Implementation:** Merge Donchian/ICT and ICT signals on same timestamp/symbol/side
+**Implementation:** Merge IBS+RSI/ICT and ICT signals on same timestamp/symbol/side
 ```python
 # In run_paper_trade.py and backtest scripts:
 rsi2_signals = rsi2_strategy.scan_signals_over_time(data)
@@ -571,7 +571,7 @@ python scripts/aggregate_wf_report.py \
 **Flow:**
 1. Load universe (capped at 50 for paper)
 2. Fetch latest bars (lookback: 540 days default)
-3. Generate Donchian/ICT and ICT signals
+3. Generate IBS+RSI/ICT and ICT signals
 4. Filter to AND signals on most recent bar
 5. Check kill switch (`state/KILL_SWITCH`)
 6. For each signal:
@@ -676,7 +676,7 @@ python scripts/runner.py \
 â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
 â”‚ 3. STRATEGY ENGINE                                              â”‚
 â”‚    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                 â”‚
-â”‚    â”‚ Donchian/ICT Strategy                           â”‚                 â”‚
+â”‚    â”‚ IBS+RSI/ICT Strategy                           â”‚                 â”‚
 â”‚    â”‚  - Compute RSI(2), SMA(200), ATR(14)     â”‚                 â”‚
 â”‚    â”‚  - Shift indicators by 1 bar             â”‚                 â”‚
 â”‚    â”‚  - Generate signals where conditions met â”‚                 â”‚
@@ -923,7 +923,7 @@ python scripts/verify_hash_chain.py
 ### 5. Lookahead Prevention
 **Strategy Level:** All indicators shifted by 1 bar
 
-**Example (Donchian/ICT):**
+**Example (IBS+RSI/ICT):**
 ```python
 # WRONG (lookahead bias):
 df['rsi2'] = rsi(df['close'], period=2)
@@ -972,7 +972,7 @@ grep config_pin state/hash_chain.jsonl | sort -u
 
 ## Trading Strategies
 
-- Donchian Breakout (trend): channel breakout with ATR-based stop, time stop, optional R-multiple take profit. See strategies/donchian/strategy.py
+- IBS+RSI (trend): channel breakout with ATR-based stop, time stop, optional R-multiple take profit. See strategies/IBS+RSI/strategy.py
 - ICT Turtle Soup (mean reversion): failed breakout (liquidity sweep) with ATR/time stops and R-multiple. See strategies/ict/turtle_soup.py
 
 ## System Components
@@ -1034,8 +1034,8 @@ kobe81_traderbot/
 â”‚   â”œâ”€â”€ runner_last.json       # Scheduler state
 â”‚   â””â”€â”€ KILL_SWITCH            # Emergency stop (if exists)
 â”œâ”€â”€ strategies/
-â”‚   â”œâ”€â”€ donchian/
-â”‚   â”‚   â”œâ”€â”€ strategy.py        # Donchian/ICT implementation
+â”‚   â”œâ”€â”€ IBS+RSI/
+â”‚   â”‚   â”œâ”€â”€ strategy.py        # IBS+RSI/ICT implementation
 â”‚   â”‚   â””â”€â”€ indicators.py      # RSI, SMA, ATR
 â”‚   â””â”€â”€ ICT/
 â”‚       â”œâ”€â”€ strategy.py        # ICT implementation
@@ -1552,7 +1552,7 @@ pytest>=7.2.0
 ### Glossary
 
 **Terms:**
-- **AND Filter:** Requires both Donchian/ICT AND ICT signals on same bar
+- **AND Filter:** Requires both IBS+RSI/ICT AND ICT signals on same bar
 - **ATR:** Average True Range (volatility measure)
 - **Canary Budget:** Small test allocation ($75/order) for risk mitigation
 - **Hash Chain:** Blockchain-style audit trail with SHA256 linkage
@@ -1591,6 +1591,7 @@ pytest>=7.2.0
 *System Version: Kobe81 v1.0*
 *Total Python Modules: 112*
 *Total Lines of Code: ~8,500*
+
 
 
 

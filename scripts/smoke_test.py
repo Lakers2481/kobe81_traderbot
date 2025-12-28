@@ -10,7 +10,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from strategies.donchian.strategy import DonchianBreakoutStrategy
+from strategies.ibs_rsi.strategy import IbsRsiStrategy
 from strategies.ict.turtle_soup import TurtleSoupStrategy
 from backtest.engine import Backtester, BacktestConfig
 
@@ -41,7 +41,7 @@ def main():
     data = pd.concat(frames, ignore_index=True)
 
     for name, strat in (
-        ('donchian', DonchianBreakoutStrategy()),
+        ('ibs_rsi', IbsRsiStrategy()),
         ('turtle_soup', TurtleSoupStrategy()),
     ):
         def get_signals(df: pd.DataFrame) -> pd.DataFrame:

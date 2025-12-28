@@ -7,6 +7,7 @@ Usage: python scripts/calendar.py [--today|--week|--month|--holidays YEAR]
 
 import argparse
 from datetime import datetime, timedelta, time
+from core.clock.tz_utils import fmt_ct
 from typing import List, Tuple, Optional
 import json
 
@@ -113,9 +114,9 @@ def show_today():
         print(f"  Next Open: {next_day.strftime('%A, %B %d')}")
     else:
         print(f"  Status: {reason}")
-        print(f"  Pre-Market: {PRE_MARKET_OPEN.strftime('%H:%M')} - {MARKET_OPEN.strftime('%H:%M')} ET")
-        print(f"  Regular:    {market_open.strftime('%H:%M')} - {market_close.strftime('%H:%M')} ET")
-        print(f"  After Hours: {MARKET_CLOSE.strftime('%H:%M')} - {AFTER_HOURS_CLOSE.strftime('%H:%M')} ET")
+        print(f"  Pre-Market: {fmt_ct(datetime.combine(now.date(), PRE_MARKET_OPEN))} to {fmt_ct(datetime.combine(now.date(), market_open))}")
+        print(f"  Regular:    {fmt_ct(datetime.combine(now.date(), market_open))} to {fmt_ct(datetime.combine(now.date(), market_close))}")
+        print(f"  After Hours: {fmt_ct(datetime.combine(now.date(), MARKET_CLOSE))} to {fmt_ct(datetime.combine(now.date(), AFTER_HOURS_CLOSE))}")
 
         # Current session
         current_time = now.time()
@@ -150,7 +151,7 @@ def show_week():
         if closed:
             print(f"  {day_name}: CLOSED - {reason}{is_today}")
         else:
-            hours = f"{market_open.strftime('%H:%M')}-{market_close.strftime('%H:%M')}"
+            hours = f"{fmt_ct(datetime.combine(day.date(), market_open), include_tz=False)}-{fmt_ct(datetime.combine(day.date(), market_close), include_tz=False)} CT"
             if reason != "Market Open":
                 print(f"  {day_name}: {hours} - {reason}{is_today}")
             else:

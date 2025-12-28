@@ -17,6 +17,7 @@ import json
 import os
 import sys
 from datetime import datetime
+from core.clock.tz_utils import now_et, fmt_ct
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -141,7 +142,8 @@ def test_connection() -> bool:
             print(f"  Name: {bot_info.get('first_name')}")
 
             # Also test sending a message
-            test_msg = f"[TEST] Kobe Trading Bot connected at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            now = now_et()
+            test_msg = f"[TEST] Kobe Trading Bot connected at {now.strftime('%Y-%m-%d')} {fmt_ct(now)}"
             send_result = send_telegram_message(test_msg)
 
             if send_result.get("ok"):
@@ -294,7 +296,8 @@ def send_daily_summary(
         if len(positions) > 5:
             lines.append(f"  ... and {len(positions) - 5} more")
 
-    lines.append(f"\n<i>Generated: {datetime.now().strftime('%H:%M:%S')}</i>")
+    now = now_et()
+    lines.append(f"\n<i>Generated: {fmt_ct(now)}</i>")
 
     message = "\n".join(lines)
     result = send_telegram_message(message)
@@ -315,7 +318,7 @@ def load_trading_data() -> Dict[str, Any]:
     outputs_dir = PROJECT_ROOT / "outputs"
 
     # Try to find today's trades file
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = now_et().strftime("%Y-%m-%d")
     trades_file = outputs_dir / f"trades_{today}.json"
 
     data = {

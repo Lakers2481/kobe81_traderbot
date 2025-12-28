@@ -3,10 +3,10 @@
 Kobe Signal Explainer (Deprecated)
 
 This script previously explained RSI2/IBS signals. The system is now
-standardized to two strategies: Donchian Breakout and ICT Turtle Soup.
+standardized to two strategies: IBS+RSI and ICT Turtle Soup.
 
 For step-by-step reasoning on current strategies, use:
-  python scripts/debugger.py --strategy donchian --symbol AAPL ...
+  python scripts/debugger.py --strategy ibs_rsi --symbol AAPL ...
   python scripts/debugger.py --strategy turtle_soup --symbol AAPL ...
 """
 from __future__ import annotations
@@ -315,7 +315,7 @@ def main() -> None:
 
     args = ap.parse_args()
 
-    print("This script is deprecated. Use scripts/debugger.py for Donchian/ICT signal traces.")
+    print("This script is deprecated. Use scripts/debugger.py for IBS+RSI signal traces.")
     sys.exit(0)
 
 

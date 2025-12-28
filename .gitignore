@@ -51,3 +51,34 @@ htmlcov/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Temp/lock files
+_ul*
+*.tmp
+*.bak
+
+# Runtime state (cognitive episodes, models)
+state/cognitive/episodes/
+state/models/
+state/journal.jsonl
+
+# Runtime reports
+reports/data_quality/
+reports/evidence/
+reports/screening/
+reports/morning_report_*.html
+reports/totd_*/
+
+# Generated data
+data/ml/
+data/sentiment/
+
+# Showdown/smoke outputs
+showdown_*/
+smoke_*/
+
+# Notebooks checkpoints
+notebooks/.ipynb_checkpoints/
+
+# History archives (use sparingly)
+docs/history/

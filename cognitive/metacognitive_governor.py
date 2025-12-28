@@ -1,43 +1,52 @@
 """
-Metacognitive Governor - Executive Function
-=============================================
+Metacognitive Governor - The AI's Executive Function
+======================================================
 
-The "brain of the brain" that orchestrates cognitive resources.
+This module acts as the "brain of the brain," providing the executive function
+that orchestrates the AI's cognitive resources. It decides *how* to think about
+a given problem, implementing a dual-process model inspired by human cognition
+(System 1 vs. System 2, or "fast" vs. "slow" thinking).
 
-Based on SOFAI architecture (Nature paper):
-- Decides when to trust fast (System 1) answers
-- Decides when to spend compute on deeper reasoning (System 2)
-- Decides when to stand down entirely
-- Monitors decision quality and resource usage
+Core Responsibilities:
+- **Decision Routing:** Determines whether a new signal can be handled quickly
+  and intuitively (fast path) or if it requires deep, analytical, and
+  resource-intensive deliberation (slow path).
+- **Resource Management:** Allocates a "compute budget" (in milliseconds) for
+  each decision to ensure timely responses.
+- **Stand-Down Policies:** Identifies situations where the AI should not act at
+  all due to high uncertainty, known limitations, or other critical factors.
+- **Self-Monitoring:** It monitors the quality and efficiency of its own routing
+  decisions, enabling it to learn and improve its metacognitive strategy over time.
 
-Features:
-- Fast/Slow decision routing
-- Confidence thresholds for escalation
-- Resource budget management
-- Self-monitoring of decision quality
-- Stand-down policies
+This component is crucial for creating an AI that is not only intelligent but
+also efficient and self-aware, knowing when to "trust its gut" and when to
+"stop and think."
+
+Based on concepts from SOFAI (Self-Organizing Fuzzy AI) and Daniel Kahneman's
+"Thinking, Fast and Slow".
 
 Usage:
     from cognitive.metacognitive_governor import MetacognitiveGovernor
 
     governor = MetacognitiveGovernor()
 
-    # Route a decision
-    routing = governor.route_decision(signal, context)
+    # For each new signal, the governor decides how to proceed.
+    routing_decision = governor.route_decision(signal, context)
 
-    if routing.use_fast_path:
+    if routing_decision.should_stand_down:
+        return  // Abort
+    elif routing_decision.use_fast_path and not routing_decision.use_slow_path:
         decision = fast_engine.decide(signal)
     else:
         decision = slow_deliberator.deliberate(signal, context)
 
-    # Record outcome for learning
-    governor.record_outcome(routing.decision_id, outcome)
+    # The outcome is fed back to the governor for its own learning process.
+    governor.record_outcome(routing_decision.decision_id, outcome)
 """
 
 import logging
-import time
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 import uuid
@@ -46,29 +55,29 @@ logger = logging.getLogger(__name__)
 
 
 class ProcessingMode(Enum):
-    """Processing mode for decisions."""
-    FAST = "fast"           # System 1: Quick, intuitive
-    SLOW = "slow"           # System 2: Deliberate, analytical
-    HYBRID = "hybrid"       # Both: Fast first, then validate with slow
-    STAND_DOWN = "stand_down"  # Don't act
+    """Enumerates the cognitive processing mode for a decision."""
+    FAST = "fast"           # System 1: Quick, heuristic-based, low resource.
+    SLOW = "slow"           # System 2: Deliberate, analytical, high resource.
+    HYBRID = "hybrid"       # Use fast path first, then escalate to slow if needed.
+    STAND_DOWN = "stand_down"  # Explicit decision not to act.
 
 
 class EscalationReason(Enum):
-    """Reasons for escalating to slow processing."""
+    """Reasons why a decision might be escalated from the fast path to the slow path."""
     LOW_CONFIDENCE = "low_confidence"
     HIGH_UNCERTAINTY = "high_uncertainty"
     NOVEL_SITUATION = "novel_situation"
     HIGH_STAKES = "high_stakes"
     CONFLICTING_SIGNALS = "conflicting_signals"
-    SELF_MODEL_CONCERN = "self_model_concern"
-    RESOURCE_AVAILABLE = "resource_available"
+    SELF_MODEL_CONCERN = "self_model_concern" # AI's self-model indicates it's not good at this.
+    RESOURCE_AVAILABLE = "resource_available" # Has spare compute, so can afford to think deeper.
 
 
 class StandDownReason(Enum):
-    """Reasons for standing down."""
-    POOR_CALIBRATION = "poor_calibration"
-    KNOWN_LIMITATION = "known_limitation"
-    BUDGET_EXHAUSTED = "budget_exhausted"
+    """Reasons why the governor might decide to abort a decision process entirely."""
+    POOR_CALIBRATION = "poor_calibration"  # The AI knows its confidence estimates are unreliable.
+    KNOWN_LIMITATION = "known_limitation"  # The AI's self-model identifies this as a weak area.
+    BUDGET_EXHAUSTED = "budget_exhausted" # Not enough cognitive resources available.
     HIGH_UNCERTAINTY = "high_uncertainty"
     CONFLICTING_ADVICE = "conflicting_advice"
     SELF_DOUBT = "self_doubt"
@@ -76,19 +85,22 @@ class StandDownReason(Enum):
 
 @dataclass
 class RoutingDecision:
-    """Result of metacognitive routing."""
+    """
+    A structured output from the governor, specifying how to handle a decision.
+    """
     decision_id: str
     mode: ProcessingMode
     use_fast_path: bool
     use_slow_path: bool
     should_stand_down: bool
-    confidence_in_routing: float
+    confidence_in_routing: float  # The governor's confidence in its own routing decision.
     escalation_reasons: List[EscalationReason]
     stand_down_reason: Optional[StandDownReason]
-    max_compute_ms: int  # Budget for this decision
+    max_compute_ms: int  # The time budget allocated for this decision.
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict:
+        """Serializes the decision to a dictionary."""
         return {
             'decision_id': self.decision_id,
             'mode': self.mode.value,
@@ -104,83 +116,70 @@ class RoutingDecision:
 
 @dataclass
 class DecisionRecord:
-    """Record of a decision for learning."""
+    """A record used by the governor to learn from its past routing decisions."""
     decision_id: str
     routing: RoutingDecision
     started_at: datetime
     completed_at: Optional[datetime] = None
-    outcome: Optional[str] = None  # 'success', 'failure', 'unknown'
+    outcome: Optional[str] = None # 'success' or 'failure'
     actual_compute_ms: int = 0
-    was_correct: Optional[bool] = None
+    was_correct: Optional[bool] = None # Was the routing decision itself correct?
 
     @property
     def was_efficient(self) -> bool:
-        """Check if compute was used efficiently."""
+        """Did the decision complete within its allocated time budget?"""
         return self.actual_compute_ms <= self.routing.max_compute_ms
 
 
 class MetacognitiveGovernor:
     """
-    Executive function that orchestrates cognitive resources.
-
-    Implements the SOFAI metacognitive controller pattern:
-    - Routes decisions between fast and slow processing
-    - Monitors decision quality
-    - Learns when to escalate vs. trust fast answers
+    The executive controller of the cognitive architecture. It routes decisions
+    between fast and slow processing pathways, manages cognitive resources, and
+    monitors its own performance.
     """
 
     def __init__(
         self,
-        # Confidence thresholds
-        fast_confidence_threshold: float = 0.75,
-        slow_confidence_threshold: float = 0.50,
-        stand_down_threshold: float = 0.30,
-
-        # Resource budgets
-        default_fast_budget_ms: int = 100,
-        default_slow_budget_ms: int = 5000,
-
-        # Calibration
-        min_calibration_samples: int = 20,
-        acceptable_calibration_error: float = 0.15,
-
-        # Stakes
-        high_stakes_position_pct: float = 0.03,  # > 3% is high stakes
+        fast_confidence_threshold: Optional[float] = None,
+        slow_confidence_threshold: Optional[float] = None,
+        stand_down_threshold: Optional[float] = None,
+        default_fast_budget_ms: Optional[int] = None,
+        default_slow_budget_ms: Optional[int] = None,
+        high_stakes_position_pct: Optional[float] = None,
     ):
-        self.fast_confidence_threshold = fast_confidence_threshold
-        self.slow_confidence_threshold = slow_confidence_threshold
-        self.stand_down_threshold = stand_down_threshold
-        self.default_fast_budget_ms = default_fast_budget_ms
-        self.default_slow_budget_ms = default_slow_budget_ms
-        self.min_calibration_samples = min_calibration_samples
-        self.acceptable_calibration_error = acceptable_calibration_error
-        self.high_stakes_position_pct = high_stakes_position_pct
+        # Load from centralized config if not explicitly provided
+        try:
+            from config.settings_loader import get_cognitive_governor_config
+            config = get_cognitive_governor_config()
+        except ImportError:
+            config = {}
 
-        # Decision history
+        # Use explicit params if provided, else config, else hardcoded defaults
+        self.fast_confidence_threshold = fast_confidence_threshold if fast_confidence_threshold is not None else config.get("fast_confidence_threshold", 0.75)
+        self.slow_confidence_threshold = slow_confidence_threshold if slow_confidence_threshold is not None else config.get("slow_confidence_threshold", 0.50)
+        self.stand_down_threshold = stand_down_threshold if stand_down_threshold is not None else config.get("stand_down_threshold", 0.30)
+        self.default_fast_budget_ms = default_fast_budget_ms if default_fast_budget_ms is not None else config.get("default_fast_budget_ms", 100)
+        self.default_slow_budget_ms = default_slow_budget_ms if default_slow_budget_ms is not None else config.get("default_slow_budget_ms", 5000)
+        self.high_stakes_position_pct = high_stakes_position_pct if high_stakes_position_pct is not None else config.get("high_stakes_position_pct", 0.03)
+
+        # Internal state for learning and statistics.
         self._decision_history: List[DecisionRecord] = []
         self._history_limit = 500
-
-        # Statistics
         self._fast_decisions = 0
         self._slow_decisions = 0
         self._stand_downs = 0
         self._correct_routings = 0
         self._total_routings = 0
 
-        # Self-model reference
-        self._self_model = None
-
-        logger.info("MetacognitiveGovernor initialized")
+        self._self_model = None # Lazy-loaded dependency.
+        logger.info("MetacognitiveGovernor initialized with config-driven settings.")
 
     @property
     def self_model(self):
-        """Lazy load self-model."""
+        """Lazy-loads the SelfModel to avoid circular dependencies."""
         if self._self_model is None:
-            try:
-                from cognitive.self_model import get_self_model
-                self._self_model = get_self_model()
-            except ImportError:
-                pass
+            from cognitive.self_model import get_self_model
+            self._self_model = get_self_model()
         return self._self_model
 
     def route_decision(
@@ -188,214 +187,132 @@ class MetacognitiveGovernor:
         signal: Dict[str, Any],
         context: Dict[str, Any],
         fast_confidence: Optional[float] = None,
-        ml_uncertainty: Optional[float] = None,
     ) -> RoutingDecision:
         """
-        Route a decision to the appropriate processing mode.
+        The main entry point. Examines a situation and decides on the appropriate
+        cognitive pathway and resource budget.
 
         Args:
-            signal: The trade signal being evaluated
-            context: Current market/portfolio context
-            fast_confidence: Confidence from fast engine (if already computed)
-            ml_uncertainty: Uncertainty estimate from ML models
+            signal: The trading signal to be evaluated.
+            context: The current market and portfolio context.
+            fast_confidence: An optional pre-computed confidence score from a
+                             fast, upstream process.
 
         Returns:
-            RoutingDecision with routing and resource budget
+            A RoutingDecision object detailing the chosen cognitive path.
         """
         decision_id = str(uuid.uuid4())[:8]
         escalation_reasons = []
-        stand_down_reason = None
 
-        # === Check 1: Self-model concerns ===
+        # === CHECK 1: CONSULT SELF-MODEL ===
+        # First, ask the self-model: "Am I any good at this?"
         if self.self_model:
             strategy = signal.get('strategy', 'unknown')
             regime = context.get('regime', 'unknown')
-
-            should_stand, reason = self.self_model.should_stand_down(strategy, regime)
-            if should_stand:
-                return self._create_stand_down(
-                    decision_id,
-                    StandDownReason.KNOWN_LIMITATION,
-                    reason
-                )
-
-            # Check calibration
+            if self.self_model.should_stand_down(strategy, regime)[0]:
+                return self._create_stand_down(decision_id, StandDownReason.KNOWN_LIMITATION,
+                                               f"Self-model indicates poor performance in {strategy}/{regime}.")
             if not self.self_model.is_well_calibrated():
                 escalation_reasons.append(EscalationReason.SELF_MODEL_CONCERN)
 
-        # === Check 2: Confidence level ===
+        # === CHECK 2: INITIAL CONFIDENCE ===
+        # Use the fast confidence score as a primary indicator.
         confidence = fast_confidence or context.get('confidence', 0.5)
-
         if confidence < self.stand_down_threshold:
-            return self._create_stand_down(
-                decision_id,
-                StandDownReason.HIGH_UNCERTAINTY,
-                f"Confidence {confidence:.2f} below stand-down threshold"
-            )
-
+            return self._create_stand_down(decision_id, StandDownReason.HIGH_UNCERTAINTY,
+                                           f"Initial confidence {confidence:.2f} is below stand-down threshold.")
         if confidence < self.slow_confidence_threshold:
             escalation_reasons.append(EscalationReason.LOW_CONFIDENCE)
 
-        # === Check 3: Uncertainty ===
-        if ml_uncertainty is not None and ml_uncertainty > 0.5:
-            escalation_reasons.append(EscalationReason.HIGH_UNCERTAINTY)
-
-        # === Check 4: Stakes ===
-        position_pct = signal.get('position_pct', 0)
-        if position_pct > self.high_stakes_position_pct:
+        # === CHECK 3: HIGH STAKES ===
+        # Is this a particularly large or risky trade? If so, think harder.
+        if signal.get('position_pct', 0) > self.high_stakes_position_pct:
             escalation_reasons.append(EscalationReason.HIGH_STAKES)
 
-        # === Check 5: Novel situation ===
+        # === CHECK 4: NOVELTY ===
+        # Is this a situation the AI hasn't seen many times before?
         if self._is_novel_situation(signal, context):
             escalation_reasons.append(EscalationReason.NOVEL_SITUATION)
 
-        # === Check 6: Conflicting signals ===
-        if self._has_conflicting_signals(context):
+        # === CHECK 5: CONFLICTING SIGNALS ===
+        # Are there disagreements among internal models or data sources?
+        if context.get('conflicting_signals', False):
             escalation_reasons.append(EscalationReason.CONFLICTING_SIGNALS)
 
-        # === Determine mode ===
+
+        # === MAKE ROUTING DECISION ===
+        # The number of red flags determines the cognitive path.
         if len(escalation_reasons) >= 2:
-            # Multiple concerns -> slow deliberation
+            # Multiple concerns warrant a full, slow deliberation.
             mode = ProcessingMode.SLOW
             max_compute = self.default_slow_budget_ms
             self._slow_decisions += 1
         elif len(escalation_reasons) == 1:
-            # One concern -> hybrid (fast first, then validate)
+            # A single concern triggers a hybrid approach: check the fast path,
+            # but then validate with the slow path.
             mode = ProcessingMode.HYBRID
             max_compute = self.default_fast_budget_ms + self.default_slow_budget_ms // 2
-            self._slow_decisions += 1  # Count as slow since we'll validate
+            self._slow_decisions += 1 # Counted as slow because it involves deliberation.
         elif confidence >= self.fast_confidence_threshold:
-            # High confidence -> fast path
+            # No red flags and high confidence -> trust the fast path.
             mode = ProcessingMode.FAST
             max_compute = self.default_fast_budget_ms
             self._fast_decisions += 1
         else:
-            # Medium confidence -> hybrid
+            # Medium confidence, no other red flags -> default to a cautious hybrid path.
             mode = ProcessingMode.HYBRID
             max_compute = self.default_fast_budget_ms + self.default_slow_budget_ms // 2
             self._slow_decisions += 1
 
-        # Create routing decision
         routing = RoutingDecision(
             decision_id=decision_id,
             mode=mode,
-            use_fast_path=mode in [ProcessingMode.FAST, ProcessingMode.HYBRID],
-            use_slow_path=mode in [ProcessingMode.SLOW, ProcessingMode.HYBRID],
+            use_fast_path=(mode in [ProcessingMode.FAST, ProcessingMode.HYBRID]),
+            use_slow_path=(mode in [ProcessingMode.SLOW, ProcessingMode.HYBRID]),
             should_stand_down=False,
-            confidence_in_routing=self._calculate_routing_confidence(
-                confidence, escalation_reasons
-            ),
+            confidence_in_routing=1.0 - (len(escalation_reasons) * 0.1),
             escalation_reasons=escalation_reasons,
             stand_down_reason=None,
             max_compute_ms=max_compute,
-            metadata={
-                'input_confidence': confidence,
-                'input_uncertainty': ml_uncertainty,
-            }
+            metadata={'input_confidence': confidence}
         )
 
-        # Record decision
         self._record_decision(routing)
-        self._total_routings += 1
-
-        logger.info(
-            f"Decision {decision_id}: {mode.value} "
-            f"(confidence={confidence:.2f}, reasons={len(escalation_reasons)})"
-        )
-
+        logger.info(f"Decision {decision_id} routed to {mode.value} path due to {len(escalation_reasons)} escalation reasons.")
         return routing
 
-    def _create_stand_down(
-        self,
-        decision_id: str,
-        reason: StandDownReason,
-        details: str,
-    ) -> RoutingDecision:
-        """Create a stand-down routing decision."""
+    def _create_stand_down(self, decision_id: str, reason: StandDownReason, details: str) -> RoutingDecision:
+        """Helper to create and log a STAND_DOWN decision."""
         self._stand_downs += 1
-
         routing = RoutingDecision(
             decision_id=decision_id,
             mode=ProcessingMode.STAND_DOWN,
-            use_fast_path=False,
-            use_slow_path=False,
+            use_fast_path=False, use_slow_path=False,
             should_stand_down=True,
-            confidence_in_routing=0.9,  # High confidence in standing down
+            confidence_in_routing=0.95, # Usually confident in a decision to be cautious.
             escalation_reasons=[],
             stand_down_reason=reason,
             max_compute_ms=0,
             metadata={'stand_down_details': details}
         )
-
         self._record_decision(routing)
-        logger.info(f"Decision {decision_id}: STAND DOWN - {details}")
-
+        logger.info(f"Decision {decision_id}: STAND DOWN advised. Reason: {reason.value} - {details}")
         return routing
 
     def _is_novel_situation(self, signal: Dict, context: Dict) -> bool:
-        """Check if this is a novel situation the robot hasn't seen before."""
-        if not self.self_model:
-            return False
-
+        """Checks if the current situation is novel based on past experience."""
+        if not self.self_model: return False
         strategy = signal.get('strategy', 'unknown')
         regime = context.get('regime', 'unknown')
         perf = self.self_model.get_performance(strategy, regime)
-
-        # Novel if we have very few samples
-        if perf is None or perf.total_trades < 5:
-            return True
-
-        return False
-
-    def _has_conflicting_signals(self, context: Dict) -> bool:
-        """Check if there are conflicting signals in context."""
-        # Check for model disagreement
-        model_predictions = context.get('model_predictions', {})
-        if model_predictions:
-            values = list(model_predictions.values())
-            if len(values) >= 2:
-                # High variance = disagreement
-                mean_pred = sum(values) / len(values)
-                variance = sum((v - mean_pred) ** 2 for v in values) / len(values)
-                if variance > 0.1:  # > 10% disagreement
-                    return True
-
-        # Check for contradictory regime signals
-        regime_confidence = context.get('regime_confidence', 1.0)
-        if regime_confidence < 0.5:
-            return True
-
-        return False
-
-    def _calculate_routing_confidence(
-        self,
-        input_confidence: float,
-        escalation_reasons: List[EscalationReason],
-    ) -> float:
-        """Calculate confidence in the routing decision itself."""
-        base_confidence = 0.8
-
-        # Reduce confidence for each escalation reason
-        confidence = base_confidence - (len(escalation_reasons) * 0.1)
-
-        # Input confidence affects routing confidence
-        if input_confidence < 0.5:
-            confidence -= 0.1
-
-        return max(0.3, min(1.0, confidence))
+        return perf is None or perf.total_trades < 5
 
     def _record_decision(self, routing: RoutingDecision) -> None:
-        """Record decision for learning."""
-        record = DecisionRecord(
-            decision_id=routing.decision_id,
-            routing=routing,
-            started_at=datetime.now(),
-        )
+        """Records the routing decision for future self-evaluation."""
+        record = DecisionRecord(decision_id=routing.decision_id, routing=routing, started_at=datetime.now())
         self._decision_history.append(record)
-
-        # Limit history
         if len(self._decision_history) > self._history_limit:
-            self._decision_history = self._decision_history[-self._history_limit:]
+            self._decision_history.pop(0)
 
     def record_outcome(
         self,
@@ -405,13 +322,15 @@ class MetacognitiveGovernor:
         actual_compute_ms: int = 0,
     ) -> None:
         """
-        Record the outcome of a decision for learning.
+        Records the final outcome of a decision, closing the learning loop for
+        the governor.
 
         Args:
-            decision_id: ID from RoutingDecision
-            outcome: 'success', 'failure', 'unknown'
-            was_correct: Whether the decision was correct
-            actual_compute_ms: Actual compute time used
+            decision_id: The ID from the original `RoutingDecision`.
+            outcome: 'success' or 'failure'.
+            was_correct: Whether the final decision was deemed correct. This helps
+                         the governor learn if its routing was appropriate.
+            actual_compute_ms: The actual time taken for the deliberation.
         """
         for record in reversed(self._decision_history):
             if record.decision_id == decision_id:
@@ -420,106 +339,53 @@ class MetacognitiveGovernor:
                 record.was_correct = was_correct
                 record.actual_compute_ms = actual_compute_ms
 
+                # Metacognitive learning: if the routing decision was correct,
+                # increment the accuracy score.
                 if was_correct is not None:
                     self._total_routings += 1
                     if was_correct:
                         self._correct_routings += 1
-
-                logger.debug(f"Recorded outcome for {decision_id}: {outcome}")
                 return
-
-        logger.warning(f"Decision {decision_id} not found in history")
-
-    def should_escalate(
-        self,
-        current_confidence: float,
-        elapsed_ms: int,
-        budget_ms: int,
-    ) -> bool:
-        """
-        Check if fast processing should escalate to slow.
-
-        Use during hybrid processing to decide if slow deliberation is needed.
-        """
-        # If we have budget and confidence is not high, escalate
-        if elapsed_ms < budget_ms and current_confidence < self.fast_confidence_threshold:
-            return True
-
-        # If very low confidence, always escalate
-        if current_confidence < self.slow_confidence_threshold:
-            return True
-
-        return False
+        logger.warning(f"Could not find decision_id {decision_id} in history to record outcome.")
 
     def get_routing_stats(self) -> Dict[str, Any]:
-        """Get statistics about routing decisions."""
+        """Returns statistics on how decisions have been routed."""
         total = self._fast_decisions + self._slow_decisions + self._stand_downs
-
+        if total == 0: return {"total_decisions": 0}
         return {
             'total_decisions': total,
             'fast_decisions': self._fast_decisions,
             'slow_decisions': self._slow_decisions,
             'stand_downs': self._stand_downs,
-            'fast_pct': self._fast_decisions / total if total > 0 else 0,
-            'stand_down_pct': self._stand_downs / total if total > 0 else 0,
-            'routing_accuracy': (
-                self._correct_routings / self._total_routings
-                if self._total_routings > 0 else 0
-            ),
-            'history_size': len(self._decision_history),
-        }
-
-    def get_efficiency_report(self) -> Dict[str, Any]:
-        """Get report on compute efficiency."""
-        if not self._decision_history:
-            return {'message': 'No history yet'}
-
-        completed = [d for d in self._decision_history if d.completed_at]
-        if not completed:
-            return {'message': 'No completed decisions'}
-
-        efficient = sum(1 for d in completed if d.was_efficient)
-        over_budget = sum(1 for d in completed if not d.was_efficient)
-
-        return {
-            'completed_decisions': len(completed),
-            'efficient_decisions': efficient,
-            'over_budget_decisions': over_budget,
-            'efficiency_rate': efficient / len(completed),
+            'fast_path_pct': self._fast_decisions / total,
+            'stand_down_pct': self._stand_downs / total,
+            'routing_accuracy': self._correct_routings / self._total_routings if self._total_routings > 0 else 0,
         }
 
     def introspect(self) -> str:
         """
-        Generate introspective report on metacognitive performance.
-
-        This is the "thinking about thinking" capability.
+        Generates a human-readable report on the governor's own performance,
+        enabling "thinking about thinking."
         """
         stats = self.get_routing_stats()
-        efficiency = self.get_efficiency_report()
-
         lines = [
-            "=== Metacognitive Introspection Report ===",
-            "",
-            f"Total decisions routed: {stats['total_decisions']}",
-            f"  - Fast path: {stats['fast_decisions']} ({stats['fast_pct']:.1%})",
-            f"  - Slow path: {stats['slow_decisions']}",
-            f"  - Stand-downs: {stats['stand_downs']} ({stats['stand_down_pct']:.1%})",
-            "",
-            f"Routing accuracy: {stats['routing_accuracy']:.1%}",
+            "--- Metacognitive Introspection ---",
+            f"I have routed {stats['total_decisions']} total decisions.",
+            f"  - Fast Path: {stats.get('fast_path_pct', 0):.1%}",
+            f"  - Slow Path: {stats.get('slow_decisions', 0)}",
+            f"  - Stood Down: {stats.get('stand_down_pct', 0):.1%}",
+            f"My estimated routing accuracy is {stats.get('routing_accuracy', 0):.1%}.",
+            "\n--- Self-Critique ---",
         ]
 
-        if 'efficiency_rate' in efficiency:
-            lines.append(f"Compute efficiency: {efficiency['efficiency_rate']:.1%}")
+        if stats.get('stand_down_pct', 0) > 0.4:
+            lines.append("Concern: My stand-down rate is high. I may be acting overly cautious.")
+        if stats.get('fast_path_pct', 0) > 0.8:
+            lines.append("Concern: My fast-path rate is high. I may be under-thinking and missing nuances.")
+        elif stats.get('fast_path_pct', 0) < 0.2 and stats.get('total_decisions',0) > 20:
+            lines.append("Concern: My fast-path rate is low. I may be over-thinking simple decisions.")
 
-        # Self-critique
-        if stats['stand_down_pct'] > 0.3:
-            lines.append("\nConcern: High stand-down rate. May be too cautious.")
-        elif stats['stand_down_pct'] < 0.05:
-            lines.append("\nConcern: Low stand-down rate. May be overconfident.")
-
-        if stats['fast_pct'] > 0.8:
-            lines.append("\nConcern: High fast-path rate. May be missing nuances.")
-        elif stats['fast_pct'] < 0.2:
-            lines.append("\nConcern: Low fast-path rate. May be overthinking.")
-
+        if not lines[-1].startswith("Concern"):
+            lines.append("Current performance seems balanced.")
+            
         return "\n".join(lines)

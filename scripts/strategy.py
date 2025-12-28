@@ -19,6 +19,7 @@ import json
 import sys
 from dataclasses import asdict, fields
 from datetime import datetime
+from core.clock.tz_utils import now_et, fmt_ct
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -318,7 +319,8 @@ def show_stats():
 
     print(f"\n{'#'*80}")
     print(f"#  STRATEGY PERFORMANCE STATISTICS")
-    print(f"#  Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    now = now_et()
+    print(f"#  Generated: {now.strftime('%Y-%m-%d')} {fmt_ct(now)}")
     print(f"{'#'*80}")
 
     for key, data in stats.items():

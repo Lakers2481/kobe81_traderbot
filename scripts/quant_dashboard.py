@@ -10,7 +10,7 @@ Advanced analytics including:
 - Statistical significance tests
 
 Usage:
-    python quant_dashboard.py --wfdir wf_outputs/donchian --dotenv
+    python quant_dashboard.py --wfdir wf_outputs/ibs_rsi --dotenv
     python quant_dashboard.py --equity equity_curve.csv --confidence 0.95
 """
 from __future__ import annotations
@@ -654,7 +654,7 @@ def main():
     parser.add_argument(
         '--strategy',
         type=str,
-        help='Filter by strategy name (e.g., donchian, TURTLE_SOUP)'
+        help='Filter by strategy name (e.g., ibs_rsi, TURTLE_SOUP)'
     )
     parser.add_argument(
         '--benchmark',
@@ -795,4 +795,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 

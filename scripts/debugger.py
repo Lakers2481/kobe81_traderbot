@@ -215,7 +215,7 @@ def trace_signal_generation(
     symbol: str,
     start: str,
     end: str,
-    strategy: str = 'donchian',
+    strategy: str = 'ibs_rsi',
     verbose: bool = True
 ) -> pd.DataFrame:
     """Trace signal generation step-by-step for a symbol."""
@@ -228,8 +228,8 @@ def trace_signal_generation(
 
     # Import strategy
     try:
-        if strategy == "donchian":
-            from strategies.donchian.strategy import DonchianBreakoutStrategy as Strat
+        if strategy in ("ibs_rsi","ibs","rsi2"):
+            from strategies.ibs_rsi.strategy import IbsRsiStrategy as Strat
             strat = Strat()
         elif strategy in ("turtle_soup","ict"):
             from strategies.ict.turtle_soup import TurtleSoupStrategy as Strat
@@ -501,7 +501,7 @@ def main():
         help='End date for signal trace (YYYY-MM-DD)'
     )
     parser.add_argument(
-        '--strategy', type=str, choices=['donchian', 'turtle_soup', 'ict'], default='donchian',
+        '--strategy', type=str, choices=['ibs_rsi', 'turtle_soup', 'ict'], default='ibs_rsi',
         help='Strategy for signal trace'
     )
     parser.add_argument(

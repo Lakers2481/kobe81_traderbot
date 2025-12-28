@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Walk-forward backtest for crypto pairs using Polygon hourly data.
-Same blueprint adapted for 1-hour bars using Donchian and ICT Turtle Soup.
+Same blueprint adapted for 1-hour bars using IBS_RSI and ICT Turtle Soup.
 """
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import pandas as pd
 import sys
 sys.path.insert(0, str(_P(__file__).resolve().parents[1]))
 
-from strategies.donchian.strategy import DonchianBreakoutStrategy
+from strategies.ibs_rsi.strategy import IbsRsiStrategy
 from strategies.ict.turtle_soup import TurtleSoupStrategy
 from data.universe.loader import load_universe
 from data.providers.polygon_crypto import fetch_crypto_bars
@@ -23,7 +23,7 @@ from config.env_loader import load_env
 
 
 def main():
-    ap = argparse.ArgumentParser(description='Walk-forward backtest (Crypto) with Donchian and ICT Turtle Soup')
+    ap = argparse.ArgumentParser(description='Walk-forward backtest (Crypto) with IBS_RSI and ICT Turtle Soup')
     ap.add_argument('--universe', type=str, required=True, help='Path to crypto universe CSV')
     ap.add_argument('--start', type=str, required=True, help='YYYY-MM-DD')
     ap.add_argument('--end', type=str, required=True, help='YYYY-MM-DD')
@@ -62,18 +62,18 @@ def main():
         return df
 
     # Strategies (same as equities)
-    don = DonchianBreakoutStrategy()
+    don = IbsRsiStrategy()
     ict = TurtleSoupStrategy()
 
-    def get_donchian(df: pd.DataFrame) -> pd.DataFrame:
+    def get_ibs_rsi(df: pd.DataFrame) -> pd.DataFrame:
         return don.scan_signals_over_time(df)
 
     def get_turtle_soup(df: pd.DataFrame) -> pd.DataFrame:
         return ict.scan_signals_over_time(df)
 
     # Run WF per strategy
-    print('Running Donchian...')
-    don_results = run_walk_forward(symbols, fetcher, get_donchian, splits, outdir=str(outdir / 'donchian'))
+    print('Running IBS_RSI...')
+    don_results = run_walk_forward(symbols, fetcher, get_ibs_rsi, splits, outdir=str(outdir / 'ibs_rsi'))
     print('Running ICT Turtle Soup...')
     ts_results = run_walk_forward(symbols, fetcher, get_turtle_soup, splits, outdir=str(outdir / 'turtle_soup'))
 
@@ -83,7 +83,7 @@ def main():
 
     # Combined side-by-side CSV
     rows = []
-    rows.append({'strategy': 'DONCHIAN_crypto', **don_summary})
+    rows.append({'strategy': 'IBS_RSI_crypto', **don_summary})
     rows.append({'strategy': 'TURTLE_SOUP_crypto', **ts_summary})
     compare_df = pd.DataFrame(rows)
     compare_df.to_csv(outdir / 'wf_summary_compare.csv', index=False)

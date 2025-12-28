@@ -107,7 +107,7 @@ regime_filter:
 selection:
   enabled: false  # Disabled in two-strategy setup (no cross-sectional TOPN)
   top_n: 5        # Ignored when selection.enabled is false
-  # Note: legacy RSI2/IBS/CRSI weights removed; selection not used for Donchian/ICT
+  # Note: legacy RSI2/IBS/CRSI weights removed; selection not used for IBS_RSI/ICT
   min_price: 10.0  # Generic floor used by some helpers when present
 
 # Volatility-Targeted Sizing (config-gated)
@@ -175,3 +175,60 @@ supervisor:
   max_error_count: 5
   error_window_minutes: 15
   max_restart_attempts: 3
+
+# Cognitive Architecture Settings
+cognitive:
+  # Master switch for the cognitive layer
+  enabled: true
+
+  # CognitiveBrain settings
+  brain:
+    min_confidence_to_act: 0.5        # Minimum confidence required to take action
+    max_processing_time_ms: 5000      # Timeout for deliberation process
+
+  # MetacognitiveGovernor settings (System 1/System 2 routing)
+  governor:
+    fast_confidence_threshold: 0.75   # Confidence needed to trust fast path
+    slow_confidence_threshold: 0.50   # Confidence below which slow path triggers
+    stand_down_threshold: 0.30        # Confidence below which we don't act
+    default_fast_budget_ms: 100       # Time budget for fast path
+    default_slow_budget_ms: 5000      # Time budget for slow path
+    high_stakes_position_pct: 0.03    # Trades above 3% trigger slow path
+
+  # ReflectionEngine settings
+  reflection:
+    max_reflections: 100              # Max stored reflections in history
+    lookback_hours: 24                # Default lookback for periodic reflection
+
+  # SelfModel settings
+  self_model:
+    state_dir: "state/cognitive"      # Directory for persisting self-model
+    auto_persist: true                # Auto-save after each update
+    poor_capability_threshold: 0.35   # Win rate below which capability is POOR
+    excellent_capability_threshold: 0.65  # Win rate above which capability is EXCELLENT
+    min_trades_for_rating: 10         # Minimum trades before assigning capability
+    max_calibration_error: 0.25       # Max error before recommending stand-down
+
+  # KnowledgeBoundary settings
+  knowledge_boundary:
+    uncertainty_threshold: 0.3        # Score above which situation is "uncertain"
+    stand_down_threshold: 0.6         # Score above which stand-down is recommended
+    min_samples_for_confidence: 5     # Minimum historical samples needed
+
+  # EpisodicMemory settings
+  episodic_memory:
+    storage_dir: "state/cognitive/episodes"
+    max_active_episodes: 100          # Max concurrent active episodes
+    max_completed_episodes: 1000      # Max stored completed episodes
+    auto_persist: true                # Auto-save completed episodes
+
+  # SemanticMemory settings
+  semantic_memory:
+    state_dir: "state/cognitive"
+    min_rule_confidence: 0.4          # Minimum confidence to keep a rule
+    max_rules: 500                    # Maximum stored rules
+
+  # CuriosityEngine settings
+  curiosity:
+    max_hypotheses: 50                # Maximum active hypotheses
+    validation_threshold: 0.7         # Confidence needed to promote hypothesis

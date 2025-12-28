@@ -20,6 +20,7 @@ import shutil
 import sys
 import zipfile
 from datetime import datetime
+from core.clock.tz_utils import now_et
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -69,7 +70,7 @@ def format_size(size_bytes: int) -> str:
 
 def generate_snapshot_name() -> str:
     """Generate a timestamped snapshot name."""
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    ts = now_et().strftime("%Y%m%d_%H%M%S")
     return f"snapshot_{ts}"
 
 

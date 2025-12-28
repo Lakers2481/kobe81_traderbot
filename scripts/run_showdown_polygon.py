@@ -10,7 +10,7 @@ import pandas as pd
 import sys
 sys.path.insert(0, str(_P(__file__).resolve().parents[1]))
 
-from strategies.donchian.strategy import DonchianBreakoutStrategy
+from strategies.ibs_rsi.strategy import IbsRsiStrategy
 from strategies.ict.turtle_soup import TurtleSoupStrategy
 from backtest.engine import Backtester, BacktestConfig
 from data.universe.loader import load_universe
@@ -26,7 +26,7 @@ from core.earnings_filter import filter_signals_by_earnings
 
 
 def main():
-    ap = argparse.ArgumentParser(description='Showdown backtest: Donchian vs ICT Turtle Soup over full period')
+    ap = argparse.ArgumentParser(description='Showdown backtest: IBS+RSI vs ICT Turtle Soup over full period')
     ap.add_argument('--universe', type=str, required=True)
     ap.add_argument('--start', type=str, required=True)
     ap.add_argument('--end', type=str, required=True)
@@ -63,7 +63,7 @@ def main():
         return fetch_daily_bars_polygon(sym, args.start, args.end, cache_dir=cache_dir)
 
     # Strategies
-    don = DonchianBreakoutStrategy()
+    ibs = IbsRsiStrategy()
     ict = TurtleSoupStrategy()
 
     def apply_regime_filter(signals: pd.DataFrame) -> pd.DataFrame:
@@ -84,8 +84,8 @@ def main():
 
     # No TOPN cross-sectional ranking in showdown when only comparing two distinct strategies
 
-    def get_donchian(df: pd.DataFrame) -> pd.DataFrame:
-        signals = don.scan_signals_over_time(df)
+    def get_ibs_rsi(df: pd.DataFrame) -> pd.DataFrame:
+        signals = ibs.generate_signals(df)
         signals = apply_regime_filter(signals)
         signals = apply_earnings_filter(signals)
         return signals
@@ -98,14 +98,14 @@ def main():
 
     # Run per strategy
     cfg = BacktestConfig(initial_cash=100_000.0)
-    bt_don = Backtester(cfg, get_donchian, fetcher)
-    r1 = bt_don.run(symbols, outdir=str(outdir / 'donchian'))
+    bt_ibs = Backtester(cfg, get_ibs_rsi, fetcher)
+    r1 = bt_ibs.run(symbols, outdir=str(outdir / 'ibs_rsi'))
     bt_ict = Backtester(cfg, get_turtle_soup, fetcher)
     r2 = bt_ict.run(symbols, outdir=str(outdir / 'turtle_soup'))
 
     # Combined summary
     rows = []
-    for name, res in (('DONCHIAN', r1), ('TURTLE_SOUP', r2)):
+    for name, res in (('IBS_RSI', r1), ('TURTLE_SOUP', r2)):
         m = res.get('metrics', {})
         rows.append({
             'strategy': name,
@@ -126,9 +126,9 @@ def main():
     # Simple HTML
     html = ['<html><head><meta charset="utf-8"><title>Showdown Report</title>',
             '<style>body{font-family:Arial;margin:20px} table{border-collapse:collapse} th,td{border:1px solid #ddd;padding:6px} th{background:#f3f3f3}</style>',
-            '</head><body><h1>Showdown Summary (Donchian vs ICT Turtle Soup)</h1>', df.to_html(index=False), '</body></html>']
+            '</head><body><h1>Showdown Summary (IBS+RSI vs ICT Turtle Soup)</h1>', df.to_html(index=False), '</body></html>']
     (outdir / 'showdown_report.html').write_text('\n'.join(html), encoding='utf-8')
-    print('\nShowdown complete. Summary (Donchian vs ICT Turtle Soup):')
+    print('\nShowdown complete. Summary (IBS+RSI vs ICT Turtle Soup):')
     print(df)
 
 

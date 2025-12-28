@@ -95,7 +95,7 @@ def run_quick_sanity_tests() -> Tuple[int, int, List[str]]:
     modules_to_test = [
         # Providers can pull in heavy deps; skip here to avoid environment flakiness
         "data.universe.loader",
-        "strategies.donchian.strategy",
+        "strategies.ibs_rsi.strategy",
         "strategies.ict.turtle_soup",
         "backtest.engine",
         "backtest.walk_forward",

@@ -1,12 +1,20 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
-Parameter Optimization for Kobe81 Trading Bot (Donchian / ICT).
+Parameter Optimization for Kobe81 Trading Bot (IBS+RSI / Turtle Soup).
 
-Runs a small grid search over key parameters for:
-- Donchian breakout: lookback, stop_mult, time_stop_bars, r_multiple
-- ICT Turtle Soup: lookback, min_bars_since_extreme, time_stop_bars, r_multiple
+Runs a compact grid search over strategy parameters using the event-driven
+backtest engine. Designed for quick, reproducible scans on small universes to
+identify promising parameter regions — not a final, production calibration.
 
-Outputs CSV and best_params.json.
+Outputs:
+- <outdir>/<strategy>_grid.csv
+- <outdir>/best_params.json
+
+Strategies:
+- IBS+RSI (IbsRsiStrategy): varies `ibs_max`, `rsi_max`, `atr_mult`,
+  `r_multiple`, and `time_stop_bars`.
+- Turtle Soup (TurtleSoupStrategy): varies `lookback`, `min_bars_since_extreme`,
+  `stop_buffer_mult`, `r_multiple`, and `time_stop_bars`.
 """
 from __future__ import annotations
 
@@ -21,16 +29,17 @@ import pandas as pd
 import sys
 sys.path.insert(0, str(_P(__file__).resolve().parents[1]))
 
-from strategies.donchian.strategy import DonchianBreakoutStrategy, DonchianParams
+# from strategies.ibs_rsi.strategy import IBS_RSIBreakoutStrategy, IBS_RSIParams
+from strategies.ibs_rsi.strategy import IbsRsiStrategy, IbsRsiParams
 from strategies.ict.turtle_soup import TurtleSoupStrategy, TurtleSoupParams
 from backtest.engine import Backtester, BacktestConfig
 from data.universe.loader import load_universe
-from data.providers.polygon_eod import fetch_daily_bars_polygon
+from data.providers.multi_source import fetch_daily_bars_multi
 from config.env_loader import load_env
 
 
 def main():
-    ap = argparse.ArgumentParser(description='Parameter optimization for Donchian / ICT Turtle Soup')
+    ap = argparse.ArgumentParser(description='Parameter optimization for IBS_RSI / ICT Turtle Soup')
     ap.add_argument('--universe', type=str, required=True)
     ap.add_argument('--start', type=str, required=True)
     ap.add_argument('--end', type=str, required=True)
@@ -38,17 +47,19 @@ def main():
     ap.add_argument('--outdir', type=str, default='optimize_outputs')
     ap.add_argument('--cache', type=str, default='data/cache')
     ap.add_argument('--dotenv', type=str, default='./.env')
-    ap.add_argument('--strategy', type=str, choices=['donchian','turtle_soup','ict'], default='donchian')
-    # Donchian grid
-    ap.add_argument('--donchian-lookbacks', type=str, default='20,55')
-    ap.add_argument('--donchian-stop-mults', type=str, default='1.5,2.0,2.5')
-    ap.add_argument('--donchian-time-stops', type=str, default='10,20,30')
-    ap.add_argument('--donchian-r-mults', type=str, default='2.0,2.5,3.0')
-    # ICT grid
+    ap.add_argument('--strategy', type=str, choices=['ibs_rsi','turtle_soup'], default='ibs_rsi')
+    # IBS+RSI grid
+    ap.add_argument('--ibs-max', type=str, default='0.10,0.15,0.20')
+    ap.add_argument('--rsi-max', type=str, default='5,10,15')
+    ap.add_argument('--atr-mults', type=str, default='0.8,1.0,1.2')
+    ap.add_argument('--r-mults', type=str, default='1.5,2.0,2.5')
+    ap.add_argument('--time-stops', type=str, default='5,7')
+    # Turtle Soup grid
     ap.add_argument('--ict-lookbacks', type=str, default='20,30')
     ap.add_argument('--ict-min-bars', type=str, default='3,5')
+    ap.add_argument('--ict-stop-bufs', type=str, default='0.5,1.0')
     ap.add_argument('--ict-time-stops', type=str, default='5,7')
-    ap.add_argument('--ict-r-mults', type=str, default='2.0,2.5')
+    ap.add_argument('--ict-r-mults', type=str, default='2.0,3.0')
     args = ap.parse_args()
 
     dotenv = _P(args.dotenv)
@@ -61,40 +72,42 @@ def main():
     outdir.mkdir(parents=True, exist_ok=True)
 
     def fetcher(sym: str) -> pd.DataFrame:
-        return fetch_daily_bars_polygon(sym, args.start, args.end, cache_dir=cache_dir)
+        return fetch_daily_bars_multi(sym, args.start, args.end, cache_dir=cache_dir)
 
     results: List[Dict[str, Any]] = []
-    if args.strategy == 'donchian':
-        lookbacks = [int(x) for x in args.donchian_lookbacks.split(',') if x]
-        stop_mults = [float(x) for x in args.donchian_stop_mults.split(',') if x]
-        time_stops = [int(x) for x in args.donchian_time_stops.split(',') if x]
-        r_mults = [float(x) for x in args.donchian_r_mults.split(',') if x]
-        print(f"Donchian grid: lookbacks={lookbacks}, stop_mults={stop_mults}, time_stops={time_stops}, r_mults={r_mults}")
-        for lb, sm, ts, rm in product(lookbacks, stop_mults, time_stops, r_mults):
-            params = DonchianParams(lookback=lb, stop_mult=sm, time_stop_bars=ts, r_multiple=rm)
-            strategy = DonchianBreakoutStrategy(params)
+    if args.strategy == 'ibs_rsi':
+        ibs_maxs = [float(x) for x in args.ibs_max.split(',') if x]
+        rsi_maxs = [float(x) for x in args.rsi_max.split(',') if x]
+        atr_mults = [float(x) for x in args.atr_mults.split(',') if x]
+        r_mults = [float(x) for x in args.r_mults.split(',') if x]
+        time_stops = [int(x) for x in args.time_stops.split(',') if x]
+        print(f"IBS_RSI grid: ibs_max={ibs_maxs}, rsi_max={rsi_maxs}, atr_mults={atr_mults}, r_mults={r_mults}, time_stops={time_stops}")
+        for ibs_m, rsi_m, atr_m, rm, ts in product(ibs_maxs, rsi_maxs, atr_mults, r_mults, time_stops):
+            params = IbsRsiParams(ibs_max=ibs_m, rsi_max=rsi_m, atr_mult=atr_m, r_multiple=rm, time_stop_bars=ts)
+            strat = IbsRsiStrategy(params)
             def get_signals(df: pd.DataFrame) -> pd.DataFrame:
-                return strategy.scan_signals_over_time(df)
+                return strat.scan_signals_over_time(df)
             cfg = BacktestConfig(initial_cash=100_000.0)
             bt = Backtester(cfg, get_signals, fetcher)
             result = bt.run(symbols)
             m = result.get('metrics', {})
             rec = {
-                'lookback': lb, 'stop_mult': sm, 'time_stop_bars': ts, 'r_multiple': rm,
+                'ibs_max': ibs_m, 'rsi_max': rsi_m, 'atr_mult': atr_m, 'r_multiple': rm, 'time_stop_bars': ts,
                 'trades': m.get('trades', 0), 'win_rate': m.get('win_rate', 0.0),
                 'profit_factor': m.get('profit_factor', 0.0), 'sharpe': m.get('sharpe', 0.0),
                 'max_drawdown': m.get('max_drawdown', 0.0),
             }
             results.append(rec)
-            print(f"DON lb={lb} sm={sm} ts={ts} rm={rm} => WR={m.get('win_rate',0):.2%} PF={m.get('profit_factor',0):.2f}")
+            print(f"IBS_RSI ibs={ibs_m} rsi={rsi_m} atr={atr_m} ts={ts} rm={rm} => WR={m.get('win_rate',0):.2%} PF={m.get('profit_factor',0):.2f}")
     else:
         lookbacks = [int(x) for x in args.ict_lookbacks.split(',') if x]
         min_bars = [int(x) for x in args.ict_min_bars.split(',') if x]
+        stop_bufs = [float(x) for x in args.ict_stop_bufs.split(',') if x]
         time_stops = [int(x) for x in args.ict_time_stops.split(',') if x]
         r_mults = [float(x) for x in args.ict_r_mults.split(',') if x]
-        print(f"ICT grid: lookbacks={lookbacks}, min_bars={min_bars}, time_stops={time_stops}, r_mults={r_mults}")
-        for lb, mb, ts, rm in product(lookbacks, min_bars, time_stops, r_mults):
-            params = TurtleSoupParams(lookback=lb, min_bars_since_extreme=mb, time_stop_bars=ts, r_multiple=rm)
+        print(f"TurtleSoup grid: lookbacks={lookbacks}, min_bars={min_bars}, stop_bufs={stop_bufs}, time_stops={time_stops}, r_mults={r_mults}")
+        for lb, mb, sb, ts, rm in product(lookbacks, min_bars, stop_bufs, time_stops, r_mults):
+            params = TurtleSoupParams(lookback=lb, min_bars_since_extreme=mb, stop_buffer_mult=sb, time_stop_bars=ts, r_multiple=rm)
             strategy = TurtleSoupStrategy(params)
             def get_signals(df: pd.DataFrame) -> pd.DataFrame:
                 return strategy.scan_signals_over_time(df)
@@ -103,13 +116,13 @@ def main():
             result = bt.run(symbols)
             m = result.get('metrics', {})
             rec = {
-                'lookback': lb, 'min_bars': mb, 'time_stop_bars': ts, 'r_multiple': rm,
+                'lookback': lb, 'min_bars': mb, 'stop_buffer_mult': sb, 'time_stop_bars': ts, 'r_multiple': rm,
                 'trades': m.get('trades', 0), 'win_rate': m.get('win_rate', 0.0),
                 'profit_factor': m.get('profit_factor', 0.0), 'sharpe': m.get('sharpe', 0.0),
                 'max_drawdown': m.get('max_drawdown', 0.0),
             }
             results.append(rec)
-            print(f"ICT lb={lb} mb={mb} ts={ts} rm={rm} => WR={m.get('win_rate',0):.2%} PF={m.get('profit_factor',0):.2f}")
+            print(f"TS lb={lb} mb={mb} sb={sb} ts={ts} rm={rm} => WR={m.get('win_rate',0):.2%} PF={m.get('profit_factor',0):.2f}")
 
     # Save results
     df_out = pd.DataFrame(results)
@@ -127,4 +140,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
