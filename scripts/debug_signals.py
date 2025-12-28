@@ -49,12 +49,12 @@ if signals.empty:
     # Check IBS values
     ibs_vals = df['ibs'].dropna()
     print(f"IBS range: {ibs_vals.min():.3f} to {ibs_vals.max():.3f}")
-    print(f"IBS < 0.15: {(ibs_vals < 0.15).sum()} bars")
+    print(f"IBS < {params.ibs_entry}: {(ibs_vals < params.ibs_entry).sum()} bars")
 
     # Check RSI values
     rsi_vals = df['rsi2'].dropna()
     print(f"RSI2 range: {rsi_vals.min():.1f} to {rsi_vals.max():.1f}")
-    print(f"RSI2 < 10: {(rsi_vals < 10).sum()} bars")
+    print(f"RSI2 < {params.rsi_entry}: {(rsi_vals < params.rsi_entry).sum()} bars")
 
     # Check SMA filter
     above_sma = (df['close'] > df['sma200']).sum()

@@ -408,8 +408,8 @@ if report.passed:
 ### Core Trading
 - `backtest/engine.py`: Backtester with equity curve, ATR/time stops, FIFO P&L
 - `strategies/dual_strategy/combined.py`: DualStrategyScanner (IBS+RSI + Turtle Soup combined)
-- `strategies/ibs_rsi/strategy.py`: IBS<0.15 + RSI(2)<10 entry, SMA(200) filter (62.3% WR)
-- `strategies/ict/turtle_soup.py`: ICT Turtle Soup liquidity sweep, SMA(200) filter (61.1% WR)
+- `strategies/ibs_rsi/strategy.py`: IBS<0.08 + RSI(2)<5 entry, SMA(200) filter — v2.2 (59.9% WR, 1.46 PF)
+- `strategies/ict/turtle_soup.py`: Turtle Soup (sweep≥0.3 ATR) — v2.2 (61.0% WR, 1.37 PF)
 - `execution/broker_alpaca.py`: `place_ioc_limit()`, `get_best_ask()`, idempotency
 - `risk/policy_gate.py`: `PolicyGate.check()` for budget enforcement
 - `scripts/runner.py`: 24/7 scheduler with `--scan-times`  state persistence

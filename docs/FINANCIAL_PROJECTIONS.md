@@ -1,5 +1,7 @@
 # Financial Projections & System Overview
 
+> Alignment (v2.2): docs/STATUS.md is the canonical source for strategy performance and replication. Numbers below are illustrative for planning; verify current metrics using the artifacts listed in STATUS (e.g., `reports/backtest_dual_latest.txt`).
+
 ## Capital Configuration
 - **Starting Capital:** $100,000
 - **Position Size:** $1,500 per trade
@@ -8,18 +10,14 @@
 
 ---
 
-## Verified Backtest Performance
+## Verified Backtest Performance (v2.2)
 
 | Metric | IBS+RSI | Turtle Soup | Combined |
 |--------|---------|-------------|----------|
-| Win Rate | 62.3% | 61.1% | 62.3% |
-| Avg Win | +2.65% | +4.23% | +2.74% |
-| Avg Loss | -2.79% | -2.34% | -2.72% |
-| Profit Factor | 1.64 | 3.09 | 1.66 |
-| Signals/Day | 10.1 | 0.2 | 10.3 |
+| Win Rate | 59.9% | 61.0% | 60.2% |
+| Profit Factor | 1.46 | 1.37 | 1.44 |
 
-**Test Period:** 2024-01-01 to 2025-12-26
-**Universe:** 200 stocks (projections scaled to 900)
+Evidence: `reports/backtest_dual_latest.txt` (2015–2024, cap=200)
 
 ---
 

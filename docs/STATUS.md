@@ -1,4 +1,4 @@
-# Kobe81 Traderbot - STATUS
+﻿# Kobe81 Traderbot - STATUS
 
 > **Last Updated:** 2025-12-29 00:45 UTC
 > **Verified By:** Ops Agent (v2.2 QUANT INTERVIEW READY — evidence stamped)
@@ -1036,9 +1036,9 @@ Follow these exact steps to reproduce end-to-end results with no ambiguity.
 
 - Walk-Forward (evidence refresh)
   - Quick smoke (both strats):
-    - `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2025-08-15 --end 2025-12-26 --train-days 84 --test-days 21 --cap 20 --outdir wf_outputs_verify_quick --fallback-free --dotenv ./.env`
+    - `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2025-08-15 --end 2025-12-26 --train-days 252 --test-days 63 --cap 20 --outdir wf_outputs_verify_quick --fallback-free --dotenv ./.env`
   - Overnight refresh (recommended for KPIs):
-    - `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2025-01-02 --end 2025-12-26 --train-days 126 --test-days 42 --cap 150 --outdir wf_outputs_verify_fullmonth --fallback-free --dotenv ./.env`
+    - `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2025-01-02 --end 2025-12-26 --train-days 252 --test-days 63 --cap 150 --outdir wf_outputs_verify_fullmonth --fallback-free --dotenv ./.env`
 
 - Metrics from WF
   - `python scripts/metrics.py --wfdir wf_outputs_verify_fullmonth --strategy IBS_RSI`

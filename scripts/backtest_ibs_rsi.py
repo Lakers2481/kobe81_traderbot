@@ -2,10 +2,10 @@
 """
 Backtest IBS + RSI Strategy - Quant Interview Ready
 
-Verified Performance:
-- Win Rate: 62.3%
-- Profit Factor: 1.64
-- Signals/Day: 10+ (from 900-stock universe)
+Verified Performance (v2.2):
+- Win Rate: 59.9%
+- Profit Factor: 1.46
+- Trades: 867 (cap=200, 2015–2024)
 """
 from __future__ import annotations
 
@@ -19,18 +19,18 @@ from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-env_path = Path("C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env")
+env_path = Path(__file__).parent.parent / ".env"
 if env_path.exists():
     load_dotenv(env_path)
 
 from data.providers.polygon_eod import fetch_daily_bars_polygon
 from data.universe.loader import load_universe
-from strategies.ibs_rsi import IBSRSIStrategy, IBSRSIParams
+from strategies.ibs_rsi.strategy import IbsRsiStrategy, IbsRsiParams
 
 
-def run_backtest(symbols: List[str], start: str, end: str, params: IBSRSIParams, max_symbols: int) -> Dict:
+def run_backtest(symbols: List[str], start: str, end: str, params: IbsRsiParams, max_symbols: int) -> Dict:
     """Run backtest with proper trade simulation."""
-    strategy = IBSRSIStrategy(params)
+    strategy = IbsRsiStrategy(params)
     cache_dir = Path("data/cache/polygon")
 
     print(f"Fetching data for {min(len(symbols), max_symbols)} symbols...")
@@ -54,7 +54,7 @@ def run_backtest(symbols: List[str], start: str, end: str, params: IBSRSIParams,
     print(f"Got {len(all_data)} symbols, {len(combined)} bars")
 
     # Compute indicators
-    combined = strategy._compute(combined)
+    combined = strategy._compute_indicators(combined)
 
     # Generate signals
     print("Generating signals...")
@@ -190,7 +190,7 @@ def main():
     args = parser.parse_args()
 
     symbols = load_universe(args.universe)
-    params = IBSRSIParams()
+    params = IbsRsiParams()
 
     print(f"\n{'='*60}")
     print("IBS + RSI MEAN REVERSION STRATEGY BACKTEST")

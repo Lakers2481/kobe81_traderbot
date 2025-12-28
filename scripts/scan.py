@@ -66,7 +66,7 @@ except ImportError:
 DEFAULT_UNIVERSE = ROOT / "data" / "universe" / "optionable_liquid_900.csv"
 SIGNALS_LOG = ROOT / "logs" / "signals.jsonl"
 CACHE_DIR = ROOT / "data" / "cache"
-LOOKBACK_DAYS = 300  # Need 200+ days for SMA(200) + buffer
+LOOKBACK_DAYS = 400  # Need 280+ trading days for SMA(200) + buffer (~400 calendar days)
 
 
 # -----------------------------------------------------------------------------

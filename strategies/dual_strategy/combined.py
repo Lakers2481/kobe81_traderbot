@@ -95,7 +95,7 @@ class DualStrategyParams:
     - Turtle Soup: 61.0% WR, 1.37 PF (looser sweep, tight exits)
     """
 
-    # IBS + RSI Parameters (v2.0 - TIGHTENED ENTRY)
+    # IBS + RSI Parameters (v2.2 - TIGHTENED ENTRY)
     ibs_entry: float = 0.08            # Was 0.15 - 47% tighter
     ibs_exit: float = 0.80
     rsi_period: int = 2
@@ -127,10 +127,10 @@ class DualStrategyScanner:
     """
     Combined IBS+RSI and Turtle Soup strategy scanner.
 
-    Verified Performance:
-    - IBS+RSI: 62.3% WR, 1.64 PF, 10+ signals/day
-    - Turtle Soup (strong sweep): 61.1% WR, 3.09 PF, 0.2 signals/day
-    - Combined: 10+ signals/day, both strategies 60%+ WR
+    Verified Performance (v2.2):
+    - IBS+RSI: 59.9% WR, 1.46 PF (867 trades)
+    - Turtle Soup: 61.0% WR, 1.37 PF (305 trades)
+    - Combined: 60.2% WR, 1.44 PF (1,172 trades)
     """
 
     def __init__(self, params: Optional[DualStrategyParams] = None):
@@ -180,7 +180,7 @@ class DualStrategyScanner:
         if close < self.params.min_price:
             return False, 0.0, ""
 
-        # Entry: IBS < 0.15 AND RSI < 10 AND Close > SMA200
+        # Entry: IBS < 0.08 AND RSI(2) < 5 AND Close > SMA200
         if float(ibs_val) >= self.params.ibs_entry:
             return False, 0.0, ""
         if float(rsi_val) >= self.params.rsi_entry:
