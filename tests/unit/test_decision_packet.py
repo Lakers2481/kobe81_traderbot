@@ -1,4 +1,4 @@
-"""
+﻿"""
 Unit tests for decision packet.
 """
 
@@ -59,7 +59,7 @@ class TestDecisionPacket:
             timestamp="2025-12-27T10:00:00Z",
             symbol="AAPL",
             side="buy",
-            strategy_name="DonchianBreakout",
+            strategy_name="IBS_RSI",
         )
         assert packet.symbol == "AAPL"
         assert packet.side == "buy"
@@ -72,14 +72,14 @@ class TestDecisionPacket:
             timestamp="2025-12-27T10:00:00Z",
             symbol="AAPL",
             side="buy",
-            strategy_name="DonchianBreakout",
+            strategy_name="IBS_RSI",
         )
         packet2 = DecisionPacket(
             run_id="test_001",
             timestamp="2025-12-27T10:00:00Z",
             symbol="AAPL",
             side="buy",
-            strategy_name="DonchianBreakout",
+            strategy_name="IBS_RSI",
         )
         assert packet1.packet_hash == packet2.packet_hash
 
@@ -89,7 +89,7 @@ class TestDecisionPacket:
             timestamp="2025-12-27T10:00:00Z",
             symbol="AAPL",
             side="buy",
-            strategy_name="DonchianBreakout",
+            strategy_name="IBS_RSI",
             strategy_reasons=["20-day breakout"],
         )
         json_str = packet.to_json()
@@ -103,7 +103,7 @@ class TestDecisionPacket:
             timestamp="2025-12-27T10:00:00Z",
             symbol="AAPL",
             side="buy",
-            strategy_name="DonchianBreakout",
+            strategy_name="IBS_RSI",
             strategy_reasons=["20-day breakout", "Volume confirmation"],
             feature_values={"rsi_14": 55.0, "atr_14": 3.50},
         )
@@ -124,7 +124,7 @@ class TestDecisionPacket:
             timestamp="2025-12-27T10:00:00Z",
             symbol="AAPL",
             side="buy",
-            strategy_name="DonchianBreakout",
+            strategy_name="IBS_RSI",
             execution_plan=ExecutionPlan(
                 entry_price=150.0,
                 stop_loss=145.0,
@@ -145,7 +145,7 @@ class TestDecisionPacket:
             timestamp="2025-12-27T10:00:00Z",
             symbol="AAPL",
             side="buy",
-            strategy_name="DonchianBreakout",
+            strategy_name="IBS_RSI",
             risk_gate_results=[
                 RiskGateResult("policy_gate", True, 50.0, 75.0, "OK"),
                 RiskGateResult("liquidity_gate", True, 0.1, 0.5, "OK"),
@@ -161,7 +161,7 @@ class TestDecisionPacket:
             timestamp="2025-12-27T10:00:00Z",
             symbol="AAPL",
             side="buy",
-            strategy_name="DonchianBreakout",
+            strategy_name="IBS_RSI",
             ml_outputs={"probability": 0.65},
         )
         assert packet.is_field_present("ml_outputs")
@@ -173,7 +173,7 @@ class TestDecisionPacket:
             timestamp="2025-12-27T10:00:00Z",
             symbol="AAPL",
             side="buy",
-            strategy_name="DonchianBreakout",
+            strategy_name="IBS_RSI",
             unknowns=["ml_outputs: No ML model used", "sentiment_score: Not available"],
         )
         assert len(packet.unknowns) == 2
@@ -186,7 +186,7 @@ class TestBuildDecisionPacket:
         packet = build_decision_packet(
             symbol="AAPL",
             side="buy",
-            strategy_name="DonchianBreakout",
+            strategy_name="IBS_RSI",
         )
         assert packet.symbol == "AAPL"
         assert packet.run_id.startswith("totd_")
@@ -197,7 +197,7 @@ class TestBuildDecisionPacket:
         packet = build_decision_packet(
             symbol="AAPL",
             side="buy",
-            strategy_name="DonchianBreakout",
+            strategy_name="IBS_RSI",
             signal={"reason": "20-day breakout", "description": "Price above 20-day high"},
             ml_result={"probability": 0.65},
             risk_checks=[
@@ -228,7 +228,7 @@ class TestBuildDecisionPacket:
         packet = build_decision_packet(
             symbol="AAPL",
             side="buy",
-            strategy_name="DonchianBreakout",
+            strategy_name="IBS_RSI",
             historical_analogs=[
                 {
                     "date": "2024-01-15",
@@ -244,3 +244,4 @@ class TestBuildDecisionPacket:
         )
         assert len(packet.historical_analogs) == 1
         assert packet.historical_analogs[0].pnl_pct == 6.9
+

@@ -51,7 +51,7 @@ class TestPlaybookGenerator:
             timestamp="2025-12-27T10:00:00Z",
             symbol="AAPL",
             side="buy",
-            strategy_name="DonchianBreakout",
+            strategy_name="IBS_RSI",
             strategy_reasons=["20-day breakout", "Volume confirmation"],
             signal_description="Price closed above 20-day high with 1.5x average volume",
             feature_values={"rsi_14": 55.0, "atr_14": 3.50, "volume_ratio": 1.5},
@@ -135,7 +135,7 @@ class TestPlaybookGenerator:
             timestamp="2025-12-27T10:00:00Z",
             symbol="AAPL",
             side="buy",
-            strategy_name="DonchianBreakout",
+            strategy_name="IBS_RSI",
             # Missing many optional fields
             unknowns=["ml_outputs: Not available", "sentiment_score: Not available"],
         )
@@ -154,7 +154,7 @@ class TestPlaybookGenerator:
             timestamp="2025-12-27T10:00:00Z",
             symbol="AAPL",
             side="buy",
-            strategy_name="DonchianBreakout",
+            strategy_name="IBS_RSI",
             # No ML outputs provided
         )
 
@@ -176,7 +176,7 @@ class TestPlaybookWithHistoricalAnalogs:
             timestamp="2025-12-27T10:00:00Z",
             symbol="AAPL",
             side="buy",
-            strategy_name="DonchianBreakout",
+            strategy_name="IBS_RSI",
             historical_analogs=[
                 HistoricalAnalog(
                     date="2024-01-15",
@@ -218,7 +218,7 @@ class TestPlaybookChecklist:
             timestamp="2025-12-27T10:00:00Z",
             symbol="MSFT",
             side="buy",
-            strategy_name="DonchianBreakout",
+            strategy_name="IBS_RSI",
             execution_plan=ExecutionPlan(
                 entry_price=380.0,
                 stop_loss=370.0,
