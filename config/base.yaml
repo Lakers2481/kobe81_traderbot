@@ -110,6 +110,43 @@ selection:
   # Note: legacy RSI2/IBS/CRSI weights removed; selection not used for IBS_RSI/ICT
   min_price: 10.0  # Generic floor used by some helpers when present
 
+# Signal Quality Gate (v2.0 - reduces ~50/week to ~5/week)
+quality_gate:
+  enabled: true
+  min_score_to_pass: 70.0  # Minimum composite score to pass gate
+  max_signals_per_day: 1   # Target: 5 trades/week
+
+  # Component weights (total = 100)
+  weights:
+    conviction: 30     # ML conviction score
+    ml_confidence: 25  # ML meta-model confidence
+    strategy: 15       # Raw strategy score
+    regime: 15         # Regime alignment
+    liquidity: 15      # ADV-based liquidity score
+
+  # Quality tiers
+  tiers:
+    elite: 90          # Trade full size
+    excellent: 80      # Trade full size
+    good: 70           # Trade 80% size
+    marginal: 60       # Skip
+
+  # Liquidity requirements
+  liquidity:
+    min_adv_usd: 5000000       # $5M minimum ADV
+    preferred_adv_usd: 20000000  # $20M for full score
+    max_spread_pct: 0.02       # 2% max spread
+
+  # Timing penalties
+  timing:
+    monday_penalty: 1.0        # Points deducted
+    friday_penalty: 1.5        # Higher weekend risk
+
+  # Volatility penalties
+  volatility:
+    vix_elevated: 25.0         # 2.5 point penalty above this
+    vix_high: 35.0             # 5 point penalty above this
+
 # Volatility-Targeted Sizing (config-gated)
 sizing:
   enabled: false  # Set true to use ATR-based position sizing

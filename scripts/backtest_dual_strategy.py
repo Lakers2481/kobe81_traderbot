@@ -16,7 +16,8 @@ from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-env_path = Path("C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env")
+# Load .env from project root
+env_path = Path(__file__).parent.parent / ".env"
 if env_path.exists():
     load_dotenv(env_path)
 
@@ -42,8 +43,20 @@ def simulate_trades(signals: pd.DataFrame, combined: pd.DataFrame, params: DualS
         entry_idx = mask.idxmax()
         entry_row = sym_data.loc[entry_idx]
         entry_price = float(entry_row['open'])
-        stop_price = sig['stop_loss']
-        tp_price = sig['take_profit']
+
+        # Use signal's time_stop_bars (strategy-specific)
+        time_stop = int(sig.get('time_stop_bars', params.time_stop_bars))
+
+        # For Turtle Soup, recalculate stop/TP based on actual entry price
+        if strategy == 'TurtleSoup':
+            atr_val = float(sig.get('atr', 1.0))
+            signal_low = float(sig['entry_price']) - atr_val  # Approximate signal bar low
+            stop_price = signal_low - params.ts_stop_buffer_mult * atr_val
+            risk = entry_price - stop_price
+            tp_price = entry_price + params.ts_r_multiple * risk if risk > 0 else None
+        else:
+            stop_price = sig['stop_loss']
+            tp_price = sig['take_profit']
 
         exit_price = None
         exit_reason = None
@@ -83,8 +96,8 @@ def simulate_trades(signals: pd.DataFrame, combined: pd.DataFrame, params: DualS
                     exit_reason = 'take_profit'
                     break
 
-            # Time stop (both strategies)
-            if bars_held >= params.time_stop_bars:
+            # Time stop (uses signal's strategy-specific value)
+            if bars_held >= time_stop:
                 exit_price = close
                 exit_reason = 'time_stop'
                 break

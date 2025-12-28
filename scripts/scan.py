@@ -38,6 +38,13 @@ from ml_meta.features import compute_features_frame
 from ml_meta.model import load_model, predict_proba, FEATURE_COLS
 from altdata.sentiment import load_daily_cache, normalize_sentiment_to_conf
 
+# Quality Gate System (v2.0 - reduces ~50/week to ~5/week)
+try:
+    from risk.signal_quality_gate import filter_to_best_signals, get_quality_gate
+    QUALITY_GATE_AVAILABLE = True
+except ImportError:
+    QUALITY_GATE_AVAILABLE = False
+
 # Cognitive system (optional)
 try:
     from cognitive.signal_processor import get_signal_processor
@@ -260,6 +267,17 @@ Examples:
         help="Skip writing to signals.jsonl",
     )
     ap.add_argument(
+        "--no-quality-gate",
+        action="store_true",
+        help="Disable v2.0 quality gate filtering (keeps ~50 signals/week instead of ~5)",
+    )
+    ap.add_argument(
+        "--quality-max-signals",
+        type=int,
+        default=1,
+        help="Max signals per day when quality gate is enabled (default: 1)",
+    )
+    ap.add_argument(
         "--cognitive",
         action="store_true",
         help="Enable cognitive brain evaluation for smarter signal filtering",
@@ -382,6 +400,29 @@ Examples:
         sel_cfg['min_price'] = float(args.min_price)
 
     signals = run_strategies(combined, strategies, apply_filters=apply_filters, spy_bars=spy_bars)
+
+    # === QUALITY GATE (v2.0) ===
+    # Reduces ~50 signals/week to ~5/week with higher win rate
+    if QUALITY_GATE_AVAILABLE and not args.no_quality_gate and not signals.empty:
+        try:
+            pre_count = len(signals)
+            signals = filter_to_best_signals(
+                signals=signals,
+                price_data=combined,
+                spy_data=spy_bars,
+                max_signals=args.quality_max_signals,
+            )
+            post_count = len(signals)
+            if args.verbose:
+                print(f"Quality gate: {pre_count} → {post_count} signal(s) (filtered {pre_count - post_count})")
+            else:
+                print(f"Quality gate: filtered to {post_count} high-quality signal(s)")
+        except Exception as e:
+            if args.verbose:
+                print(f"  [WARN] Quality gate failed: {e}", file=sys.stderr)
+    elif not QUALITY_GATE_AVAILABLE and not args.no_quality_gate:
+        if args.verbose:
+            print("  [INFO] Quality gate not available (module not found)")
 
     # Optional ML scoring
     if args.ml and not signals.empty:
