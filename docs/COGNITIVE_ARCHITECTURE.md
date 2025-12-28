@@ -82,12 +82,22 @@ This component is responsible for learning and adaptation. After a trade is comp
     -   Implements the `learn_from_outcome` logic.
     -   Performs periodic `daily_consolidation` and `weekly_consolidation` to analyze recent performance and discover new, high-level patterns.
 
-### 3.7. Other Key Components
+### 3.7. Neuro-Symbolic Components (Task B3)
+
+-   **`SymbolicReasoner`:** Combines symbolic rule-based logic with neural network outputs. Evaluates explicit trading rules from `config/symbolic_rules.yaml` and can override or adjust the cognitive confidence based on macro risk, alignment, compliance, sector, and self-model rules.
+-   **`DynamicPolicyGenerator`:** Generates and activates dynamic trading policies based on market conditions. Policies from `config/trading_policies.yaml` include crisis mode, risk-off, cautious, neutral, and bull market aggression modes with specific risk modifications.
+
+### 3.8. Market Mood Analysis (Task A2)
+
+-   **`MarketMoodAnalyzer`:** Combines VIX levels with sentiment data to produce a holistic assessment of the market's "emotional state". Located in `altdata/market_mood_analyzer.py`, it provides a mood score from -1.0 (extreme fear) to 1.0 (extreme greed) that affects decision-making.
+
+### 3.9. Other Key Components
 
 -   **`GlobalWorkspace`:** A central blackboard where information from different components can be shared and integrated during the deliberation process.
 -   **`KnowledgeBoundary`:** Helps the agent understand the limits of its own knowledge, preventing it from making high-confidence decisions in unfamiliar situations.
 -   **`MetacognitiveGovernor`:** A high-level monitor that oversees the cognitive process itself, ensuring the agent is "thinking" effectively and not getting stuck.
 -   **`CuriosityEngine`:** Drives the agent to explore and learn about novel or uncertain situations, promoting knowledge acquisition.
+-   **`SelfModel`:** Tracks the agent's own capabilities, performance, and limitations. Provides calibration and can recommend standing down in specific strategy/regime combinations.
 
 ## 4. The Cognitive Workflow
 
@@ -108,6 +118,100 @@ The process of handling a signal in cognitive mode follows a clear, multi-step w
 3.  **Memory Update:** The `ReflectionEngine` analyzes the result. If it was a success, it reinforces the patterns that led to it. If it was a failure, it weakens them or creates new rules to prevent similar failures.
 4.  **Knowledge Consolidation:** The updated knowledge is stored in `SemanticMemory` for use in future decisions.
 
-## 5. Conclusion
+## 5. API Conventions
+
+All cognitive components follow consistent API patterns:
+
+### 5.1. Standard Methods
+
+| Method | Return Type | Purpose |
+|--------|-------------|---------|
+| `introspect()` | `str` | Human-readable report for debugging/monitoring |
+| `get_status()` | `Dict[str, Any]` | Machine-readable statistics for dashboards/APIs |
+| `get_stats()` | `Dict[str, Any]` | Component-specific statistics (alias for get_status) |
+
+**Note:** The `introspect()` method intentionally returns a human-readable string, while `get_status()` returns a machine-readable dictionary. This is by design:
+- Use `introspect()` for logging, debugging, and human review
+- Use `get_status()` or `get_stats()` for dashboard integration and API responses
+
+### 5.2. Core Module APIs
+
+| Module | Function | Signature | Notes |
+|--------|----------|-----------|-------|
+| `core.hash_chain` | `append_block()` | `(data: Dict) -> str` | Function-based API, not class |
+| `core.structured_log` | `jlog()` | `(event: str, **kwargs)` | Function-based API, not class |
+| `risk.policy_gate` | `PolicyGate.check()` | `(symbol, side, price, qty) -> (bool, str)` | Takes individual params, not dict |
+
+### 5.3. Symbolic Reasoner
+
+```python
+from cognitive.symbolic_reasoner import get_symbolic_reasoner
+
+reasoner = get_symbolic_reasoner()
+verdict = reasoner.reason(
+    market_context=context,
+    signal_data=signal,
+    cognitive_confidence=0.75,
+    market_mood_score=0.2,
+    self_model_status={'strategy_regime_weakness': False}
+)
+```
+
+**Verdict Types:**
+- `PASS_THROUGH` - No rule triggered, continue normally
+- `COMPLIANCE_BLOCK` - Hard block, immediate stand-down
+- `OVERRIDE_LONG_DUE_TO_MACRO_RISK` - Override long position due to macro risk
+- `CONFIRM_LONG_DUE_TO_ALIGNMENT` - Confirmation of aligned conditions
+- `REQUIRE_SLOW_PATH` - Force deeper analysis
+- `SUGGEST_SIZE_REDUCTION` - Reduce position size
+
+### 5.4. Dynamic Policy Generator
+
+```python
+from cognitive.dynamic_policy_generator import get_policy_generator
+
+pg = get_policy_generator()
+active_policy = pg.evaluate_policy_activation(
+    market_context={'vix': 35},
+    mood_score=-0.8,
+    regime='BEAR'
+)
+```
+
+**Policy Types:**
+- `crisis` - Activated during extreme fear (VIX >= 40)
+- `risk_off` - Activated during elevated fear (VIX >= 30)
+- `cautious` - Activated during moderate fear (VIX >= 25)
+- `neutral` - Default policy
+- `learning` - Activated when in unknown regime
+- `bull_market_aggression` - Activated during bull market with low VIX
+- `opportunity` - Activated when extreme fear presents opportunities
+
+## 6. Configuration
+
+Cognitive components are configured via `config/base.yaml`:
+
+```yaml
+cognitive:
+  enabled: true
+  min_confidence_to_act: 0.50
+  market_mood:
+    vix_weight: 0.6
+    sentiment_weight: 0.4
+    extreme_threshold: 0.7
+  meta_learning:
+    enabled: true
+    min_samples_for_adjustment: 20
+
+symbolic_reasoning:
+  enabled: true
+  rules_file: "config/symbolic_rules.yaml"
+
+dynamic_policy:
+  enabled: true
+  policies_file: "config/trading_policies.yaml"
+```
+
+## 7. Conclusion
 
 The cognitive architecture is a powerful and sophisticated extension to the kobe81_traderbot. By enabling this mode, the system transitions from a simple, reactive bot to a thinking, learning, and adapting agent. While more complex, it offers a path to significantly more robust and intelligent trading performance.

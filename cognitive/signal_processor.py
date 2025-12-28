@@ -51,6 +51,8 @@ import pandas as pd
 
 # Import the NewsProcessor for sentiment analysis
 from altdata.news_processor import get_news_processor
+# Import the MarketMoodAnalyzer for holistic market emotional state
+from altdata.market_mood_analyzer import get_market_mood_analyzer
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +108,8 @@ class CognitiveSignalProcessor:
         self.min_confidence = min_confidence
         self._brain = None  # Lazy-loaded to avoid circular imports.
         self._news_processor = None # Lazy-loaded for news and sentiment.
-        
+        self._market_mood_analyzer = None # Lazy-loaded for market mood analysis.
+
         # A dictionary to track the link between a unique decision identifier
         # (like symbol + strategy) and the brain's internal episode_id. This
         # is crucial for recording outcomes later.
@@ -127,6 +130,13 @@ class CognitiveSignalProcessor:
         if self._news_processor is None:
             self._news_processor = get_news_processor()
         return self._news_processor
+
+    @property
+    def market_mood_analyzer(self):
+        """Lazy-loads the MarketMoodAnalyzer singleton instance."""
+        if self._market_mood_analyzer is None:
+            self._market_mood_analyzer = get_market_mood_analyzer()
+        return self._market_mood_analyzer
 
     def build_market_context(
         self,
@@ -161,9 +171,21 @@ class CognitiveSignalProcessor:
         # 5. Add Market News Sentiment
         market_sentiment = self.news_processor.get_aggregated_sentiment()
         context['market_sentiment'] = market_sentiment
+
+        # 6. Add Market Mood (combines VIX + Sentiment for holistic emotional state)
+        # Extract compound sentiment for mood calculation
+        sentiment_score = market_sentiment.get('compound', 0.0)
+        mood_context = {
+            'vix': context['vix'],
+            'sentiment': sentiment_score,
+        }
+        mood_result = self.market_mood_analyzer.get_market_mood(mood_context)
+        context.update(mood_result)  # Adds market_mood, market_mood_score, market_mood_state, is_extreme_mood
+
         logger.debug(
             f"Built market context: Regime={context['regime']}, VIX={context['vix']:.2f}, "
-            f"Market Sentiment (compound): {market_sentiment.get('compound', 0.0):.2f}"
+            f"Market Sentiment (compound): {sentiment_score:.2f}, "
+            f"Market Mood: {context.get('market_mood_state', 'unknown')} ({context.get('market_mood_score', 0):.2f})"
         )
         return context
 
