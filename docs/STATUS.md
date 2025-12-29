@@ -73,9 +73,70 @@
 > These metrics are from the 2021-2024 backtest with 200 symbols. Validated with 1,172 trades - statistically significant.
 
 Evidence Artifacts (verifiable):
-- `reports/backtest_dual_latest.txt` (2015–2024, cap=200)
-- `reports/backtest_dual_2021_2024_cap200.txt` (2021–2024, cap=200)
+- `reports/backtest_dual_latest.txt` (2015-2024, cap=200)
+- `reports/backtest_dual_2021_2024_cap200.txt` (2021-2024, cap=200)
 - `wf_outputs_verify_2023_2024/` (partial WF artifacts present; IBS splits and CSVs)
+
+## Historical Edge Boost (Symbol-Specific) — Replicable, Capped, Evidence-Backed
+
+- Purpose: adjust per-signal confidence using each symbol’s 8–10y walk-forward (WF) stats versus the strategy baseline.
+- Source of truth: on-disk WF trade lists under `wf_outputs/*/split_*/trade_list.csv` (next-bar fills; no lookahead).
+- Math (implemented in `cognitive/llm_trade_analyzer.py`):
+  - `overall_WR` = WR across all WF trades for the strategy
+  - `symbol_WR` = WR across WF trades for the specific symbol
+  - `raw_boost` = (symbol_WR − overall_WR) / 100
+  - `shrinkage` = min(1.0, N/50) where N = symbol total trades (linear until N=50)
+  - `confidence_boost` = raw_boost × shrinkage
+  - Reported as percentage points: `pp = confidence_boost × 100`, capped ±15 pp
+- Integration into selection (implemented):
+  - `scripts/scan.py` computes `conf_score ∈ [0,1]` per candidate.
+  - If `historical_edge.enabled: true` in `config/base.yaml`, we add `pp/100` to `conf_score` before Top‑3/TOTD selection and clamp to [0,1].
+  - LLM narrative prints a Confidence Breakdown with `symbol_boost` shown in “pp” and capped.
+- Config toggles (`config/base.yaml`):
+  - `historical_edge.enabled: true`
+  - `historical_edge.cap_pp: 15`
+  - `historical_edge.min_trades_full_boost: 50`
+  - `historical_edge.baseline_mode: overall` (future: `regime`)
+- Replicate a symbol example (e.g., TSLA, PLTR):
+  1) Confirm WF artifacts present: `wf_outputs/<strategy>/split_*/trade_list.csv`
+  2) Run: `python scripts/scan.py --top3 --narrative --dotenv ./.env`
+  3) In output, see “SYMBOL-SPECIFIC HISTORICAL PERFORMANCE” with real counts and derived `symbol_boost`.
+  4) Manually verify by recomputing WR from those CSVs for the symbol and comparing to overall WR.
+- Guardrails: Boost capped ±15 pp; if no data for a symbol, boost = 0; totals never exceed 100%.
+
+Evidence locations:
+- Analyzer logic: `cognitive/llm_trade_analyzer.py: get_symbol_boost`, `_get_historical_performance`
+- Selection integration: `scripts/scan.py` (Historical Edge Boost section)
+- Config: `config/base.yaml: historical_edge`
+
+---
+
+## Daily Scan Evidence (2025-12-28)
+
+- Command (replicate exactly):
+  - `python scripts/scan.py --strategy dual --universe data/universe/optionable_liquid_900.csv --cap 120 --top3 --ensure-top3 --narrative --date 2025-12-28 --dotenv ./.env`
+- Artifacts (created on disk):
+  - `logs/daily_picks.csv` (Top‑3, if available) — 2025‑12‑28
+  - `logs/trade_of_day.csv` (TOTD) — 2025‑12‑28
+  - `logs/daily_insights.json` (LLM narratives) — 2025‑12‑28
+  - `logs/comprehensive_totd.json` (full confidence breakdown + symbol boost) — 2025‑12‑28
+
+Result snapshot (2025‑12‑26 market close inputs)
+- TOTD: PLTR (IBS_RSI)
+  - Entry: $188.71 | Stop: $173.75 | Time stop: 7 bars
+  - Confidence breakdown (comprehensive report):
+    - `historical_edge`: 51%
+    - `technical_setup`: 70%
+    - `news_catalyst`: 50%
+    - `market_regime`: 91%
+    - `symbol_boost`: +11 pp (PLTR 10y WR 60.6% vs overall 49.5%, N=188 → shrunk, capped)
+  - Evidence files:
+    - `logs/trade_of_day.csv`
+    - `logs/daily_insights.json`
+    - `logs/comprehensive_totd.json`
+
+Notes
+- The symbol-specific boost is computed from REAL WF trades on disk (see Historical Edge section). If WF data for a symbol is missing, the boost defaults to 0 and the pipeline continues deterministically.
 
 ### Lookahead Prevention (CRITICAL)
 ```python

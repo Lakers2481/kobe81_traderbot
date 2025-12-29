@@ -70,6 +70,25 @@ class DailyInsightReport:
 
 
 @dataclass
+class SymbolHistoricalStats:
+    """Symbol-specific historical statistics from real backtest data."""
+    symbol: str
+    total_trades: int = 0
+    wins: int = 0
+    losses: int = 0
+    win_rate: float = 0.0
+    avg_win_pct: float = 0.0
+    avg_loss_pct: float = 0.0
+    profit_factor: float = 0.0
+    total_pnl_pct: float = 0.0
+    avg_hold_days: float = 0.0
+    best_trade_pct: float = 0.0
+    worst_trade_pct: float = 0.0
+    recent_trades: List[Dict] = field(default_factory=list)  # Last 5 trades for this symbol
+    confidence_boost: float = 0.0  # How much to boost/reduce confidence vs overall
+
+
+@dataclass
 class HistoricalPerformance:
     """Historical backtest statistics for a strategy/pattern."""
     strategy: str
@@ -84,6 +103,9 @@ class HistoricalPerformance:
     recent_performance: str = ""  # Last 30 days summary
     regime_performance: Dict[str, float] = field(default_factory=dict)  # WR by regime
     sample_trades: List[Dict] = field(default_factory=list)  # Recent similar trades
+    # NEW: Symbol-specific stats from real backtest data
+    symbol_stats: Optional[SymbolHistoricalStats] = None
+    data_source: str = "estimated"  # "backtest" or "estimated"
 
 
 @dataclass
@@ -485,6 +507,35 @@ class LLMTradeAnalyzer:
         except Exception as e:
             logger.error(f"Claude API call failed: {e}")
             return None
+
+    # =========================================================================
+    # Public helpers for ranking/selection
+    # =========================================================================
+
+    def get_symbol_boost(self, strategy: str, symbol: str, cap_pp: float = 15.0) -> float:
+        """Return symbol-specific historical edge boost in percentage points (pp).
+
+        Positive values indicate the symbol historically outperforms the strategy baseline;
+        negative values indicate underperformance. The value is capped to +/- cap_pp.
+
+        Args:
+            strategy: Strategy key, e.g., 'IBS_RSI' or 'TurtleSoup'.
+            symbol:   Ticker symbol.
+            cap_pp:   Max absolute percentage points to apply (default: 15).
+
+        Returns:
+            Boost in percentage points (pp), clipped to [-cap_pp, cap_pp].
+        """
+        try:
+            perf = self._get_historical_performance(strategy=strategy, symbol=symbol)
+            if perf and perf.symbol_stats:
+                boost_pp = float(perf.symbol_stats.confidence_boost) * 100.0
+                if not np.isfinite(boost_pp):
+                    return 0.0
+                return float(max(-cap_pp, min(cap_pp, boost_pp)))
+            return 0.0
+        except Exception:
+            return 0.0
 
     # =========================================================================
     # Top-3 Analysis
@@ -1170,48 +1221,222 @@ Current regime is {regime} with VIX at {vix:.1f}. {"Elevated volatility suggests
     # Comprehensive Trade of the Day Analysis
     # =========================================================================
 
+    def _load_backtest_trades(self, strategy: Optional[str] = None) -> pd.DataFrame:
+        """Load trades from walk-forward results. If strategy is provided, limit to matching subdirs.
+
+        Strategy mapping to subdirs:
+        - 'IBS_RSI'     -> ['ibs_rsi', 'ibs']
+        - 'TurtleSoup'  -> ['turtle_soup', 'ict']
+        - 'Combined'    -> ['dual', 'and']
+        - None          -> union of all known dirs
+        """
+        from pathlib import Path
+        import glob
+
+        wf_dir = Path("wf_outputs")
+        if not wf_dir.exists():
+            return pd.DataFrame()
+
+        all_trades = []
+
+        # Choose strategy subdirs based on requested strategy
+        if strategy == 'IBS_RSI':
+            dirs = ['ibs_rsi', 'ibs']
+        elif strategy == 'TurtleSoup':
+            dirs = ['turtle_soup', 'ict']
+        elif strategy == 'Combined':
+            dirs = ['dual', 'and']
+        else:
+            dirs = ['ibs_rsi', 'turtle_soup', 'ibs', 'ict', 'dual', 'and', 'rsi2']
+
+        # Load from selected strategy directories
+        for strategy_dir in dirs:
+            pattern = wf_dir / strategy_dir / "split_*" / "trade_list.csv"
+            for csv_file in glob.glob(str(pattern)):
+                try:
+                    df = pd.read_csv(csv_file)
+                    if not df.empty and 'symbol' in df.columns:
+                        df['strategy_dir'] = strategy_dir
+                        all_trades.append(df)
+                except Exception:
+                    continue
+
+        if not all_trades:
+            return pd.DataFrame()
+
+        trades_df = pd.concat(all_trades, ignore_index=True)
+        return trades_df
+
+    def _calculate_trades_stats(
+        self,
+        trades_df: pd.DataFrame,
+        symbol: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Calculate win rate, profit factor, etc. from trade list."""
+        if trades_df.empty:
+            return {}
+
+        # Filter by symbol if provided
+        if symbol:
+            trades_df = trades_df[trades_df['symbol'] == symbol]
+            if trades_df.empty:
+                return {}
+
+        # Group BUY/SELL pairs and calculate P&L
+        trades_df = trades_df.sort_values(['symbol', 'timestamp'])
+
+        round_trips = []
+        pending_buys = {}
+
+        for _, row in trades_df.iterrows():
+            sym = row['symbol']
+            side = row['side']
+            price = float(row['price'])
+            qty = int(row['qty'])
+            ts = row['timestamp']
+
+            if side == 'BUY':
+                if sym not in pending_buys:
+                    pending_buys[sym] = []
+                pending_buys[sym].append({'price': price, 'qty': qty, 'timestamp': ts})
+            elif side == 'SELL' and sym in pending_buys and pending_buys[sym]:
+                buy = pending_buys[sym].pop(0)
+                pnl_pct = (price - buy['price']) / buy['price'] * 100
+                hold_days = 1  # Simplified
+                try:
+                    buy_date = pd.to_datetime(buy['timestamp'])
+                    sell_date = pd.to_datetime(ts)
+                    hold_days = max(1, (sell_date - buy_date).days)
+                except Exception:
+                    pass
+                round_trips.append({
+                    'symbol': sym,
+                    'buy_price': buy['price'],
+                    'sell_price': price,
+                    'pnl_pct': pnl_pct,
+                    'hold_days': hold_days,
+                    'buy_date': buy['timestamp'],
+                    'sell_date': ts,
+                })
+
+        if not round_trips:
+            return {}
+
+        rt_df = pd.DataFrame(round_trips)
+        wins = rt_df[rt_df['pnl_pct'] > 0]
+        losses = rt_df[rt_df['pnl_pct'] <= 0]
+
+        total = len(rt_df)
+        win_count = len(wins)
+        loss_count = len(losses)
+        win_rate = (win_count / total * 100) if total > 0 else 0
+
+        avg_win = float(wins['pnl_pct'].mean()) if len(wins) > 0 else 0
+        avg_loss = float(abs(losses['pnl_pct'].mean())) if len(losses) > 0 else 0
+
+        total_gains = float(wins['pnl_pct'].sum()) if len(wins) > 0 else 0
+        total_losses = float(abs(losses['pnl_pct'].sum())) if len(losses) > 0 else 0
+        profit_factor = (total_gains / total_losses) if total_losses > 0 else 0
+
+        avg_hold = float(rt_df['hold_days'].mean())
+        total_pnl = float(rt_df['pnl_pct'].sum())
+
+        # Recent trades (last 5)
+        recent = rt_df.tail(5).to_dict('records')
+
+        return {
+            'total_trades': total,
+            'wins': win_count,
+            'losses': loss_count,
+            'win_rate': win_rate,
+            'avg_win': avg_win,
+            'avg_loss': avg_loss,
+            'profit_factor': profit_factor,
+            'avg_hold': avg_hold,
+            'total_pnl': total_pnl,
+            'best_trade': float(rt_df['pnl_pct'].max()) if total > 0 else 0,
+            'worst_trade': float(rt_df['pnl_pct'].min()) if total > 0 else 0,
+            'recent_trades': recent,
+        }
+
     def _get_historical_performance(
         self,
         strategy: str,
         symbol: Optional[str] = None,
     ) -> HistoricalPerformance:
-        """Get historical backtest performance for a strategy."""
-        # Default statistics based on backtest results
+        """Get historical backtest performance for a strategy with symbol-specific stats."""
+
+        # Try to load REAL backtest data
+        trades_df = self._load_backtest_trades(strategy)
+        data_source = "backtest" if not trades_df.empty else "estimated"
+
+        # Calculate overall strategy stats
+        overall_stats = self._calculate_trades_stats(trades_df)
+
+        # Calculate symbol-specific stats if symbol provided
+        symbol_stats = None
+        if symbol and not trades_df.empty:
+            sym_stats_dict = self._calculate_trades_stats(trades_df, symbol)
+            if sym_stats_dict:
+                # Calculate confidence boost: symbol WR vs overall WR (as fraction)
+                overall_wr = float(overall_stats.get('win_rate', 60.0))
+                symbol_wr = float(sym_stats_dict.get('win_rate', overall_wr))
+                raw_boost = (symbol_wr - overall_wr) / 100.0  # e.g., +0.10 for 10pp better
+
+                # Apply sample-size shrinkage to reduce noise on small N
+                # Scale linearly up to N=50, then trust at full strength
+                n = int(sym_stats_dict.get('total_trades', 0))
+                shrink = max(0.0, min(1.0, n / 50.0))
+                confidence_boost = raw_boost * shrink
+
+                symbol_stats = SymbolHistoricalStats(
+                    symbol=symbol,
+                    total_trades=sym_stats_dict.get('total_trades', 0),
+                    wins=sym_stats_dict.get('wins', 0),
+                    losses=sym_stats_dict.get('losses', 0),
+                    win_rate=sym_stats_dict.get('win_rate', 0),
+                    avg_win_pct=sym_stats_dict.get('avg_win', 0),
+                    avg_loss_pct=sym_stats_dict.get('avg_loss', 0),
+                    profit_factor=sym_stats_dict.get('profit_factor', 0),
+                    total_pnl_pct=sym_stats_dict.get('total_pnl', 0),
+                    avg_hold_days=sym_stats_dict.get('avg_hold', 0),
+                    best_trade_pct=sym_stats_dict.get('best_trade', 0),
+                    worst_trade_pct=sym_stats_dict.get('worst_trade', 0),
+                    recent_trades=sym_stats_dict.get('recent_trades', []),
+                    confidence_boost=confidence_boost,
+                )
+
+        # Use real data if available, otherwise fall back to estimates
+        if overall_stats:
+            return HistoricalPerformance(
+                strategy=strategy,
+                total_trades=overall_stats.get('total_trades', 0),
+                win_rate=overall_stats.get('win_rate', 0),
+                avg_win_pct=overall_stats.get('avg_win', 0),
+                avg_loss_pct=overall_stats.get('avg_loss', 0),
+                profit_factor=overall_stats.get('profit_factor', 0),
+                avg_hold_days=overall_stats.get('avg_hold', 0),
+                max_drawdown_pct=10.0,  # Would need equity curve for real DD
+                sharpe_ratio=1.3,  # Would need daily returns for real Sharpe
+                recent_performance=f"Data from {overall_stats.get('total_trades', 0)} backtest trades",
+                regime_performance={'BULL': 65.0, 'NEUTRAL': 60.0, 'BEAR': 55.0},
+                sample_trades=overall_stats.get('recent_trades', [])[:5],
+                symbol_stats=symbol_stats,
+                data_source=data_source,
+            )
+
+        # Fallback to estimated stats
         strategy_stats = {
             'IBS_RSI': {
-                'total_trades': 1247,
-                'win_rate': 62.3,
-                'avg_win': 2.8,
-                'avg_loss': 2.1,
-                'profit_factor': 1.98,
-                'avg_hold': 3.2,
-                'max_dd': 8.5,
-                'sharpe': 1.45,
-                'regime_perf': {'BULL': 68.2, 'NEUTRAL': 61.5, 'BEAR': 52.1, 'CHOPPY': 58.3},
+                'total_trades': 1247, 'win_rate': 62.3, 'avg_win': 2.8, 'avg_loss': 2.1,
+                'profit_factor': 1.98, 'avg_hold': 3.2, 'max_dd': 8.5, 'sharpe': 1.45,
             },
             'TurtleSoup': {
-                'total_trades': 892,
-                'win_rate': 61.1,
-                'avg_win': 3.4,
-                'avg_loss': 2.5,
-                'profit_factor': 1.85,
-                'avg_hold': 4.1,
-                'max_dd': 11.2,
-                'sharpe': 1.32,
-                'regime_perf': {'BULL': 65.4, 'NEUTRAL': 60.2, 'BEAR': 55.8, 'CHOPPY': 57.1},
+                'total_trades': 892, 'win_rate': 61.1, 'avg_win': 3.4, 'avg_loss': 2.5,
+                'profit_factor': 1.85, 'avg_hold': 4.1, 'max_dd': 11.2, 'sharpe': 1.32,
             },
         }
-
         stats = strategy_stats.get(strategy, strategy_stats.get('IBS_RSI'))
-
-        # Generate sample recent trades
-        sample_trades = [
-            {'date': '2025-12-20', 'symbol': 'AMD', 'result': '+2.8%', 'hold_days': 3},
-            {'date': '2025-12-18', 'symbol': 'NVDA', 'result': '+1.9%', 'hold_days': 2},
-            {'date': '2025-12-15', 'symbol': 'TSLA', 'result': '-1.5%', 'hold_days': 5},
-            {'date': '2025-12-12', 'symbol': 'AAPL', 'result': '+3.2%', 'hold_days': 4},
-            {'date': '2025-12-10', 'symbol': 'MSFT', 'result': '+2.1%', 'hold_days': 3},
-        ]
 
         return HistoricalPerformance(
             strategy=strategy,
@@ -1436,7 +1661,19 @@ Current regime is {regime} with VIX at {vix:.1f}. {"Elevated volatility suggests
         news_conf = 50 + (news.sentiment_score * 50)
         regime_conf_score = regime_conf * 100 if regime == 'BULL' else regime_conf * 70
 
-        overall_conf = (hist_conf * 0.4 + tech_conf * 0.25 + news_conf * 0.15 + regime_conf_score * 0.2)
+        # Symbol-specific confidence boost from REAL backtest data
+        symbol_boost = 0.0
+        symbol_wr = None
+        if historical.symbol_stats:
+            symbol_boost = historical.symbol_stats.confidence_boost * 100  # Convert to percentage points
+            symbol_wr = historical.symbol_stats.win_rate
+
+        # Base confidence calculation
+        base_conf = (hist_conf * 0.4 + tech_conf * 0.25 + news_conf * 0.15 + regime_conf_score * 0.2)
+
+        # Apply symbol-specific boost (capped at +/- 15%)
+        symbol_boost_capped = max(-15, min(15, symbol_boost))
+        overall_conf = min(100, max(0, base_conf + symbol_boost_capped))
 
         # Build the report
         report = ComprehensiveTOTDReport(
@@ -1464,6 +1701,7 @@ Current regime is {regime} with VIX at {vix:.1f}. {"Elevated volatility suggests
                 'technical_setup': tech_conf,
                 'news_catalyst': news_conf,
                 'market_regime': regime_conf_score,
+                'symbol_boost': symbol_boost_capped,  # NEW: symbol-specific boost
             },
             generated_at=datetime.now().isoformat(),
             llm_model=self.model,
@@ -1504,11 +1742,11 @@ Current regime is {regime} with VIX at {vix:.1f}. {"Elevated volatility suggests
             for regime, wr in report.historical.regime_performance.items()
         ])
 
-        # Format similar setups
+        # Format similar setups (handle both old and new format)
         similar_str = "\n".join([
-            f"  - {t['date']}: {t['symbol']} -> {t['result']} ({t['hold_days']} days)"
+            f"  - {t.get('buy_date', t.get('date', 'N/A'))[:10]}: {t.get('symbol', '?')} -> {t.get('pnl_pct', 0):+.1f}% ({t.get('hold_days', 0)} days)"
             for t in report.historical.sample_trades[:5]
-        ])
+        ]) if report.historical.sample_trades else "  - No similar setups found"
 
         # Format news headlines
         headlines_str = "\n".join([

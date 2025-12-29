@@ -590,6 +590,33 @@ Examples:
                         return min(score / 25.0, 1.0)
                 df['conf_score'] = df.apply(base_conf_row, axis=1)
 
+                # Apply Historical Edge Boost (symbol-specific) BEFORE selection
+                try:
+                    from config.settings_loader import get_setting
+                    hedg_enabled = bool(get_setting("historical_edge.enabled", True))
+                    cap_pp = float(get_setting("historical_edge.cap_pp", 15.0))
+                except Exception:
+                    hedg_enabled = True
+                    cap_pp = 15.0
+
+                if hedg_enabled and LLM_ANALYZER_AVAILABLE and not df.empty:
+                    try:
+                        analyzer = get_trade_analyzer()
+                        def apply_boost(row: pd.Series) -> float:
+                            base = float(row.get('conf_score', 0.0))
+                            sym = str(row.get('symbol', ''))
+                            strat = str(row.get('strategy', ''))
+                            if not sym or not strat:
+                                return base
+                            # Boost is in percentage points (pp). Convert to fraction of 1.0.
+                            boost_pp = analyzer.get_symbol_boost(strategy=strat, symbol=sym, cap_pp=cap_pp)
+                            boost_frac = float(boost_pp) / 100.0
+                            # Additive on [0,1] score; clamp to [0,1]
+                            return max(0.0, min(1.0, base + boost_frac))
+                        df['conf_score'] = df.apply(apply_boost, axis=1)
+                    except Exception:
+                        pass
+
                 # Selection: enforce mix or pure top-3
                 if args.top3_mix == 'ict2_ibs1':
                     ict_df = df[df['strategy'].astype(str).str.lower().isin(['turtle_soup'])].copy()
@@ -810,8 +837,40 @@ Examples:
                             # Confidence breakdown
                             print("\n--- CONFIDENCE BREAKDOWN ---")
                             for k, v in comp_report.confidence_breakdown.items():
-                                bar = "█" * int(v / 5) + "░" * (20 - int(v / 5))
-                                print(f"  {k:18}: [{bar}] {v:.0f}%")
+                                # Normalize values for display
+                                if k == 'symbol_boost':
+                                    # Symbol boost is percentage points (pp), capped at +/-15
+                                    v_pp = max(-15.0, min(15.0, float(v)))
+                                    filled = int(min(1.0, abs(v_pp) / 15.0) * 20)
+                                    bar = "#" * filled + "-" * (20 - filled)
+                                    sign = "+" if v_pp > 0 else ("-" if v_pp < 0 else "")
+                                    print(f"  {k:18}: [{bar}] {sign}{abs(v_pp):.0f} pp")
+                                else:
+                                    v_pct = max(0.0, min(100.0, float(v)))
+                                    filled = int(v_pct / 5.0)
+                                    bar = "#" * filled + "-" * (20 - filled)
+                                    print(f"  {k:18}: [{bar}] {v_pct:.0f}%")
+
+                            # Symbol-specific historical stats (REAL BACKTEST DATA)
+                            h = comp_report.historical
+                            if h and h.symbol_stats:
+                                s = h.symbol_stats
+                                print("\n--- SYMBOL-SPECIFIC HISTORICAL PERFORMANCE (10yr backtest) ---")
+                                print(f"  {s.symbol} with {comp_report.strategy}:")
+                                print(f"    Total Trades: {s.total_trades} | Wins: {s.wins} | Losses: {s.losses}")
+                                print(f"    Win Rate: {s.win_rate:.1f}% (vs {h.win_rate:.1f}% overall)")
+                                if s.confidence_boost >= 0:
+                                    print(f"    Confidence Boost: +{s.confidence_boost*100:.1f}% (symbol outperforms)")
+                                else:
+                                    print(f"    Confidence Boost: {s.confidence_boost*100:.1f}% (symbol underperforms)")
+                                print(f"    Avg Win: +{s.avg_win_pct:.2f}% | Avg Loss: -{s.avg_loss_pct:.2f}%")
+                                print(f"    Profit Factor: {s.profit_factor:.2f} | Total P&L: {s.total_pnl_pct:+.1f}%")
+                                print(f"    Best Trade: +{s.best_trade_pct:.1f}% | Worst: {s.worst_trade_pct:.1f}%")
+                                if s.recent_trades:
+                                    print(f"    Recent {s.symbol} trades:")
+                                    for t in s.recent_trades[-3:]:
+                                        print(f"      - {t.get('buy_date', 'N/A')[:10]}: {t.get('pnl_pct', 0):+.2f}%")
+                                print(f"    Data Source: {h.data_source.upper()}")
 
                             # All analysis sections
                             print("\n--- EXECUTIVE SUMMARY ---")
