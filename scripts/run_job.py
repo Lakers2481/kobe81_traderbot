@@ -96,8 +96,9 @@ def main() -> None:
         rc = run_cmd([sys.executable, str(ROOT / 'scripts/morning_check.py'), '--dotenv', args.dotenv])
         msg = f"<b>{args.tag}</b> [{_stamp()}] {'completed' if rc==0 else 'failed'}"
     elif args.tag == "PRE_GAME":
+        # Update sentiment cache, then generate PRE_GAME briefing
         rc1 = run_cmd([sys.executable, str(ROOT / 'scripts/update_sentiment_cache.py'), '--universe', args.universe, '--date', ymd, '--dotenv', args.dotenv])
-        rc2 = run_cmd([sys.executable, str(ROOT / 'scripts/pre_game_plan.py'), '--universe', args.universe, '--cap', str(args.cap), '--dotenv', args.dotenv, '--date', ymd])
+        rc2 = run_cmd([sys.executable, str(ROOT / 'scripts/generate_briefing.py'), '--phase', 'pregame', '--universe', args.universe, '--cap', str(args.cap), '--dotenv', args.dotenv])
         rc = rc1 or rc2
         msg = f"<b>{args.tag}</b> [{_stamp()}] {'completed' if rc==0 else 'failed'}"
     elif args.tag == "MARKET_NEWS":
@@ -131,7 +132,11 @@ def main() -> None:
             min_conf = float(args.min_conf)
         rc = run_cmd([sys.executable, str(ROOT / 'scripts' / 'run_daily_pipeline.py'), '--universe', args.universe, '--cap', str(args.cap), '--date', ymd, '--dotenv', args.dotenv, '--min-conf', str(min_conf), '--ensure-top3'])
         msg = f"<b>{args.tag}</b> [{_stamp()}] {'completed' if rc==0 else 'failed'}"
-    elif args.tag in ("HALF_TIME","AFTERNOON_SCAN","SWING_SCANNER"):
+    elif args.tag == "HALF_TIME":
+        # Generate HALF_TIME briefing with position analysis
+        rc = run_cmd([sys.executable, str(ROOT / 'scripts/generate_briefing.py'), '--phase', 'halftime', '--dotenv', args.dotenv])
+        msg = f"<b>{args.tag}</b> [{_stamp()}] {'completed' if rc==0 else 'failed'}"
+    elif args.tag in ("AFTERNOON_SCAN","SWING_SCANNER"):
         rc = run_cmd([
             sys.executable, str(ROOT / 'scripts/scan.py'), '--dotenv', args.dotenv,
             '--strategy', 'all', '--cap', str(args.cap), '--top3', '--ml', '--date', ymd, '--ensure-top3'
@@ -151,7 +156,11 @@ def main() -> None:
     elif args.tag == "EOD_LEARNING":
         rc = run_cmd([sys.executable, str(ROOT / 'scripts/run_weekly_training.py'), '--wfdir', 'wf_outputs', '--dotenv', args.dotenv])
         msg = f"<b>{args.tag}</b> [{_stamp()}] {'completed' if rc==0 else 'failed'}"
-    elif args.tag in ("POST_GAME","OVERNIGHT_ANALYSIS"):
+    elif args.tag == "POST_GAME":
+        # Generate POST_GAME briefing with performance analysis and lessons
+        rc = run_cmd([sys.executable, str(ROOT / 'scripts/generate_briefing.py'), '--phase', 'postgame', '--dotenv', args.dotenv])
+        msg = f"<b>{args.tag}</b> [{_stamp()}] {'completed' if rc==0 else 'failed'}"
+    elif args.tag == "OVERNIGHT_ANALYSIS":
         rc = 0
         msg = f"<b>{args.tag}</b> [{_stamp()}] skipped (placeholder)"
     else:

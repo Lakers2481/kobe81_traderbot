@@ -697,7 +697,7 @@ All 13 components import successfully (930 tests passing).
 ### Pending / Known Gaps
 | Item | Status | Notes |
 |------|--------|-------|
-| Turtle Soup Model | **NO DATA** | No `turtle_soup/` or `ict/` in wf_outputs - needs walk-forward run |
+| Turtle Soup WF | **LIMITED** | `wf_outputs_turtle_soup/` has 28 trades (too few for ML). Use backtest reports for performance. |
 | Live Trading | Ready but untested | Paper mode verified, live needs manual test |
 | Polygon API Key | Warning on fetch | Set `POLYGON_API_KEY` in .env for new data |
 | Cognitive Tutorial | Created | See `notebooks/cognitive_tutorial.ipynb` |
