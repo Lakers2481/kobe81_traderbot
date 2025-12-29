@@ -133,8 +133,9 @@ class DualStrategyScanner:
     - Combined: 60.2% WR, 1.44 PF (1,172 trades)
     """
 
-    def __init__(self, params: Optional[DualStrategyParams] = None):
+    def __init__(self, params: Optional[DualStrategyParams] = None, preview_mode: bool = False):
         self.params = params or DualStrategyParams()
+        self.preview_mode = preview_mode  # Use current bar values for weekend analysis
 
     def _compute_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
         """Compute all indicators for both strategies."""
@@ -175,10 +176,18 @@ class DualStrategyScanner:
         """Check IBS+RSI entry. Returns (should_enter, score, reason)."""
         close = float(row['close'])
 
-        ibs_val = row.get('ibs_sig')
-        rsi_val = row.get('rsi2_sig')
-        sma200 = row.get('sma200_sig')
-        atr_val = row.get('atr14_sig')
+        # Preview mode uses current bar (for weekend analysis)
+        # Normal mode uses shifted (prior bar) for lookahead safety
+        if self.preview_mode:
+            ibs_val = row.get('ibs')
+            rsi_val = row.get('rsi2')
+            sma200 = row.get('sma200')
+            atr_val = row.get('atr14')
+        else:
+            ibs_val = row.get('ibs_sig')
+            rsi_val = row.get('rsi2_sig')
+            sma200 = row.get('sma200_sig')
+            atr_val = row.get('atr14_sig')
 
         if any(pd.isna(x) for x in [ibs_val, rsi_val, sma200, atr_val]):
             return False, 0.0, ""
@@ -257,7 +266,7 @@ class DualStrategyScanner:
                 is_ibs_rsi, score, reason = self._check_ibs_rsi_entry(row)
                 if is_ibs_rsi:
                     entry = float(row['close'])
-                    atr_val = float(row['atr14_sig'])
+                    atr_val = float(row['atr14'] if self.preview_mode else row['atr14_sig'])
                     stop = entry - self.params.ibs_rsi_stop_mult * atr_val
 
                     rows.append({
@@ -280,7 +289,7 @@ class DualStrategyScanner:
                 is_ts, score, reason = self._check_turtle_soup_entry(row)
                 if is_ts:
                     entry = float(row['close'])
-                    atr_val = float(row['atr14_sig'])
+                    atr_val = float(row['atr14'] if self.preview_mode else row['atr14_sig'])
                     stop = float(row['low']) - self.params.ts_stop_buffer_mult * atr_val
                     risk = entry - stop
                     take_profit = entry + self.params.ts_r_multiple * risk if risk > 0 else None
@@ -328,7 +337,7 @@ class DualStrategyScanner:
             is_ibs_rsi, score, reason = self._check_ibs_rsi_entry(row)
             if is_ibs_rsi:
                 entry = float(row['close'])
-                atr_val = float(row['atr14'])
+                atr_val = float(row['atr14'] if self.preview_mode else row['atr14_sig'])
                 stop = entry - self.params.ibs_rsi_stop_mult * atr_val
 
                 out.append({
@@ -351,7 +360,7 @@ class DualStrategyScanner:
             is_ts, score, reason = self._check_turtle_soup_entry(row)
             if is_ts:
                 entry = float(row['close'])
-                atr_val = float(row['atr14_sig'])
+                atr_val = float(row['atr14'] if self.preview_mode else row['atr14_sig'])
                 stop = float(row['low']) - self.params.ts_stop_buffer_mult * atr_val
                 risk = entry - stop
                 take_profit = entry + self.params.ts_r_multiple * risk if risk > 0 else None

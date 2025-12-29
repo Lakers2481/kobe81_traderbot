@@ -140,24 +140,45 @@ Notes
 
 ---
 
-## Daily Scan Evidence (2025-12-29)
+## Daily Scan Evidence (2025-12-29) — PREVIEW MODE FIX
 
-- Command (replicate exactly):
-  - `python scripts/scan.py --strategy dual --universe data/universe/optionable_liquid_900.csv --cap 200 --top3 --narrative --dotenv ./.env`
-- Result: **0 signals generated** (weekend/holiday market conditions - expected)
-- Historical Edge Boost: **ENABLED** (`historical_edge.enabled: true`, cap_pp: ±15)
-- Config verified: `config/base.yaml` contains `historical_edge` section with `cap_pp: 15`, `min_trades_full_boost: 50`
-- Artifacts from previous successful scan (2025-12-28) remain valid:
-  - `logs/daily_picks.csv` — PLTR IBS_RSI signal
-  - `logs/trade_of_day.csv` — PLTR TOTD
-  - `logs/daily_insights.json` — LLM narratives
-  - `logs/comprehensive_totd.json` — Full confidence breakdown with symbol boost (+11.1 pp)
+### Problem Diagnosed
+- Standard scan uses `.shift(1)` for lookahead-safe trading (checks PREVIOUS bar's indicators)
+- On Friday 12/26, this means checking 12/24's values: IBS=0.57, RSI2=50 → No signal
+- Friday's extreme values (IBS=0.01, RSI2=0.73) would trigger on Monday (next trading day)
 
-Notes
-- Weekend scan returning 0 signals is expected behavior (no fresh market data available)
-- Prior evidence (2025-12-28) demonstrates Historical Edge Boost working correctly:
-  - PLTR 60.6% WR (188 trades) vs 49.5% overall → +11.1 pp boost (capped at ±15)
-  - Symbol-specific stats loaded from 64,525 real WF trades across wf_outputs/
+### Solution: `--preview` Mode
+Added `--preview` flag for weekend analysis that uses CURRENT bar values:
+
+```bash
+# Weekend analysis command (shows what would trigger Monday)
+python scripts/scan.py --strategy dual --universe data/universe/optionable_liquid_900.csv \
+    --cap 120 --top3 --ensure-top3 --narrative --date 2025-12-26 \
+    --preview --no-quality-gate --dotenv ./.env
+```
+
+- Result: **1 signal generated** — PLTR IBS_RSI
+- PLTR 12/26/2025: IBS=0.012, RSI2=0.73, Entry=$188.71, Stop=$173.75
+- Confidence: 72% (historical: 52%, technical: 70%, regime: 91%, symbol_boost: +8 pp)
+- Symbol-specific: 58.3% WR (127 trades) vs 50.3% overall → +8 pp boost
+
+### Artifacts Updated
+- `logs/daily_picks.csv` — PLTR IBS_RSI signal (preview mode)
+- `logs/trade_of_day.csv` — PLTR TOTD
+- `logs/daily_insights.json` — LLM narratives
+- `logs/comprehensive_totd.json` — Full confidence breakdown
+
+### Weekend Scanning Best Practice
+| Mode | When to Use | Command |
+|------|-------------|---------|
+| **Normal** | Weekday trading decisions | No `--preview` flag |
+| **Preview** | Weekend analysis, Monday prep | Add `--preview` flag |
+
+**IMPORTANT:** Preview mode is for ANALYSIS ONLY. Real trades should execute on Monday using normal mode.
+
+### Files Modified
+- `strategies/dual_strategy/combined.py` — Added `preview_mode` parameter to DualStrategyScanner
+- `scripts/scan.py` — Added `--preview` CLI flag
 
 ---
 

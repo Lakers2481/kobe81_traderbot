@@ -97,12 +97,13 @@ def run_strategies(
     strategies: List[str],
     apply_filters: bool,
     spy_bars: Optional[pd.DataFrame],
+    preview_mode: bool = False,
 ) -> pd.DataFrame:
     """Run Dual Strategy Scanner and return combined signals."""
     try:
         sel_cfg = get_selection_config()
         params = DualStrategyParams(min_price=float(sel_cfg.get('min_price', 10.0)))
-        scanner = DualStrategyScanner(params)
+        scanner = DualStrategyScanner(params, preview_mode=preview_mode)
 
         # Generate signals (IBS+RSI + Turtle Soup combined)
         signals = scanner.generate_signals(data)
@@ -312,6 +313,11 @@ Examples:
         default=str(ROOT / "logs" / "daily_insights.json"),
         help="Output JSON file for daily insights with LLM narratives",
     )
+    ap.add_argument(
+        "--preview",
+        action="store_true",
+        help="Preview mode: use current bar values (for weekend analysis). Shows what would trigger on next trading day.",
+    )
     args = ap.parse_args()
 
     # Load environment
@@ -366,6 +372,9 @@ Examples:
 
     # Fetch data and run strategies
     print(f"\nKobe Scanner - {scan_id}")
+    if args.preview:
+        print("*** PREVIEW MODE: Using current bar values (for weekend analysis) ***")
+        print("*** These signals would trigger on the NEXT trading day ***")
     print(f"Scanning {len(symbols)} symbols with Dual Strategy (IBS+RSI + Turtle Soup)...")
     print("-" * 60)
 
@@ -417,7 +426,7 @@ Examples:
     if args.min_price is not None and args.min_price > 0:
         sel_cfg['min_price'] = float(args.min_price)
 
-    signals = run_strategies(combined, strategies, apply_filters=apply_filters, spy_bars=spy_bars)
+    signals = run_strategies(combined, strategies, apply_filters=apply_filters, spy_bars=spy_bars, preview_mode=args.preview)
 
     # === QUALITY GATE (v2.0) ===
     # Reduces ~50 signals/week to ~5/week with higher win rate

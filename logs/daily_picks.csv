@@ -1,3 +1,2 @@
-timestamp,symbol,side,entry_price,stop_loss,take_profit,reason,ibs,strategy,donchian_hi,time_stop_bars,r,breakout_strength,crsi,rsi2,score,conf_score
-2024-12-23 05:00:00,TSLA,long,430.6,381.71,,IBS=0.116 < 0.2 & above SMA200,0.116,ibs,,,,,,,0.884,0.884
-2024-12-23 05:00:00,AAPL,long,255.27,246.81,276.42,Donchian55 breakout,,donchian,255.0,20.0,8.460000000000008,0.031914893617022454,,,,0.010638297872340817
+timestamp,symbol,side,strategy,entry_price,stop_loss,take_profit,reason,score,atr,time_stop_bars,ibs,rsi2,adv_usd60,conf_score
+2025-12-26 05:00:00,PLTR,long,IBS_RSI,188.71,173.75,,"IBS_RSI[ibs=0.01,rsi=0.7]",11.11,7.48,7,0.012,0.73,8810399799.109,0.44439999999999996
