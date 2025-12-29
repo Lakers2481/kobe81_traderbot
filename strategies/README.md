@@ -35,5 +35,5 @@ Where to Read More
 - IBS+RSI details and quick WF: strategies/ibs_rsi/README.md
 - Turtle Soup details and quick WF: strategies/ict/README.md
 - Optimization rationale and grids: docs/V2.2_OPTIMIZATION_GUIDE.md
-- System‑wide replication and artifacts: docs/STATUS.md
+- System-wide replication and artifacts: docs/STATUS.md
 
