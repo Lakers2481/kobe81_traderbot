@@ -515,8 +515,8 @@ Kobe81 = Dual Strategy Mean-Reversion Trading System
 | Universe | 900 symbols | Optionable, liquid, 10+ years history |
 | Data Source | Polygon.io | EOD OHLCV with CSV caching |
 | Broker | Alpaca | Paper + Live supported |
-| Order Type | IOC LIMIT | `limit_price = best_ask Ã— 1.001` |
-| ML Blend | `0.8Ã—ML + 0.2Ã—sentiment` | Confidence scoring |
+| Order Type | IOC LIMIT | `limit_price = best_ask × 1.001` |
+| ML Blend | `0.8×ML + 0.2×sentiment` | Confidence scoring |
 | Time Zone | Operations: ET | Displays: CT and ET (12-hour format) |
 
 ---
@@ -562,13 +562,13 @@ Performance: 61.0% WR, 1.37 PF (305 trades)
 â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
 â”‚  Scanner (scan.py)                                          â”‚
 â”‚    â””â”€> Dual Strategy: IBS+RSI + Turtle Soup                â”‚
-â”‚    â””â”€> ML Scoring: 0.8Ã—model + 0.2Ã—sentiment               â”‚
+â”‚    â””â”€> ML Scoring: 0.8×model + 0.2×sentiment               â”‚
 â”‚    â””â”€> Gates: Regime, Earnings, ADV, Spread                â”‚
 â”‚    â””â”€> Output: daily_picks.csv, trade_of_day.csv           â”‚
 â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
 â”‚  Execution (broker_alpaca.py)                               â”‚
 â”‚    â””â”€> Order Type: IOC LIMIT only                          â”‚
-â”‚    â””â”€> Limit Price: best_ask Ã— 1.001                       â”‚
+â”‚    â””â”€> Limit Price: best_ask × 1.001                       â”‚
 â”‚    â””â”€> Idempotency: Duplicate prevention via hash          â”‚
 â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
 â”‚  Risk (policy_gate.py)                                      â”‚
@@ -1369,7 +1369,7 @@ python scripts/scan.py --quality-max-signals 3 --dotenv ./.env
 | 4 | Training Pipeline | PASS (3 artifacts) |
 | 5 | Promotion/Drift | PASS (deployed) |
 | 6 | Dynamic Confidence | PASS (0.6, 1.0) |
-| 7 | Sentiment Blending | PASS (0.8Ã—ML + 0.2Ã—sent) |
+| 7 | Sentiment Blending | PASS (0.8×ML + 0.2×sent) |
 | 8 | Explainability | PASS |
 | 9 | Cognitive Eval | PASS |
 | 10 | Scheduling | PASS (17:00 ET) |

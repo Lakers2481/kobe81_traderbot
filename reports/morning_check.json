@@ -1,5 +1,5 @@
 {
-  "timestamp_utc": "2025-12-28T02:25:24.970312",
+  "timestamp_utc": "2025-12-29T11:45:01.145949",
   "env": {
     "POLYGON_API_KEY": true,
     "ALPACA_API_KEY_ID": true,
@@ -18,12 +18,12 @@
     "universe_exists": true,
     "universe_count": 900,
     "cache_dir": true,
-    "models_deployed": false
+    "models_deployed": true
   },
   "disk": {
     "total": 1999441489920,
-    "used": 206662152192,
-    "free": 1792779337728,
+    "used": 211456323584,
+    "free": 1787985166336,
     "free_human": "1.6 TB"
   },
   "backup": {

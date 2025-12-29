@@ -32,12 +32,12 @@ Overview
 
 Project Map
 - strategies/ - ICT Turtle Soup and IBS+RSI implementations
-- backtest/ â€” engine + walkâ€‘forward
+- backtest/ â€” engine + walk-forward
 - data/ â€” providers (Polygon) + universe loader
 - execution/ â€” Alpaca broker adapter (IOC limit)
 - risk/ â€” PolicyGate (budgets, bounds)
 - oms/ â€” order state + idempotency store
-- core/ â€” hashâ€‘chain audit, config pin, structured logs
+- core/ â€” hash-chain audit, config pin, structured logs
 - monitor/ â€” health endpoints
 - scripts/ â€” preflight, build/prefetch, WF/report, showdown, paper/live, reconcile, runner
 - docs/ â€” COMPLETE_ROBOT_ARCHITECTURE.md, RUN_24x7.md, docs index
@@ -61,11 +61,11 @@ Quick Start
 3) Prefetch EOD bars (faster WF)
    python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --cache data/cache --concurrency 3 --dotenv ./.env
 
-4) Walkâ€‘forward comparison and report
+4) Walk-forward comparison and report
    python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
    python scripts/aggregate_wf_report.py --wfdir wf_outputs --out wf_outputs/wf_report.html
 
-5) Showdown (fullâ€‘period sideâ€‘byâ€‘side)
+5) Showdown (full-period side-by-side)
    python scripts/run_showdown_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --cap 900 --outdir showdown_outputs --cache data/cache --dotenv ./.env
 
 Paper and Live Trading (IOC LIMIT)
@@ -76,7 +76,7 @@ Paper and Live Trading (IOC LIMIT)
   python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --cap 10 --dotenv ./.env
 
 Evidence Artifacts
-- wf_outputs/wf_summary_compare.csv â€” strategy sideâ€‘byâ€‘side KPIs
+- wf_outputs/wf_summary_compare.csv â€” strategy side-by-side KPIs
 - wf_outputs/<strategy>/split_NN/{trade_list.csv,equity_curve.csv,summary.json}
 - showdown_outputs/showdown_summary.csv, showdown_report.html
 - data/universe/optionable_liquid_900.csv and `.full.csv` (coverage, ADV, options proofs)
@@ -96,7 +96,7 @@ Time Zones
 
 Safety
 - Kill switch: create file `state/KILL_SWITCH` to halt submissions.
-- Policy Gate: perâ€‘order and daily budgets ($75 / $1,000), price bounds, shorts disabled by default.
+- Policy Gate: per-order and daily budgets ($75 / $1,000), price bounds, shorts disabled by default.
 - Audit: verify `python scripts/verify_hash_chain.py`.
 - Reconciliation: `python scripts/reconcile_alpaca.py --dotenv ./.env`.
 
@@ -139,7 +139,7 @@ All features below are disabled by default. Enable in `config/base.yaml`:
 
 8) Volatility-Targeted Sizing
    - Set `sizing.enabled: true`
-   - Formula: qty = (risk_pct Ã— equity) / (entry - stop)
+   - Formula: qty = (risk_pct × equity) / (entry - stop)
    - Default risk_per_trade_pct: 0.5% (0.005)
    - Requires stop_loss in signal for calculation
 
