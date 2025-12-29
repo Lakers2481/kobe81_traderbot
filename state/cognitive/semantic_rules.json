@@ -54,10 +54,10 @@
       "edge_win_rate": 0.9487179487179487
     },
     "confidence": 1.0,
-    "supporting_episodes": 1220,
+    "supporting_episodes": 1350,
     "contradicting_episodes": 0,
     "created_at": "2025-12-27T23:32:19.933892",
-    "last_updated": "2025-12-28T00:36:03.498531",
+    "last_updated": "2025-12-29T05:32:26.245637",
     "last_applied": null,
     "times_applied": 0,
     "times_successful": 0,
@@ -78,10 +78,10 @@
       "reason": "Past justified high-confidence win (Reflection on win episode for BULL / ibs_rsi. Key lesson: Trust high-confidence signals in similar contexts.)"
     },
     "confidence": 1.0,
-    "supporting_episodes": 5010,
+    "supporting_episodes": 10013,
     "contradicting_episodes": 0,
     "created_at": "2025-12-27T23:32:19.976060",
-    "last_updated": "2025-12-28T14:56:38.899949",
+    "last_updated": "2025-12-29T05:32:27.308828",
     "last_applied": null,
     "times_applied": 0,
     "times_successful": 0,
@@ -270,10 +270,10 @@
       "edge_win_rate": 1.0
     },
     "confidence": 1.0,
-    "supporting_episodes": 231,
+    "supporting_episodes": 1298,
     "contradicting_episodes": 0,
     "created_at": "2025-12-28T02:51:47.592723",
-    "last_updated": "2025-12-28T14:55:27.936614",
+    "last_updated": "2025-12-29T05:32:37.694260",
     "last_applied": null,
     "times_applied": 0,
     "times_successful": 0,
@@ -293,11 +293,11 @@
     "parameters": {
       "edge_win_rate": 1.0
     },
-    "confidence": 0.9999999713781879,
-    "supporting_episodes": 1,
+    "confidence": 1.0,
+    "supporting_episodes": 55,
     "contradicting_episodes": 0,
     "created_at": "2025-12-28T02:51:47.603250",
-    "last_updated": "2025-12-28T02:51:47.603250",
+    "last_updated": "2025-12-29T05:32:38.292817",
     "last_applied": null,
     "times_applied": 0,
     "times_successful": 0,
@@ -318,10 +318,10 @@
       "edge_win_rate": 1.0
     },
     "confidence": 1.0,
-    "supporting_episodes": 182,
+    "supporting_episodes": 329,
     "contradicting_episodes": 0,
     "created_at": "2025-12-28T02:54:23.177671",
-    "last_updated": "2025-12-28T14:55:27.809355",
+    "last_updated": "2025-12-29T05:32:36.619551",
     "last_applied": null,
     "times_applied": 0,
     "times_successful": 0,
@@ -380,6 +380,54 @@
       "auto-generated"
     ],
     "is_active": true,
+    "success_rate": 0.0
+  },
+  "32bad902bcf6": {
+    "rule_id": "32bad902bcf6",
+    "condition": "strategy = ibs_rsi AND regime = BULL",
+    "action": "increase_confidence",
+    "parameters": {
+      "edge_win_rate": 1.0
+    },
+    "confidence": 1.0,
+    "supporting_episodes": 195,
+    "contradicting_episodes": 0,
+    "created_at": "2025-12-28T16:08:25.832929",
+    "last_updated": "2025-12-29T05:32:26.487802",
+    "last_applied": null,
+    "times_applied": 0,
+    "times_successful": 0,
+    "source": "Curiosity Engine: IBS-RSI pattern effectiveness varies significantly across volatility regimes",
+    "tags": [
+      "edge",
+      "validated",
+      "auto-generated"
+    ],
+    "is_active": false,
+    "success_rate": 0.0
+  },
+  "11cdb88ff408": {
+    "rule_id": "11cdb88ff408",
+    "condition": "regime = BEAR AND strategy = turtle_soup AND vix > 20",
+    "action": "increase_confidence",
+    "parameters": {
+      "edge_win_rate": 1.0
+    },
+    "confidence": 1.0,
+    "supporting_episodes": 27,
+    "contradicting_episodes": 0,
+    "created_at": "2025-12-29T02:12:05.857239",
+    "last_updated": "2025-12-29T05:32:33.619184",
+    "last_applied": null,
+    "times_applied": 0,
+    "times_successful": 0,
+    "source": "Curiosity Engine: Turtle soup setups may perform better with volatility-adjusted position sizing in bear markets",
+    "tags": [
+      "edge",
+      "validated",
+      "auto-generated"
+    ],
+    "is_active": false,
     "success_rate": 0.0
   }
 }

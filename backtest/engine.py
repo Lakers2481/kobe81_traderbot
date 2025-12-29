@@ -46,6 +46,12 @@ class Position:
     avg_cost: float = 0.0
 
 class Backtester:
+    """
+    Simulates trading strategies against historical data.
+
+    This event-driven backtester models slippage, commissions, and manages positions
+    with FIFO (First-In, First-Out) P&L accounting.
+    """
     """Event-driven backtester with FIFO P&L, slippage, and commission modeling."""
     def __init__(self, cfg: BacktestConfig, get_signals: Callable[[pd.DataFrame], pd.DataFrame], fetch_bars: Callable[[str], pd.DataFrame]):
         self.cfg = cfg
@@ -58,6 +64,17 @@ class Backtester:
         self.total_commissions = 0.0  # Track total fees paid
 
     def _compute_commission(self, qty: int, price: float, is_sell: bool) -> float:
+        """
+        Calculates the commission and fees for a given trade.
+
+        Args:
+            qty: Quantity of shares traded.
+            price: Price per share.
+            is_sell: True if the trade is a sell, False for a buy.
+
+        Returns:
+            Total commission and fees in dollars for the trade.
+        """
         """Compute commission for a trade. Returns total fee in dollars."""
         comm_cfg = self.cfg.commissions
         if comm_cfg is None or not comm_cfg.enabled:
@@ -138,6 +155,19 @@ class Backtester:
         return {"trades": self.trades, "equity": equity_df, "metrics": metrics, "cash": self.cash, "pnl": pnl}
 
     def _execute(self, sym: str, side: str, qty: int, price: float, ts: datetime):
+        """
+        Executes a simulated trade (buy or long entry).
+
+        Updates cash and position records.
+        Short entry logic is not implemented in this version (v1).
+
+        Args:
+            sym: Symbol of the asset.
+            side: 'long' for buy.
+            qty: Quantity of shares.
+            price: Execution price.
+            ts: Timestamp of the execution.
+        """
         if side == 'long':
             cost = qty * price
             commission = self._compute_commission(qty, price, is_sell=False)
@@ -156,6 +186,17 @@ class Backtester:
             pass
 
     def _exit(self, sym: str, qty: int, price: float, ts: datetime):
+        """
+        Executes a simulated exit (sell a long position).
+
+        Updates cash and position records, applying FIFO logic if applicable.
+
+        Args:
+            sym: Symbol of the asset.
+            qty: Quantity of shares to exit.
+            price: Execution price.
+            ts: Timestamp of the execution.
+        """
         # Sell long position
         pos = self.positions.get(sym)
         if not pos or pos.qty < qty:
@@ -171,6 +212,17 @@ class Backtester:
         self.trades.append(Trade(ts, sym, 'SELL', qty, price))
 
     def _simulate_symbol(self, df: pd.DataFrame, sigs: pd.DataFrame):
+        """
+        Simulates trading for a single symbol based on generated signals.
+
+        Fills entries at the next bar's open after a signal. Exits are triggered
+        by either an ATR-based stop loss (static from signal) or a fixed
+        time stop (5 bars). Ensures only one open position per symbol at a time.
+
+        Args:
+            df: DataFrame of OHLCV data for the symbol.
+            sigs: DataFrame of signals for the symbol.
+        """
         """
         For a single symbol:
         - Fill entries at next bar open after signal timestamp
@@ -296,6 +348,18 @@ class Backtester:
 
     def _compute_equity_series(self, data: pd.DataFrame) -> pd.DataFrame:
         """
+        Reconstructs the daily equity curve by replaying all trades chronologically.
+
+        Starts with initial cash, applies cash flows from simulated BUY/SELL trades,
+        and marks positions to market daily based on closing prices.
+
+        Args:
+            data: Combined DataFrame of all OHLCV data across all symbols.
+
+        Returns:
+            DataFrame with 'equity' and 'returns' columns indexed by timestamp.
+        """
+        """
         Reconstruct the daily equity curve by replaying trades chronologically.
         - Start from initial cash (not the final cash), then apply BUY/SELL cash flows
         - Track position quantities per symbol
@@ -363,6 +427,19 @@ class Backtester:
         return equity_df
 
     def _compute_metrics(self, equity: pd.DataFrame, trades: List[Trade]) -> Dict[str, Any]:
+        """
+        Calculates key performance metrics from the equity curve and trade list.
+
+        Metrics include: Win Rate, Profit Factor, Sharpe Ratio, Max Drawdown,
+        Final Equity, P&L (gross and net), and total fees.
+
+        Args:
+            equity: DataFrame of the equity curve.
+            trades: List of simulated Trade objects.
+
+        Returns:
+            A dictionary containing various performance metrics.
+        """
         # Win rate & profit factor from realized BUY/SELL pairs
         wins = 0
         losses = 0
@@ -423,6 +500,14 @@ class Backtester:
         }
 
     def _write_outputs(self, outdir: str, equity: pd.DataFrame, metrics: Dict[str, Any]) -> None:
+        """
+        Writes backtest results (trade list, equity curve, and summary metrics) to files.
+
+        Args:
+            outdir: Directory path where output files should be written.
+            equity: DataFrame of the equity curve.
+            metrics: Dictionary of computed performance metrics.
+        """
         from pathlib import Path
         import json
         out = Path(outdir)

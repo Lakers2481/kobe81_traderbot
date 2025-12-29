@@ -11,11 +11,10 @@ Components:
 - AdversarialGenerator: Generate adverse market conditions
 """
 
-from .monte_carlo import (
+from backtest.monte_carlo import (
     MonteCarloSimulator,
-    SimulationResult,
-    simulate_returns,
-    run_monte_carlo,
+    MonteCarloResults,
+    run_monte_carlo_analysis,
 )
 
 from .stress_test import (
@@ -28,9 +27,8 @@ from .stress_test import (
 
 __all__ = [
     'MonteCarloSimulator',
-    'SimulationResult',
-    'simulate_returns',
-    'run_monte_carlo',
+    'MonteCarloResults',
+    'run_monte_carlo_analysis',
     'StressTester',
     'StressScenario',
     'ScenarioType',

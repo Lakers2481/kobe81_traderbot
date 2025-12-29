@@ -31,6 +31,25 @@ class PositionLimits:
     max_sector_concentration: float = 0.40  # Max 40% in any single sector
 
 
+_MOCK_SECTOR_MAP: Dict[str, str] = {
+    "AAPL": "Technology", "MSFT": "Technology", "GOOG": "Technology",
+    "AMZN": "Consumer Discretionary", "TSLA": "Consumer Discretionary",
+    "JPM": "Financials", "GS": "Financials",
+    "XOM": "Energy", "CVX": "Energy",
+    "UNH": "Healthcare", "JNJ": "Healthcare",
+    "SPG": "Real Estate",
+    "WMT": "Consumer Staples",
+    # Add more as needed for testing or demo purposes
+}
+
+def _get_symbol_sector(symbol: str) -> Optional[str]:
+    """
+    Placeholder to get the sector for a given symbol.
+    In a real system, this would query a data source or an internal mapping.
+    """
+    return _MOCK_SECTOR_MAP.get(symbol.upper(), None)
+
+
 class PositionLimitGate:
     """
     Gate that enforces position limits before order placement.
@@ -38,7 +57,7 @@ class PositionLimitGate:
     Checks:
     1. Total number of open positions vs max_positions
     2. Whether we already have a position in the symbol
-    3. (Optional) Sector concentration limits
+    3. Sector concentration limits
     """
 
     def __init__(self, limits: Optional[PositionLimits] = None):
@@ -80,6 +99,13 @@ class PositionLimitGate:
 
             if response.status_code == 200:
                 positions = response.json()
+                # Add estimated market_value and sector to each position for checks
+                for p in positions:
+                    qty = int(p.get("qty", 0))
+                    current_price = float(p.get("current_price", 0.0))
+                    p["market_value"] = abs(qty * current_price)
+                    p["sector"] = _get_symbol_sector(p.get("symbol", ""))
+
                 # Update cache
                 self._cached_positions = positions
                 self._cache_timestamp = now
@@ -107,28 +133,53 @@ class PositionLimitGate:
         open_symbols = self.get_open_symbols()
         return symbol.upper() in open_symbols
 
-    def check(self, symbol: str, side: str = "long") -> Tuple[bool, str]:
+    def check(self, symbol: str, side: str, price: float, qty: int) -> Tuple[bool, str]:
         """
         Check if a new position is allowed.
 
         Args:
             symbol: Stock symbol to check
             side: "long" or "short" (for future use)
+            price: Current price of the symbol for notional calculation
+            qty: Quantity of shares for the proposed trade
 
         Returns:
             Tuple of (allowed: bool, reason: str)
         """
         symbol = symbol.upper()
 
-        # Check if we already have a position in this symbol
+        # 1. Check if we already have a position in this symbol
         if self.has_position_in_symbol(symbol):
             if self.limits.max_per_symbol <= 1:
                 return False, f"already_have_position:{symbol}"
 
-        # Check total position count
+        # 2. Check total position count
         current_count = self.get_open_position_count()
         if current_count >= self.limits.max_positions:
             return False, f"max_positions_reached:{current_count}/{self.limits.max_positions}"
+
+        # 3. Check sector concentration
+        if self.limits.max_sector_concentration > 0:
+            proposed_sector = _get_symbol_sector(symbol)
+            if proposed_sector:
+                open_positions = self._fetch_positions()
+                total_portfolio_notional = sum(p["market_value"] for p in open_positions) + (price * qty) # Including proposed trade
+                
+                sector_notionals: Dict[str, float] = {}
+                for p in open_positions:
+                    sector = p.get("sector")
+                    if sector:
+                        sector_notionals[sector] = sector_notionals.get(sector, 0.0) + p["market_value"]
+                
+                sector_notionals[proposed_sector] = sector_notionals.get(proposed_sector, 0.0) + (price * qty)
+
+                if total_portfolio_notional > 0:
+                    for sector, notional in sector_notionals.items():
+                        concentration = notional / total_portfolio_notional
+                        if concentration > self.limits.max_sector_concentration:
+                            return False, f"exceeds_sector_concentration:{sector}:{concentration:.2f}"
+            else:
+                logger.warning(f"Could not determine sector for {symbol}. Sector concentration check skipped.")
 
         return True, "ok"
 
@@ -136,6 +187,19 @@ class PositionLimitGate:
         """Get current position limit status."""
         positions = self._fetch_positions()
         symbols = [p.get("symbol", "") for p in positions]
+        
+        # Calculate sector concentration for status
+        total_portfolio_notional = sum(p["market_value"] for p in positions)
+        sector_notionals: Dict[str, float] = {}
+        for p in positions:
+            sector = p.get("sector")
+            if sector:
+                sector_notionals[sector] = sector_notionals.get(sector, 0.0) + p["market_value"]
+        
+        sector_concentrations: Dict[str, float] = {
+            sector: (notional / total_portfolio_notional if total_portfolio_notional > 0 else 0.0)
+            for sector, notional in sector_notionals.items()
+        }
 
         return {
             "open_positions": len(positions),
@@ -143,6 +207,8 @@ class PositionLimitGate:
             "positions_available": max(0, self.limits.max_positions - len(positions)),
             "open_symbols": symbols,
             "max_per_symbol": self.limits.max_per_symbol,
+            "sector_concentrations": {s: f"{c:.2%}" for s, c in sector_concentrations.items()},
+            "max_sector_concentration": f"{self.limits.max_sector_concentration:.2%}",
         }
 
     def clear_cache(self) -> None:

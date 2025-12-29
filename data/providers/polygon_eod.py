@@ -75,8 +75,10 @@ def fetch_daily_bars_polygon(
     cache_file: Optional[Path] = None
     if cache_dir:
         cache_dir = Path(cache_dir)
-        cache_dir.mkdir(parents=True, exist_ok=True)
-        cache_file = cache_dir / f"{symbol}_{start}_{end}.csv"
+        # Create a "polygon" subdirectory within the cache_dir
+        polygon_cache_dir = cache_dir / "polygon"
+        polygon_cache_dir.mkdir(parents=True, exist_ok=True)
+        cache_file = polygon_cache_dir / f"{symbol}_{start}_{end}.csv"
 
         # Check if cache exists and is not expired
         if cache_file.exists():
@@ -124,6 +126,8 @@ def fetch_daily_bars_polygon(
         'limit': cfg.limit,
         'apiKey': cfg.api_key,
     }
+
+
     try:
         last_exc: Optional[Exception] = None
         for attempt in range(3):
@@ -135,12 +139,16 @@ def fetch_daily_bars_polygon(
                     last_exc = None
                     break
                 data = resp.json()
+
+
                 results = data.get('results', [])
                 if not results:
                     return pd.DataFrame(columns=['timestamp','symbol','open','high','low','close','volume'])
                 rows = []
                 for r in results:
+
                     ts = pd.to_datetime(r.get('t'), unit='ms')
+                    ts = ts.tz_localize(None) # Convert to timezone-naive
                     rows.append({
                         'timestamp': ts,
                         'symbol': symbol.upper(),
@@ -150,18 +158,24 @@ def fetch_daily_bars_polygon(
                         'close': float(r.get('c', 0)),
                         'volume': float(r.get('v', 0)),
                     })
-                df = pd.DataFrame(rows)
+
+                df_data = {col: [row[col] for row in rows] for col in ['timestamp','symbol','open','high','low','close','volume']}
+                df = pd.DataFrame(df_data, columns=['timestamp','symbol','open','high','low','close','volume'])
+
+
                 if cache_file:
                     try:
                         df.to_csv(cache_file, index=False)
                     except Exception as e:
                         jlog("cache_write_failed", level="WARNING",
                              file=str(cache_file), error=str(e), symbol=symbol)
+
                 return df
             except Exception as e:
                 last_exc = e
                 jlog("polygon_request_failed", level="WARNING",
                      symbol=symbol, attempt=attempt+1, error=str(e))
+
                 time.sleep(0.75 * (attempt + 1))
                 continue
         # if we get here, either non-200 or exception: return empty

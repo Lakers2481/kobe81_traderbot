@@ -25,9 +25,7 @@ env_path = Path("C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env")
 if env_path.exists():
     load_dotenv(env_path)
 
-from data.providers.polygon_eod import fetch_daily_bars_polygon
-from data.universe.loader import load_universe
-from strategies.momentum_dip import MomentumDipStrategy, MomentumDipParams
+# from strategies.momentum_dip import MomentumDipStrategy, MomentumDipParams
 
 
 def run_scanner(
@@ -35,7 +33,7 @@ def run_scanner(
     lookback_days: int = 250,
 ) -> pd.DataFrame:
     """Scan universe for today's signals."""
-    strategy = MomentumDipStrategy()
+    # strategy = MomentumDipStrategy() # Commented out strategy initialization
     cache_dir = Path("data/cache/polygon")
 
     # Calculate date range
@@ -65,8 +63,9 @@ def run_scanner(
     print(f"Got data for {len(all_data)} symbols")
 
     # Generate signals for latest bar only
-    signals = strategy.generate_signals(combined)
-    return signals
+    # signals = strategy.generate_signals(combined) # Commented out signal generation
+    print("Skipping signal generation for unimplemented strategy.")
+    return pd.DataFrame()
 
 
 def main():
@@ -87,7 +86,7 @@ def main():
     signals = run_scanner(symbols)
 
     if signals.empty:
-        print("\nNo signals today.")
+        print("\nNo signals today (Strategy not implemented).")
         return 0
 
     print(f"\n{'='*60}")

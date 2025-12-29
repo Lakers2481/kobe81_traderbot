@@ -103,6 +103,6 @@ def temp_logs_dir(tmp_path):
 def mock_env_vars(monkeypatch):
     """Set mock environment variables for testing."""
     monkeypatch.setenv("POLYGON_API_KEY", "test_polygon_key")
-    monkeypatch.setenv("ALPACA_API_KEY_ID", "test_alpaca_key")
-    monkeypatch.setenv("ALPACA_API_SECRET_KEY", "test_alpaca_secret")
+    monkeypatch.setenv("APCA_API_KEY_ID", "test_alpaca_key")
+    monkeypatch.setenv("APCA_API_SECRET_KEY", "test_alpaca_secret")
     monkeypatch.setenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets")

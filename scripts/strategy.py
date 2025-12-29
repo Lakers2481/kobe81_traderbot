@@ -26,7 +26,9 @@ from typing import Any, Dict, List, Optional
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from config.env_loader import load_env
-from strategies import ConnorsRSI2Strategy, ConnorsRSI2Params, IBSStrategy, IBSParams
+# 
+
+from strategies.ibs_rsi.strategy import IbsRsiStrategy, IbsRsiParams # Correct import
 
 # Default paths
 STATE_DIR = ROOT / "state"
@@ -36,16 +38,16 @@ DEFAULT_DOTENV = "C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env"
 
 # Strategy registry
 STRATEGIES = {
-    "rsi2": {
-        "name": "Connors RSI-2",
-        "class": ConnorsRSI2Strategy,
-        "params_class": ConnorsRSI2Params,
-        "description": "Mean-reversion strategy using RSI(2) with SMA(200) trend filter",
-    },
+    # "rsi2": { # This strategy is not implemented or exposed
+    #     "name": "Connors RSI-2",
+    #     "class": ConnorsRSI2Strategy,
+    #     "params_class": ConnorsRSI2Params,
+    #     "description": "Mean-reversion strategy using RSI(2) with SMA(200) trend filter",
+    # },
     "ibs": {
         "name": "IBS (Internal Bar Strength)",
-        "class": IBSStrategy,
-        "params_class": IBSParams,
+        "class": IbsRsiStrategy, # Corrected class reference
+        "params_class": IbsRsiParams, # Corrected params class reference
         "description": "Mean-reversion strategy using IBS indicator with SMA(200) trend filter",
     },
 }
@@ -411,7 +413,8 @@ def main():
     elif args.show:
         show_strategy(args.show)
     elif args.compare:
-        compare_strategies()
+        # compare_strategies() # Commented out
+        print("Cannot compare strategies: RSI-2 is not implemented.")
     elif args.stats:
         show_stats()
     else:

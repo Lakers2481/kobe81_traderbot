@@ -117,7 +117,24 @@ Evidence locations:
 
 ---
 
-## Daily Scan Evidence (2025-12-28)
+## Daily Scan Evidence (2025-12-29)
+
+Run date: 2025-12-29 (weekend-safe scan used Friday 2025-12-26 for inputs)
+
+- Exact command (full universe with narratives):
+  - `python scripts/scan.py --strategy dual --universe data/universe/optionable_liquid_900.csv --top3 --ensure-top3 --narrative --dotenv ./.env`
+- Artifacts written (verifiable on disk):
+  - `logs/daily_picks.csv` (Top-3)
+  - `logs/trade_of_day.csv` (TOTD)
+  - `logs/daily_insights.json` (Top-3 narratives)
+  - `logs/comprehensive_totd.json` (Full TOTD confidence breakdown with symbol_boost pp)
+  - `logs/scan_run_2025-12-28.txt` (full console output)
+
+Notes
+- Historical Edge boost applied pre-selection (±15 pp cap, N-based shrinkage).
+- Narratives generated via Claude when available; deterministic fallback otherwise.
+
+---
 
 - Command (replicate exactly):
   - `python scripts/scan.py --strategy dual --universe data/universe/optionable_liquid_900.csv --cap 120 --top3 --ensure-top3 --narrative --date 2025-12-28 --dotenv ./.env`
