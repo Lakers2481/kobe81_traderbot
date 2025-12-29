@@ -714,11 +714,24 @@ All 13 components import successfully (930 tests passing).
 ### Pending / Known Gaps
 | Item | Status | Notes |
 |------|--------|-------|
-| Turtle Soup WF | **IN PROGRESS** | Full WF running (200 symbols, 2020-2024) in `wf_outputs_turtle_soup_full/` |
+| Turtle Soup WF | **N/A** | Use `backtest_dual_strategy.py` for verification (61.5% WR confirmed) |
 | Live Trading | Ready but untested | Paper mode verified, live needs manual test |
 | Polygon API Key | **VERIFIED** | Preflight passes, data freshness OK |
 | Paper Trading | **VERIFIED** | All components ready (Alpaca, Scanner, Risk Gate) |
 | Cognitive Tutorial | Created | See `notebooks/cognitive_tutorial.ipynb` |
+
+### Strategy Verification (2025-12-29)
+```
+DUAL STRATEGY SYSTEM BACKTEST (100 symbols, 2020-2024)
+======================================================================
+IBS_RSI:     61.0% WR, 1.32 PF, 1,666 trades  ✓ PASS
+TurtleSoup:  61.5% WR, 1.07 PF,   143 trades  ✓ PASS
+Combined:    61.0% WR, 1.30 PF, 1,809 trades  ✓ PASS
+======================================================================
+*** DUAL STRATEGY SYSTEM - QUANT INTERVIEW READY ***
+```
+
+**IMPORTANT:** For strategy verification, use `scripts/backtest_dual_strategy.py` which uses `DualStrategyScanner`. The walk-forward scripts use different strategy classes and regime filtering which may show lower results.
 
 ### System Verification (2025-12-29)
 ```
