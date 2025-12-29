@@ -221,7 +221,7 @@ class TestPositionLimitGate:
         """Test that check() returns (bool, str) tuple."""
         from risk.position_limit_gate import PositionLimitGate, PositionLimits
         gate = PositionLimitGate(PositionLimits())
-        result = gate.check("AAPL", "long")
+        result = gate.check("AAPL", "long", price=150.0, qty=10)
         assert isinstance(result, tuple)
         assert len(result) == 2
         assert isinstance(result[0], bool)

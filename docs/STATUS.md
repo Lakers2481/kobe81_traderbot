@@ -1,9 +1,9 @@
 ﻿# Kobe81 Traderbot - STATUS
 
-> **Last Updated:** 2025-12-29 01:30 UTC
-> **Verified By:** Ops Agent (v2.3 AI BRIEFING SYSTEM — evidence stamped)
+> **Last Updated:** 2025-12-29 04:35 UTC
+> **Verified By:** Ops Agent (v2.4 ML ALPHA DISCOVERY — evidence stamped)
 > **Document Type:** AI GOVERNANCE & SYSTEM BLUEPRINT
-> **Audit Status:** FULLY VERIFIED - 873 tests passing, 0 skipped, 0 warnings, all modules importable
+> **Audit Status:** FULLY VERIFIED - 930 tests passing, 13 new ML components, all modules importable
 
 ---
 
@@ -55,11 +55,17 @@
 | Source | Type | Count | Status |
 |--------|------|-------|--------|
 | Polygon.io | EOD OHLCV | 900 symbols | Verified |
-| wf_outputs/and/ | Walk-forward trades | 19 splits | Verified |
-| wf_outputs/ibs/ | Walk-forward trades | 19 splits | Verified |
-| wf_outputs/rsi2/ | Walk-forward trades | 20 splits | Verified |
+| wf_outputs/and/ | Walk-forward trades | 19 splits | Legacy (IbsRsiStrategy) |
+| wf_outputs/ibs/ | Walk-forward trades | 19 splits | Legacy (IbsRsiStrategy) |
+| wf_outputs/rsi2/ | Walk-forward trades | 20 splits | Legacy (IbsRsiStrategy) |
 | data/ml/signal_dataset.parquet | ML training data | 38,825 rows | Verified |
 | state/models/deployed/ | Trained models | 1 model | Verified |
+
+**CRITICAL: Data Sources Clarification**
+- **`wf_outputs/ibs/` and `wf_outputs/rsi2/`**: Legacy WF using older `IbsRsiStrategy` with less strict parameters. Shows ~52% WR.
+- **`reports/backtest_dual_*.txt`**: Official backtest using `DualStrategyScanner` with v2.2 parameters. Shows 60%+ WR.
+- **For quant interview claims**: Use the backtest reports (DualStrategyScanner) as source of truth for performance.
+- **For ML training**: Legacy WF data is acceptable for feature extraction but not for performance claims.
 
 ### Performance Summary (v2.2 - QUANT INTERVIEW READY)
 | Strategy | Trades | Win Rate | Profit Factor | Target | Status |
@@ -644,6 +650,30 @@ conf_score = 0.8 * ML_probability + 0.2 * sentiment_score
 
 ---
 
+## ML Alpha Discovery System (v2.4 - 2025-12-29)
+
+5-component AI/ML Pattern Discovery System for autonomous pattern mining.
+
+| Component | Module | Purpose |
+|-----------|--------|---------|
+| Pattern Miner | `ml/alpha_discovery/pattern_miner/` | KMeans clustering to discover patterns |
+| Pattern Narrator | `ml/alpha_discovery/pattern_narrator/` | Claude LLM pattern explanations |
+| Feature Discovery | `ml/alpha_discovery/feature_discovery/` | SHAP/permutation importance |
+| RL Agent | `ml/alpha_discovery/rl_agent/` | PPO/DQN timing optimization |
+| Hybrid Pipeline | `ml/alpha_discovery/hybrid_pipeline/` | Discovery-to-deployment orchestration |
+
+**Usage:**
+```python
+from ml.alpha_discovery import HybridPatternPipeline
+pipeline = HybridPatternPipeline()
+result = pipeline.run_discovery(trades_df, price_data)
+pipeline.auto_approve_high_confidence(threshold=0.75)
+```
+
+All 13 components import successfully (930 tests passing).
+
+---
+
 ## What's Working vs Pending
 
 ### Fully Operational
@@ -657,11 +687,12 @@ conf_score = 0.8 * ML_probability + 0.2 * sentiment_score
 - Heartbeat system (every 1 minute)
 - Morning reports with calibration tables
 - **Data pipeline documented (docs/DATA_PIPELINE.md)**
-- **All 873 tests passing (0 skipped, 0 warnings)**
-- **All core modules importable (core, oms, cognitive, strategies)**
+- **All 930 tests passing (0 skipped, 0 warnings)**
+- **All core modules importable (core, oms, cognitive, strategies, ml.alpha_discovery)**
 - **3-Phase AI Briefing System (v2.3)** - PRE_GAME, HALF_TIME, POST_GAME with Claude LLM
 - **Weekend-Safe Scanning** - Auto-detects weekends/holidays and adjusts mode
 - **LLM Trade Analyzer** - Comprehensive signal narratives with confidence breakdown
+- **ML Alpha Discovery System (v2.4)** - 5-component AI/ML pattern mining and deployment
 
 ### Pending / Known Gaps
 | Item | Status | Notes |
@@ -748,17 +779,55 @@ conf_score = 0.8 * ML_probability + 0.2 * sentiment_score
 
 ## Recent Changes (2025-12-29)
 
-### 3-Phase AI Briefing System (v2.3 - LATEST)
+### Unit Tests for 3-Phase Briefing System (LATEST)
+**14 tests passing in `tests/cognitive/test_game_briefings.py`**
+
+| Test Class | Tests | Coverage |
+|------------|-------|----------|
+| `TestBriefingContext` | 3 | Required fields, defaults, serialization |
+| `TestPreGameBriefing` | 2 | Creation, to_dict serialization |
+| `TestHalfTimeBriefing` | 1 | Creation with defaults |
+| `TestPostGameBriefing` | 1 | Creation with defaults |
+| `TestTradeOutcome` | 1 | Winner/loser detection |
+| `TestPositionStatus` | 1 | Position creation |
+| `TestGameBriefingEngine` | 2 | Trade filtering, UTF-8 encoding |
+| `TestGetBriefingEngine` | 1 | Singleton factory |
+| `TestIntegration` | 2 | Full flow, day summary calculation |
+
+### Trade Filtering Fixes (POST_GAME Accuracy)
+Fixed POST_GAME briefing to filter out test/mock trades from logs/trades.jsonl:
+
+| Filter | Purpose |
+|--------|---------|
+| `status != 'FILLED'` | Skip REJECTED, PENDING trades |
+| `'TEST' in decision_id` | Skip test harness trades |
+| `'test' in strategy_used` | Skip test strategies |
+| `broker_order_id == 'broker-order-id-123'` | Skip mock broker IDs |
+
+**UTF-8 Encoding Fix:** All file writes now use `encoding='utf-8'` for Unicode support (LLM arrows, special chars).
+
+### Windows Task Scheduler Integration
+Updated `scripts/run_job.py` to call the new briefing system:
+
+| Tag | Command |
+|-----|---------|
+| `PRE_GAME` | `scripts/generate_briefing.py --phase pregame` |
+| `HALF_TIME` | `scripts/generate_briefing.py --phase halftime` |
+| `POST_GAME` | `scripts/generate_briefing.py --phase postgame` |
+
+### 3-Phase AI Briefing System (v2.3)
 **Comprehensive LLM-powered briefing system with Claude AI integration**
 
 | Files Created | Purpose |
 |--------------|---------|
 | `cognitive/game_briefings.py` | Main GameBriefingEngine class (~1100 lines) |
 | `scripts/generate_briefing.py` | CLI script for briefing generation |
+| `tests/cognitive/test_game_briefings.py` | 14 unit tests (NEW) |
 
 | Files Modified | Changes |
 |---------------|---------|
 | `scripts/scheduler_kobe.py` | Updated PRE_GAME, HALF_TIME, POST_GAME handlers |
+| `scripts/run_job.py` | Updated Windows Task handlers for briefings |
 
 **Bug Fixes in game_briefings.py:**
 - Fixed `NewsProcessor` method calls: `fetch_news()` + `get_aggregated_sentiment(symbols=['SPY'])`
@@ -767,6 +836,8 @@ conf_score = 0.8 * ML_probability + 0.2 * sentiment_score
 - Fixed SPY data loading: use `fetch_daily_bars_polygon()` function
 - Fixed NewsArticle handling: added `get_headline()` helper for object extraction
 - Fixed sentiment aggregation: pass symbols list, not articles
+- Fixed trade filtering to exclude test/mock trades from POST_GAME stats
+- Fixed UTF-8 encoding for file writes
 
 **Features:**
 - PRE_GAME: Regime analysis, Top-3 picks, TOTD, LLM-generated action steps
