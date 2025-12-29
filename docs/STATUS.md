@@ -714,10 +714,21 @@ All 13 components import successfully (930 tests passing).
 ### Pending / Known Gaps
 | Item | Status | Notes |
 |------|--------|-------|
-| Turtle Soup WF | **LIMITED** | `wf_outputs_turtle_soup/` has 28 trades (too few for ML). Use backtest reports for performance. |
+| Turtle Soup WF | **IN PROGRESS** | Full WF running (200 symbols, 2020-2024) in `wf_outputs_turtle_soup_full/` |
 | Live Trading | Ready but untested | Paper mode verified, live needs manual test |
-| Polygon API Key | Warning on fetch | Set `POLYGON_API_KEY` in .env for new data |
+| Polygon API Key | **VERIFIED** | Preflight passes, data freshness OK |
+| Paper Trading | **VERIFIED** | All components ready (Alpaca, Scanner, Risk Gate) |
 | Cognitive Tutorial | Created | See `notebooks/cognitive_tutorial.ipynb` |
+
+### System Verification (2025-12-29)
+```
+[1/5] Environment: OK - All required keys present
+[2/5] Config Pin: OK - 0672528b83422a1f...
+[3/5] Alpaca Trading API: OK - Paper mode active
+[4/5] Alpaca Data API: OK - Quotes available
+[5/5] Polygon Data: OK - Latest bar 2025-12-25
+PREFLIGHT OK - Ready for trading
+```
 
 ---
 
