@@ -876,7 +876,7 @@ Examples:
                         post_count = len(df)
 
                         if args.verbose:
-                            print(f"Portfolio filter: {pre_count} → {post_count} signal(s)")
+                            print(f"Portfolio filter: {pre_count} -> {post_count} signal(s)")
                         elif pre_count != post_count:
                             print(f"Portfolio filter: filtered to {post_count} signal(s) (from {pre_count})")
 
