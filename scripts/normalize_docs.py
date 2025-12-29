@@ -26,7 +26,9 @@ REPLACEMENTS = [
     ("A-sentiment", "*sentiment"),
     ("risk_pct A- equity", "risk_pct * equity"),
     ("ƒ?\"", "-"),        # odd quote sequence -> dash
+    ("ƒ?`", "-"),
     ("ƒ`", "-"),
+    ("ƒ", "-"),            # broad fallback for stray chars in limited targets
     ("ƒ%\x9d", "≥"),       # visible in some encodings
     ("â€‘", "-"),          # narrow no-break hyphen
     ("`limit_price = best_ask A- 1.001`", "`limit_price = best_ask × 1.001`"),
@@ -59,4 +61,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-

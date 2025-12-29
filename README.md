@@ -66,15 +66,15 @@ Overview
 
 Project Map
 - strategies/ - ICT Turtle Soup and IBS+RSI implementations
-- backtest/ â€” engine + walk-forward
-- data/ â€” providers (Polygon) + universe loader
-- execution/ â€” Alpaca broker adapter (IOC limit)
-- risk/ â€” PolicyGate (budgets, bounds)
-- oms/ â€” order state + idempotency store
-- core/ â€” hash-chain audit, config pin, structured logs
-- monitor/ â€” health endpoints
-- scripts/ â€” preflight, build/prefetch, WF/report, showdown, paper/live, reconcile, runner
-- docs/ â€” COMPLETE_ROBOT_ARCHITECTURE.md, RUN_24x7.md, docs index
+- backtest/ - engine + walk-forward
+- data/ - providers (Polygon) + universe loader
+- execution/ - Alpaca broker adapter (IOC limit)
+- risk/ - PolicyGate (budgets, bounds)
+- oms/ - order state + idempotency store
+- core/ - hash-chain audit, config pin, structured logs
+- monitor/ - health endpoints
+- scripts/ - preflight, build/prefetch, WF/report, showdown, paper/live, reconcile, runner
+- docs/ - COMPLETE_ROBOT_ARCHITECTURE.md, RUN_24x7.md, docs index
 
 Requirements
 - Python 3.11+
@@ -262,3 +262,6 @@ Interview Quick Start (3 commands)
 
 
 Note: For canonical commands and configuration, use README.md, AI_HANDOFF_PROMPT.md, and scripts under scripts/. Some deep reference docs or .claude/ content may include legacy examples; when in doubt, follow README and AI_HANDOFF_PROMPT as source of truth.
+
+
+
