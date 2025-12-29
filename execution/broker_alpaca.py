@@ -56,10 +56,13 @@ class BrokerExecutionResult:
 
 def _alpaca_cfg() -> AlpacaConfig:
     base = os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets")
+    # Support both ALPACA_ and APCA_ prefixes for API keys
+    key_id = os.getenv("APCA_API_KEY_ID") or os.getenv("ALPACA_API_KEY_ID", "")
+    secret = os.getenv("APCA_API_SECRET_KEY") or os.getenv("ALPACA_API_SECRET_KEY", "")
     return AlpacaConfig(
         base_url=base.rstrip("/"),
-        key_id=os.getenv("APCA_API_KEY_ID", ""),
-        secret=os.getenv("APCA_API_SECRET_KEY", ""),
+        key_id=key_id,
+        secret=secret,
     )
 
 
