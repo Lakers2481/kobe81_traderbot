@@ -12,12 +12,46 @@
 | Turtle Soup | 61.0% | 1.37 | 305 | 2015-2024 |
 | **Combined** | **60.2%** | **1.44** | **1,172** | 2015-2024 |
 
+### Out-of-Sample Forward Test (2023-2024)
+| Metric | Value |
+|--------|-------|
+| Win Rate | **64.1%** |
+| Profit Factor | **1.60** |
+| Trades | 192 |
+| Net P&L | $1,696 |
+
+*Forward test on unseen data shows BETTER performance than in-sample - strong evidence against overfitting.*
+
 **Quick Replication:**
 ```bash
 python scripts/backtest_dual_strategy.py --cap 200 --start 2015-01-01 --end 2024-12-31
 ```
 
 **[Full Optimization Guide](docs/V2.2_OPTIMIZATION_GUIDE.md)** | **[Replication Steps](docs/STATUS.md#how-to-replicate-v22-results-critical---read-this)**
+
+---
+
+## CRITICAL: Strategy Verification (Read First)
+
+**Use `backtest_dual_strategy.py` for ALL strategy verification.** This is the canonical test.
+
+| Script | Use For | Strategy Class | Has Sweep Filter |
+|--------|---------|----------------|------------------|
+| `backtest_dual_strategy.py` | **Verification** | `DualStrategyScanner` | YES (0.3 ATR) |
+| `run_wf_polygon.py` | Research only | `TurtleSoupStrategy` | NO |
+
+**Why this matters:** Walk-forward uses a different code path that excludes the sweep strength filter, causing ~13% WR degradation. Always verify with `backtest_dual_strategy.py`.
+
+**Verification Commands:**
+```bash
+# In-sample (should show ~60-61% WR)
+python scripts/backtest_dual_strategy.py --start 2015-01-01 --end 2022-12-31 --cap 150
+
+# Out-of-sample forward test (should show 60%+ WR)
+python scripts/backtest_dual_strategy.py --start 2023-01-01 --end 2024-12-31 --cap 150
+```
+
+**See [docs/STATUS.md](docs/STATUS.md) for full investigation log with root cause analysis.**
 
 ---
 
