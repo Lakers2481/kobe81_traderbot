@@ -50,6 +50,33 @@ python scripts/reconcile_alpaca.py
 
 All scripts accept `--dotenv` to specify env file location.
 
+## Weekend-Safe Scanning
+
+The scanner automatically handles weekends and holidays using NYSE calendar:
+
+```bash
+# Weekend (auto-detects and uses Friday's close + preview mode)
+python scripts/scan.py --cap 200
+# Output: *** WEEKEND: Using 2025-12-26 (Friday) + PREVIEW mode ***
+
+# Weekday (uses fresh data + normal mode)
+python scripts/scan.py --cap 200
+# Output: *** WEEKDAY: Using 2025-12-29 + NORMAL mode (fresh data) ***
+
+# Force preview mode (see what would trigger if current bar closes now)
+python scripts/scan.py --cap 200 --preview
+```
+
+**Key Concepts:**
+- **Normal Mode** (weekdays): Uses `.shift(1)` for lookahead safety - signals based on PRIOR bar
+- **Preview Mode** (weekends): Uses current bar values - shows what WOULD trigger Monday
+- Scanner auto-detects weekends/holidays and enables preview mode automatically
+
+**Why This Matters:**
+Strategy uses `col_sig = col.shift(1)` to prevent lookahead bias. On Friday close, normal mode sees Thursday's values. Preview mode lets you see signals that will actually trigger Monday.
+
+See `docs/STATUS.md` Section 16 for detailed explanation.
+
 ## Skills (Slash Comms)
 
 **70 skills** organized by category. Definitions in `.claude/skills/*.md`.
@@ -294,9 +321,10 @@ Output columns: `timestamp, symbol, side, entry_price, stop_loss, take_profit, r
 ### Critical Invariants
 - **No lookahead**: Indicators shifted 1 bar (`col_sig = col.shift(1)`)
 - **Next-bar fills**: Signals at close(t), fills at open(t+1)
-- **Exits**: ATR(14)x2 stop + 5-bar time stop
+- **Exits**: ATR(14)x2 stop + 7-bar time stop (IBS_RSI)
 - **Execution**: IOC LIMIT only (limit = best_ask x 1.001)
 - **Kill switch**: Create `state/KILL_SWITCH` to halt submissions
+- **Weekend scanning**: Auto-uses Friday's close + preview mode (bypasses shift(1))
 
 ### Evidence Artifacts
 - `wf_outputs/wf_summary_compare.csv` - strategy comparison

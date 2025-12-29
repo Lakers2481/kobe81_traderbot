@@ -45,6 +45,77 @@ try:
 except ImportError:
     LLM_ANALYZER_AVAILABLE = False
 
+
+def get_last_trading_day(reference_date: datetime = None) -> tuple[str, bool, str]:
+    """
+    Get the last trading day and determine scan mode.
+
+    Returns:
+        tuple: (date_str, use_preview_mode, mode_reason)
+        - date_str: YYYY-MM-DD of the trading day to use
+        - use_preview_mode: True if we should use preview (current bar values)
+        - mode_reason: Human-readable explanation
+
+    WEEKEND LOGIC:
+    - Saturday/Sunday: Use Friday's close + PREVIEW mode (signals trigger Monday)
+    - Monday-Friday: Use today's date + NORMAL mode (fresh data)
+
+    WHY PREVIEW ON WEEKENDS:
+    - Normal mode uses .shift(1) for lookahead safety (checks PREVIOUS bar)
+    - On weekends, Friday is the last bar - but shift(1) would check Thursday
+    - Preview mode uses CURRENT bar (Friday's values) so we see what triggers Monday
+    """
+    if reference_date is None:
+        reference_date = datetime.now()
+
+    weekday = reference_date.weekday()  # Monday=0, Sunday=6
+    is_weekend = weekday >= 5  # Saturday=5, Sunday=6
+
+    try:
+        import pandas_market_calendars as mcal
+        nyse = mcal.get_calendar('NYSE')
+
+        # Look back up to 10 days to find last trading day
+        start_check = reference_date - timedelta(days=10)
+        schedule = nyse.schedule(
+            start_date=start_check.strftime('%Y-%m-%d'),
+            end_date=reference_date.strftime('%Y-%m-%d')
+        )
+
+        if len(schedule) > 0:
+            last_trading = schedule.index[-1]
+            last_trading_str = last_trading.strftime('%Y-%m-%d')
+            ref_str = reference_date.strftime('%Y-%m-%d')
+
+            if is_weekend:
+                # Weekend: use last trading day (Friday) + preview mode
+                return last_trading_str, True, f"WEEKEND: Using {last_trading_str} (Friday) + PREVIEW mode"
+            elif ref_str == last_trading_str:
+                # Weekday and today is a trading day: use today + normal mode
+                return ref_str, False, f"WEEKDAY: Using today ({ref_str}) + NORMAL mode (fresh data)"
+            else:
+                # Weekday but today is a holiday: use last trading day + preview
+                return last_trading_str, True, f"HOLIDAY: Using {last_trading_str} + PREVIEW mode"
+        else:
+            # Fallback
+            return _fallback_trading_day(reference_date, is_weekend)
+
+    except ImportError:
+        return _fallback_trading_day(reference_date, is_weekend)
+
+
+def _fallback_trading_day(reference_date: datetime, is_weekend: bool) -> tuple[str, bool, str]:
+    """Fallback when pandas_market_calendars not available."""
+    if is_weekend:
+        # Go back to Friday
+        days_back = (reference_date.weekday() - 4) % 7
+        if days_back == 0:
+            days_back = 7 if reference_date.weekday() != 4 else 0
+        last_friday = reference_date - timedelta(days=days_back)
+        return last_friday.strftime('%Y-%m-%d'), True, f"WEEKEND: Using Friday ({last_friday.strftime('%Y-%m-%d')}) + PREVIEW"
+    else:
+        return reference_date.strftime('%Y-%m-%d'), False, "WEEKDAY: Using today + NORMAL mode"
+
 # Quality Gate System (v2.0 - reduces ~50/week to ~5/week)
 try:
     from risk.signal_quality_gate import filter_to_best_signals, get_quality_gate
@@ -350,8 +421,22 @@ Examples:
         print(f"Loaded {len(symbols)} symbols from {universe_path}")
 
     # Determine date range
-    # Use last business day by default to avoid partial bars
-    end_date = args.date or args.end or (datetime.utcnow().date().isoformat())
+    # WEEKEND-SAFE: Auto-detect weekends/holidays and use appropriate mode
+    if args.date or args.end:
+        # User specified date - use as-is, check if it's a trading day
+        end_date = args.date or args.end
+        use_preview = args.preview  # Only use preview if explicitly requested
+        mode_reason = f"USER-SPECIFIED: Using {end_date}"
+        if args.preview:
+            mode_reason += " + PREVIEW mode (user requested)"
+    else:
+        # Auto-detect: determine best date and mode based on day of week
+        end_date, auto_preview, mode_reason = get_last_trading_day(datetime.now())
+        use_preview = args.preview or auto_preview
+
+    # Print mode explanation
+    print(f"\n*** {mode_reason} ***")
+
     if args.start:
         start_date = args.start
     else:
@@ -372,9 +457,8 @@ Examples:
 
     # Fetch data and run strategies
     print(f"\nKobe Scanner - {scan_id}")
-    if args.preview:
-        print("*** PREVIEW MODE: Using current bar values (for weekend analysis) ***")
-        print("*** These signals would trigger on the NEXT trading day ***")
+    if use_preview:
+        print("*** PREVIEW MODE: Using current bar values (signals trigger NEXT trading day) ***")
     print(f"Scanning {len(symbols)} symbols with Dual Strategy (IBS+RSI + Turtle Soup)...")
     print("-" * 60)
 
@@ -426,7 +510,7 @@ Examples:
     if args.min_price is not None and args.min_price > 0:
         sel_cfg['min_price'] = float(args.min_price)
 
-    signals = run_strategies(combined, strategies, apply_filters=apply_filters, spy_bars=spy_bars, preview_mode=args.preview)
+    signals = run_strategies(combined, strategies, apply_filters=apply_filters, spy_bars=spy_bars, preview_mode=use_preview)
 
     # === QUALITY GATE (v2.0) ===
     # Reduces ~50 signals/week to ~5/week with higher win rate

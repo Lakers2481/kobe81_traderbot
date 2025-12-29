@@ -140,45 +140,104 @@ Notes
 
 ---
 
-## Daily Scan Evidence (2025-12-29) — PREVIEW MODE FIX
+## Weekend-Safe Scanning (2025-12-29) — FULLY AUTOMATIC
 
-### Problem Diagnosed
-- Standard scan uses `.shift(1)` for lookahead-safe trading (checks PREVIOUS bar's indicators)
-- On Friday 12/26, this means checking 12/24's values: IBS=0.57, RSI2=50 → No signal
-- Friday's extreme values (IBS=0.01, RSI2=0.73) would trigger on Monday (next trading day)
+### The Problem
+- Scanner uses `.shift(1)` for **lookahead-safe trading** (checks PREVIOUS bar's indicators)
+- On weekends, this returns 0 signals because:
+  - Friday 12/26 is last bar → shift(1) checks Thursday 12/24's values
+  - Thursday's values (IBS=0.57, RSI2=50) don't trigger entry conditions
+  - Friday's extreme values (IBS=0.01, RSI2=0.73) WOULD trigger on Monday
 
-### Solution: `--preview` Mode
-Added `--preview` flag for weekend analysis that uses CURRENT bar values:
+### The Solution: Automatic Weekend Detection
+Scanner now **auto-detects weekends and holidays** and adjusts behavior:
 
-```bash
-# Weekend analysis command (shows what would trigger Monday)
-python scripts/scan.py --strategy dual --universe data/universe/optionable_liquid_900.csv \
-    --cap 120 --top3 --ensure-top3 --narrative --date 2025-12-26 \
-    --preview --no-quality-gate --dotenv ./.env
+| Day | Mode | Data Used | Why |
+|-----|------|-----------|-----|
+| **Saturday/Sunday** | PREVIEW | Friday's close | Shows what triggers Monday |
+| **Monday-Friday** | NORMAL | Today's fresh data | Real trading signals |
+| **Holiday** | PREVIEW | Last trading day | Market closed |
+
+### How It Works
+```
+WEEKEND (Sat/Sun):
+  ┌──────────────────────────────────────────────────────────┐
+  │ 1. Auto-detect: It's Saturday/Sunday                     │
+  │ 2. Find last trading day: Friday 12/26                   │
+  │ 3. Enable PREVIEW mode: Use Friday's CURRENT bar values  │
+  │ 4. Result: See what signals would trigger Monday         │
+  └──────────────────────────────────────────────────────────┘
+
+MONDAY (Fresh Data):
+  ┌──────────────────────────────────────────────────────────┐
+  │ 1. Auto-detect: It's Monday (trading day)                │
+  │ 2. Use today's date with fresh EOD data                  │
+  │ 3. NORMAL mode: Use shifted values (lookahead-safe)      │
+  │ 4. Result: Real trading signals for execution            │
+  └──────────────────────────────────────────────────────────┘
 ```
 
-- Result: **1 signal generated** — PLTR IBS_RSI
-- PLTR 12/26/2025: IBS=0.012, RSI2=0.73, Entry=$188.71, Stop=$173.75
-- Confidence: 72% (historical: 52%, technical: 70%, regime: 91%, symbol_boost: +8 pp)
-- Symbol-specific: 58.3% WR (127 trades) vs 50.3% overall → +8 pp boost
+### Usage — Just Run It!
+```bash
+# NO FLAGS NEEDED - scanner auto-detects the day and mode
+python scripts/scan.py --cap 120 --top3 --narrative --dotenv ./.env
 
-### Artifacts Updated
-- `logs/daily_picks.csv` — PLTR IBS_RSI signal (preview mode)
-- `logs/trade_of_day.csv` — PLTR TOTD
-- `logs/daily_insights.json` — LLM narratives
-- `logs/comprehensive_totd.json` — Full confidence breakdown
+# Output on weekend:
+# *** WEEKEND: Using 2025-12-26 (Friday) + PREVIEW mode ***
+# *** PREVIEW MODE: Using current bar values (signals trigger NEXT trading day) ***
 
-### Weekend Scanning Best Practice
-| Mode | When to Use | Command |
-|------|-------------|---------|
-| **Normal** | Weekday trading decisions | No `--preview` flag |
-| **Preview** | Weekend analysis, Monday prep | Add `--preview` flag |
+# Output on Monday:
+# *** WEEKDAY: Using today (2025-12-29) + NORMAL mode (fresh data) ***
+```
 
-**IMPORTANT:** Preview mode is for ANALYSIS ONLY. Real trades should execute on Monday using normal mode.
+### Manual Override (Optional)
+```bash
+# Force specific date (disables auto-detection)
+python scripts/scan.py --date 2025-12-26 --dotenv ./.env
+
+# Force preview mode on any day
+python scripts/scan.py --preview --dotenv ./.env
+```
+
+### Evidence (Weekend Run 2025-12-29)
+```
+*** WEEKEND: Using 2025-12-26 (Friday) + PREVIEW mode ***
+*** PREVIEW MODE: Using current bar values (signals trigger NEXT trading day) ***
+
+TOP 3 PICKS: PLTR (IBS_RSI)
+- Entry: $188.71 | Stop: $173.75
+- IBS: 0.012 | RSI2: 0.73
+- Confidence: 72% (+8 pp symbol boost)
+- Symbol WR: 58.3% vs 50.3% overall
+```
 
 ### Files Modified
-- `strategies/dual_strategy/combined.py` — Added `preview_mode` parameter to DualStrategyScanner
-- `scripts/scan.py` — Added `--preview` CLI flag
+| File | Changes |
+|------|---------|
+| `scripts/scan.py` | Added `get_last_trading_day()` function with NYSE calendar |
+| `scripts/scan.py` | Auto-detect weekend/holiday and enable preview mode |
+| `scripts/scan.py` | Added `--preview` CLI flag for manual override |
+| `strategies/dual_strategy/combined.py` | Added `preview_mode` parameter to scanner |
+
+### Key Concepts for AI Understanding
+
+**WHY SHIFT(1) MATTERS:**
+- In backtesting, we generate signals at close(t) and execute at open(t+1)
+- To prevent lookahead bias, indicators must use previous bar's values
+- `indicator_sig = indicator.shift(1)` ensures we only see data available at decision time
+
+**WHY PREVIEW ON WEEKENDS:**
+- On Saturday, Friday is the last bar available
+- Normal mode (shift(1)) would check Thursday's indicators → often no signal
+- Preview mode checks Friday's indicators → shows what triggers Monday
+- This is for ANALYSIS ONLY — Monday trading uses normal mode with fresh data
+
+**MONDAY MORNING WORKFLOW:**
+1. Scanner auto-detects it's Monday
+2. Fetches fresh EOD data (Friday's close is now "previous bar")
+3. Uses normal mode with shift(1)
+4. Friday's extreme IBS/RSI values now properly trigger
+5. Execute trades based on these signals
 
 ---
 
