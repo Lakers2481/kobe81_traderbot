@@ -1,9 +1,9 @@
 ﻿# Kobe81 Traderbot - STATUS
 
-> **Last Updated:** 2025-12-29 04:35 UTC
-> **Verified By:** Ops Agent (v2.4 ML ALPHA DISCOVERY — evidence stamped)
+> **Last Updated:** 2025-12-29 17:00 UTC
+> **Verified By:** Claude Opus 4.5 (Scheduler v2.0 Upgrade)
 > **Document Type:** AI GOVERNANCE & SYSTEM BLUEPRINT
-> **Audit Status:** FULLY VERIFIED - 930 tests passing, 13 new ML components, all modules importable
+> **Audit Status:** FULLY VERIFIED - 942 tests passing, Scheduler v2.0 deployed, all modules importable
 
 ---
 
@@ -778,6 +778,82 @@ Performance: 61.0% WR, 1.37 PF (305 trades)
 | **16:00** | **POST_GAME BRIEFING** | `reports/postgame_YYYYMMDD.json` + `.md` (lessons, hypotheses) |
 | 16:05 | EOD_REPORT | Daily P&L summary |
 | 17:00 Fri | EOD_LEARNING | ML model retraining |
+
+---
+
+## Scheduler v2.0 Upgrade (2025-12-29)
+
+Major upgrade addressing 6 critical gaps identified in scheduler v1:
+
+### Gaps Fixed
+
+| # | Gap | v1 Issue | v2 Fix |
+|---|-----|----------|--------|
+| 1 | Risk mismatch | $75/order hardcoded | Trading modes (micro/paper/real) in config |
+| 2 | Single entry window | Only 9:45 | Position manager every 15 min |
+| 3 | No intraday management | No stop tracking | TrailingStopManager wired to live |
+| 4 | Narrow divergence | Only 10:05 | Every 30 min during market hours |
+| 5 | Data timing | 6:00 AM update too early | EOD finalize at 6 PM after provider delay |
+| 6 | Reconciliation once | EOD only | Midday (12:30) + EOD (16:15) |
+
+### New Scripts Created
+
+| Script | Purpose | Schedule |
+|--------|---------|----------|
+| `scripts/position_manager.py` | Intraday position lifecycle, time stops, trailing stops | Every 15 min 9:50-15:55 |
+| `scripts/premarket_check.py` | Data staleness, splits, missing bars | 6:45 AM |
+| `scripts/eod_finalize.py` | Finalize EOD data after provider delay | 6:00 PM |
+| `monitor/divergence_monitor.py` | Continuous sync validation | Every 30 min 10:00-15:45 |
+
+### Trading Modes (config/base.yaml)
+
+```yaml
+trading_mode: "micro"  # Options: micro | paper | real
+
+modes:
+  micro:   # $75/order, $1k/day, 3 positions
+  paper:   # $1,500/order, $5k/day, 5 positions
+  real:    # $2,500/order, $10k/day, 5 positions + 2% risk sizing
+```
+
+### Updated Daily Schedule (v2.0)
+
+```
+PRE-MARKET (5:30 - 9:30 ET)
+05:30  DB_BACKUP           State backup
+06:00  DATA_UPDATE         Warm data cache
+06:30  MORNING_REPORT      Generate morning summary
+06:45  PREMARKET_CHECK     Data staleness, splits check [NEW]
+08:00  PRE_GAME            AI Briefing (evidence-locked)
+09:00  MARKET_NEWS         Update sentiment
+09:15  PREMARKET_SCAN      Build plan (portfolio-aware)
+
+MARKET HOURS (9:30 - 16:00 ET)
+09:45  FIRST_SCAN          ENTRY WINDOW - Submit orders
+09:50+ POSITION_MANAGER    Every 15 min: stops, exits, P&L [NEW]
+10:00+ DIVERGENCE          Every 30 min: sync validation [ENHANCED]
+12:00  HALF_TIME           AI Briefing + position review
+12:30  RECONCILE_MIDDAY    Full broker-OMS reconciliation [NEW]
+14:30  AFTERNOON_SCAN      Refresh Top-3 (portfolio-aware)
+15:30  SWING_SCANNER       Swing setups
+15:55  POSITION_CLOSE_CHECK Enforce time stops before close [NEW]
+
+POST-MARKET (16:00 - 21:00 ET)
+16:00  POST_GAME           AI Briefing + lessons
+16:05  EOD_REPORT          Performance report
+16:15  RECONCILE_EOD       Full reconciliation + report [NEW]
+17:00  EOD_LEARNING        Weekly ML training (Fridays)
+18:00  EOD_FINALIZE        Finalize EOD data [NEW]
+21:00  OVERNIGHT_ANALYSIS  Overnight analysis
+```
+
+### Files Modified
+
+| File | Changes |
+|------|---------|
+| `config/base.yaml` | Added trading_mode + modes section |
+| `risk/policy_gate.py` | `from_config()` factory, `load_limits_from_config()` |
+| `scripts/scheduler_kobe.py` | 47 schedule entries (was 15), new handlers |
 
 ---
 
@@ -1730,6 +1806,68 @@ Follow these exact steps to reproduce end-to-end results with no ambiguity.
 
 - Governance
   - After any run that changes numbers materially, update this STATUS.md (Verification/Tuning sections) with artifacts and commands.
+
+---
+
+## AI Contributions & Fix Log (Nuances, Owners, Evidence)
+
+Purpose: Immutable audit of what changed, why, who (AI) changed it, and proof. Future AIs MUST append here (date, owner, command, artifact) for any material change.
+
+| Date (ET)           | Component/Area                          | Issue/Change (Nuance)                                                                 | Owner (AI)   | How (Cmd/Files)                                                                                                                    | Outcome (Evidence)                                                                                                  |
+|---------------------|-----------------------------------------|---------------------------------------------------------------------------------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+| 2025-12-28 22:30    | Turtle Soup params v2.2                 | Looser entry (sweep 0.3 ATR); tighter exits (0.5R/3-bar); improved WR/PF               | Claude Code  | Updated `strategies/dual_strategy/combined.py` params; ran dual backtest                                                          | v2.2 WR/PF PASS; `reports/backtest_dual_latest.txt`                                                                 |
+| 2025-12-28 23:00    | Backtest simulation exits               | Recompute TS stop/TP on actual entry; strategy-specific time stops in sim               | Claude Code  | Edited `scripts/backtest_dual_strategy.py` (time_stop per-signal, TS stop/tp calc)                                                | PASS; aligned to signal semantics; `reports/backtest_dual_latest.txt`                                               |
+| 2025-12-29 00:10    | Scanner consistency (RSI + lookback)    | Match RSI(2) impl to simple rolling; increase LOOKBACK_DAYS to 400 (SMA200 safety)      | Ops Agent    | `strategies/dual_strategy/combined.py` RSI; `scripts/scan.py` LOOKBACK_DAYS                                                      | Section “Scanner Consistency Fixes”; metrics unchanged; fewer edge‑case gaps                                        |
+| 2025-12-29 00:25    | No‑lookahead in combined scanner        | Ensure IBS/RSI/ATR/SMA use prior‑bar features for signal decision                       | Ops Agent    | Added `*_sig` features; changed entry checks to prior‑bar (`combined.py`)                                                        | No lookahead across both strategies; validated by backtest output                                                   |
+| 2025-12-29 00:40    | Historical Edge Boost                   | Add symbol WR vs baseline delta with N‑shrinkage; expose `get_symbol_boost`             | Ops Agent    | `cognitive/llm_trade_analyzer.py` (helper + calc); `scripts/scan.py` (add boost pre‑selection)                                    | Confidence breakdown shows `symbol_boost` in pp; selection adds pp/100; capped ±15 pp                               |
+| 2025-12-29 01:10    | Daily scan evidence                     | Full universe scan with narratives; saved Top‑3/TOTD + insights                          | Ops Agent    | `scripts/scan.py --top3 --ensure-top3 --narrative`; artifacts in logs/                                                            | “Daily Scan Evidence (2025‑12‑29)” section; `logs/daily_picks.csv`, `logs/trade_of_day.csv`, `logs/daily_insights.json` |
+| 2025-12-29 01:30    | Showdown evidence                       | Side‑by‑side long‑window comparison (cap=200)                                           | Ops Agent    | `scripts/run_showdown_polygon.py`                                                                                                  | `showdown_outputs/showdown_summary.csv`, `showdown_outputs/showdown_report.html`                                     |
+| 2025-12-29 10:06    | Paper trading test                      | Validate IOC LIMIT, gates, idempotency, logging; small safe basket                       | Ops Agent    | `scripts/run_paper_trade.py --start 2024-11-01 --end 2024-12-27 --cap 20`                                                         | `logs/paper_test_20251229_1006.txt`, `logs/trades.jsonl`, `logs/events.jsonl`                                       |
+| 2025-12-29 10:20    | Documentation normalization             | Remove CP1252 artifacts; clean bullets; add runner script                                | Ops Agent    | `scripts/normalize_docs.py`; updated README/STATUS; added `ops/windows/start_runner.ps1`                                          | Cleaner docs; STATUS remains canonical; runner script available                                                     |
+
+Notes
+- Canonical backtest (v2.2 combined): 2015–2024, cap=200 → ~60.8% WR, 1.35 PF (kept as source of truth; other slices may differ).
+- Any AI changing code/params MUST append a row here with date/time, owner, exact command(s), and artifact links.
+
+---
+
+## Production Deployment Checklist (Paper, then Live)
+
+Follow this checklist verbatim. Tick each box before proceeding.
+
+- [ ] Environment keys present in `./.env` (Polygon, Alpaca). Verify: `python scripts/preflight.py --dotenv ./.env` (PASS required)
+- [ ] Kill switch not present: file `state/KILL_SWITCH` must NOT exist (create to halt in emergency)
+- [ ] Config budgets set for micro trading (`config/base.yaml` → `risk.max_order_value: 75`, `max_open_positions: 10`)
+- [ ] Historical Edge boost enabled (symbol-specific): `historical_edge.enabled: true` (capped ±15 pp)
+- [ ] Strategy alignment v2.2 confirmed (no lookahead, time stops), evidence in `reports/backtest_dual_latest.txt`
+- [ ] Scanner produces Top‑3/TOTD + narratives (evidence in `logs/`)
+- [ ] Paper runner scheduled or started:
+  - Manual: `python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv --cap 120 --scan-times 09:35,10:30,15:55 --lookback-days 540 --dotenv ./.env`
+  - Windows Task (admin): `ops/windows/start_runner.ps1` (register at logon)
+- [ ] Paper trading test executed (small window)
+  - `python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --start 2024-11-01 --end 2024-12-27 --cap 20 --dotenv ./.env`
+  - Verify artifacts: `logs/paper_test_*.txt`, `logs/trades.jsonl`, `logs/events.jsonl`
+- [ ] Operational monitoring in place
+  - Tail: `Get-Content logs/events.jsonl -Wait`
+  - Picks/TOTD copied where needed (`logs/daily_picks.csv`, `logs/trade_of_day.csv`)
+- [ ] Governance: Append AI Contributions & Fix Log for any changes
+
+Live (only when approved)
+- [ ] Live keys + `ALPACA_BASE_URL` in `.env`
+- [ ] `live_trading` approvals in `config/base.yaml` (require_env_approval + require_cli_flag)
+- [ ] Set env approval: `setx LIVE_TRADING_APPROVED YES` (new shell)
+- [ ] Run small-basket micro live test (supervised):
+  - `python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_900.csv --cap 5 --dotenv ./.env --approve-live`
+- [ ] Stamp STATUS with command + artifacts (orders, events, positions)
+
+## Paper Trading Runbook (Daily)
+
+- 08:55–09:10 ET: `python scripts/preflight.py --dotenv ./.env` (PASS); confirm no `state/KILL_SWITCH`
+- 09:20 ET: Start/confirm runner; tail events; ensure logs directory writeable
+- 09:40 ET: Verify first scan artifacts (`logs/daily_picks.csv`, `logs/trade_of_day.csv`); narratives in `logs/daily_insights.json`
+- Intraday: Monitor `logs/events.jsonl` for rate‑limit/data issues; paper fills in `logs/trades.jsonl`
+- EOD: Archive artifacts if needed; append AI Contributions row if anything changed materially
+
 ## Contacts & Resources
 
 - **Repo:** `C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot`

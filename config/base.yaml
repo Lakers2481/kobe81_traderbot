@@ -3,9 +3,34 @@
 
 system:
   name: "Kobe"
-  version: "1.0.0"
+  version: "2.0.0"  # v2.0 - Scheduler upgrade
   mode: "paper"  # paper | live
   timezone: "America/New_York"
+
+# Trading Modes (Scheduler v2) - Controls risk limits per mode
+trading_mode: "micro"  # Options: micro | paper | real
+
+modes:
+  micro:
+    max_notional_per_order: 75
+    max_daily_notional: 1000
+    max_positions: 3
+    risk_per_trade_pct: 0.005  # 0.5% per trade
+    description: "Training wheels mode - minimal real money exposure"
+
+  paper:
+    max_notional_per_order: 1500
+    max_daily_notional: 5000
+    max_positions: 5
+    risk_per_trade_pct: 0.01  # 1% per trade
+    description: "Paper trading mode - simulate realistic sizing"
+
+  real:
+    max_notional_per_order: 2500
+    max_daily_notional: 10000
+    max_positions: 5
+    risk_per_trade_pct: 0.02  # 2% per trade - risk-based sizing
+    description: "Live trading mode - full production sizing"
 
 # Data Provider Settings
 data:
