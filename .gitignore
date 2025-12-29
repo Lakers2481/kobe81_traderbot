@@ -33,6 +33,7 @@ logs/*.jsonl
 logs/*.log
 logs/*.csv
 logs/*.json
+logs/*.txt
 logs/ai_bundles/
 !logs/.gitkeep
 
@@ -56,6 +57,8 @@ Thumbs.db
 _ul*
 *.tmp
 *.bak
+state/*.lock
+state/reconcile/
 
 # Runtime state (cognitive episodes, models)
 state/cognitive/episodes/
@@ -68,6 +71,12 @@ reports/evidence/
 reports/screening/
 reports/morning_report_*.html
 reports/totd_*/
+reports/halftime_*.json
+reports/halftime_*.md
+reports/postgame_*.json
+reports/postgame_*.md
+reports/pre_game_plan_*.html
+reports/*_latest.txt
 
 # Generated data
 data/ml/
