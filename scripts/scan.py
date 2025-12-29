@@ -53,6 +53,18 @@ try:
 except ImportError:
     LLM_ANALYZER_AVAILABLE = False
 
+# Alpaca live data (for real-time prices during market hours)
+try:
+    from data.providers.alpaca_live import (
+        is_market_open,
+        get_market_clock,
+        fetch_multi_quotes,
+        get_current_price,
+    )
+    ALPACA_LIVE_AVAILABLE = True
+except ImportError:
+    ALPACA_LIVE_AVAILABLE = False
+
 
 def get_last_trading_day(reference_date: datetime = None) -> tuple[str, bool, str]:
     """
@@ -571,6 +583,11 @@ Examples:
         default=10000.0,
         help="Account equity for portfolio filter calculations (default: 10000)",
     )
+    ap.add_argument(
+        "--live-data",
+        action="store_true",
+        help="Use Alpaca live data for current prices (paper trading mode). Historical data still from Polygon.",
+    )
     args = ap.parse_args()
 
     # Load environment
@@ -601,6 +618,24 @@ Examples:
 
     if args.verbose:
         print(f"Loaded {len(symbols)} symbols from {universe_path}")
+
+    # Check live data mode
+    market_is_open = False
+    live_data_enabled = args.live_data and ALPACA_LIVE_AVAILABLE
+    if live_data_enabled:
+        clock = get_market_clock()
+        if clock:
+            market_is_open = clock.get("is_open", False)
+            print(f"\n[LIVE DATA] Market open: {market_is_open}")
+            if market_is_open:
+                print("[LIVE DATA] Will use Alpaca for current prices")
+            else:
+                print("[LIVE DATA] Market closed - using cached EOD data")
+        else:
+            print("[LIVE DATA] Could not get market clock - using cached data")
+            live_data_enabled = False
+    elif args.live_data and not ALPACA_LIVE_AVAILABLE:
+        print("[WARN] --live-data requested but Alpaca module not available")
 
     # Determine date range
     # WEEKEND-SAFE: Auto-detect weekends/holidays and use appropriate mode
@@ -983,6 +1018,44 @@ Examples:
                     need = 3 - len(out)
                     if need > 0 and not left.empty:
                         out = pd.concat([out, left.head(need)], ignore_index=True)
+
+                # Update with live prices if enabled and market is open
+                if live_data_enabled and market_is_open and not out.empty:
+                    print("\n[LIVE DATA] Fetching real-time prices from Alpaca...")
+                    pick_symbols = out['symbol'].unique().tolist()
+                    live_quotes = fetch_multi_quotes(pick_symbols)
+
+                    if live_quotes:
+                        # Store original (EOD) entry price for comparison
+                        out['eod_entry_price'] = out['entry_price'].copy()
+
+                        def update_with_live_price(row):
+                            sym = row['symbol']
+                            if sym in live_quotes:
+                                quote = live_quotes[sym]
+                                side = str(row.get('side', '')).lower()
+                                # For long: use ask (what we'd pay)
+                                # For short: use bid (what we'd receive)
+                                if side == 'long' and quote.get('ask_price'):
+                                    return quote['ask_price']
+                                elif side == 'short' and quote.get('bid_price'):
+                                    return quote['bid_price']
+                            return row['entry_price']
+
+                        out['entry_price'] = out.apply(update_with_live_price, axis=1)
+
+                        # Print comparison
+                        print("\n  Symbol  | EOD Price | Live Price | Change")
+                        print("  " + "-" * 45)
+                        for _, row in out.iterrows():
+                            sym = row['symbol']
+                            eod = row['eod_entry_price']
+                            live = row['entry_price']
+                            change = ((live - eod) / eod * 100) if eod > 0 else 0
+                            direction = "+" if change >= 0 else ""
+                            print(f"  {sym:<7} | ${eod:>8.2f} | ${live:>9.2f} | {direction}{change:.2f}%")
+                    else:
+                        print("  [WARN] Could not fetch live quotes")
 
                 # Write Top 3 picks
                 picks_path = Path(args.out_picks)
