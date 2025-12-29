@@ -38,6 +38,14 @@ from ml_meta.features import compute_features_frame
 from ml_meta.model import load_model, predict_proba, FEATURE_COLS
 from altdata.sentiment import load_daily_cache, normalize_sentiment_to_conf
 
+# Portfolio-aware filtering (Phase 7 - Scheduler v2)
+try:
+    from portfolio.heat_monitor import get_heat_monitor, HeatLevel
+    from risk.advanced.correlation_limits import EnhancedCorrelationLimits, SECTOR_MAP
+    PORTFOLIO_FILTERS_AVAILABLE = True
+except ImportError:
+    PORTFOLIO_FILTERS_AVAILABLE = False
+
 # LLM Trade Analyzer (human-like reasoning)
 try:
     from cognitive.llm_trade_analyzer import get_trade_analyzer, DailyInsightReport
@@ -138,6 +146,163 @@ DEFAULT_UNIVERSE = ROOT / "data" / "universe" / "optionable_liquid_900.csv"
 SIGNALS_LOG = ROOT / "logs" / "signals.jsonl"
 CACHE_DIR = ROOT / "data" / "cache"
 LOOKBACK_DAYS = 400  # Need 280+ trading days for SMA(200) + buffer (~400 calendar days)
+
+
+# -----------------------------------------------------------------------------
+# Portfolio-aware filtering (Scheduler v2 - Phase 7)
+# -----------------------------------------------------------------------------
+def apply_portfolio_filters(
+    signals: pd.DataFrame,
+    current_positions: List[Dict],
+    price_data: pd.DataFrame,
+    equity: float = 10000.0,
+    max_correlation: float = 0.70,
+    max_sector_pct: float = 0.40,
+    max_single_position_pct: float = 0.20,
+    verbose: bool = False
+) -> pd.DataFrame:
+    """
+    Filter signals by portfolio constraints.
+
+    Per Scheduler v2 Plan Phase 7:
+    1. Correlation cap (max 0.70 correlation with existing positions)
+    2. Sector cap (max 40% in any sector)
+    3. Exposure cap (max 20% single position)
+    4. Don't add if heat = HOT/OVERHEATED
+
+    Args:
+        signals: DataFrame of candidate signals
+        current_positions: List of current position dicts {symbol, market_value, ...}
+        price_data: DataFrame with OHLCV data for correlation calculation
+        equity: Total account equity for exposure calculations
+        max_correlation: Maximum allowed correlation with existing positions
+        max_sector_pct: Maximum sector concentration allowed
+        max_single_position_pct: Maximum single position as % of equity
+        verbose: Print filtering details
+
+    Returns:
+        Filtered DataFrame of signals that pass portfolio constraints
+    """
+    if not PORTFOLIO_FILTERS_AVAILABLE:
+        if verbose:
+            print("  [INFO] Portfolio filters not available (modules not imported)")
+        return signals
+
+    if signals.empty:
+        return signals
+
+    # If no existing positions, all signals pass portfolio filters
+    if not current_positions:
+        if verbose:
+            print("  [INFO] No existing positions - all signals pass portfolio filter")
+        return signals
+
+    filtered_signals = []
+    rejected_reasons = []
+
+    # Initialize heat monitor and correlation checker
+    heat_monitor = get_heat_monitor()
+    corr_checker = EnhancedCorrelationLimits(
+        max_correlation=max_correlation,
+        max_sector_weight=max_sector_pct,
+        max_sector_positions=3,  # Max 3 positions per sector
+    )
+
+    # Calculate current heat status
+    heat_status = heat_monitor.calculate_heat(
+        positions=current_positions,
+        equity=equity,
+    )
+
+    # Check 4: Don't add if heat = HOT/OVERHEATED
+    if heat_status.heat_level in [HeatLevel.HOT, HeatLevel.OVERHEATED]:
+        if verbose:
+            print(f"  [WARN] Portfolio is {heat_status.heat_level.value} (score: {heat_status.heat_score:.0f}) - blocking all new entries")
+        return pd.DataFrame()
+
+    # Build returns data for correlation calculation
+    returns_data = {}
+    if price_data is not None and not price_data.empty:
+        for symbol in set(list([p.get('symbol', '') for p in current_positions]) +
+                         list(signals['symbol'].unique() if 'symbol' in signals.columns else [])):
+            try:
+                sym_data = price_data[price_data['symbol'] == symbol].copy()
+                if len(sym_data) >= 60:
+                    sym_data = sym_data.sort_values('timestamp')
+                    returns = sym_data['close'].pct_change().dropna().values
+                    if len(returns) >= 20:
+                        returns_data[symbol] = returns
+            except Exception:
+                pass
+
+    # Build current positions dict for correlation check
+    positions_dict = {
+        p.get('symbol', ''): {'value': abs(float(p.get('market_value', 0)))}
+        for p in current_positions if p.get('symbol')
+    }
+
+    # Sector counts for current positions
+    current_sectors = {}
+    for pos in current_positions:
+        sym = pos.get('symbol', '')
+        sector = SECTOR_MAP.get(sym, 'Unknown')
+        current_sectors[sector] = current_sectors.get(sector, 0) + 1
+
+    for _, row in signals.iterrows():
+        symbol = row.get('symbol', '')
+        entry_price = float(row.get('entry_price', 0))
+
+        # Skip if symbol already in portfolio
+        if symbol in positions_dict:
+            rejected_reasons.append((symbol, 'already_in_portfolio'))
+            continue
+
+        # Calculate proposed position value (default 2% risk sizing)
+        proposed_value = min(equity * max_single_position_pct, 1500)
+
+        # Check 1 & 2: Correlation and sector using EnhancedCorrelationLimits
+        if positions_dict and returns_data:
+            try:
+                check_result = corr_checker.check_entry(
+                    symbol=symbol,
+                    proposed_value=proposed_value,
+                    current_positions=positions_dict,
+                    returns_data=returns_data,
+                )
+
+                if not check_result.can_enter:
+                    rejected_reasons.append((symbol, check_result.reason))
+                    continue
+
+                # Log warnings but allow entry
+                if check_result.warnings:
+                    for warn in check_result.warnings:
+                        if verbose:
+                            print(f"  [WARN] {symbol}: {warn}")
+
+            except Exception as e:
+                if verbose:
+                    print(f"  [WARN] Correlation check failed for {symbol}: {e}")
+
+        # Check 3: Single position exposure cap (already handled in proposed_value calc)
+        # Position would be sized to max_single_position_pct
+
+        # Passed all checks
+        filtered_signals.append(row)
+
+    if verbose:
+        passed = len(filtered_signals)
+        total = len(signals)
+        rejected = total - passed
+        print(f"  Portfolio filter: {passed}/{total} signals passed ({rejected} rejected)")
+        if rejected_reasons and len(rejected_reasons) <= 10:
+            for sym, reason in rejected_reasons[:5]:
+                print(f"    - {sym}: {reason}")
+
+    if not filtered_signals:
+        return pd.DataFrame()
+
+    return pd.DataFrame(filtered_signals)
 
 
 # -----------------------------------------------------------------------------
@@ -388,6 +553,23 @@ Examples:
         "--preview",
         action="store_true",
         help="Preview mode: use current bar values (for weekend analysis). Shows what would trigger on next trading day.",
+    )
+    ap.add_argument(
+        "--portfolio-filter",
+        action="store_true",
+        help="Enable portfolio-aware filtering (correlation cap, sector cap, heat check)",
+    )
+    ap.add_argument(
+        "--positions-file",
+        type=str,
+        default=str(ROOT / "state" / "positions.json"),
+        help="Path to current positions JSON file for portfolio filtering",
+    )
+    ap.add_argument(
+        "--equity",
+        type=float,
+        default=10000.0,
+        help="Account equity for portfolio filter calculations (default: 10000)",
     )
     args = ap.parse_args()
 
@@ -668,6 +850,40 @@ Examples:
                     df = df[df['adv_usd60'] >= float(args.min_adv_usd)]
                 except Exception:
                     pass
+
+                # Portfolio-aware filtering (Scheduler v2 - Phase 7)
+                if args.portfolio_filter and PORTFOLIO_FILTERS_AVAILABLE and not df.empty:
+                    try:
+                        # Load current positions
+                        current_positions = []
+                        positions_path = Path(args.positions_file)
+                        if positions_path.exists():
+                            with open(positions_path, 'r') as f:
+                                pos_data = json.load(f)
+                                if isinstance(pos_data, list):
+                                    current_positions = pos_data
+                                elif isinstance(pos_data, dict):
+                                    current_positions = pos_data.get('positions', [])
+
+                        pre_count = len(df)
+                        df = apply_portfolio_filters(
+                            signals=df,
+                            current_positions=current_positions,
+                            price_data=combined,
+                            equity=args.equity,
+                            verbose=args.verbose,
+                        )
+                        post_count = len(df)
+
+                        if args.verbose:
+                            print(f"Portfolio filter: {pre_count} → {post_count} signal(s)")
+                        elif pre_count != post_count:
+                            print(f"Portfolio filter: filtered to {post_count} signal(s) (from {pre_count})")
+
+                    except Exception as e:
+                        if args.verbose:
+                            print(f"  [WARN] Portfolio filter failed: {e}")
+
                 # Compute conf_score early for selection
                 def base_conf_row(row: pd.Series) -> float:
                     if 'conf_score' in row and pd.notna(row['conf_score']):

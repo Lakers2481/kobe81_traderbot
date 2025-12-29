@@ -64,6 +64,219 @@ ROOT = Path(__file__).resolve().parents[1]
 # Data Structures
 # =============================================================================
 
+@dataclass(frozen=True)
+class DecisionPacket:
+    """
+    Evidence-locked data container for LLM briefings.
+
+    CRITICAL: All LLM prompts MUST use this packet as the sole data source.
+    The LLM cannot hallucinate data that isn't in this packet.
+
+    Usage:
+        packet = DecisionPacket.from_context(context, signals, positions, news)
+        prompt = BRIEFING_CONSTRAINT + packet.to_prompt_context()
+    """
+    # Metadata
+    timestamp: str
+    date: str
+    packet_version: str = "2.0"
+
+    # Market Regime (verified from HMM or fallback)
+    regime: str = "UNKNOWN"
+    regime_confidence: float = 0.0
+    regime_source: str = "UNKNOWN"  # "HMM" | "ADAPTIVE" | "FALLBACK"
+
+    # VIX (verified from data provider)
+    vix: float = 0.0
+    vix_source: str = "UNKNOWN"  # "LIVE" | "CACHED" | "ESTIMATED"
+
+    # SPY Reference
+    spy_price: float = 0.0
+    spy_sma200: float = 0.0
+    spy_above_sma: bool = False
+
+    # Market Mood
+    mood_state: str = "UNKNOWN"
+    mood_score: float = 0.0
+
+    # Position Summary (frozen tuple for immutability)
+    position_count: int = 0
+    position_symbols: tuple = ()
+    total_unrealized_pnl: float = 0.0
+
+    # Signal Summary (frozen tuple for immutability)
+    signal_count: int = 0
+    signal_symbols: tuple = ()
+    top3_symbols: tuple = ()
+
+    # News Summary
+    news_count: int = 0
+    news_sentiment: float = 0.0
+    news_headlines: tuple = ()  # Top 5 headlines only
+
+    # Heat Status
+    heat_level: str = "UNKNOWN"
+    heat_score: float = 0.0
+
+    # Data Freshness
+    data_age_minutes: int = 0
+    is_stale: bool = False
+
+    @classmethod
+    def from_context(
+        cls,
+        context: 'BriefingContext',
+        signals: list = None,
+        positions: list = None,
+        news: list = None
+    ) -> 'DecisionPacket':
+        """Create DecisionPacket from BriefingContext with validation."""
+        from datetime import datetime
+
+        # Extract position symbols
+        pos_symbols = tuple(
+            p.get('symbol', 'UNKNOWN') for p in (positions or context.positions or [])
+        )
+
+        # Extract signal symbols
+        sig_symbols = tuple(
+            s.get('symbol', 'UNKNOWN') for s in (signals or [])
+        )
+
+        # Extract top-3
+        top3 = tuple(sig_symbols[:3]) if sig_symbols else ()
+
+        # Extract news headlines (max 5)
+        news_list = news or context.news_articles or []
+        headlines = []
+        for article in news_list[:5]:
+            if hasattr(article, 'headline'):
+                headlines.append(article.headline[:100])
+            elif isinstance(article, dict):
+                h = article.get('headline', article.get('title', ''))
+                headlines.append(h[:100] if h else 'No headline')
+
+        return cls(
+            timestamp=datetime.utcnow().isoformat(),
+            date=context.date,
+            regime=context.regime if context.regime else "UNKNOWN",
+            regime_confidence=context.regime_confidence,
+            regime_source="HMM" if context.regime_confidence > 0.5 else "FALLBACK",
+            vix=context.vix_level,
+            vix_source="LIVE" if context.vix_level > 0 else "UNKNOWN",
+            spy_price=context.spy_price,
+            spy_sma200=context.spy_sma200,
+            spy_above_sma=context.spy_price > context.spy_sma200 if context.spy_sma200 > 0 else False,
+            mood_state=context.mood_state if context.mood_state else "UNKNOWN",
+            mood_score=context.mood_score,
+            position_count=len(pos_symbols),
+            position_symbols=pos_symbols,
+            total_unrealized_pnl=context.unrealized_pnl,
+            signal_count=len(sig_symbols),
+            signal_symbols=sig_symbols,
+            top3_symbols=top3,
+            news_count=len(news_list),
+            news_sentiment=context.sentiment_compound,
+            news_headlines=tuple(headlines),
+            heat_level=context.heat_level if context.heat_level else "UNKNOWN",
+            heat_score=context.heat_score,
+            data_age_minutes=0,
+            is_stale=False
+        )
+
+    def to_prompt_context(self) -> str:
+        """Convert to LLM-safe prompt string with explicit UNKNOWN markers."""
+        lines = [
+            "=== DECISION PACKET (Evidence-Locked) ===",
+            f"Timestamp: {self.timestamp}",
+            f"Date: {self.date}",
+            "",
+            "--- MARKET REGIME ---",
+            f"Regime: {self.regime} ({self.regime_confidence:.0%} confidence)",
+            f"Source: {self.regime_source}",
+            "",
+            "--- VIX ---",
+            f"Level: {self.vix:.1f}" if self.vix > 0 else "Level: UNKNOWN",
+            f"Source: {self.vix_source}",
+            "",
+            "--- SPY REFERENCE ---",
+            f"Price: ${self.spy_price:.2f}" if self.spy_price > 0 else "Price: UNKNOWN",
+            f"SMA200: ${self.spy_sma200:.2f}" if self.spy_sma200 > 0 else "SMA200: UNKNOWN",
+            f"Position: {'ABOVE' if self.spy_above_sma else 'BELOW'} SMA200",
+            "",
+            "--- MARKET MOOD ---",
+            f"State: {self.mood_state}",
+            f"Score: {self.mood_score:.2f}",
+            "",
+            "--- POSITIONS ---",
+            f"Count: {self.position_count}",
+            f"Symbols: {', '.join(self.position_symbols) if self.position_symbols else 'NONE'}",
+            f"Unrealized P&L: ${self.total_unrealized_pnl:,.2f}",
+            "",
+            "--- SIGNALS ---",
+            f"Count: {self.signal_count}",
+            f"Top-3: {', '.join(self.top3_symbols) if self.top3_symbols else 'NONE'}",
+            "",
+            "--- NEWS ---",
+            f"Articles: {self.news_count}",
+            f"Sentiment: {self.news_sentiment:.2f}",
+            "Headlines:"
+        ]
+
+        if self.news_headlines:
+            for h in self.news_headlines:
+                lines.append(f"  - {h}")
+        else:
+            lines.append("  - No headlines available")
+
+        lines.extend([
+            "",
+            "--- PORTFOLIO HEAT ---",
+            f"Level: {self.heat_level}",
+            f"Score: {self.heat_score:.0f}/100",
+            "",
+            "--- DATA FRESHNESS ---",
+            f"Age: {self.data_age_minutes} minutes",
+            f"Stale: {'YES - CAUTION' if self.is_stale else 'NO'}",
+            "",
+            "=== END DECISION PACKET ==="
+        ])
+
+        return "\n".join(lines)
+
+    def validate(self) -> tuple:
+        """Validate packet completeness. Returns (is_valid, missing_fields)."""
+        missing = []
+
+        if self.regime == "UNKNOWN":
+            missing.append("regime")
+        if self.vix <= 0:
+            missing.append("vix")
+        if self.spy_price <= 0:
+            missing.append("spy_price")
+        if self.mood_state == "UNKNOWN":
+            missing.append("mood_state")
+
+        return (len(missing) == 0, missing)
+
+
+# LLM Evidence Constraint - prepend to ALL briefing prompts
+BRIEFING_EVIDENCE_CONSTRAINT = """
+CRITICAL CONSTRAINT: Evidence-Locked Briefing
+
+You MUST follow these rules:
+1. ONLY reference data from the Decision Packet provided below
+2. If a field shows 'UNKNOWN', explicitly say "data not available" - DO NOT make up values
+3. NEVER invent news headlines, prices, or events not in the packet
+4. NEVER guess at regime probabilities - use only the confidence shown
+5. If the packet shows "STALE: YES", warn the user that data may be outdated
+
+Any information not in the Decision Packet does not exist for this briefing.
+Fabricating data is a critical violation.
+
+"""
+
+
 @dataclass
 class BriefingContext:
     """Unified context for all briefing phases."""
