@@ -1,4 +1,8 @@
-﻿Kobe81 Traderbot â€" Backtesting, Paper, Live (Micro)
+﻿# Kobe81 Traderbot — Backtesting, Paper, Live (Micro)
+
+> **Version:** v2.3 — Comprehensive AI Briefing System
+> **Last Updated:** 2025-12-29
+> **Status:** Production Ready with LLM/ML/AI Integration
 
 ## Performance (v2.2 - Quant Interview Ready)
 
@@ -161,6 +165,52 @@ Report:
 
 Showdown:
   python scripts/run_showdown_crypto.py --universe data/universe/crypto_top10.csv --start 2020-01-01 --end 2024-12-31 --outdir showdown_outputs_crypto --cache data/cache/crypto --dotenv ./.env
+
+---
+
+## AI Briefing System (v2.3 - NEW)
+
+Comprehensive 3-phase briefing system with Claude LLM integration for intelligent market analysis:
+
+| Phase | Time (ET) | Purpose | Output |
+|-------|-----------|---------|--------|
+| **PRE_GAME** | 08:00 | Morning game plan | Regime analysis, Top-3 picks, TOTD, action steps |
+| **HALF_TIME** | 12:00 | Midday check | Position P&L, adjustments, afternoon plan |
+| **POST_GAME** | 16:00 | EOD reflection | Performance review, lessons, next-day setup |
+
+**Generate Briefings:**
+```bash
+# Morning briefing (pre-market)
+python scripts/generate_briefing.py --phase pregame --dotenv ./.env
+
+# Midday briefing
+python scripts/generate_briefing.py --phase halftime --dotenv ./.env
+
+# End-of-day briefing
+python scripts/generate_briefing.py --phase postgame --dotenv ./.env
+
+# With Telegram notification
+python scripts/generate_briefing.py --phase pregame --telegram --dotenv ./.env
+```
+
+**Briefing Features:**
+- **Regime Analysis**: HMM-based market regime detection with probability breakdown
+- **Market Mood**: VIX + sentiment fusion for emotional state assessment
+- **News Integration**: Real-time news with LLM interpretation
+- **Trade Narratives**: Claude-generated analysis for each signal
+- **Position Tracking**: Live P&L and hold/adjust/exit recommendations
+- **Learning System**: Hypothesis generation and lesson extraction
+
+**Output Files:**
+- `reports/pregame_YYYYMMDD.json` + `.md`
+- `reports/halftime_YYYYMMDD.json` + `.md`
+- `reports/postgame_YYYYMMDD.json` + `.md`
+
+**Key Modules:**
+- `cognitive/game_briefings.py` - Main briefing engine
+- `cognitive/llm_trade_analyzer.py` - Signal narrative generation
+- `altdata/news_processor.py` - News fetching and sentiment
+- `altdata/market_mood_analyzer.py` - VIX + sentiment fusion
 
 ---
 

@@ -226,8 +226,12 @@ def main() -> None:
                                     send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
                         elif entry.tag == 'PRE_GAME':
                             do_pregame(args.universe, args.dotenv, scan_date)
-                            # Generate pre-game plan document
-                            rc = run_cmd([sys.executable, str(ROOT / 'scripts/pre_game_plan.py'), '--universe', args.universe, '--cap', str(args.cap), '--dotenv', args.dotenv, '--date', scan_date])
+                            # Generate pre-game plan document (legacy)
+                            run_cmd([sys.executable, str(ROOT / 'scripts/pre_game_plan.py'), '--universe', args.universe, '--cap', str(args.cap), '--dotenv', args.dotenv, '--date', scan_date])
+                            # Generate comprehensive PRE_GAME briefing with LLM/ML analysis
+                            rc = run_cmd([sys.executable, str(ROOT / 'scripts/generate_briefing.py'),
+                                     '--phase', 'pregame', '--universe', args.universe, '--cap', str(args.cap),
+                                     '--dotenv', args.dotenv, '--date', scan_date, '--telegram'])
                             if send_fn:
                                 try:
                                     from core.clock.tz_utils import fmt_ct
@@ -256,7 +260,20 @@ def main() -> None:
                                     send_fn(f"<b>{entry.tag}</b> [{stamp}] completed")
                                 except Exception:
                                     send_fn(f"<b>{entry.tag}</b> completed")
-                        elif entry.tag in ('HALF_TIME','AFTERNOON_SCAN','SWING_SCANNER'):
+                        elif entry.tag == 'HALF_TIME':
+                            # Refresh Top-3 signals
+                            do_refresh_top3(args.universe, args.dotenv, args.cap, scan_date)
+                            # Generate comprehensive HALF_TIME briefing with position analysis
+                            rc = run_cmd([sys.executable, str(ROOT / 'scripts/generate_briefing.py'),
+                                     '--phase', 'halftime', '--dotenv', args.dotenv, '--telegram'])
+                            if send_fn:
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if (rc is None or rc == 0) else 'failed'}")
+                                except Exception:
+                                    send_fn(f"<b>{entry.tag}</b> {'completed' if (rc is None or rc == 0) else 'failed'}")
+                        elif entry.tag in ('AFTERNOON_SCAN','SWING_SCANNER'):
                             rc = do_refresh_top3(args.universe, args.dotenv, args.cap, scan_date)
                             if send_fn:
                                 try:
@@ -305,7 +322,18 @@ def main() -> None:
                                     send_fn(f"<b>{entry.tag}</b> [{stamp}] completed (weekly promote)")
                                 except Exception:
                                     send_fn(f"<b>{entry.tag}</b> completed (weekly promote)")
-                        # Placeholders: DB_BACKUP, DATA_UPDATE, POST_GAME, EOD_REPORT, OVERNIGHT_ANALYSIS
+                        elif entry.tag == 'POST_GAME':
+                            # Generate comprehensive POST_GAME briefing with full day analysis
+                            rc = run_cmd([sys.executable, str(ROOT / 'scripts/generate_briefing.py'),
+                                     '--phase', 'postgame', '--dotenv', args.dotenv, '--telegram'])
+                            if send_fn:
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if rc == 0 else 'failed'}")
+                                except Exception:
+                                    send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
+                        # Placeholders: DB_BACKUP, DATA_UPDATE, OVERNIGHT_ANALYSIS
 
                         mark_ran(state, entry.tag, ymd)
                         save_state(state)

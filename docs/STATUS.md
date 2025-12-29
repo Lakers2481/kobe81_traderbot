@@ -1,7 +1,7 @@
 ﻿# Kobe81 Traderbot - STATUS
 
-> **Last Updated:** 2025-12-29 00:45 UTC
-> **Verified By:** Ops Agent (v2.2 QUANT INTERVIEW READY — evidence stamped)
+> **Last Updated:** 2025-12-29 01:30 UTC
+> **Verified By:** Ops Agent (v2.3 AI BRIEFING SYSTEM — evidence stamped)
 > **Document Type:** AI GOVERNANCE & SYSTEM BLUEPRINT
 > **Audit Status:** FULLY VERIFIED - 873 tests passing, 0 skipped, 0 warnings, all modules importable
 
@@ -241,6 +241,160 @@ TOP 3 PICKS: PLTR (IBS_RSI)
 
 ---
 
+---
+
+## 3-Phase AI Briefing System (v2.3 - 2025-12-29)
+
+### Overview
+Comprehensive LLM-powered briefing system that generates morning game plans, midday status checks, and end-of-day reflections with Claude AI integration.
+
+### Briefing Phases
+
+| Phase | Time (ET) | Purpose | Key Components |
+|-------|-----------|---------|----------------|
+| **PRE_GAME** | 08:00 | Morning game plan | Regime, mood, news, Top-3, TOTD, action steps |
+| **HALF_TIME** | 12:00 | Midday status | Position P&L, what's working, adjustments |
+| **POST_GAME** | 16:00 | EOD analysis | Performance, lessons, hypotheses, next day setup |
+
+### Files Created/Modified
+
+| Action | File | Purpose |
+|--------|------|---------|
+| CREATE | `cognitive/game_briefings.py` (~1100 lines) | Main briefing engine with GameBriefingEngine class |
+| CREATE | `scripts/generate_briefing.py` | CLI script for briefing generation |
+| MODIFY | `scripts/scheduler_kobe.py` | Updated PRE_GAME, HALF_TIME, POST_GAME handlers |
+
+### GameBriefingEngine Class
+
+```python
+class GameBriefingEngine:
+    """Unified briefing engine integrating all LLM/ML/AI components."""
+
+    def gather_context(self) -> BriefingContext
+    def generate_pregame(self, universe, cap, date) -> PreGameBriefing
+    def generate_halftime(self) -> HalfTimeBriefing
+    def generate_postgame(self) -> PostGameBriefing
+    def save_briefing(self, briefing, phase: str)
+    def send_telegram_summary(self, briefing, phase: str)
+```
+
+### Data Sources Integration
+
+| Source | Module | Used In |
+|--------|--------|---------|
+| HMM Regime | `ml_advanced/hmm_regime_detector.py` | All phases (via daily_insights.json) |
+| Market Mood | `altdata/market_mood_analyzer.py` | All phases |
+| News/Sentiment | `altdata/news_processor.py` | All phases |
+| LLM Trade Analyzer | `cognitive/llm_trade_analyzer.py` | PRE_GAME (Top-3, TOTD) |
+| Positions | `scripts/positions.py` | HALF_TIME, POST_GAME |
+| P&L | `scripts/pnl.py` | HALF_TIME, POST_GAME |
+| Heat Monitor | `portfolio/heat_monitor.py` | All phases |
+| Reflection Engine | `cognitive/reflection_engine.py` | POST_GAME |
+
+### Bug Fixes (2025-12-29)
+
+Fixed all warnings in the briefing system:
+
+| Issue | Root Cause | Fix |
+|-------|------------|-----|
+| `NewsProcessor.get_market_news` not found | Method doesn't exist | Use `fetch_news()` + `get_aggregated_sentiment(symbols=['SPY'])` |
+| `PortfolioHeatMonitor.get_heat_status` not found | Method doesn't exist | Use `calculate_heat(positions, equity)` with correct signature |
+| `list object has no attribute 'get'` | Positions can be list or dict | Handle both formats in positions loading |
+| `cannot import name 'PolygonEODProvider'` | Wrong import | Use `fetch_daily_bars_polygon()` function |
+| `NewsArticle object has no attribute 'get'` | fetch_news returns objects | Added `get_headline()` helper for NewsArticle handling |
+| `expected str instance, NewsArticle found` | Wrong method signature | Call `get_aggregated_sentiment(symbols=['SPY'])` not articles |
+
+### Key Code Patterns
+
+**Regime Loading (from daily_insights.json):**
+```python
+# Load regime from daily_insights.json instead of calling HMM directly
+insights_file = ROOT / 'logs' / 'daily_insights.json'
+if insights_file.exists():
+    with open(insights_file) as f:
+        insights = json.load(f)
+    regime_str = insights.get('regime_assessment', '')
+    if 'BULL' in regime_str.upper():
+        context.regime = 'BULLISH'
+        context.regime_confidence = 0.9
+```
+
+**News Fetching (correct method calls):**
+```python
+if hasattr(self.news_processor, 'fetch_news'):
+    articles = self.news_processor.fetch_news(symbols=['SPY'], limit=10)
+    context.news_articles = [
+        a.to_dict() if hasattr(a, 'to_dict') else a
+        for a in articles
+    ]
+
+# get_aggregated_sentiment takes symbols list, not articles
+if hasattr(self.news_processor, 'get_aggregated_sentiment'):
+    sentiment = self.news_processor.get_aggregated_sentiment(symbols=['SPY'])
+```
+
+**Headline Extraction (handles NewsArticle objects):**
+```python
+def get_headline(article):
+    """Extract headline from article (dict or NewsArticle object)."""
+    if hasattr(article, 'headline'):
+        return article.headline
+    elif isinstance(article, dict):
+        return article.get('headline', article.get('title', 'No title'))
+    return 'No title'
+```
+
+### Usage Commands
+
+```bash
+# Generate morning briefing
+python scripts/generate_briefing.py --phase pregame --dotenv ./.env
+
+# Generate midday briefing
+python scripts/generate_briefing.py --phase halftime --dotenv ./.env
+
+# Generate end-of-day briefing
+python scripts/generate_briefing.py --phase postgame --dotenv ./.env
+
+# With custom date and Telegram notification
+python scripts/generate_briefing.py --phase pregame --date 2025-12-28 --telegram --dotenv ./.env
+```
+
+### Output Artifacts
+
+| Phase | JSON | Markdown |
+|-------|------|----------|
+| PRE_GAME | `reports/pregame_YYYYMMDD.json` | `reports/pregame_YYYYMMDD.md` |
+| HALF_TIME | `reports/halftime_YYYYMMDD.json` | `reports/halftime_YYYYMMDD.md` |
+| POST_GAME | `reports/postgame_YYYYMMDD.json` | `reports/postgame_YYYYMMDD.md` |
+
+### Evidence (2025-12-28 Run)
+
+PRE_GAME Briefing successfully generated:
+```
+=== PRE_GAME BRIEFING ===
+Market Regime: BULLISH (90% confidence)
+VIX Level: 20.0 (Neutral mood)
+SPY Position: ABOVE SMA(200) at $625.03
+
+Top-3 Picks: PLTR (IBS_RSI)
+Trade of the Day: PLTR
+  - Entry: $188.71
+  - Stop: $173.75
+  - Signal Score: 11.1
+
+LLM Analysis: "The signal score of 11.1 represents an exceptionally
+strong setup... PLTR's RSI of 57.1 sits in the neutral-to-bullish zone..."
+```
+
+### LLM Integration
+
+- **Model:** claude-sonnet-4-20250514 (via Anthropic API)
+- **API Calls:** 2 per PRE_GAME briefing (market analysis + action plan)
+- **Fallback:** Template-based narratives if LLM unavailable
+
+---
+
 ### Lookahead Prevention (CRITICAL)
 ```python
 # All indicators MUST use .shift(1) to prevent lookahead
@@ -414,10 +568,12 @@ Performance: 61.0% WR, 1.37 PF (305 trades)
 |-----------|------|--------|
 | 06:00 | DATA_UPDATE | Fetch latest EOD bars |
 | 06:30 | MORNING_REPORT | `reports/morning_report_YYYYMMDD.html` |
+| **08:00** | **PRE_GAME BRIEFING** | `reports/pregame_YYYYMMDD.json` + `.md` (regime, Top-3, TOTD) |
 | 09:45 | FIRST_SCAN + SHADOW | `logs/daily_picks.csv`, `logs/trade_of_day.csv` |
 | 10:05 | DIVERGENCE | Compare shadow vs actual |
-| 12:00 | HALF_TIME | Mid-day check |
+| **12:00** | **HALF_TIME BRIEFING** | `reports/halftime_YYYYMMDD.json` + `.md` (position P&L, adjustments) |
 | 15:30 | SWING_SCANNER | EOD swing signals |
+| **16:00** | **POST_GAME BRIEFING** | `reports/postgame_YYYYMMDD.json` + `.md` (lessons, hypotheses) |
 | 16:05 | EOD_REPORT | Daily P&L summary |
 | 17:00 Fri | EOD_LEARNING | ML model retraining |
 
@@ -441,6 +597,11 @@ Performance: 61.0% WR, 1.37 PF (305 trades)
 | Cognitive Tests | `tests/cognitive/` |
 | Data Pipeline Docs | `docs/DATA_PIPELINE.md` |
 | Cognitive Config | `config/base.yaml` (cognitive section) |
+| PRE_GAME Briefing | `reports/pregame_YYYYMMDD.json` + `.md` |
+| HALF_TIME Briefing | `reports/halftime_YYYYMMDD.json` + `.md` |
+| POST_GAME Briefing | `reports/postgame_YYYYMMDD.json` + `.md` |
+| Briefing Engine | `cognitive/game_briefings.py` |
+| Briefing CLI | `scripts/generate_briefing.py` |
 
 ---
 
@@ -498,6 +659,9 @@ conf_score = 0.8 * ML_probability + 0.2 * sentiment_score
 - **Data pipeline documented (docs/DATA_PIPELINE.md)**
 - **All 873 tests passing (0 skipped, 0 warnings)**
 - **All core modules importable (core, oms, cognitive, strategies)**
+- **3-Phase AI Briefing System (v2.3)** - PRE_GAME, HALF_TIME, POST_GAME with Claude LLM
+- **Weekend-Safe Scanning** - Auto-detects weekends/holidays and adjusts mode
+- **LLM Trade Analyzer** - Comprehensive signal narratives with confidence breakdown
 
 ### Pending / Known Gaps
 | Item | Status | Notes |
@@ -582,9 +746,38 @@ conf_score = 0.8 * ML_probability + 0.2 * sentiment_score
 
 ---
 
+## Recent Changes (2025-12-29)
+
+### 3-Phase AI Briefing System (v2.3 - LATEST)
+**Comprehensive LLM-powered briefing system with Claude AI integration**
+
+| Files Created | Purpose |
+|--------------|---------|
+| `cognitive/game_briefings.py` | Main GameBriefingEngine class (~1100 lines) |
+| `scripts/generate_briefing.py` | CLI script for briefing generation |
+
+| Files Modified | Changes |
+|---------------|---------|
+| `scripts/scheduler_kobe.py` | Updated PRE_GAME, HALF_TIME, POST_GAME handlers |
+
+**Bug Fixes in game_briefings.py:**
+- Fixed `NewsProcessor` method calls: `fetch_news()` + `get_aggregated_sentiment(symbols=['SPY'])`
+- Fixed `PortfolioHeatMonitor` call: `calculate_heat(positions, equity)`
+- Fixed positions loading to handle both list and dict formats
+- Fixed SPY data loading: use `fetch_daily_bars_polygon()` function
+- Fixed NewsArticle handling: added `get_headline()` helper for object extraction
+- Fixed sentiment aggregation: pass symbols list, not articles
+
+**Features:**
+- PRE_GAME: Regime analysis, Top-3 picks, TOTD, LLM-generated action steps
+- HALF_TIME: Position P&L analysis, adjustments, afternoon game plan
+- POST_GAME: Performance review, lessons learned, hypothesis generation
+
+---
+
 ## Recent Changes (2025-12-28)
 
-### System Hardening & Warning Fixes (LATEST)
+### System Hardening & Warning Fixes
 **873 tests passing, 0 skipped, 0 warnings**
 
 | Fix | File | Description |
@@ -1143,6 +1336,11 @@ python -m pytest tests/unit -q
 
 # Heartbeat check
 python scripts/heartbeat.py --dotenv ./.env
+
+# Generate AI Briefings (v2.3)
+python scripts/generate_briefing.py --phase pregame --dotenv ./.env   # Morning
+python scripts/generate_briefing.py --phase halftime --dotenv ./.env  # Midday
+python scripts/generate_briefing.py --phase postgame --dotenv ./.env  # EOD
 ```
 
 ---
