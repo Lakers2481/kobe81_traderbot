@@ -23,7 +23,7 @@ import os
 import signal
 from pathlib import Path
 from datetime import datetime, timedelta, time as dtime
-from core.clock.tz_utils import fmt_ct, now_et
+from core.clock.tz_utils import fmt_ct, now_et, ET
 import subprocess
 import sys
 import time
@@ -407,7 +407,7 @@ def main():
                 if _shutdown_requested:
                     break
                 tag = f"{args.mode}_{t.strftime('%H%M')}"
-                target_dt = datetime.combine(now.date(), t)
+                target_dt = datetime.combine(now.date(), t, tzinfo=ET)
                 if early_close and t > early_close:
                     continue
                 if now >= target_dt and not already_ran(tag, today_str):
