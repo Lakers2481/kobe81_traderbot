@@ -1109,6 +1109,7 @@ class GameBriefingEngine:
                 pass
 
         # Load today's trades from trade log
+        # Only count real FILLED trades, not REJECTED/PENDING/TEST orders
         trades_file = ROOT / 'logs' / 'trades.jsonl'
         today_trades = []
         if trades_file.exists():
@@ -1118,6 +1119,21 @@ class GameBriefingEngine:
                         if line.strip():
                             trade = json.loads(line)
                             trade_date = trade.get('timestamp', '')[:10]
+                            trade_status = trade.get('status', '').upper()
+                            decision_id = trade.get('decision_id', '')
+                            strategy = trade.get('strategy_used', '') or ''
+
+                            # Skip non-FILLED trades
+                            if trade_status != 'FILLED':
+                                continue
+                            # Skip test trades (decision_id contains TEST or strategy is test)
+                            if 'TEST' in decision_id.upper() or 'test' in strategy.lower():
+                                continue
+                            # Skip fake/mock broker order IDs (test harness artifacts)
+                            broker_id = trade.get('broker_order_id', '') or ''
+                            if 'test' in broker_id.lower() or broker_id == 'broker-order-id-123':
+                                continue
+                            # Only include today's real trades
                             if trade_date == context.date:
                                 today_trades.append(trade)
             except Exception:
@@ -1276,15 +1292,15 @@ class GameBriefingEngine:
         reports_dir = ROOT / 'reports'
         reports_dir.mkdir(parents=True, exist_ok=True)
 
-        # Save JSON
+        # Save JSON (UTF-8 for Unicode support)
         json_path = reports_dir / f'{phase}_{date_str}.json'
-        with open(json_path, 'w') as f:
-            json.dump(briefing.to_dict(), f, indent=2, default=str)
+        with open(json_path, 'w', encoding='utf-8') as f:
+            json.dump(briefing.to_dict(), f, indent=2, default=str, ensure_ascii=False)
 
-        # Generate Markdown
+        # Generate Markdown (UTF-8 for Unicode support)
         md_path = reports_dir / f'{phase}_{date_str}.md'
         md_content = self._generate_markdown(briefing, phase)
-        with open(md_path, 'w') as f:
+        with open(md_path, 'w', encoding='utf-8') as f:
             f.write(md_content)
 
         logger.info(f"Saved {phase} briefing to {json_path} and {md_path}")
