@@ -151,6 +151,12 @@ class DualStrategyScanner:
             g['sma200'] = c.rolling(self.params.sma_period).mean()
             g['atr14'] = atr(g, self.params.atr_period)
 
+            # Lookahead-safe signal features (use prior bar values)
+            g['ibs_sig'] = g['ibs'].shift(1)
+            g['rsi2_sig'] = g['rsi2'].shift(1)
+            g['sma200_sig'] = g['sma200'].shift(1)
+            g['atr14_sig'] = g['atr14'].shift(1)
+
             # Turtle Soup indicators
             prior_lows = g['low'].shift(1)
             prior_N_low, bars_since_low = rolling_low_with_offset(
@@ -169,10 +175,10 @@ class DualStrategyScanner:
         """Check IBS+RSI entry. Returns (should_enter, score, reason)."""
         close = float(row['close'])
 
-        ibs_val = row.get('ibs')
-        rsi_val = row.get('rsi2')
-        sma200 = row.get('sma200')
-        atr_val = row.get('atr14')
+        ibs_val = row.get('ibs_sig')
+        rsi_val = row.get('rsi2_sig')
+        sma200 = row.get('sma200_sig')
+        atr_val = row.get('atr14_sig')
 
         if any(pd.isna(x) for x in [ibs_val, rsi_val, sma200, atr_val]):
             return False, 0.0, ""
@@ -251,7 +257,7 @@ class DualStrategyScanner:
                 is_ibs_rsi, score, reason = self._check_ibs_rsi_entry(row)
                 if is_ibs_rsi:
                     entry = float(row['close'])
-                    atr_val = float(row['atr14'])
+                    atr_val = float(row['atr14_sig'])
                     stop = entry - self.params.ibs_rsi_stop_mult * atr_val
 
                     rows.append({

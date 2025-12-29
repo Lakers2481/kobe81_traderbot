@@ -147,6 +147,13 @@ quality_gate:
     vix_elevated: 25.0         # 2.5 point penalty above this
     vix_high: 35.0             # 5 point penalty above this
 
+# Historical Edge Boost (symbol-specific WR vs baseline)
+historical_edge:
+  enabled: true                  # Use symbol-specific historical edge in confidence
+  cap_pp: 15                     # Max +/- percentage points added to confidence
+  min_trades_full_boost: 50      # N at which shrinkage reaches full strength
+  baseline_mode: overall         # overall | regime (regime uses market regime baseline when available)
+
 # Volatility-Targeted Sizing (config-gated)
 sizing:
   enabled: false  # Set true to use ATR-based position sizing
