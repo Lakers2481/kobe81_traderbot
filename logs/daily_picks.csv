@@ -1,2 +1,0 @@
-timestamp,symbol,side,strategy,entry_price,stop_loss,take_profit,reason,score,atr,time_stop_bars,ibs,rsi2,adv_usd60,conf_score
-2025-12-26 05:00:00,PLTR,long,IBS_RSI,188.71,173.75,,"IBS_RSI[ibs=0.01,rsi=0.7]",11.11,7.48,7,0.012,0.73,8810399799.109,0.44439999999999996

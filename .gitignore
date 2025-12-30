@@ -62,6 +62,7 @@ state/reconcile/
 
 # Runtime state (cognitive episodes, models)
 state/cognitive/episodes/
+state/cognitive/*.json
 state/models/
 state/journal.jsonl
 
