@@ -66,6 +66,25 @@ _metrics: Dict[str, Any] = {
         "high_uncertainty_trades_blocked": 0,
         "uncertainty_threshold": 0.7,
     },
+    # Phase 4: Execution Bandit Metrics
+    "execution_bandit": {
+        "enabled": False,
+        "algorithm": None,
+        "strategies": [],
+        "total_selections": 0,
+        "strategy_stats": {},  # {strategy: {selections, avg_reward, ucb_score}}
+        "cumulative_regret": 0.0,
+        "last_updated": None,
+    },
+    # Gemini: Strategy Foundry Metrics
+    "strategy_foundry": {
+        "enabled": False,
+        "population_size": 0,
+        "generations_run": 0,
+        "best_fitness": None,
+        "strategies_discovered": 0,
+        "last_evolution": None,
+    },
 }
 
 
@@ -245,6 +264,99 @@ def increment_uncertainty_blocked() -> None:
     _metrics["uncertainty"]["high_uncertainty_trades_blocked"] += 1
 
 
+# =============================================================================
+# Phase 4: Execution Bandit Metrics Update Functions
+# =============================================================================
+
+def update_execution_bandit_metrics(
+    enabled: Optional[bool] = None,
+    algorithm: Optional[str] = None,
+    strategies: Optional[list] = None,
+    total_selections: Optional[int] = None,
+    strategy_stats: Optional[Dict[str, Any]] = None,
+    cumulative_regret: Optional[float] = None,
+) -> None:
+    """
+    Update execution bandit metrics from the ExecutionBandit.
+
+    Args:
+        enabled: Whether bandit is enabled
+        algorithm: Current algorithm (thompson, ucb, epsilon_greedy)
+        strategies: List of available strategies
+        total_selections: Total number of strategy selections
+        strategy_stats: Per-strategy stats {strategy: {selections, avg_reward}}
+        cumulative_regret: Cumulative regret estimate
+    """
+    if enabled is not None:
+        _metrics["execution_bandit"]["enabled"] = enabled
+    if algorithm is not None:
+        _metrics["execution_bandit"]["algorithm"] = algorithm
+    if strategies is not None:
+        _metrics["execution_bandit"]["strategies"] = strategies
+    if total_selections is not None:
+        _metrics["execution_bandit"]["total_selections"] = total_selections
+    if strategy_stats is not None:
+        _metrics["execution_bandit"]["strategy_stats"] = strategy_stats
+    if cumulative_regret is not None:
+        _metrics["execution_bandit"]["cumulative_regret"] = cumulative_regret
+    _metrics["execution_bandit"]["last_updated"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
+def sync_bandit_metrics_from_instance() -> None:
+    """
+    Sync execution bandit metrics from the global ExecutionBandit instance.
+    Call this periodically or after trades.
+    """
+    try:
+        from execution.execution_bandit import get_execution_bandit
+        bandit = get_execution_bandit()
+        stats = bandit.get_stats()
+        update_execution_bandit_metrics(
+            enabled=True,
+            algorithm=bandit.algorithm,
+            strategies=list(bandit.strategies),
+            total_selections=stats.total_pulls,
+            strategy_stats=stats.arm_stats,
+            cumulative_regret=stats.regret_estimate,
+        )
+    except Exception:
+        pass  # Bandit not available or not initialized
+
+
+# =============================================================================
+# Gemini: Strategy Foundry Metrics Update Functions
+# =============================================================================
+
+def update_strategy_foundry_metrics(
+    enabled: Optional[bool] = None,
+    population_size: Optional[int] = None,
+    generations_run: Optional[int] = None,
+    best_fitness: Optional[float] = None,
+    strategies_discovered: Optional[int] = None,
+) -> None:
+    """
+    Update Strategy Foundry (GP) metrics.
+
+    Args:
+        enabled: Whether foundry is running
+        population_size: Current population size
+        generations_run: Number of generations completed
+        best_fitness: Best fitness score achieved
+        strategies_discovered: Number of viable strategies found
+    """
+    if enabled is not None:
+        _metrics["strategy_foundry"]["enabled"] = enabled
+    if population_size is not None:
+        _metrics["strategy_foundry"]["population_size"] = population_size
+    if generations_run is not None:
+        _metrics["strategy_foundry"]["generations_run"] = generations_run
+    if best_fitness is not None:
+        _metrics["strategy_foundry"]["best_fitness"] = best_fitness
+    if strategies_discovered is not None:
+        _metrics["strategy_foundry"]["strategies_discovered"] = strategies_discovered
+    _metrics["strategy_foundry"]["last_evolution"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
 def get_metrics() -> Dict[str, Any]:
     """Get current metrics snapshot including AI reliability metrics."""
     cfg = get_metrics_config()
@@ -281,6 +393,16 @@ def get_metrics() -> Dict[str, Any]:
     if _metrics["uncertainty"]["avg_uncertainty_score"] is not None or \
        _metrics["uncertainty"]["high_uncertainty_trades_blocked"] > 0:
         metrics["uncertainty"] = _metrics["uncertainty"].copy()
+
+    # Phase 4: Include execution bandit metrics if enabled
+    if _metrics["execution_bandit"]["enabled"] or \
+       _metrics["execution_bandit"]["total_selections"] > 0:
+        metrics["execution_bandit"] = _metrics["execution_bandit"].copy()
+
+    # Gemini: Include strategy foundry metrics if running
+    if _metrics["strategy_foundry"]["enabled"] or \
+       _metrics["strategy_foundry"]["generations_run"] > 0:
+        metrics["strategy_foundry"] = _metrics["strategy_foundry"].copy()
 
     return metrics
 
@@ -390,6 +512,25 @@ def reset_metrics() -> None:
             "avg_uncertainty_score": None,
             "high_uncertainty_trades_blocked": 0,
             "uncertainty_threshold": 0.7,
+        },
+        # Phase 4: Execution Bandit Metrics
+        "execution_bandit": {
+            "enabled": False,
+            "algorithm": None,
+            "strategies": [],
+            "total_selections": 0,
+            "strategy_stats": {},
+            "cumulative_regret": 0.0,
+            "last_updated": None,
+        },
+        # Gemini: Strategy Foundry Metrics
+        "strategy_foundry": {
+            "enabled": False,
+            "population_size": 0,
+            "generations_run": 0,
+            "best_fitness": None,
+            "strategies_discovered": 0,
+            "last_evolution": None,
         },
     }
 
