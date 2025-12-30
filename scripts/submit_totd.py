@@ -61,7 +61,7 @@ def main() -> None:
     ap.add_argument('--totd', type=str, default='logs/trade_of_day.csv', help='Path to trade_of_day.csv')
     ap.add_argument('--dotenv', type=str, default='./.env')
     ap.add_argument('--max-order', type=float, default=75.0, help='Max $ per order')
-    ap.add_argument('--max-spread-pct', type=float, default=0.02, help='Max bid/ask spread as fraction of mid (default 2%)')
+    ap.add_argument('--max-spread-pct', type=float, default=0.02, help='Max bid/ask spread as fraction of mid (default 2%%)')
     ap.add_argument('--allow-closed', action='store_true', help='Allow submission when market is closed')
     # Feature toggle flags (runtime overrides for ML/AI components)
     ap.add_argument('--calibration', action='store_true', help='Enable probability calibration for ML confidence')

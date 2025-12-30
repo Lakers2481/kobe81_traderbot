@@ -3173,5 +3173,100 @@ python scripts/submit_totd.py --calibration --conformal --intraday-trigger --ver
 
 ---
 
+## Section 18: Feature Flags - Complete Reference (2025-12-30)
+
+### 18.1 Summary
+
+| Category | Count | Status |
+|----------|-------|--------|
+| Features ON (no history needed) | 13 | ENABLED |
+| Features OFF (need history) | 3 | WAITING |
+| Total Features | 16 | DOCUMENTED |
+
+**Key Change:** Enabled `intraday_trigger` on 2025-12-30 - waits for VWAP reclaim before entry.
+
+### 18.2 Features Enabled (No History Needed)
+
+These features work immediately using real-time data, external calendars, or pre-computed statistics.
+
+| # | Feature | Config Location | What It Does | Why |
+|---|---------|-----------------|--------------|-----|
+| 1 | **intraday_trigger** | `execution.intraday_trigger.enabled` | Waits for price > VWAP before entry | Prevents chasing weak opens |
+| 2 | earnings_filter | `filters.earnings.enabled` | Skips stocks within 2 days of earnings | Earnings gaps invalidate setups |
+| 3 | rate_limiter | `execution.rate_limiter.enabled` | 120 req/min with backoff | Prevents API throttling |
+| 4 | execution_guard | `execution_guard.enabled` | Quote freshness (<5s) + spread (<0.5%) | Prevents bad fills |
+| 5 | regime_filter | `regime_filter.enabled` | SPY > SMA(200), vol < 25% | Avoids bear markets |
+| 6 | portfolio_risk | `portfolio_risk.enabled` | 10% per name, 30% per sector | Prevents concentration |
+| 7 | quality_gate | `quality_gate.enabled` | Min 70/100 score to trade | Only best setups |
+| 8 | macro_blackout | `risk.macro_blackout_enabled` | Skips FOMC/NFP/CPI days | Avoids macro volatility |
+| 9 | execution_clamp | `execution.clamp.enabled` | Max 2% from quote | Prevents runaway orders |
+| 10 | cognitive_brain | `cognitive.enabled` | AI System 1/2 routing | Smarter decisions |
+| 11 | llm_analyzer | `llm_analyzer.enabled` | Claude trade narratives | Human-readable explanations |
+| 12 | supervisor | `supervisor.enabled` | Health monitoring + auto-restart | 24/7 uptime |
+| 13 | historical_edge | `historical_edge.enabled` | Symbol win rate boost | Favors proven performers |
+
+### 18.3 Features Disabled (Need Trading History)
+
+These features require actual trade outcomes. Enable after accumulating history.
+
+| Feature | Config Location | Needs | When to Enable |
+|---------|-----------------|-------|----------------|
+| calibration | `ml.calibration.enabled` | 50-100 trades | Week 4 of paper trading |
+| conformal | `ml.conformal.enabled` | 50-100 trades | Week 4 of paper trading |
+| exec_bandit | N/A | 100+ executions | Week 8 of paper trading |
+
+### 18.4 Intraday Trigger Deep Dive
+
+**Enabled:** 2025-12-30
+**Location:** `config/base.yaml` line 99-103
+
+```yaml
+intraday_trigger:
+  enabled: true  # Waits for price > VWAP before entry
+  mode: "vwap_reclaim"  # vwap_reclaim | first_hour_high | first_hour_low | combined
+  poll_interval_seconds: 60  # How often to check
+  max_wait_minutes: 120  # Max wait before skipping
+```
+
+**How It Works:**
+1. Scanner identifies setup at previous close
+2. Next morning, system doesn't blindly buy at open
+3. Polls Alpaca quotes every 60 seconds
+4. Waits for price > VWAP (confirms strength)
+5. THEN submits the order
+6. If no trigger in 120 min, skips trade
+
+**Modes:**
+- `vwap_reclaim`: Price must be above VWAP (default)
+- `first_hour_high`: Must break first hour's high
+- `first_hour_low`: For shorts, must break first hour's low
+- `combined`: Both conditions required
+
+**Why This Matters:**
+- Prevents chasing weak gap-and-fade scenarios
+- Confirms momentum before risking capital
+- Real-time check, no history needed
+
+### 18.5 Feature Enablement Timeline
+
+| Phase | Trades | Features to Enable |
+|-------|--------|-------------------|
+| Day 1 (NOW) | 0 | All 13 "No History" features |
+| Week 4 | ~50 | calibration, conformal |
+| Week 8 | ~100 | exec_bandit |
+
+### 18.6 Full Documentation
+
+Complete feature documentation with WHAT/WHY/HOW for each feature:
+
+**File:** `docs/FEATURE_FLAGS.md`
+
+---
+
+*Feature Flags documented 2025-12-30 by Claude Opus 4.5*
+*intraday_trigger ENABLED - Ready for paper trading*
+
+---
+
 *Comprehensive Documentation completed 2025-12-30 by Claude Opus 4.5*
 *System Grade: A+ (942 tests, 125+ modules, 100% verified)*
