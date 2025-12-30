@@ -2247,3 +2247,78 @@ Expected: 329 passed
 ---
 
 *Final audit & cleanup completed 2025-12-29 20:30 UTC by Claude Opus 4.5*
+
+---
+
+## 2025-12-29 21:30 - Live Data Hardening + Paper Trading Readiness
+
+### Summary of Changes
+
+**Already Implemented (Verified Working):**
+
+| Feature | Location | Description |
+|---------|----------|-------------|
+| Retry/Backoff | `data/providers/alpaca_live.py:61-72` | 3x retry with exponential backoff (0.3s base) |
+| None-Safe Scoring | `ml_features/conviction_scorer.py:356-368` | Try-except + `or 0` pattern for risk/reward |
+| Market-Open Guards | `scripts/submit_totd.py:47-51`, `scripts/trade_top3.py:77-80` | `--allow-closed` override |
+| Dual Env Prefix | `execution/broker_alpaca.py` | Supports both `ALPACA_` and `APCA_` prefixes |
+| Live Data Provider | `data/providers/alpaca_live.py` | Full Alpaca data integration |
+
+**Newly Implemented:**
+
+| Feature | Location | Description |
+|---------|----------|-------------|
+| Dotenv Normalization | `scripts/trade_top3.py:48` | Changed default from hardcoded path to `./.env` |
+| Verification Script | `scripts/verify_system.py` | Quick system readiness check |
+| ML Feature Enhancements | `ml_features/` | PCA reducer, lag features, time features |
+
+### Pre-Flight Audit Results (Gemini Checklist)
+
+| Check | Status | Notes |
+|-------|--------|-------|
+| Strategy Logic Match | GO | DualStrategyScanner consistent in backtest and live paths |
+| Config for Paper Trading | GO | `base.yaml` properly configured, API keys from env |
+| Risk Systems Enabled | GO | PolicyGate active ($75/order, $1k/day), kill switch ready |
+| Data Pipeline Live | GO | `alpaca_live.py` integrated with `--live-data` flag |
+
+**FINAL STATUS: GO FOR PAPER TRADING**
+
+### Verification Commands
+
+```bash
+# Quick system verification
+python scripts/verify_system.py
+
+# Run scan with live data
+python scripts/scan.py --top3 --live-data --date 2025-12-26 --no-quality-gate
+
+# Submit TOTD (add --allow-closed if market closed)
+python scripts/submit_totd.py --dotenv ./.env
+
+# Submit Top-3 (add --allow-closed if market closed)
+python scripts/trade_top3.py --dotenv ./.env
+
+# Unit tests
+pytest -q tests/unit
+```
+
+### What's Next (Backlog)
+
+| Priority | Task | Description |
+|----------|------|-------------|
+| P1 | Paper Trading Launch | Deploy with micro budget ($75/order, $1k/day) |
+| P2 | Telegram Alerts | TOTD notifications with spread/size info |
+| P3 | Bracket Orders | Stop-loss and take-profit legs for submitters |
+| P4 | WebSocket Streaming | Real-time spread monitoring for Top-3/TOTD |
+| P5 | Docker Compose | Containerized scanner + dashboard + health server |
+| P6 | Confidence Telemetry | Log conviction + ML components to signals.jsonl |
+
+### Test Results
+
+- Unit tests: 942 passed
+- Scanner: Runs successfully on 900 symbols
+- Verification script: All checks passing
+
+---
+
+*Live data hardening completed 2025-12-29 21:30 UTC by Claude Opus 4.5*

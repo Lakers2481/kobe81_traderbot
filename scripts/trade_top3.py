@@ -26,6 +26,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'scripts'))
 
 from config.env_loader import load_env
+from data.providers.alpaca_live import get_market_clock
 from execution.broker_alpaca import get_best_ask, construct_decision, place_ioc_limit
 from risk.policy_gate import PolicyGate, RiskLimits
 from core.hash_chain import append_block
@@ -44,18 +45,24 @@ def run_scan(dotenv: Path, cap: int | None = None) -> Path:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description='Trade Top-3 daily picks (IOC LIMIT via Alpaca)')
-    ap.add_argument('--dotenv', type=str, default='C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env')
+    ap.add_argument('--dotenv', type=str, default='./.env', help='Path to .env file (default: ./.env)')
     ap.add_argument('--ensure-scan', action='store_true', help='Run scan.py --top3 if picks CSV missing')
     ap.add_argument('--cap', type=int, default=None, help='Universe cap for scan (optional)')
     ap.add_argument('--budget-per-order', type=float, default=75.0)
     ap.add_argument('--daily-budget', type=float, default=1000.0)
     ap.add_argument('--min-price', type=float, default=5.0)
     ap.add_argument('--allow-shorts', action='store_true')
+    ap.add_argument('--allow-closed', action='store_true', help='Allow submission when market is closed')
     args = ap.parse_args()
 
     dotenv = Path(args.dotenv)
     if dotenv.exists():
         load_env(dotenv)
+    else:
+        # Fallback to local .env
+        local_env = ROOT / '.env'
+        if local_env.exists():
+            load_env(local_env)
 
     # Default to Alpaca paper
     os.environ.setdefault('ALPACA_BASE_URL', 'https://paper-api.alpaca.markets')
@@ -64,6 +71,12 @@ def main() -> int:
         info = get_kill_switch_info()
         jlog('trade_top3_kill_switch', level='WARNING', info=info)
         print('KILL SWITCH active; aborting.')
+        return 2
+
+    # Market-open guard unless overridden
+    clk = get_market_clock()
+    if clk and not clk.get('is_open', False) and not args.allow_closed:
+        print('Market is CLOSED; use --allow-closed to override (orders may be rejected).')
         return 2
 
     picks_path = ROOT / 'logs' / 'daily_picks.csv'
