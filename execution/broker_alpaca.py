@@ -794,3 +794,167 @@ def execute_signal(
             market_bid_at_execution=broker_result.market_bid_at_execution,
             market_ask_at_execution=broker_result.market_ask_at_execution,
         )
+
+
+# ============================================================================
+# Bracket Order Support (OCO: Entry + Stop Loss + Take Profit)
+# ============================================================================
+
+@dataclass
+class BracketOrderResult:
+    """Result of a bracket order submission."""
+    order: OrderRecord
+    stop_order_id: Optional[str] = None
+    profit_order_id: Optional[str] = None
+    market_bid_at_execution: Optional[float] = None
+    market_ask_at_execution: Optional[float] = None
+
+    @property
+    def success(self) -> bool:
+        """True if bracket order was successfully placed."""
+        return self.order.status in (OrderStatus.SUBMITTED, OrderStatus.FILLED)
+
+
+@require_no_kill_switch
+def place_bracket_order(
+    symbol: str,
+    side: str,
+    qty: int,
+    limit_price: float,
+    stop_loss: float,
+    take_profit: float,
+    time_in_force: str = "day",
+) -> BracketOrderResult:
+    """
+    Place a bracket order (entry + stop-loss + take-profit) via Alpaca.
+
+    Bracket orders use OCO (one-cancels-other) for the exit legs:
+    - Entry: LIMIT order at limit_price
+    - Stop Loss: STOP order at stop_loss price
+    - Take Profit: LIMIT order at take_profit price
+
+    When entry fills, both exit orders become active. When one exit fills,
+    the other is automatically cancelled.
+
+    Args:
+        symbol: Stock symbol
+        side: "BUY" or "SELL" (or "long"/"short")
+        qty: Number of shares
+        limit_price: Entry limit price
+        stop_loss: Stop loss trigger price
+        take_profit: Take profit limit price
+        time_in_force: Order duration (default: "day", options: "gtc")
+
+    Returns:
+        BracketOrderResult with order details and exit order IDs
+    """
+    cfg = _alpaca_cfg()
+    store = IdempotencyStore()
+
+    # Get current market quote for TCA benchmarking
+    market_bid, market_ask, _, _ = get_quote_with_sizes(symbol)
+
+    # Construct order record
+    now = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    decision_id = f"BRACKET_{now}_{symbol.upper()}_{uuid.uuid4().hex[:6].upper()}"
+
+    order = OrderRecord(
+        decision_id=decision_id,
+        signal_id=decision_id.replace("BRACKET_", "SIG_"),
+        symbol=symbol.upper(),
+        side="BUY" if side.lower() in ("long", "buy") else "SELL",
+        qty=int(qty),
+        limit_price=float(limit_price),
+        tif=time_in_force.upper(),
+        order_type="BRACKET",
+        idempotency_key=decision_id,
+        created_at=datetime.utcnow(),
+    )
+
+    # Idempotency guard
+    if store.exists(decision_id):
+        order.status = OrderStatus.CLOSED
+        order.notes = "duplicate_decision_id"
+        return BracketOrderResult(
+            order=order,
+            market_bid_at_execution=market_bid,
+            market_ask_at_execution=market_ask,
+        )
+
+    # Alpaca bracket order payload
+    url = f"{cfg.base_url}{ALPACA_ORDERS_URL}"
+    payload = {
+        "symbol": symbol.upper(),
+        "qty": int(qty),
+        "side": "buy" if side.lower() in ("long", "buy") else "sell",
+        "type": "limit",
+        "time_in_force": time_in_force.lower(),
+        "limit_price": round(float(limit_price), 2),
+        "order_class": "bracket",
+        "take_profit": {
+            "limit_price": round(float(take_profit), 2),
+        },
+        "stop_loss": {
+            "stop_price": round(float(stop_loss), 2),
+        },
+        "client_order_id": decision_id,
+    }
+
+    try:
+        def _post():
+            return requests.post(url, json=payload, headers=_auth_headers(cfg), timeout=10)
+
+        r = with_retry(_post)
+        if r.status_code not in (200, 201):
+            order.status = OrderStatus.REJECTED
+            error_msg = r.text[:200] if r.text else f"HTTP {r.status_code}"
+            order.notes = f"alpaca_bracket_rejected:{error_msg}"
+            logger.warning(f"Bracket order rejected for {symbol}: {error_msg}")
+            return BracketOrderResult(
+                order=order,
+                market_bid_at_execution=market_bid,
+                market_ask_at_execution=market_ask,
+            )
+
+        data = r.json()
+        order.broker_order_id = data.get("id")
+        order.status = OrderStatus.SUBMITTED
+        store.put(decision_id, decision_id)
+
+        # Extract child order IDs (stop loss and take profit legs)
+        legs = data.get("legs", [])
+        stop_order_id = None
+        profit_order_id = None
+        for leg in legs:
+            leg_type = leg.get("order_type", "").lower()
+            if leg_type == "stop":
+                stop_order_id = leg.get("id")
+            elif leg_type == "limit":
+                profit_order_id = leg.get("id")
+
+        logger.info(
+            f"Bracket order placed: {symbol} {side} {qty} @ {limit_price}, "
+            f"SL={stop_loss}, TP={take_profit}, order_id={order.broker_order_id}"
+        )
+        update_trade_event("bracket_submitted")
+
+        # Log trade event
+        log_trade_event(order, market_bid=market_bid, market_ask=market_ask)
+
+        return BracketOrderResult(
+            order=order,
+            stop_order_id=stop_order_id,
+            profit_order_id=profit_order_id,
+            market_bid_at_execution=market_bid,
+            market_ask_at_execution=market_ask,
+        )
+
+    except Exception as e:
+        order.status = OrderStatus.REJECTED
+        order.notes = f"exception:{e}"
+        logger.error(f"Bracket order exception for {symbol}: {e}")
+        return BracketOrderResult(
+            order=order,
+            market_bid_at_execution=market_bid,
+            market_ask_at_execution=market_ask,
+        )

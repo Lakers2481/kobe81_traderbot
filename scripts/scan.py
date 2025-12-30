@@ -398,6 +398,26 @@ def log_signals(signals: pd.DataFrame, scan_id: str) -> None:
             f.write(json.dumps(record, default=str) + "\n")
 
 
+def compute_conf_score(row: pd.Series) -> float:
+    """
+    Compute confidence score for a signal row.
+
+    Returns existing conf_score if present, otherwise computes from strategy score.
+    - Turtle Soup: score typically 100-300, normalize to 0-1
+    - IBS_RSI: score typically 0-25, normalize to 0-1
+    """
+    if 'conf_score' in row.index and pd.notna(row.get('conf_score')):
+        try:
+            return float(row['conf_score'])
+        except Exception:
+            pass
+    score = float(row.get('score', 0.0))
+    if score > 50:  # Turtle Soup
+        return min(score / 300.0, 1.0)
+    else:  # IBS_RSI
+        return min(score / 25.0, 1.0)
+
+
 def format_signal_row(row: pd.Series) -> str:
     """Format a single signal for display."""
     parts = [
@@ -1344,8 +1364,12 @@ Examples:
                 elif args.narrative and not LLM_ANALYZER_AVAILABLE:
                     print("\n  [WARN] LLM analyzer not available (import failed)")
 
-    # Log signals
+    # Log signals (ensure conf_score is included for telemetry)
     if not args.no_log and not signals.empty:
+        # Add conf_score if not already present (for confidence telemetry)
+        if 'conf_score' not in signals.columns:
+            signals = signals.copy()
+            signals['conf_score'] = signals.apply(compute_conf_score, axis=1)
         log_signals(signals, scan_id)
         print(f"\nSignals logged to: {SIGNALS_LOG}")
 

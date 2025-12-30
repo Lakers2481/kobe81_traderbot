@@ -1,0 +1,70 @@
+# Kobe Trading System - Docker Compose
+# Run paper trading and scanner services
+
+version: '3.8'
+
+services:
+  # Paper trading runner (24/7 scheduler)
+  kobe-paper:
+    build: .
+    container_name: kobe-paper-trader
+    env_file: .env
+    environment:
+      - ALPACA_BASE_URL=https://paper-api.alpaca.markets
+    volumes:
+      - ./logs:/app/logs
+      - ./state:/app/state
+      - ./data/cache:/app/data/cache
+      - ./data/universe:/app/data/universe:ro
+    ports:
+      - "8080:8080"  # Health check endpoint
+    restart: unless-stopped
+    command: >
+      python scripts/runner.py
+      --mode paper
+      --cap 50
+      --scan-times 09:35,10:30,15:55
+
+  # Daily scanner (on-demand)
+  kobe-scanner:
+    build: .
+    container_name: kobe-scanner
+    env_file: .env
+    volumes:
+      - ./logs:/app/logs
+      - ./data/cache:/app/data/cache
+      - ./data/universe:/app/data/universe:ro
+    profiles:
+      - scanner  # Only start with: docker-compose --profile scanner up kobe-scanner
+    command: >
+      python scripts/scan.py
+      --top3
+      --cap 200
+
+  # Preflight check (utility)
+  kobe-preflight:
+    build: .
+    container_name: kobe-preflight
+    env_file: .env
+    volumes:
+      - ./data/universe:/app/data/universe:ro
+    profiles:
+      - utils
+    command: python scripts/preflight.py
+
+  # System verification (utility)
+  kobe-verify:
+    build: .
+    container_name: kobe-verify
+    env_file: .env
+    volumes:
+      - ./logs:/app/logs:ro
+      - ./state:/app/state:ro
+      - ./data/universe:/app/data/universe:ro
+    profiles:
+      - utils
+    command: python scripts/verify_system.py
+
+networks:
+  default:
+    name: kobe-network

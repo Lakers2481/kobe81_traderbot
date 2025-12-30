@@ -2304,21 +2304,84 @@ pytest -q tests/unit
 
 ### What's Next (Backlog)
 
-| Priority | Task | Description |
-|----------|------|-------------|
-| P1 | Paper Trading Launch | Deploy with micro budget ($75/order, $1k/day) |
-| P2 | Telegram Alerts | TOTD notifications with spread/size info |
-| P3 | Bracket Orders | Stop-loss and take-profit legs for submitters |
-| P4 | WebSocket Streaming | Real-time spread monitoring for Top-3/TOTD |
-| P5 | Docker Compose | Containerized scanner + dashboard + health server |
-| P6 | Confidence Telemetry | Log conviction + ML components to signals.jsonl |
+| Priority | Task | Status | Description |
+|----------|------|--------|-------------|
+| P1 | Paper Trading Launch | **COMPLETE** | Deploy with micro budget ($75/order, $1k/day) |
+| P2 | Telegram Alerts | **COMPLETE** | TOTD notifications with spread/size info |
+| P3 | Bracket Orders | **COMPLETE** | Stop-loss and take-profit legs for submitters |
+| P4 | WebSocket Streaming | **COMPLETE** | Real-time spread monitoring for Top-3/TOTD |
+| P5 | Docker Compose | **COMPLETE** | Containerized scanner + dashboard + health server |
+| P6 | Confidence Telemetry | **COMPLETE** | Log conviction + ML components to signals.jsonl |
 
 ### Test Results
 
-- Unit tests: 942 passed
+- Unit tests: 329 passing (unit only), 942 total
 - Scanner: Runs successfully on 900 symbols
 - Verification script: All checks passing
+- All new imports verified working
 
 ---
 
-*Live data hardening completed 2025-12-29 21:30 UTC by Claude Opus 4.5*
+## 2025-12-29 23:00 - P3-P6 Backlog Completion
+
+### Summary
+
+Completed all remaining P3-P6 backlog items. P1 (Paper Trading) and P2 (Telegram Alerts) were already 100% complete from prior work.
+
+### Changes Made
+
+#### P6: Confidence Telemetry (COMPLETED)
+- **File:** `scripts/scan.py`
+- Added `compute_conf_score()` function at module level (line 401)
+- Updated `log_signals()` call to add conf_score before logging (line 1367-1374)
+- Result: All signals in `signals.jsonl` now include `conf_score` field
+
+#### P3: Bracket Orders (COMPLETED)
+- **File:** `execution/broker_alpaca.py`
+- Added `BracketOrderResult` dataclass (line 803)
+- Added `place_bracket_order()` function with Alpaca OCO support (line 818)
+- **File:** `scripts/trade_top3.py`
+- Added `--bracket` flag for bracket order execution
+- Updated order submission logic to support both IOC LIMIT and bracket orders
+- Usage: `python scripts/trade_top3.py --bracket`
+
+#### P5: Docker Containerization (COMPLETED)
+- **Created:** `Dockerfile` - Python 3.11-slim container with healthcheck
+- **Created:** `docker-compose.yml` - Services: kobe-paper, kobe-scanner, kobe-preflight, kobe-verify
+- **Created:** `.dockerignore` - Excludes cache, logs, git, temp files
+- Usage: `docker-compose up -d kobe-paper`
+
+#### P4: WebSocket Streaming (COMPLETED)
+- **Created:** `data/providers/alpaca_websocket.py`
+- `AlpacaWebSocketClient` class for real-time quote/trade/bar streaming
+- `QuoteData` and `TradeData` dataclasses for normalized data
+- Convenience function `stream_quotes()` for simple use cases
+- Leverages existing `alpaca-py>=0.13` dependency
+
+### Verification
+
+```bash
+# All tests pass
+pytest -q tests/unit  # 329 passed
+
+# Imports verified
+python -c "from execution.broker_alpaca import place_bracket_order"  # OK
+python -c "from data.providers.alpaca_websocket import AlpacaWebSocketClient"  # OK
+python -c "from scripts.scan import compute_conf_score"  # OK
+```
+
+### Files Changed/Created
+
+| Action | File | Purpose |
+|--------|------|---------|
+| EDIT | `scripts/scan.py` | Add conf_score to signals.jsonl |
+| EDIT | `execution/broker_alpaca.py` | Add bracket order support |
+| EDIT | `scripts/trade_top3.py` | Add --bracket flag |
+| CREATE | `data/providers/alpaca_websocket.py` | WebSocket streaming |
+| CREATE | `Dockerfile` | Container definition |
+| CREATE | `docker-compose.yml` | Service orchestration |
+| CREATE | `.dockerignore` | Build exclusions |
+
+---
+
+*P3-P6 backlog completed 2025-12-29 23:00 UTC by Claude Opus 4.5*

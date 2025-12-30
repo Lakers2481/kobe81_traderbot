@@ -1,0 +1,80 @@
+# Git
+.git
+.gitignore
+
+# Environment files (loaded via env_file in docker-compose)
+.env
+.env.*
+!.env.example
+
+# Python cache
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+.eggs
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Testing
+.pytest_cache
+.coverage
+htmlcov
+.mypy_cache
+.tox
+.nox
+
+# Walk-forward outputs (large, generated)
+wf_outputs/
+
+# Logs (mounted as volume)
+logs/
+*.log
+
+# State (mounted as volume)
+state/
+
+# Cache (mounted as volume)
+data/cache/
+
+# Large data files
+*.parquet
+!data/universe/*.csv
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Documentation build
+docs/_build
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# Reports (generated)
+reports/
+
+# Claude/AI artifacts
+.claude/
+*.md.bak
