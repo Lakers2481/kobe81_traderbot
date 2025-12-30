@@ -18,12 +18,116 @@ import json
 import logging
 import os
 from dataclasses import dataclass, field, asdict
-from datetime import datetime
+from datetime import datetime, date
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import numpy as np
 import pandas as pd
 
 logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# Token Budget Management (Phase 2 AI Reliability)
+# =============================================================================
+
+@dataclass
+class TokenBudget:
+    """
+    Track and enforce daily token budget for LLM API calls.
+
+    Prevents runaway API costs by enforcing a daily token limit.
+    State persists across sessions via JSON file.
+    """
+    daily_limit: int = 100_000
+    used_today: int = 0
+    last_reset: str = ""  # ISO date string
+    state_file: str = "state/llm_token_usage.json"
+
+    def __post_init__(self):
+        self._load_state()
+        self._check_reset()
+
+    def _load_state(self) -> None:
+        """Load state from file if exists."""
+        path = Path(self.state_file)
+        if path.exists():
+            try:
+                with open(path, 'r') as f:
+                    data = json.load(f)
+                self.used_today = data.get('used_today', 0)
+                self.last_reset = data.get('last_reset', '')
+            except Exception as e:
+                logger.warning(f"Failed to load token budget state: {e}")
+
+    def _save_state(self) -> None:
+        """Save state to file."""
+        path = Path(self.state_file)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            with open(path, 'w') as f:
+                json.dump({
+                    'used_today': self.used_today,
+                    'last_reset': self.last_reset,
+                    'daily_limit': self.daily_limit,
+                }, f, indent=2)
+        except Exception as e:
+            logger.warning(f"Failed to save token budget state: {e}")
+
+    def _check_reset(self) -> None:
+        """Reset counter if new day."""
+        today = date.today().isoformat()
+        if self.last_reset != today:
+            self.used_today = 0
+            self.last_reset = today
+            self._save_state()
+            logger.info(f"Token budget reset for new day: {today}")
+
+    def can_use(self, estimated_tokens: int = 2000) -> bool:
+        """Check if we can use estimated tokens without exceeding budget."""
+        self._check_reset()
+        return self.used_today + estimated_tokens <= self.daily_limit
+
+    def record_usage(self, tokens: int) -> None:
+        """Record token usage and persist."""
+        self._check_reset()
+        self.used_today += tokens
+        self._save_state()
+        logger.debug(f"Token usage recorded: {tokens} (total: {self.used_today}/{self.daily_limit})")
+
+    @property
+    def remaining(self) -> int:
+        """Get remaining tokens for today."""
+        self._check_reset()
+        return max(0, self.daily_limit - self.used_today)
+
+    @property
+    def usage_pct(self) -> float:
+        """Get usage as percentage."""
+        return self.used_today / self.daily_limit * 100 if self.daily_limit > 0 else 0
+
+
+def should_use_llm(
+    confidence: float,
+    min_conf: float = 0.55,
+    max_conf: float = 0.75,
+) -> bool:
+    """
+    Determine if LLM should be used based on signal confidence.
+
+    Only use LLM for borderline confidence picks where human-like
+    reasoning can add value. Skip for clear accepts/rejects.
+
+    Args:
+        confidence: Signal confidence score (0-1)
+        min_conf: Minimum confidence to consider (below = auto-reject)
+        max_conf: Maximum confidence to consider (above = auto-accept)
+
+    Returns:
+        True if LLM should be used for this signal
+    """
+    return min_conf < confidence < max_conf
 
 
 # =============================================================================
@@ -445,6 +549,13 @@ class LLMTradeAnalyzer:
         max_tokens: int = 2000,
         temperature: float = 0.7,
         fallback_enabled: bool = True,
+        # Phase 2 AI Reliability: Selective mode & token budget
+        selective_mode: bool = False,
+        borderline_min: float = 0.55,
+        borderline_max: float = 0.75,
+        token_budget_enabled: bool = False,
+        tokens_per_day: int = 100_000,
+        token_state_file: str = "state/llm_token_usage.json",
     ):
         """
         Initialize with Anthropic client.
@@ -454,13 +565,35 @@ class LLMTradeAnalyzer:
             max_tokens: Max response tokens
             temperature: Response temperature (0-1)
             fallback_enabled: Use deterministic fallback if API fails
+            selective_mode: Only call LLM for borderline confidence picks
+            borderline_min: Min confidence for LLM (below = auto-reject)
+            borderline_max: Max confidence for LLM (above = auto-accept)
+            token_budget_enabled: Enable daily token budget enforcement
+            tokens_per_day: Daily token limit
+            token_state_file: Path to token usage state file
         """
         self.model = model
         self.max_tokens = max_tokens
         self.temperature = temperature
         self.fallback_enabled = fallback_enabled
+
+        # Phase 2: Selective mode settings
+        self.selective_mode = selective_mode
+        self.borderline_min = borderline_min
+        self.borderline_max = borderline_max
+
+        # Phase 2: Token budget settings
+        self.token_budget_enabled = token_budget_enabled
+        self._token_budget: Optional[TokenBudget] = None
+        if token_budget_enabled:
+            self._token_budget = TokenBudget(
+                daily_limit=tokens_per_day,
+                state_file=token_state_file,
+            )
+
         self._client = None
         self._api_available = None
+        self._llm_calls_saved = 0  # Track calls saved by selective mode
 
     @property
     def client(self):
@@ -491,9 +624,19 @@ class LLMTradeAnalyzer:
         return self._api_available or False
 
     def _call_claude(self, prompt: str, system: str = SYSTEM_PROMPT) -> Optional[str]:
-        """Make API call to Claude."""
+        """Make API call to Claude with token budget enforcement."""
         if not self.api_available:
             return None
+
+        # Phase 2: Check token budget before calling
+        estimated_tokens = len(prompt.split()) * 1.3 + self.max_tokens  # Rough estimate
+        if self.token_budget_enabled and self._token_budget:
+            if not self._token_budget.can_use(int(estimated_tokens)):
+                logger.warning(
+                    f"Token budget exceeded ({self._token_budget.used_today}/{self._token_budget.daily_limit}). "
+                    "Using deterministic fallback."
+                )
+                return None
 
         try:
             response = self.client.messages.create(
@@ -503,10 +646,60 @@ class LLMTradeAnalyzer:
                 system=system,
                 messages=[{"role": "user", "content": prompt}]
             )
+
+            # Phase 2: Record actual token usage
+            if self.token_budget_enabled and self._token_budget:
+                # Get actual token usage from response if available
+                usage = getattr(response, 'usage', None)
+                if usage:
+                    total_tokens = getattr(usage, 'input_tokens', 0) + getattr(usage, 'output_tokens', 0)
+                else:
+                    # Estimate based on response length
+                    total_tokens = int(estimated_tokens)
+                self._token_budget.record_usage(total_tokens)
+
             return response.content[0].text
         except Exception as e:
             logger.error(f"Claude API call failed: {e}")
             return None
+
+    def should_call_llm(self, confidence: float) -> bool:
+        """
+        Check if LLM should be called based on selective mode and confidence.
+
+        Args:
+            confidence: Signal confidence (0-1)
+
+        Returns:
+            True if LLM should be called
+        """
+        if not self.selective_mode:
+            return True  # Always call if selective mode disabled
+
+        use_llm = should_use_llm(confidence, self.borderline_min, self.borderline_max)
+
+        if not use_llm:
+            self._llm_calls_saved += 1
+            if confidence >= self.borderline_max:
+                logger.debug(f"Skipping LLM: confidence {confidence:.2f} >= {self.borderline_max} (auto-accept)")
+            else:
+                logger.debug(f"Skipping LLM: confidence {confidence:.2f} <= {self.borderline_min} (auto-reject)")
+
+        return use_llm
+
+    def get_token_stats(self) -> Dict[str, Any]:
+        """Get token usage statistics."""
+        if not self._token_budget:
+            return {'enabled': False}
+
+        return {
+            'enabled': True,
+            'used_today': self._token_budget.used_today,
+            'daily_limit': self._token_budget.daily_limit,
+            'remaining': self._token_budget.remaining,
+            'usage_pct': self._token_budget.usage_pct,
+            'llm_calls_saved': self._llm_calls_saved,
+        }
 
     # =========================================================================
     # Public helpers for ranking/selection

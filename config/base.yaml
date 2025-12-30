@@ -322,3 +322,34 @@ cognitive:
     cache_narratives: true            # Cache generated narratives
     cache_ttl_minutes: 60             # Cache TTL in minutes
     daily_insights_file: "logs/daily_insights.json"  # Output file for daily insights
+    # Selective triggering (Phase 2 AI Reliability)
+    selective_mode: false             # Only call LLM for borderline confidence picks
+    borderline_range:
+      min: 0.55                       # Minimum confidence to call LLM
+      max: 0.75                       # Maximum confidence to call LLM
+    # Token budget management
+    budget:
+      enabled: false                  # Enable token budget tracking
+      tokens_per_day: 100000          # Daily token limit
+      state_file: "state/llm_token_usage.json"  # Token usage state file
+
+# ML Meta-Layer Settings (AI Reliability & Execution Upgrade)
+ml:
+  # Probability Calibration (Phase 1)
+  calibration:
+    enabled: false                    # Default off for backward compatibility
+    method: "isotonic"                # isotonic | platt
+    min_samples_to_fit: 50            # Minimum samples to fit calibrator
+    state_file: "state/ml/calibrator.pkl"  # Calibrator state file
+
+  # Conformal Prediction (Phase 1)
+  conformal:
+    enabled: false                    # Default off for backward compatibility
+    target_coverage: 0.90             # Desired coverage probability (e.g., 0.90 for 90%)
+    uncertainty_scale: 0.5            # Max position reduction from uncertainty (0.5 = 50%)
+    min_samples_to_fit: 50            # Minimum samples to fit predictor
+    state_file: "state/ml/conformal.json"  # Conformal predictor state file
+
+  # Regime-Conditional Ensemble Weights (future)
+  ensemble:
+    regime_adaptive_weights: false    # Use regime-specific model weights

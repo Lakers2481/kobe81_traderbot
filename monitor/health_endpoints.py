@@ -38,6 +38,34 @@ _metrics: Dict[str, Any] = {
         "last_fill_ts": None,
         "last_trade_event_ts": None,
     },
+    # Phase 3: AI Reliability Metrics (Calibration, Conformal, LLM)
+    "calibration": {
+        "brier_score": None,
+        "expected_calibration_error": None,
+        "max_calibration_error": None,
+        "n_samples": 0,
+        "last_updated": None,
+    },
+    "conformal": {
+        "coverage_rate": None,
+        "target_coverage": None,
+        "avg_interval_width": None,
+        "n_predictions": 0,
+        "last_updated": None,
+    },
+    "llm": {
+        "tokens_used_today": 0,
+        "token_budget_remaining": None,
+        "token_usage_pct": None,
+        "llm_calls_saved": 0,
+        "cache_hit_rate": None,
+        "selective_mode_enabled": False,
+    },
+    "uncertainty": {
+        "avg_uncertainty_score": None,
+        "high_uncertainty_trades_blocked": 0,
+        "uncertainty_threshold": 0.7,
+    },
 }
 
 
@@ -102,8 +130,123 @@ def load_performance_from_summary(summary_path: str | Path) -> None:
         pass
 
 
+# =============================================================================
+# Phase 3: AI Reliability Metrics Update Functions
+# =============================================================================
+
+def update_calibration_metrics(
+    brier_score: Optional[float] = None,
+    ece: Optional[float] = None,
+    mce: Optional[float] = None,
+    n_samples: Optional[int] = None,
+) -> None:
+    """
+    Update calibration metrics from probability calibration analysis.
+
+    Args:
+        brier_score: Mean squared error of probabilities (lower is better)
+        ece: Expected Calibration Error
+        mce: Maximum Calibration Error
+        n_samples: Number of samples used for calibration
+    """
+    if brier_score is not None:
+        _metrics["calibration"]["brier_score"] = brier_score
+    if ece is not None:
+        _metrics["calibration"]["expected_calibration_error"] = ece
+    if mce is not None:
+        _metrics["calibration"]["max_calibration_error"] = mce
+    if n_samples is not None:
+        _metrics["calibration"]["n_samples"] = n_samples
+    _metrics["calibration"]["last_updated"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
+def update_conformal_metrics(
+    coverage_rate: Optional[float] = None,
+    target_coverage: Optional[float] = None,
+    avg_interval_width: Optional[float] = None,
+    n_predictions: Optional[int] = None,
+) -> None:
+    """
+    Update conformal prediction metrics.
+
+    Args:
+        coverage_rate: Actual coverage rate (% of actuals within prediction interval)
+        target_coverage: Target coverage (e.g., 0.90 for 90%)
+        avg_interval_width: Average prediction interval width
+        n_predictions: Number of predictions made
+    """
+    if coverage_rate is not None:
+        _metrics["conformal"]["coverage_rate"] = coverage_rate
+    if target_coverage is not None:
+        _metrics["conformal"]["target_coverage"] = target_coverage
+    if avg_interval_width is not None:
+        _metrics["conformal"]["avg_interval_width"] = avg_interval_width
+    if n_predictions is not None:
+        _metrics["conformal"]["n_predictions"] = n_predictions
+    _metrics["conformal"]["last_updated"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
+def update_llm_metrics(
+    tokens_used: Optional[int] = None,
+    budget_remaining: Optional[int] = None,
+    usage_pct: Optional[float] = None,
+    calls_saved: Optional[int] = None,
+    cache_hit_rate: Optional[float] = None,
+    selective_mode: Optional[bool] = None,
+) -> None:
+    """
+    Update LLM usage metrics.
+
+    Args:
+        tokens_used: Tokens used today
+        budget_remaining: Remaining token budget
+        usage_pct: Token budget usage percentage
+        calls_saved: Number of LLM calls saved by selective mode
+        cache_hit_rate: Cache hit rate percentage
+        selective_mode: Whether selective mode is enabled
+    """
+    if tokens_used is not None:
+        _metrics["llm"]["tokens_used_today"] = tokens_used
+    if budget_remaining is not None:
+        _metrics["llm"]["token_budget_remaining"] = budget_remaining
+    if usage_pct is not None:
+        _metrics["llm"]["token_usage_pct"] = usage_pct
+    if calls_saved is not None:
+        _metrics["llm"]["llm_calls_saved"] = calls_saved
+    if cache_hit_rate is not None:
+        _metrics["llm"]["cache_hit_rate"] = cache_hit_rate
+    if selective_mode is not None:
+        _metrics["llm"]["selective_mode_enabled"] = selective_mode
+
+
+def update_uncertainty_metrics(
+    avg_uncertainty: Optional[float] = None,
+    blocked_count: Optional[int] = None,
+    threshold: Optional[float] = None,
+) -> None:
+    """
+    Update uncertainty-based filtering metrics.
+
+    Args:
+        avg_uncertainty: Average uncertainty score across predictions
+        blocked_count: Number of trades blocked due to high uncertainty
+        threshold: Uncertainty threshold for blocking trades
+    """
+    if avg_uncertainty is not None:
+        _metrics["uncertainty"]["avg_uncertainty_score"] = avg_uncertainty
+    if blocked_count is not None:
+        _metrics["uncertainty"]["high_uncertainty_trades_blocked"] = blocked_count
+    if threshold is not None:
+        _metrics["uncertainty"]["uncertainty_threshold"] = threshold
+
+
+def increment_uncertainty_blocked() -> None:
+    """Increment the high uncertainty trades blocked counter."""
+    _metrics["uncertainty"]["high_uncertainty_trades_blocked"] += 1
+
+
 def get_metrics() -> Dict[str, Any]:
-    """Get current metrics snapshot."""
+    """Get current metrics snapshot including AI reliability metrics."""
     cfg = get_metrics_config()
 
     metrics = {
@@ -121,6 +264,23 @@ def get_metrics() -> Dict[str, Any]:
 
     # Always include timestamps for trade events
     metrics["timestamps"] = _metrics["timestamps"].copy()
+
+    # Phase 3: Include AI Reliability Metrics
+    # Only include if they have been populated (not all None)
+    if _metrics["calibration"]["brier_score"] is not None:
+        metrics["calibration"] = _metrics["calibration"].copy()
+
+    if _metrics["conformal"]["coverage_rate"] is not None:
+        metrics["conformal"] = _metrics["conformal"].copy()
+
+    # Always include LLM metrics if token tracking is active
+    if _metrics["llm"]["tokens_used_today"] > 0 or _metrics["llm"]["selective_mode_enabled"]:
+        metrics["llm"] = _metrics["llm"].copy()
+
+    # Include uncertainty metrics if any trades were blocked
+    if _metrics["uncertainty"]["avg_uncertainty_score"] is not None or \
+       _metrics["uncertainty"]["high_uncertainty_trades_blocked"] > 0:
+        metrics["uncertainty"] = _metrics["uncertainty"].copy()
 
     return metrics
 
@@ -202,6 +362,34 @@ def reset_metrics() -> None:
             "last_submit_ts": None,
             "last_fill_ts": None,
             "last_trade_event_ts": None,
+        },
+        # Phase 3: AI Reliability Metrics
+        "calibration": {
+            "brier_score": None,
+            "expected_calibration_error": None,
+            "max_calibration_error": None,
+            "n_samples": 0,
+            "last_updated": None,
+        },
+        "conformal": {
+            "coverage_rate": None,
+            "target_coverage": None,
+            "avg_interval_width": None,
+            "n_predictions": 0,
+            "last_updated": None,
+        },
+        "llm": {
+            "tokens_used_today": 0,
+            "token_budget_remaining": None,
+            "token_usage_pct": None,
+            "llm_calls_saved": 0,
+            "cache_hit_rate": None,
+            "selective_mode_enabled": False,
+        },
+        "uncertainty": {
+            "avg_uncertainty_score": None,
+            "high_uncertainty_trades_blocked": 0,
+            "uncertainty_threshold": 0.7,
         },
     }
 
