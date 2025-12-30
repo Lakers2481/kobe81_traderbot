@@ -4,9 +4,10 @@ ML Features Module for Kobe Trading System.
 Provides machine learning enhanced features for trading strategies:
 - TechnicalFeatures: 150+ technical indicators via pandas-ta
 - AnomalyDetector: Matrix profile anomaly detection via stumpy
-- FeaturePipeline: Unified feature extraction pipeline
+- FeaturePipeline: Unified feature extraction pipeline (now with lag + time features)
 - SignalConfidence: ML-based signal confidence scoring
 - RegimeDetector: ML-based market regime detection
+- PCAReducer: Dimensionality reduction for 150+ features (NEW)
 """
 from __future__ import annotations
 
@@ -60,6 +61,11 @@ from .ensemble_brain import (
     PredictionResult,
     get_ensemble_brain,
 )
+from .pca_reducer import (
+    PCAReducer,
+    PCAConfig,
+    reduce_features_pca,
+)
 
 __all__ = [
     # Technical Features
@@ -103,4 +109,8 @@ __all__ = [
     "QuickEnsemble",
     "PredictionResult",
     "get_ensemble_brain",
+    # PCA Dimensionality Reduction (NEW)
+    "PCAReducer",
+    "PCAConfig",
+    "reduce_features_pca",
 ]

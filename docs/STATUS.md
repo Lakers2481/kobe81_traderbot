@@ -2020,13 +2020,24 @@ python -c "from altdata.market_mood_analyzer import MarketMoodAnalyzer; print('O
 | `core.lineage` | ✅ OK |
 | `core.alerts` | ✅ OK |
 
-**ML/AI Components (4 modules)**
-| Module | Status |
-|--------|--------|
-| `ml_advanced.hmm_regime_detector` | ✅ OK |
-| `ml_advanced.lstm_confidence.config` | ✅ OK |
-| `ml_advanced.ensemble.ensemble_predictor` | ✅ OK |
-| `ml_advanced.online_learning` | ✅ OK |
+**ML/AI Components (8 modules)**
+| Module | Status | Description |
+|--------|--------|-------------|
+| `ml_advanced.hmm_regime_detector` | ✅ OK | 3-state HMM regime detection |
+| `ml_advanced.lstm_confidence.config` | ✅ OK | Multi-output LSTM for signal confidence |
+| `ml_advanced.ensemble.ensemble_predictor` | ✅ OK | XGBoost + LightGBM + LSTM ensemble |
+| `ml_advanced.online_learning` | ✅ OK | Experience replay + drift detection |
+| `ml_features.pca_reducer` | ✅ NEW | PCA dimensionality reduction (95% variance) |
+| `ml_features.feature_pipeline` (lag) | ✅ NEW | Lag features for tree-based models |
+| `ml_features.feature_pipeline` (time) | ✅ NEW | Calendar/seasonality features |
+| `ml/alpha_discovery/rl_agent` | ✅ OK | PPO/DQN/A2C via stable-baselines3 |
+
+**New Components Added (2025-12-29):**
+- **PCA Reducer** (`ml_features/pca_reducer.py`): Reduces 150+ features to optimal components retaining 95% variance
+- **Lag Features**: Explicit lag features (t-1, t-2, t-5, t-10, t-20) for XGBoost/LightGBM time series
+- **Time Features**: Day-of-week (Monday effect), month (January effect), quarter, month-end effects
+
+*Inspired by: Kaggle Time Series Forecasting (robikscube), MML Book (mml-book.github.io)*
 
 ### Deleted Modules (Clean Removal Verified)
 

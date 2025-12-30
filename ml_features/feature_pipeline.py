@@ -44,6 +44,8 @@ class FeatureCategory(Enum):
     VOLUME = "volume"
     ANOMALY = "anomaly"
     PRICE_PATTERN = "price_pattern"
+    LAG = "lag"  # NEW: Lag features for time series ML
+    TIME = "time"  # NEW: Calendar/time features for seasonality
     ALL = "all"
 
 
@@ -82,6 +84,17 @@ class FeatureConfig:
     # Performance
     cache_features: bool = True
     shift_features: bool = True  # Shift features to prevent lookahead
+
+    # NEW: Lag feature configuration (for tree-based models like XGBoost/LightGBM)
+    lag_periods: List[int] = field(default_factory=lambda: [1, 2, 5, 10, 20])
+    lag_columns: List[str] = field(default_factory=lambda: ['close', 'volume', 'return_1d'])
+
+    # NEW: Time/calendar feature configuration (for seasonality capture)
+    include_day_of_week: bool = True  # Monday=0, Friday=4
+    include_month: bool = True  # 1-12
+    include_quarter: bool = True  # 1-4
+    include_week_of_year: bool = False  # 1-52
+    include_trading_day_of_month: bool = True  # For month-end effects
 
 
 class FeaturePipeline:
@@ -133,6 +146,8 @@ class FeaturePipeline:
                 FeatureCategory.VOLUME,
                 FeatureCategory.ANOMALY,
                 FeatureCategory.PRICE_PATTERN,
+                FeatureCategory.LAG,  # NEW
+                FeatureCategory.TIME,  # NEW
             ]
 
         for category in categories:
@@ -148,6 +163,10 @@ class FeaturePipeline:
                 df = self._anomaly.detect_all(df)
             elif category == FeatureCategory.PRICE_PATTERN:
                 df = self._add_price_patterns(df)
+            elif category == FeatureCategory.LAG:
+                df = self._add_lag_features(df)
+            elif category == FeatureCategory.TIME:
+                df = self._add_time_features(df)
 
         # Get feature columns
         feature_cols = [c for c in df.columns if c not in original_cols]
@@ -237,6 +256,148 @@ class FeaturePipeline:
         for period in [5, 10, 20, 50]:
             df[f'dist_from_{period}d_high'] = (df['close'] - df['high'].rolling(period).max()) / df['close']
             df[f'dist_from_{period}d_low'] = (df['close'] - df['low'].rolling(period).min()) / df['close']
+
+        return df
+
+    def _add_lag_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Add lag features for time series ML models.
+
+        Lag features are critical for tree-based models (XGBoost, LightGBM)
+        as they cannot implicitly learn temporal dependencies like LSTMs.
+
+        Inspired by: Kaggle Time Series Forecasting (robikscube)
+        """
+        lag_periods = self.config.lag_periods
+        lag_columns = self.config.lag_columns
+
+        for col in lag_columns:
+            if col not in df.columns:
+                # Try to create return_1d if it doesn't exist
+                if col == 'return_1d' and 'close' in df.columns:
+                    df['return_1d'] = df['close'].pct_change()
+                else:
+                    continue
+
+            for lag in lag_periods:
+                df[f'{col}_lag{lag}'] = df[col].shift(lag)
+
+        # Also add lag of returns at different horizons
+        if 'close' in df.columns:
+            returns = df['close'].pct_change()
+
+            # Lagged returns (how did it perform N days ago?)
+            for lag in lag_periods:
+                df[f'return_lag{lag}'] = returns.shift(lag)
+
+            # Rolling statistics of returns (momentum over lookback)
+            for window in [5, 10, 20]:
+                df[f'return_mean_{window}d'] = returns.rolling(window).mean()
+                df[f'return_std_{window}d'] = returns.rolling(window).std()
+                df[f'return_skew_{window}d'] = returns.rolling(window).skew()
+
+        # Volume lag features
+        if 'volume' in df.columns:
+            vol = df['volume']
+            for lag in [1, 2, 5]:
+                df[f'volume_lag{lag}'] = vol.shift(lag)
+
+            # Volume relative to recent average
+            df['volume_vs_avg_10d'] = vol / vol.rolling(10).mean()
+            df['volume_vs_avg_20d'] = vol / vol.rolling(20).mean()
+
+        jlog("lag_features_added", level="DEBUG",
+             n_lag_periods=len(lag_periods),
+             n_lag_columns=len(lag_columns))
+
+        return df
+
+    def _add_time_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Add calendar/time features for seasonality capture.
+
+        These features help capture patterns like:
+        - Monday effect (stocks tend to drop on Mondays)
+        - Month-end rebalancing (institutional flows)
+        - January effect (small caps outperform)
+        - Quarter-end window dressing
+
+        Inspired by: Kaggle Time Series Forecasting (robikscube)
+        """
+        # Try to get datetime index
+        if isinstance(df.index, pd.DatetimeIndex):
+            dt = df.index.to_series()
+        elif 'timestamp' in df.columns:
+            dt = pd.to_datetime(df['timestamp'])
+        elif 'date' in df.columns:
+            dt = pd.to_datetime(df['date'])
+        else:
+            jlog("time_features_no_datetime", level="WARNING",
+                 message="No datetime column found, skipping time features")
+            return df
+
+        # Ensure dt has proper datetime accessor
+        if not hasattr(dt, 'dt'):
+            dt = pd.to_datetime(dt)
+
+        try:
+            # Use dt accessor for Series
+            dta = dt.dt if hasattr(dt, 'dt') else dt
+
+            # Day of week (Monday=0, Friday=4)
+            if self.config.include_day_of_week:
+                df['day_of_week'] = dta.dayofweek.values
+                # One-hot encode days
+                dayofweek = dta.dayofweek
+                for day in range(5):
+                    df[f'is_day_{day}'] = (dayofweek == day).astype(float).values
+                # Monday effect feature
+                df['is_monday'] = (dayofweek == 0).astype(float).values
+                df['is_friday'] = (dayofweek == 4).astype(float).values
+
+            # Month (1-12)
+            if self.config.include_month:
+                month = dta.month
+                df['month'] = month.values
+                # January effect feature
+                df['is_january'] = (month == 1).astype(float).values
+                # Sell in May and go away
+                df['is_may_to_oct'] = ((month >= 5) & (month <= 10)).astype(float).values
+
+            # Quarter (1-4)
+            if self.config.include_quarter:
+                df['quarter'] = dta.quarter.values
+                # Quarter-end (potential window dressing)
+                df['is_quarter_end_month'] = dta.month.isin([3, 6, 9, 12]).astype(float).values
+
+            # Week of year (1-52)
+            if self.config.include_week_of_year:
+                df['week_of_year'] = dta.isocalendar().week.values
+
+            # Trading day of month (for month-end effects)
+            if self.config.include_trading_day_of_month:
+                df['day_of_month'] = dta.day.values
+                df['is_month_end'] = dta.is_month_end.astype(float).values
+                df['is_month_start'] = dta.is_month_start.astype(float).values
+
+            # Sin/cos encoding for cyclical features (better for neural networks)
+            if self.config.include_day_of_week:
+                dayofweek = dta.dayofweek
+                df['day_sin'] = np.sin(2 * np.pi * dayofweek / 5).values
+                df['day_cos'] = np.cos(2 * np.pi * dayofweek / 5).values
+
+            if self.config.include_month:
+                month = dta.month
+                df['month_sin'] = np.sin(2 * np.pi * month / 12).values
+                df['month_cos'] = np.cos(2 * np.pi * month / 12).values
+
+            jlog("time_features_added", level="DEBUG",
+                 day_of_week=self.config.include_day_of_week,
+                 month=self.config.include_month,
+                 quarter=self.config.include_quarter)
+
+        except Exception as e:
+            jlog("time_features_error", level="WARNING", error=str(e))
 
         return df
 

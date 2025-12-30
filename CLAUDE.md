@@ -308,6 +308,22 @@ See `docs/STATUS.md` Section 16 for detailed explanation.
 | `ensemble/` | Multi-model ensemble predictor (XGBoost, LightGBM, LSTM) |
 | `online_learning.py` | Incremental learning with concept drift detection |
 
+### ML Features (`ml_features/`)
+| Module | Purpose |
+|--------|---------|
+| `pca_reducer.py` | **NEW** PCA dimensionality reduction (95% variance retention) |
+| `feature_pipeline.py` | 150+ features + **NEW** lag features + time/calendar features |
+| `technical_features.py` | pandas-ta indicators (RSI, ATR, MACD, Bollinger, etc.) |
+| `anomaly_detection.py` | Matrix profiles for unusual pattern detection |
+| `regime_ml.py` | KMeans/GMM regime clustering |
+| `ensemble_brain.py` | Multi-model prediction ensemble |
+
+### RL Trading Agent (`ml/alpha_discovery/rl_agent/`)
+| Module | Purpose |
+|--------|---------|
+| `trading_env.py` | Gym-compatible trading environment |
+| `agent.py` | PPO/DQN/A2C via stable-baselines3 |
+
 ### Cognitive Architecture (`cognitive/`)
 Brain-inspired decision system with self-awareness. **83 unit tests passing.**
 
@@ -469,6 +485,9 @@ if report.passed:
 - `ml_advanced/lstm_confidence/model.py`: Multi-output LSTM (direction, magnitude, success)
 - `ml_advanced/ensemble/ensemble_predictor.py`: Weighted ensemble with confidence scoring
 - `ml_advanced/online_learning.py`: Experience replay, concept drift detection
+- `ml_features/pca_reducer.py`: **NEW** PCA dimensionality reduction (95% variance)
+- `ml_features/feature_pipeline.py`: **NEW** Lag features (t-1 to t-20) + time/calendar features
+- `ml/alpha_discovery/rl_agent/agent.py`: PPO/DQN/A2C RL trading agent
 
 ## Quick Reference - Essential Skills
 
