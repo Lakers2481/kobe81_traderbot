@@ -63,6 +63,12 @@ def main() -> None:
     ap.add_argument('--max-order', type=float, default=75.0, help='Max $ per order')
     ap.add_argument('--max-spread-pct', type=float, default=0.02, help='Max bid/ask spread as fraction of mid (default 2%)')
     ap.add_argument('--allow-closed', action='store_true', help='Allow submission when market is closed')
+    # Feature toggle flags (runtime overrides for ML/AI components)
+    ap.add_argument('--calibration', action='store_true', help='Enable probability calibration for ML confidence')
+    ap.add_argument('--conformal', action='store_true', help='Enable conformal prediction for position sizing')
+    ap.add_argument('--exec-bandit', action='store_true', help='Enable execution bandit for order routing')
+    ap.add_argument('--intraday-trigger', action='store_true', help='Enable intraday entry trigger (VWAP reclaim)')
+    ap.add_argument('--verbose', '-v', action='store_true', help='Verbose output')
     args = ap.parse_args()
 
     dotenv = Path(args.dotenv)
@@ -76,6 +82,46 @@ def main() -> None:
 
     # Load config for feature flags
     config = load_config()
+
+    # === Apply CLI feature flags to config (runtime overrides) ===
+    if args.calibration or args.conformal or args.exec_bandit or args.intraday_trigger:
+        # Override calibration setting
+        if args.calibration:
+            if 'ml' not in config:
+                config['ml'] = {}
+            if 'calibration' not in config['ml']:
+                config['ml']['calibration'] = {}
+            config['ml']['calibration']['enabled'] = True
+            if args.verbose:
+                print("[CLI] --calibration: Probability calibration ENABLED")
+
+        # Override conformal setting
+        if args.conformal:
+            if 'ml' not in config:
+                config['ml'] = {}
+            if 'conformal' not in config['ml']:
+                config['ml']['conformal'] = {}
+            config['ml']['conformal']['enabled'] = True
+            if args.verbose:
+                print("[CLI] --conformal: Conformal prediction ENABLED")
+
+        # Override execution bandit setting
+        if args.exec_bandit:
+            if 'execution' not in config:
+                config['execution'] = {}
+            config['execution']['bandit_enabled'] = True
+            if args.verbose:
+                print("[CLI] --exec-bandit: Execution bandit ENABLED")
+
+        # Override intraday trigger setting
+        if args.intraday_trigger:
+            if 'execution' not in config:
+                config['execution'] = {}
+            if 'intraday_trigger' not in config['execution']:
+                config['execution']['intraday_trigger'] = {}
+            config['execution']['intraday_trigger']['enabled'] = True
+            if args.verbose:
+                print("[CLI] --intraday-trigger: Intraday entry trigger ENABLED")
 
     # Quick market-open guard (skip unless explicitly allowed)
     clk = get_market_clock()

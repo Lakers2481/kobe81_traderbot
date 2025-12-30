@@ -81,6 +81,7 @@ class PortfolioRiskManager:
         self.kelly_fraction = kelly_fraction
         self.use_ml_confidence = use_ml_confidence
         self.min_confidence_threshold = min_confidence_threshold
+        self.use_conformal = self._check_conformal_enabled()
 
         # Initialize component references (lazy loading)
         self._kelly_sizer = None
@@ -128,6 +129,33 @@ class PortfolioRiskManager:
             except ImportError:
                 logger.warning("PortfolioHeatMonitor not available")
         return self._heat_monitor
+
+    def _check_conformal_enabled(self) -> bool:
+        """Check if conformal prediction is enabled in config."""
+        try:
+            from config.settings_loader import load_settings
+            config = load_settings()
+            return config.get('ml', {}).get('conformal', {}).get('enabled', False)
+        except Exception:
+            return False
+
+    def _get_conformal_multiplier(self, prediction: float) -> float:
+        """
+        Get position size multiplier from conformal prediction uncertainty.
+
+        High uncertainty -> lower multiplier -> smaller position
+        Low uncertainty -> multiplier closer to 1.0 -> full position
+        """
+        if not self.use_conformal:
+            return 1.0
+        try:
+            from ml_meta.conformal import get_position_multiplier
+            multiplier = get_position_multiplier(prediction)
+            logger.debug(f"Conformal sizing multiplier for pred {prediction:.3f}: {multiplier:.3f}")
+            return multiplier
+        except Exception as e:
+            logger.debug(f"Conformal multiplier failed: {e}")
+            return 1.0
 
     def update_equity(self, new_equity: float):
         """Update equity for position sizing calculations."""
@@ -243,6 +271,14 @@ class PortfolioRiskManager:
             confidence_multiplier = 0.5 + ml_confidence
             base_size *= confidence_multiplier
             confidence_adjusted = True
+
+        # === ADJUSTMENT: Scale by Conformal Uncertainty ===
+        # High uncertainty -> smaller position; low uncertainty -> full position
+        if self.use_conformal and ml_confidence is not None:
+            conformal_mult = self._get_conformal_multiplier(ml_confidence)
+            base_size *= conformal_mult
+            if conformal_mult < 0.9:
+                warnings.append(f"Position reduced by conformal uncertainty: {conformal_mult:.2f}x")
 
         # === CAPS: Apply maximum limits ===
         max_size = self.equity * self.max_position_pct

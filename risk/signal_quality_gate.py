@@ -195,6 +195,50 @@ class SignalQualityGate:
                 logger.warning("ConfidenceIntegrator not available")
         return self._confidence_integrator
 
+    def _get_calibration_enabled(self) -> bool:
+        """Check if calibration is enabled in config."""
+        try:
+            from config.settings_loader import load_settings
+            config = load_settings()
+            return config.get('ml', {}).get('calibration', {}).get('enabled', False)
+        except Exception:
+            return False
+
+    def _get_conformal_enabled(self) -> bool:
+        """Check if conformal prediction is enabled in config."""
+        try:
+            from config.settings_loader import load_settings
+            config = load_settings()
+            return config.get('ml', {}).get('conformal', {}).get('enabled', False)
+        except Exception:
+            return False
+
+    def _apply_calibration(self, raw_probability: float) -> float:
+        """Apply probability calibration if enabled and fitted."""
+        if not self._get_calibration_enabled():
+            return raw_probability
+        try:
+            from ml_meta.calibration import calibrate_probability
+            calibrated = calibrate_probability(raw_probability)
+            logger.debug(f"Calibrated {raw_probability:.3f} -> {calibrated:.3f}")
+            return calibrated
+        except Exception as e:
+            logger.debug(f"Calibration failed, using raw: {e}")
+            return raw_probability
+
+    def _get_uncertainty_adjustment(self, prediction: float) -> float:
+        """Get position size multiplier from conformal uncertainty."""
+        if not self._get_conformal_enabled():
+            return 1.0
+        try:
+            from ml_meta.conformal import get_position_multiplier
+            multiplier = get_position_multiplier(prediction)
+            logger.debug(f"Conformal multiplier for {prediction:.3f}: {multiplier:.3f}")
+            return multiplier
+        except Exception as e:
+            logger.debug(f"Conformal prediction failed: {e}")
+            return 1.0
+
     def evaluate_signal(
         self,
         signal: Dict[str, Any],
@@ -445,15 +489,30 @@ class SignalQualityGate:
         spy_data: Optional[pd.DataFrame],
         vix_level: Optional[float],
     ) -> float:
-        """Calculate ML confidence component (0-25 points)."""
+        """
+        Calculate ML confidence component (0-25 points).
+
+        Optionally applies:
+        - Probability calibration (isotonic/platt) if ml.calibration.enabled
+        - Uncertainty adjustment (conformal) if ml.conformal.enabled
+        """
         if self.confidence_integrator is None:
             # Fallback: use technical score
             return self._calculate_strategy_component(signal) * 1.67
 
         try:
+            # Get raw ML confidence
             ml_conf = self.confidence_integrator.get_simple_confidence(
                 signal, price_data, spy_data, vix_level
             )
+
+            # Apply probability calibration if enabled
+            ml_conf = self._apply_calibration(ml_conf)
+
+            # Apply uncertainty adjustment if enabled (scales down when uncertain)
+            uncertainty_mult = self._get_uncertainty_adjustment(ml_conf)
+            ml_conf = ml_conf * uncertainty_mult
+
             return ml_conf * self.config.ml_confidence_max
         except Exception as e:
             logger.debug(f"ML confidence scoring failed: {e}")

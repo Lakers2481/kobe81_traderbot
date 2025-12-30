@@ -586,6 +586,27 @@ Examples:
         action="store_true",
         help="Preview mode: use current bar values (for weekend analysis). Shows what would trigger on next trading day.",
     )
+    # === Phase 2: Feature Toggle Flags (ML/AI Components) ===
+    ap.add_argument(
+        "--calibration",
+        action="store_true",
+        help="Enable probability calibration (isotonic/platt) for ML confidence scores",
+    )
+    ap.add_argument(
+        "--conformal",
+        action="store_true",
+        help="Enable conformal prediction for uncertainty-aware position sizing",
+    )
+    ap.add_argument(
+        "--exec-bandit",
+        action="store_true",
+        help="Enable execution bandit for adaptive order routing (Thompson/UCB/epsilon-greedy)",
+    )
+    ap.add_argument(
+        "--intraday-trigger",
+        action="store_true",
+        help="Enable intraday entry trigger (VWAP reclaim/first-hour confirmation before entry)",
+    )
     ap.add_argument(
         "--portfolio-filter",
         action="store_true",
@@ -619,6 +640,58 @@ Examples:
     else:
         if args.verbose:
             print(f"Warning: dotenv file not found: {dotenv_path}", file=sys.stderr)
+
+    # === Apply CLI feature flags to config (runtime overrides) ===
+    if args.calibration or args.conformal or args.exec_bandit or args.intraday_trigger:
+        try:
+            from config.settings_loader import load_settings, _settings_cache
+            config = load_settings()
+
+            # Override calibration setting
+            if args.calibration:
+                if 'ml' not in config:
+                    config['ml'] = {}
+                if 'calibration' not in config['ml']:
+                    config['ml']['calibration'] = {}
+                config['ml']['calibration']['enabled'] = True
+                if args.verbose:
+                    print("[CLI] --calibration: Probability calibration ENABLED")
+
+            # Override conformal setting
+            if args.conformal:
+                if 'ml' not in config:
+                    config['ml'] = {}
+                if 'conformal' not in config['ml']:
+                    config['ml']['conformal'] = {}
+                config['ml']['conformal']['enabled'] = True
+                if args.verbose:
+                    print("[CLI] --conformal: Conformal prediction ENABLED")
+
+            # Override execution bandit setting
+            if args.exec_bandit:
+                if 'execution' not in config:
+                    config['execution'] = {}
+                config['execution']['bandit_enabled'] = True
+                if args.verbose:
+                    print("[CLI] --exec-bandit: Execution bandit ENABLED")
+
+            # Override intraday trigger setting
+            if args.intraday_trigger:
+                if 'execution' not in config:
+                    config['execution'] = {}
+                if 'intraday_trigger' not in config['execution']:
+                    config['execution']['intraday_trigger'] = {}
+                config['execution']['intraday_trigger']['enabled'] = True
+                if args.verbose:
+                    print("[CLI] --intraday-trigger: Intraday entry trigger ENABLED")
+
+            # Update the settings cache so other modules see these overrides
+            _settings_cache.clear()
+            _settings_cache.update(config)
+
+        except Exception as e:
+            if args.verbose:
+                print(f"[WARN] Could not apply CLI feature flags: {e}")
 
     # Check Polygon API key
     if not os.getenv("POLYGON_API_KEY"):
