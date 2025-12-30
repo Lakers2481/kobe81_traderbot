@@ -293,7 +293,11 @@ class TestExecuteSignal:
 
         def set_submitted(order):
             order.status = OrderStatus.SUBMITTED
-            return order
+            return BrokerExecutionResult(
+                order=order,
+                market_bid_at_execution=149.0,
+                market_ask_at_execution=150.0,
+            )
 
         mock_place.side_effect = set_submitted
 
@@ -320,7 +324,11 @@ class TestExecuteSignal:
 
         def set_submitted(order):
             order.status = OrderStatus.SUBMITTED
-            return order
+            return BrokerExecutionResult(
+                order=order,
+                market_bid_at_execution=149.0,
+                market_ask_at_execution=150.0,
+            )
 
         mock_place.side_effect = set_submitted
 

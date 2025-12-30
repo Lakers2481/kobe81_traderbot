@@ -170,6 +170,10 @@ class ConditionMatcher:
                     field_name = parts[0].strip().lower()
                     target_value_str = parts[1].strip()
 
+                    # Skip conditions with expressions/formulas (contain math operators)
+                    if any(c in target_value_str for c in ['*', '/', '+', '-']) and not target_value_str.lstrip('-').replace('.', '').isdigit():
+                        return False  # Cannot evaluate formula expressions
+
                     context_value = context.get(field_name)
                     if context_value is None:
                         return False # Field not in context, so condition cannot match.

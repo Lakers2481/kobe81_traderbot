@@ -107,6 +107,27 @@ def rotate_logs_now() -> bool:
         return False
 
 
+def get_logger(name: str) -> logging.Logger:
+    """
+    Get a configured logger for a module.
+
+    Args:
+        name: Logger name (typically __name__)
+
+    Returns:
+        Configured logging.Logger instance
+    """
+    logger = logging.getLogger(name)
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter(
+            '[%(levelname)s] %(name)s: %(message)s'
+        ))
+        logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
+    return logger
+
+
 def read_recent_logs(count: int = 100, level: str | None = None) -> list[Dict[str, Any]]:
     """
     Read the most recent log entries.
