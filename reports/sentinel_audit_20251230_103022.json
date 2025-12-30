@@ -1,0 +1,20 @@
+{
+  "agent": "sentinel_audit_01",
+  "ts_utc": "2025-12-30T16:30:22.356107+00:00",
+  "summary": {
+    "ok": true,
+    "critical_count": 0,
+    "warning_count": 1
+  },
+  "critical": [],
+  "warnings": [
+    "Polygon API returning 403 errors for ~100 symbols at tail of universe (ACAD, ZLAB, etc.) - may be delisted or access-restricted tickers"
+  ],
+  "hints_for_agents": [
+    "data_loader: investigate Polygon 403 errors for symbols ACAD-AZEK (lines 802-901 in universe)",
+    "backtest_agent: system ready - all core strategies verified (DualStrategyScanner, IBS_RSI, TurtleSoup)",
+    "paper_trade_agent: CLEAR TO TRADE - heartbeat active (13s ago), no kill switch, preflight OK",
+    "updater_agent: heartbeat fresh (13s), runner uptime 21.7 hours in paper mode",
+    "report_agent: 57,207 events logged, 392 trades, 42 signals - system actively trading"
+  ]
+}
