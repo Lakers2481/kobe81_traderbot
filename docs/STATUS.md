@@ -1,9 +1,9 @@
 ﻿# Kobe81 Traderbot - STATUS
 
-> **Last Updated:** 2025-12-29 17:00 UTC
-> **Verified By:** Claude Opus 4.5 (Scheduler v2.0 Upgrade)
+> **Last Updated:** 2025-12-29 20:30 UTC
+> **Verified By:** Claude Opus 4.5 (Final Cleanup & Alpaca Live Data)
 > **Document Type:** AI GOVERNANCE & SYSTEM BLUEPRINT
-> **Audit Status:** FULLY VERIFIED - 942 tests passing, Scheduler v2.0 deployed, all modules importable
+> **Audit Status:** FULLY VERIFIED - 942 tests passing, Scheduler v2.0 deployed, Alpaca live data integrated, codebase cleaned
 
 ---
 
@@ -2096,6 +2096,40 @@ All 70 skills are documented in `.claude/skills/` and referenced in CLAUDE.md.
 
 ## FIXES LOG (Who Fixed What)
 
+### 2025-12-29: Alpaca Live Data Integration & Final Cleanup
+
+| Item | Detail |
+|------|--------|
+| **Feature** | Real-time price updates during market hours |
+| **Implemented By** | Claude Opus 4.5 |
+| **Files Created** | `data/providers/alpaca_live.py` |
+| **Files Modified** | `scripts/scan.py` (--live-data flag), `execution/broker_alpaca.py` (env var fix) |
+| **Tests Verified** | Live quotes for SPY, AAPL, MSFT confirmed working |
+| **Outcome** | Paper trading now uses real-time prices from Alpaca |
+
+### 2025-12-29: Bug Fixes (3 Failing Tests → 942 Total Passing)
+
+| Bug | Fix Applied |
+|-----|-------------|
+| `test_daily_consolidation` - ValueError converting 'vix_20ma * 1.2' | Fixed `cognitive/semantic_memory.py` to skip math expressions in ConditionMatcher |
+| `test_skips_liquidity_when_disabled` - AttributeError | Fixed `tests/test_broker_liquidity_integration.py` mock to return BrokerExecutionResult |
+| `test_skips_liquidity_when_param_false` - AttributeError | Same fix as above |
+| Missing `get_logger()` function | Added to `core/structured_log.py` (required by position_manager.py) |
+
+### 2025-12-29: Codebase Cleanup (Agent-Verified)
+
+| Action | Files |
+|--------|-------|
+| Deleted temp files | `_ul`, `_ul-DESKTOP-*`, `combined_before.tmp` (81MB recovered) |
+| Moved audit reports | 10 audit files → `docs/history/audits/` |
+| Moved utility scripts | `check_circular_imports.py`, `check_missing_init.py` → `scripts/ops/` |
+| Updated .gitignore | Added patterns to prevent future temp file commits |
+
+**Agent Verification:**
+- filesystem-mapper: Inventoried all files, identified clutter
+- system-architect-scanner: Confirmed all Scheduler v2 phases complete
+- sentinel-audit: Verified system integrity, all imports clean
+
 ### 2025-12-29: WF vs Backtest Discrepancy Fix
 
 | Item | Detail |
@@ -2201,4 +2235,4 @@ Expected: 329 passed
 
 ---
 
-*Audit completed 2025-12-29 16:55 UTC by Claude Opus 4.5*
+*Final audit & cleanup completed 2025-12-29 20:30 UTC by Claude Opus 4.5*
