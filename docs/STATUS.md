@@ -3268,5 +3268,169 @@ Complete feature documentation with WHAT/WHY/HOW for each feature:
 
 ---
 
+## Section 19: AZR-Inspired Self-Play Reasoning (2025-12-30)
+
+### 19.1 Background
+
+Implemented three key innovations from **"Absolute Zero: Reinforced Self-play Reasoning with Zero Data"** (arXiv:2505.03335) adapted for trading.
+
+**Paper:** https://arxiv.org/abs/2505.03335
+**GitHub:** https://github.com/LeapLabTHU/Absolute-Zero-Reasoner
+
+**Core Idea:** AI system improves reasoning by generating and solving its own training tasks - with NO external data. Uses code execution to verify answers.
+
+### 19.2 Three Components Added
+
+| Component | What It Does | Why It Helps |
+|-----------|--------------|--------------|
+| **Reasoning Type Tags** | Classifies hypotheses as Abductive/Deductive/Inductive | Ensures diverse thinking, prevents tunnel vision |
+| **Learnability Scoring** | Scores hypotheses by expected learning value (0-100) | Tests high-value hypotheses first |
+| **Self-Play Scheduler** | Runs propose→solve→learn cycles continuously | Autonomous improvement without manual intervention |
+
+### 19.3 Reasoning Types Explained
+
+| Type | Direction | Trading Example |
+|------|-----------|-----------------|
+| **Abductive** | Observation → Cause | "Trade failed → What market condition caused this?" |
+| **Deductive** | Rules → Conclusion | "IF regime=BEAR THEN expect low win rate" |
+| **Inductive** | Examples → Rule | "10 wins had VIX>25 → High VIX may favor us" |
+
+The system balances hypothesis generation across all three types to prevent getting stuck in one mode of thinking.
+
+### 19.4 Learnability Scoring
+
+Hypotheses are scored on four factors:
+
+| Factor | Weight | Description |
+|--------|--------|-------------|
+| **Novelty** | 30% | Haven't tested similar conditions before |
+| **Uncertainty** | 25% | Near 50/50 decision boundary (maximum learning) |
+| **Data Sufficiency** | 25% | 30-200 samples (sweet spot for learning) |
+| **Impact** | 20% | Affects regime/risk/strategy decisions |
+
+**Score Interpretation:**
+- 90-100: High learning value, test immediately
+- 70-89: Good candidate, test soon
+- 30-69: Lower priority
+- 0-29: Skip (redundant or insufficient data)
+
+### 19.5 Self-Play Cycle
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                  SELF-PLAY CYCLE                        │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  ┌──────────┐    ┌──────────┐    ┌──────────┐          │
+│  │ PROPOSE  │ -> │  SOLVE   │ -> │  LEARN   │          │
+│  │          │    │          │    │          │          │
+│  │ Generate │    │ Test via │    │ Update   │          │
+│  │ diverse  │    │ backtest │    │ edges +  │          │
+│  │ hypotheses│   │ verify   │    │ rules    │          │
+│  └──────────┘    └──────────┘    └──────────┘          │
+│       │                               │                 │
+│       └───────── feedback ────────────┘                 │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Per Cycle:**
+- Generate up to 10 hypotheses (balanced across reasoning types)
+- Test top 5 by learnability score
+- Convert validated hypotheses to trading edges
+- Add new rules to semantic memory
+
+### 19.6 Usage
+
+```python
+from cognitive.azr_reasoning import (
+    get_self_play_scheduler,
+    get_learnability_scorer,
+    get_type_classifier,
+)
+
+# Run one learning cycle
+scheduler = get_self_play_scheduler()
+result = scheduler.run_cycle()
+print(f"Validated: {result.validated}, Edges: {result.edges_discovered}")
+
+# Score a hypothesis for learning value
+scorer = get_learnability_scorer()
+score = scorer.score_hypothesis(hypothesis)
+print(f"Learnability: {score.total_score}/100")
+
+# Classify reasoning type
+classifier = get_type_classifier()
+rtype = classifier.classify("Why did this trade fail?")
+# Returns: ReasoningType.ABDUCTIVE
+```
+
+### 19.7 Config Settings
+
+```yaml
+# config/base.yaml
+cognitive:
+  azr_reasoning:
+    enabled: true
+    balance_reasoning_types: true
+    learnability:
+      novelty_weight: 0.30
+      uncertainty_weight: 0.25
+      data_weight: 0.25
+      impact_weight: 0.20
+      min_threshold: 30.0
+    self_play:
+      max_hypotheses_per_cycle: 10
+      max_tests_per_cycle: 5
+      auto_run_daily: false
+```
+
+### 19.8 Files Created
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `cognitive/azr_reasoning.py` | 870 | All 3 AZR components |
+| `state/cognitive/learnability_history.json` | Auto | Tracks tested conditions |
+| `state/cognitive/selfplay_state.json` | Auto | Cycle history |
+
+### 19.9 Integration with Existing System
+
+The AZR components integrate with our existing cognitive architecture:
+
+```
+CuriosityEngine (existing)
+    │
+    ├── generate_hypotheses() ← AZR: Balanced by reasoning type
+    │
+    ├── test_hypothesis() ← AZR: Prioritized by learnability score
+    │
+    └── create_edge() ← AZR: Triggers in self-play learn phase
+
+SemanticMemory (existing)
+    │
+    └── add_rule() ← AZR: Adds rules from validated hypotheses
+
+SelfPlayScheduler (NEW)
+    │
+    └── run_cycle() → Orchestrates propose→solve→learn
+```
+
+### 19.10 What This Does NOT Include
+
+| AZR Feature | Why Not Added |
+|-------------|---------------|
+| Full RL training loop | Needs GPU, complex infrastructure |
+| TRR++ algorithm | Research-grade, overkill for trading |
+| Code synthesis | We use backtests instead |
+
+We adapted the **concepts** (reasoning types, learnability, self-play) without the heavy ML infrastructure.
+
+---
+
+*AZR-Inspired Reasoning added 2025-12-30 by Claude Opus 4.5*
+*Reference: arXiv:2505.03335*
+
+---
+
 *Comprehensive Documentation completed 2025-12-30 by Claude Opus 4.5*
 *System Grade: A+ (942 tests, 125+ modules, 100% verified)*

@@ -313,6 +313,26 @@ cognitive:
     max_hypotheses: 50                # Maximum active hypotheses
     validation_threshold: 0.7         # Confidence needed to promote hypothesis
 
+  # AZR-Inspired Reasoning (arXiv:2505.03335)
+  # Self-play learning: propose→solve→learn cycle
+  azr_reasoning:
+    enabled: true                     # Enable AZR-inspired self-play reasoning
+    # Reasoning type balance (Abductive/Deductive/Inductive)
+    balance_reasoning_types: true     # Ensure diverse hypothesis generation
+    # Learnability scoring weights
+    learnability:
+      novelty_weight: 0.30            # Prioritize unexplored hypotheses
+      uncertainty_weight: 0.25        # Focus on decision boundaries
+      data_weight: 0.25               # Ensure sufficient data
+      impact_weight: 0.20             # Weight by trading impact
+      min_threshold: 30.0             # Minimum score to test hypothesis
+    # Self-play scheduler
+    self_play:
+      max_hypotheses_per_cycle: 10    # Generate per cycle
+      max_tests_per_cycle: 5          # Test per cycle
+      auto_run_daily: false           # Run daily at end of trading
+      run_time: "16:30"               # Time to run (ET) if auto_run_daily
+
   # MarketMoodAnalyzer settings (Task A2)
   market_mood:
     vix_weight: 0.6                   # Weight for VIX in mood calculation
