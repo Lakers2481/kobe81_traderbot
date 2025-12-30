@@ -1170,7 +1170,12 @@ Examples:
                     # Write empty placeholder to indicate skip
                     pd.DataFrame(columns=out.columns).to_csv(totd_path, index=False)
 
-                print("\nTOP 3 PICKS")
+                # Show signal date prominently to prevent stale signal confusion
+                signal_date = end_date  # The date these signals are generated for
+                print(f"\n{'='*60}")
+                print(f"TOP 3 PICKS - SIGNAL DATE: {signal_date}")
+                print(f"{'='*60}")
+                print(f"  NOTE: These signals are valid for the NEXT trading day")
                 print("-" * 60)
                 print(out[['strategy','symbol','side','entry_price','stop_loss','take_profit','conf_score']].to_string(index=False))
                 print(f"\nWrote: {picks_path}")

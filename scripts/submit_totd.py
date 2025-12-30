@@ -26,6 +26,7 @@ from core.structured_log import jlog
 from core.hash_chain import append_block
 from core.config_pin import sha256_file
 from core.clock.macro_events import MacroEventCalendar
+from core.signal_freshness import validate_signal_file, check_signal_freshness
 
 
 def get_open_position_count() -> int:
@@ -69,6 +70,7 @@ def main() -> None:
     ap.add_argument('--exec-bandit', action='store_true', help='Enable execution bandit for order routing')
     ap.add_argument('--intraday-trigger', action='store_true', help='Enable intraday entry trigger (VWAP reclaim)')
     ap.add_argument('--verbose', '-v', action='store_true', help='Verbose output')
+    ap.add_argument('--allow-stale', action='store_true', help='DANGER: Allow submission of stale signals (not recommended)')
     args = ap.parse_args()
 
     dotenv = Path(args.dotenv)
@@ -155,6 +157,28 @@ def main() -> None:
     if df.empty:
         print('TOTD file empty - skipping submission.')
         return
+
+    # === SIGNAL FRESHNESS VALIDATION ===
+    # Critical safety check: prevent trading stale signals from previous days
+    all_fresh, freshness_result, _ = validate_signal_file(p, timestamp_column='timestamp', max_age_days=1)
+    if not all_fresh and not args.allow_stale:
+        jlog('totd_stale_signal',
+             signal_date=str(freshness_result.signal_date),
+             expected_date=str(freshness_result.expected_date),
+             days_old=freshness_result.days_old,
+             reason=freshness_result.reason)
+        print(f'STALE SIGNAL BLOCKED: {freshness_result.reason}')
+        print(f'  Signal date: {freshness_result.signal_date}')
+        print(f'  Expected:    {freshness_result.expected_date}')
+        print(f'  Days old:    {freshness_result.days_old}')
+        print('Run a fresh scan before submitting: python scripts/scan.py --top3')
+        print('Or use --allow-stale to force (not recommended)')
+        return
+    elif not all_fresh and args.allow_stale:
+        print(f'WARNING: Submitting stale signal ({freshness_result.days_old} days old) - --allow-stale flag used')
+        jlog('totd_stale_signal_forced',
+             signal_date=str(freshness_result.signal_date),
+             days_old=freshness_result.days_old)
 
     row = df.iloc[0]
     symbol = str(row.get('symbol', '')).upper()
