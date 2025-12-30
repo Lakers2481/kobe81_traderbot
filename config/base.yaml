@@ -62,6 +62,10 @@ risk:
   max_daily_loss: 1000     # $1,000 daily loss limit
   max_order_value: 75      # $75 per order (micro budget)
   max_open_positions: 10   # Maximum concurrent positions
+  # Macro blackout gate (skip FOMC, NFP, CPI days)
+  macro_blackout_enabled: true
+  # One-at-a-time mode (limit concurrent new trades)
+  max_concurrent_trades: 2  # Max open positions before blocking new entries
 
 # Strategy Filters (config-gated)
 filters:
@@ -90,6 +94,12 @@ execution:
     retry_on_429: true  # Retry with exponential backoff on 429
     max_retries: 3  # Max retry attempts
     base_delay_ms: 500  # Initial backoff delay
+  # Intraday entry trigger (config-gated) - delays entry until price confirms
+  intraday_trigger:
+    enabled: false  # Set true to require intraday confirmation
+    mode: "vwap_reclaim"  # vwap_reclaim | first_hour_high | first_hour_low | combined
+    poll_interval_seconds: 60  # How often to check trigger
+    max_wait_minutes: 120  # Max time to wait for trigger before skipping
 
 # Logging
 logging:
@@ -312,26 +322,34 @@ cognitive:
     vix_extreme_fear_level: 35.0      # VIX level indicating extreme fear
     vix_extreme_greed_level: 12.0     # VIX level indicating extreme greed
 
-  # LLM Trade Analyzer settings (Claude human-like reasoning)
-  llm_analyzer:
-    enabled: true                     # Enable LLM-powered narrative generation
-    model: "claude-3-haiku-20240307"  # Claude model to use (haiku for speed, sonnet for quality)
-    max_tokens: 1500                  # Maximum response tokens
-    temperature: 0.7                  # Response temperature (0-1)
-    fallback_enabled: true            # Use deterministic fallback when API unavailable
-    cache_narratives: true            # Cache generated narratives
-    cache_ttl_minutes: 60             # Cache TTL in minutes
-    daily_insights_file: "logs/daily_insights.json"  # Output file for daily insights
-    # Selective triggering (Phase 2 AI Reliability)
-    selective_mode: false             # Only call LLM for borderline confidence picks
-    borderline_range:
-      min: 0.55                       # Minimum confidence to call LLM
-      max: 0.75                       # Maximum confidence to call LLM
-    # Token budget management
-    budget:
-      enabled: false                  # Enable token budget tracking
-      tokens_per_day: 100000          # Daily token limit
-      state_file: "state/llm_token_usage.json"  # Token usage state file
+# Telegram Trade Confirmation (human-in-the-loop)
+telegram:
+  confirm_enabled: false              # Enable trade confirmation workflow
+  confirm_timeout_minutes: 30         # How long to wait for user response
+  poll_interval_seconds: 5            # How often to check for responses
+  auto_execute_after_timeout: false   # If true, execute on timeout; if false, skip
+
+# LLM Trade Analyzer settings (Claude human-like reasoning)
+# Note: Part of cognitive architecture
+llm_analyzer:
+  enabled: true                       # Enable LLM-powered narrative generation
+  model: "claude-3-haiku-20240307"    # Claude model to use (haiku for speed, sonnet for quality)
+  max_tokens: 1500                    # Maximum response tokens
+  temperature: 0.7                    # Response temperature (0-1)
+  fallback_enabled: true              # Use deterministic fallback when API unavailable
+  cache_narratives: true              # Cache generated narratives
+  cache_ttl_minutes: 60               # Cache TTL in minutes
+  daily_insights_file: "logs/daily_insights.json"  # Output file for daily insights
+  # Selective triggering (Phase 2 AI Reliability)
+  selective_mode: false               # Only call LLM for borderline confidence picks
+  borderline_range:
+    min: 0.55                         # Minimum confidence to call LLM
+    max: 0.75                         # Maximum confidence to call LLM
+  # Token budget management
+  budget:
+    enabled: false                    # Enable token budget tracking
+    tokens_per_day: 100000            # Daily token limit
+    state_file: "state/llm_token_usage.json"  # Token usage state file
 
 # ML Meta-Layer Settings (AI Reliability & Execution Upgrade)
 ml:

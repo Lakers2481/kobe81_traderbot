@@ -85,6 +85,14 @@ _metrics: Dict[str, Any] = {
         "strategies_discovered": 0,
         "last_evolution": None,
     },
+    # TCA (Transaction Cost Analysis) Metrics
+    "tca": {
+        "total_trades_7d": 0,
+        "avg_slippage_bps": 0.0,
+        "avg_spread_capture_bps": 0.0,
+        "total_cost_usd_7d": 0.0,
+        "last_updated": None,
+    },
 }
 
 
@@ -357,6 +365,55 @@ def update_strategy_foundry_metrics(
     _metrics["strategy_foundry"]["last_evolution"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
 
+# =============================================================================
+# TCA (Transaction Cost Analysis) Metrics Update Functions
+# =============================================================================
+
+def update_tca_metrics(
+    total_trades: Optional[int] = None,
+    avg_slippage_bps: Optional[float] = None,
+    avg_spread_capture_bps: Optional[float] = None,
+    total_cost_usd: Optional[float] = None,
+) -> None:
+    """
+    Update TCA (Transaction Cost Analysis) metrics.
+
+    Args:
+        total_trades: Number of trades in lookback period
+        avg_slippage_bps: Average slippage in basis points
+        avg_spread_capture_bps: Average spread capture in basis points
+        total_cost_usd: Total transaction costs in USD
+    """
+    if total_trades is not None:
+        _metrics["tca"]["total_trades_7d"] = total_trades
+    if avg_slippage_bps is not None:
+        _metrics["tca"]["avg_slippage_bps"] = avg_slippage_bps
+    if avg_spread_capture_bps is not None:
+        _metrics["tca"]["avg_spread_capture_bps"] = avg_spread_capture_bps
+    if total_cost_usd is not None:
+        _metrics["tca"]["total_cost_usd_7d"] = total_cost_usd
+    _metrics["tca"]["last_updated"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
+def sync_tca_metrics(lookback_days: int = 7) -> None:
+    """
+    Sync TCA metrics from the global TransactionCostAnalyzer instance.
+    Call this periodically or after trades.
+    """
+    try:
+        from execution.tca.transaction_cost_analyzer import get_tca_analyzer
+        tca = get_tca_analyzer()
+        summary = tca.get_summary_tca_metrics(lookback_days=lookback_days)
+        update_tca_metrics(
+            total_trades=summary.get("total_trades", 0),
+            avg_slippage_bps=summary.get("avg_slippage_bps", 0.0),
+            avg_spread_capture_bps=summary.get("avg_spread_capture_bps", 0.0),
+            total_cost_usd=summary.get("total_cost_usd", 0.0),
+        )
+    except Exception:
+        pass  # TCA not available or not initialized
+
+
 def get_metrics() -> Dict[str, Any]:
     """Get current metrics snapshot including AI reliability metrics."""
     cfg = get_metrics_config()
@@ -403,6 +460,11 @@ def get_metrics() -> Dict[str, Any]:
     if _metrics["strategy_foundry"]["enabled"] or \
        _metrics["strategy_foundry"]["generations_run"] > 0:
         metrics["strategy_foundry"] = _metrics["strategy_foundry"].copy()
+
+    # TCA: Include transaction cost analysis metrics if any trades recorded
+    if _metrics["tca"]["total_trades_7d"] > 0 or \
+       _metrics["tca"]["last_updated"] is not None:
+        metrics["tca"] = _metrics["tca"].copy()
 
     return metrics
 
@@ -531,6 +593,14 @@ def reset_metrics() -> None:
             "best_fitness": None,
             "strategies_discovered": 0,
             "last_evolution": None,
+        },
+        # TCA (Transaction Cost Analysis) Metrics
+        "tca": {
+            "total_trades_7d": 0,
+            "avg_slippage_bps": 0.0,
+            "avg_spread_capture_bps": 0.0,
+            "total_cost_usd_7d": 0.0,
+            "last_updated": None,
         },
     }
 
