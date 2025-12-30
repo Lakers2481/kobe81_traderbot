@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from config.env_loader import load_env
+from data.providers.alpaca_live import get_market_clock
 from execution.broker_alpaca import get_best_ask, get_best_bid, construct_decision, place_ioc_limit
 from risk.policy_gate import PolicyGate, RiskLimits
 from core.structured_log import jlog
@@ -31,11 +32,23 @@ def main() -> None:
     ap.add_argument('--dotenv', type=str, default='./.env')
     ap.add_argument('--max-order', type=float, default=75.0, help='Max $ per order')
     ap.add_argument('--max-spread-pct', type=float, default=0.02, help='Max bid/ask spread as fraction of mid (default 2%)')
+    ap.add_argument('--allow-closed', action='store_true', help='Allow submission when market is closed')
     args = ap.parse_args()
 
     dotenv = Path(args.dotenv)
     if dotenv.exists():
         load_env(dotenv)
+    else:
+        # Fallback to project .env if available
+        local_env = ROOT / '.env'
+        if local_env.exists():
+            load_env(local_env)
+
+    # Quick market-open guard (skip unless explicitly allowed)
+    clk = get_market_clock()
+    if clk and not clk.get('is_open', False) and not args.allow_closed:
+        print('Market is CLOSED; use --allow-closed to override (order likely rejected).')
+        return
 
     p = Path(args.totd)
     if not p.exists():

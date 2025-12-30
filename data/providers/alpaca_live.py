@@ -20,6 +20,7 @@ import logging
 
 import pandas as pd
 import requests
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +58,20 @@ def _alpaca_headers() -> Dict[str, str]:
     }
 
 
+def _with_retry(fn, retries: int = 3, base_delay: float = 0.3):
+    """Simple retry wrapper with exponential backoff."""
+    last_exc = None
+    for attempt in range(retries):
+        try:
+            return fn()
+        except Exception as e:
+            last_exc = e
+            if attempt < retries - 1:
+                time.sleep(base_delay * (2 ** attempt))
+    if last_exc:
+        raise last_exc
+
+
 def get_latest_quote(symbol: str) -> Optional[Dict[str, Any]]:
     """
     Get the latest quote for a symbol.
@@ -72,7 +87,7 @@ def get_latest_quote(symbol: str) -> Optional[Dict[str, Any]]:
     url = f"{cfg.data_url}/v2/stocks/{symbol}/quotes/latest"
 
     try:
-        resp = requests.get(url, headers=_alpaca_headers(), timeout=10)
+        resp = _with_retry(lambda: requests.get(url, headers=_alpaca_headers(), timeout=10))
         if resp.status_code != 200:
             logger.warning(f"Alpaca quote error {resp.status_code}: {resp.text[:200]}")
             return None
@@ -107,7 +122,7 @@ def get_latest_trade(symbol: str) -> Optional[Dict[str, Any]]:
     url = f"{cfg.data_url}/v2/stocks/{symbol}/trades/latest"
 
     try:
-        resp = requests.get(url, headers=_alpaca_headers(), timeout=10)
+        resp = _with_retry(lambda: requests.get(url, headers=_alpaca_headers(), timeout=10))
         if resp.status_code != 200:
             logger.warning(f"Alpaca trade error {resp.status_code}: {resp.text[:200]}")
             return None
@@ -141,7 +156,7 @@ def get_latest_bar(symbol: str) -> Optional[Dict[str, Any]]:
     params = {"feed": "iex"}  # IEX feed for free tier
 
     try:
-        resp = requests.get(url, headers=_alpaca_headers(), params=params, timeout=10)
+        resp = _with_retry(lambda: requests.get(url, headers=_alpaca_headers(), params=params, timeout=10))
         if resp.status_code != 200:
             logger.warning(f"Alpaca bar error {resp.status_code}: {resp.text[:200]}")
             return None
@@ -216,7 +231,7 @@ def fetch_bars_alpaca(
             if page_token:
                 params["page_token"] = page_token
 
-            resp = requests.get(url, headers=_alpaca_headers(), params=params, timeout=30)
+            resp = _with_retry(lambda: requests.get(url, headers=_alpaca_headers(), params=params, timeout=30))
             if resp.status_code != 200:
                 logger.warning(f"Alpaca bars error {resp.status_code}: {resp.text[:200]}")
                 break
@@ -274,7 +289,7 @@ def fetch_multi_quotes(symbols: List[str]) -> Dict[str, Dict[str, Any]]:
     params = {"symbols": ",".join(symbols)}
 
     try:
-        resp = requests.get(url, headers=_alpaca_headers(), params=params, timeout=30)
+        resp = _with_retry(lambda: requests.get(url, headers=_alpaca_headers(), params=params, timeout=30))
         if resp.status_code != 200:
             logger.warning(f"Alpaca multi-quote error {resp.status_code}: {resp.text[:200]}")
             return {}
@@ -316,7 +331,7 @@ def fetch_multi_bars(symbols: List[str], timeframe: str = "1Day") -> Dict[str, D
     }
 
     try:
-        resp = requests.get(url, headers=_alpaca_headers(), params=params, timeout=30)
+        resp = _with_retry(lambda: requests.get(url, headers=_alpaca_headers(), params=params, timeout=30))
         if resp.status_code != 200:
             logger.warning(f"Alpaca multi-bar error {resp.status_code}: {resp.text[:200]}")
             return {}
@@ -352,7 +367,7 @@ def is_market_open() -> bool:
     url = f"{trading_url.rstrip('/')}/v2/clock"
 
     try:
-        resp = requests.get(url, headers=_alpaca_headers(), timeout=10)
+        resp = _with_retry(lambda: requests.get(url, headers=_alpaca_headers(), timeout=10))
         if resp.status_code != 200:
             return False
 
@@ -372,7 +387,7 @@ def get_market_clock() -> Optional[Dict[str, Any]]:
     url = f"{trading_url.rstrip('/')}/v2/clock"
 
     try:
-        resp = requests.get(url, headers=_alpaca_headers(), timeout=10)
+        resp = _with_retry(lambda: requests.get(url, headers=_alpaca_headers(), timeout=10))
         if resp.status_code != 200:
             return None
 

@@ -353,9 +353,19 @@ class ConvictionScorer:
         """
         score = 0
 
-        entry = signal.get('entry_price', 0)
-        stop = signal.get('stop_loss', 0)
-        target = signal.get('take_profit', 0)
+        # Coerce potential None values to 0.0 to avoid type errors in comparisons
+        try:
+            entry = float(signal.get('entry_price') or 0)
+        except Exception:
+            entry = 0.0
+        try:
+            stop = float(signal.get('stop_loss') or 0)
+        except Exception:
+            stop = 0.0
+        try:
+            target = float(signal.get('take_profit') or 0)
+        except Exception:
+            target = 0.0
 
         if entry > 0 and stop > 0 and target > 0:
             risk = abs(entry - stop)
@@ -375,7 +385,7 @@ class ConvictionScorer:
                 score += 2
 
             # Stop distance (prefer tighter stops)
-            stop_pct = (risk / entry) * 100
+            stop_pct = (risk / entry) * 100 if entry > 0 else 0.0
             if 1.0 <= stop_pct <= 3.0:
                 score += 5  # Optimal stop distance
             elif 0.5 <= stop_pct < 1.0:
