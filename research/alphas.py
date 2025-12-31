@@ -9,9 +9,17 @@ Implements simple, interpretable alpha signals for screening:
 - Gap close tendency
 """
 
-from typing import Optional
+from typing import Optional, Dict, Callable
 import numpy as np
 import pandas as pd
+
+
+# Registry of available alphas for screening
+ALPHA_REGISTRY: Dict[str, Callable] = {
+    'alpha_mom20': lambda df: compute_alphas(df)[['timestamp', 'symbol', 'alpha_mom20']],
+    'alpha_rev1': lambda df: compute_alphas(df)[['timestamp', 'symbol', 'alpha_rev1']],
+    'alpha_gap_close': lambda df: compute_alphas(df)[['timestamp', 'symbol', 'alpha_gap_close']],
+}
 
 
 def compute_alphas(df: pd.DataFrame) -> pd.DataFrame:
