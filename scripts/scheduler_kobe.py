@@ -36,8 +36,10 @@ POST-MARKET (16:00 - 22:00)
 - 17:15 COGNITIVE_LEARN    - Daily hypothesis testing & edge discovery
 - 17:30 LEARN_ANALYSIS     - Daily trade learning analysis
 - 18:00 EOD_FINALIZE       - Finalize EOD data after provider delay
-- 21:00 RESEARCH_DISCOVER  - Pattern discovery (Fridays only)
-- 09:30 ALPHA_SCREEN_WEEKLY - Alpha screening (Saturdays 8:30 AM CT)
+SATURDAY MORNING (8:30 AM CT = 9:30 AM ET)
+- 08:30 RESEARCH_DISCOVER   - Pattern discovery (Saturdays)
+- 09:00 ALPHA_SCREEN_WEEKLY - Alpha screening (Saturdays)
+- 09:30 WEEKEND_WATCHLIST   - Build watchlist for next week (Saturdays, FINAL)
 
 The scheduler stores last-run markers per tag/date to prevent duplicates.
 """
@@ -173,8 +175,11 @@ SCHEDULE: List[ScheduleEntry] = [
     ScheduleEntry('COGNITIVE_LEARN', dtime(17, 15)), # Daily cognitive consolidation (hypothesis testing)
     ScheduleEntry('LEARN_ANALYSIS', dtime(17, 30)),  # Daily trade learning analysis
     ScheduleEntry('EOD_FINALIZE', dtime(18, 0)),     # Finalize EOD data after provider delay
-    ScheduleEntry('RESEARCH_DISCOVER', dtime(21, 0)), # Pattern discovery (Fridays only)
-    ScheduleEntry('ALPHA_SCREEN_WEEKLY', dtime(9, 30)), # Alpha screening (Saturdays 8:30 AM CT = 9:30 AM ET)
+
+    # === SATURDAY MORNING (Weekend Work) ===
+    ScheduleEntry('RESEARCH_DISCOVER', dtime(8, 30)),   # Pattern discovery (Saturdays 7:30 AM CT)
+    ScheduleEntry('ALPHA_SCREEN_WEEKLY', dtime(9, 0)),  # Alpha screening (Saturdays 8:00 AM CT)
+    ScheduleEntry('WEEKEND_WATCHLIST', dtime(9, 30)),   # Build watchlist (Saturdays 8:30 AM CT) - FINAL
 
     # === DIVERGENCE MONITOR (runs alongside position manager) ===
     ScheduleEntry('DIVERGENCE_1', dtime(10, 0)),
@@ -548,9 +553,10 @@ def main() -> None:
                                 except Exception:
                                     send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
 
+                        # === SATURDAY MORNING TASKS (Weekend Work) ===
                         elif entry.tag == 'RESEARCH_DISCOVER':
-                            # Pattern discovery - only run on Fridays (weekend work)
-                            if datetime.now(ET).weekday() == 4:  # Friday
+                            # Pattern discovery - only run on Saturdays (8:30 AM ET = 7:30 AM CT)
+                            if datetime.now(ET).weekday() == 5:  # Saturday
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/research_discover.py'),
                                              '--cap', str(args.cap)])
                                 if send_fn:
@@ -562,7 +568,7 @@ def main() -> None:
                                         send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
 
                         elif entry.tag == 'ALPHA_SCREEN_WEEKLY':
-                            # Weekly alpha screening - only run on Saturdays
+                            # Alpha screening - only run on Saturdays (9:00 AM ET = 8:00 AM CT)
                             if datetime.now(ET).weekday() == 5:  # Saturday
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/run_alpha_screener.py'),
                                              '--universe', args.universe, '--top', '20'])
@@ -573,6 +579,21 @@ def main() -> None:
                                         send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if rc == 0 else 'failed'} (alpha screening)")
                                     except Exception:
                                         send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
+
+                        elif entry.tag == 'WEEKEND_WATCHLIST':
+                            # Build watchlist for next week - only run on Saturdays (9:30 AM ET = 8:30 AM CT)
+                            # This is the FINAL weekend task
+                            if datetime.now(ET).weekday() == 5:  # Saturday
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/scan.py'),
+                                             '--cap', str(args.cap), '--deterministic', '--top3',
+                                             '--dotenv', args.dotenv])
+                                if send_fn:
+                                    try:
+                                        from core.clock.tz_utils import fmt_ct
+                                        now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                        send_fn(f"<b>WEEKEND COMPLETE</b> [{stamp}] Watchlist ready for next week!")
+                                    except Exception:
+                                        send_fn(f"<b>WEEKEND COMPLETE</b> Watchlist ready!")
 
                         elif entry.tag == 'POST_GAME':
                             # Generate comprehensive POST_GAME briefing with full day analysis
