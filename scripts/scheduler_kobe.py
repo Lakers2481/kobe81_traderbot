@@ -36,8 +36,8 @@ POST-MARKET (16:00 - 22:00)
 - 17:15 COGNITIVE_LEARN    - Daily hypothesis testing & edge discovery
 - 17:30 LEARN_ANALYSIS     - Daily trade learning analysis
 - 18:00 EOD_FINALIZE       - Finalize EOD data after provider delay
-- 21:00 RESEARCH_DISCOVER  - Daily research & pattern discovery
-- 22:00 ALPHA_SCREEN_WEEKLY - Weekly alpha screening (Saturdays)
+- 21:00 RESEARCH_DISCOVER  - Pattern discovery (Fridays only)
+- 09:30 ALPHA_SCREEN_WEEKLY - Alpha screening (Saturdays 8:30 AM CT)
 
 The scheduler stores last-run markers per tag/date to prevent duplicates.
 """
@@ -173,8 +173,8 @@ SCHEDULE: List[ScheduleEntry] = [
     ScheduleEntry('COGNITIVE_LEARN', dtime(17, 15)), # Daily cognitive consolidation (hypothesis testing)
     ScheduleEntry('LEARN_ANALYSIS', dtime(17, 30)),  # Daily trade learning analysis
     ScheduleEntry('EOD_FINALIZE', dtime(18, 0)),     # Finalize EOD data after provider delay
-    ScheduleEntry('RESEARCH_DISCOVER', dtime(21, 0)), # Daily research & pattern discovery
-    ScheduleEntry('ALPHA_SCREEN_WEEKLY', dtime(22, 0)), # Weekly alpha screening (Saturdays)
+    ScheduleEntry('RESEARCH_DISCOVER', dtime(21, 0)), # Pattern discovery (Fridays only)
+    ScheduleEntry('ALPHA_SCREEN_WEEKLY', dtime(9, 30)), # Alpha screening (Saturdays 8:30 AM CT = 9:30 AM ET)
 
     # === DIVERGENCE MONITOR (runs alongside position manager) ===
     ScheduleEntry('DIVERGENCE_1', dtime(10, 0)),
@@ -549,16 +549,17 @@ def main() -> None:
                                     send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
 
                         elif entry.tag == 'RESEARCH_DISCOVER':
-                            # Daily research & pattern discovery (env already loaded by scheduler)
-                            rc = run_cmd([sys.executable, str(ROOT / 'scripts/research_discover.py'),
-                                         '--cap', str(args.cap)])
-                            if send_fn:
-                                try:
-                                    from core.clock.tz_utils import fmt_ct
-                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
-                                    send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if rc == 0 else 'failed'} (pattern discovery)")
-                                except Exception:
-                                    send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
+                            # Pattern discovery - only run on Fridays (weekend work)
+                            if datetime.now(ET).weekday() == 4:  # Friday
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/research_discover.py'),
+                                             '--cap', str(args.cap)])
+                                if send_fn:
+                                    try:
+                                        from core.clock.tz_utils import fmt_ct
+                                        now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                        send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if rc == 0 else 'failed'} (pattern discovery)")
+                                    except Exception:
+                                        send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
 
                         elif entry.tag == 'ALPHA_SCREEN_WEEKLY':
                             # Weekly alpha screening - only run on Saturdays
