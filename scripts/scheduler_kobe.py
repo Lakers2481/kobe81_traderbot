@@ -50,10 +50,15 @@ from datetime import datetime, time as dtime, timedelta
 from pathlib import Path
 from typing import Dict, List, Tuple
 from zoneinfo import ZoneInfo
+
+# Ensure project root is in Python path for imports BEFORE core imports
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from core.clock.tz_utils import fmt_ct, now_et
 from core.journal import append_journal
 
-ROOT = Path(__file__).resolve().parents[1]
 STATE_FILE = ROOT / 'state' / 'scheduler_master.json'
 ET = ZoneInfo('America/New_York')
 
@@ -180,7 +185,8 @@ def do_first_scan(universe: str, dotenv: str, cap: int, min_conf: float, scan_da
     run_cmd([sys.executable, str(ROOT / 'scripts/run_daily_pipeline.py'), '--universe', universe, '--cap', str(cap), '--date', scan_date, '--dotenv', dotenv, '--min-conf', str(min_conf), '--ensure-top3'])
 
 
-def do_refresh_top3(universe: str, dotenv: str, cap: int, scan_date: str) -> None:
+def do_refresh_top3(universe: str, dotenv: str, cap: int, scan_date: str) -> int:
+    """Refresh top-3 picks using the scanner with deterministic mode."""
     args = [
         sys.executable, str(ROOT / 'scripts/scan.py'),
         '--dotenv', dotenv,
@@ -188,9 +194,10 @@ def do_refresh_top3(universe: str, dotenv: str, cap: int, scan_date: str) -> Non
         '--cap', str(cap),
         '--top3', '--ml',
         '--date', scan_date,
-        '--ensure-top3'
+        '--ensure-top3',
+        '--deterministic'  # Required for reproducible results per STATUS.md
     ]
-    run_cmd(args)
+    return run_cmd(args)
 
 
 def do_weekly_learning(wfdir: str, dotenv: str, min_delta: float, min_test: int) -> None:
@@ -215,7 +222,7 @@ def main() -> None:
     ap.add_argument('--min-test', type=int, default=100)
     ap.add_argument('--tick-seconds', type=int, default=20)
     ap.add_argument('--telegram', action='store_true', help='Send Telegram notifications for scheduler events')
-    ap.add_argument('--telegram-dotenv', type=str, default='C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env', help='Optional .env file for Telegram keys')
+    ap.add_argument('--telegram-dotenv', type=str, default=str(ROOT / '.env'), help='Optional .env file for Telegram keys (uses project .env by default)')
     args = ap.parse_args()
 
     # Bootstrap Telegram env if requested
@@ -276,10 +283,23 @@ def main() -> None:
                 if hhmm.hour == entry.time.hour and hhmm.minute == entry.time.minute:
                     if not already_ran(state, entry.tag, ymd):
                         print(f"[{fmt_ct(now_et())} | {hhmm.strftime('%I:%M %p').lstrip('0')} ET] Running {entry.tag}...")
-                        # Determine scan_date default (yesterday to avoid partial bar unless pre/post market)
-                        # For FIRST_SCAN and later intraday slots, use previous business day by default
-                        scan_date = (datetime.now(ET) - timedelta(days=1)).date().isoformat()
-                        if entry.tag in ('PRE_GAME','MARKET_NEWS'):
+                        # Determine scan_date based on market phase:
+                        # - Pre-market (before 9:30): use today for planning
+                        # - Market hours (9:30-16:00): use today for live data
+                        # - Post-market (after 16:00): use today (finalized data)
+                        now_time = datetime.now(ET).time()
+                        market_open = dtime(9, 30)
+                        market_close = dtime(16, 0)
+                        pre_market_jobs = ('PRE_GAME', 'MARKET_NEWS', 'PREMARKET_SCAN', 'PREMARKET_CHECK', 'MORNING_REPORT')
+
+                        if market_open <= now_time <= market_close:
+                            # During market hours: always use today's data
+                            scan_date = datetime.now(ET).date().isoformat()
+                        elif entry.tag in pre_market_jobs:
+                            # Pre-market jobs: use today for planning
+                            scan_date = datetime.now(ET).date().isoformat()
+                        else:
+                            # Post-market: use today (data should be finalized)
                             scan_date = datetime.now(ET).date().isoformat()
 
                         if entry.tag == 'MORNING_REPORT':
@@ -460,7 +480,14 @@ def main() -> None:
                                 except Exception:
                                     send_fn(f"<b>EOD_FINALIZE</b> {'completed' if rc == 0 else 'failed'}")
 
-                        # Placeholders: OVERNIGHT_ANALYSIS
+                        # === OVERNIGHT_ANALYSIS (v2.0) - Placeholder ===
+                        # Reserved for future overnight analysis features:
+                        # - Overnight gap analysis
+                        # - Pre-market movers detection
+                        # - Earnings surprise analysis
+                        elif entry.tag == 'OVERNIGHT_ANALYSIS':
+                            # Intentionally no action - slot reserved for future implementation
+                            pass
 
                         mark_ran(state, entry.tag, ymd)
                         save_state(state)
