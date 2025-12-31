@@ -944,7 +944,11 @@ Examples:
                         sent.rename(columns={'date': 'timestamp'})[['timestamp','symbol','sent_mean']],
                         on=['timestamp','symbol'], how='left'
                     )
-                    sigs['sent_mean'] = sigs['sent_mean'].astype(float).fillna(0.0)
+                    # FIX: Use median of available sentiment for missing values (not 0.0)
+                    # This prevents penalizing stocks with missing sentiment data
+                    available_sent = sigs['sent_mean'].dropna()
+                    fill_value = float(available_sent.median()) if len(available_sent) > 0 else 0.5
+                    sigs['sent_mean'] = sigs['sent_mean'].astype(float).fillna(fill_value)
                     sent_conf = sigs['sent_mean'].apply(normalize_sentiment_to_conf)
                     # Blend: 0.8 ML probability + 0.2 sentiment
                     sigs['conf_score'] = 0.8 * sigs['conf_score'].astype(float) + 0.2 * sent_conf.astype(float)

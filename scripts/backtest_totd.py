@@ -331,8 +331,10 @@ def compute_confidence(
             sent = load_daily_cache(scan_date)
             if not sent.empty and 'symbol' in sent.columns and 'sent_mean' in sent.columns:
                 sent_map = dict(zip(sent['symbol'], sent['sent_mean']))
+                # FIX: Use median of available sentiment for missing (not 0.0)
+                fill_value = float(pd.Series(list(sent_map.values())).median()) if sent_map else 0.5
                 sent_scores = [
-                    normalize_sentiment_to_conf(sent_map.get(row['symbol'], 0.0))
+                    normalize_sentiment_to_conf(sent_map.get(row['symbol'], fill_value))
                     for _, row in df.iterrows()
                 ]
         except Exception:
