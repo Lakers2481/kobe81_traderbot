@@ -14,12 +14,14 @@
 #   -Start         Start the task immediately after registration
 #   -Status        Show task status and exit
 #   -CurrentUser   Register for current user only (no admin required)
+#   -WithWatchdog  Also register the 5-minute watchdog task
 
 param(
     [switch]$Unregister,
     [switch]$Start,
     [switch]$Status,
-    [switch]$CurrentUser
+    [switch]$CurrentUser,
+    [switch]$WithWatchdog
 )
 
 # Check if running as admin (unless -CurrentUser is specified)
@@ -130,4 +132,37 @@ if ($Start) {
     Start-Sleep -Seconds 2
     $task = Get-ScheduledTask -TaskName $TaskName
     Write-Host "Task state: $($task.State)"
+}
+
+# Register watchdog task if requested
+if ($WithWatchdog) {
+    $WatchdogName = "Kobe_Watchdog"
+    $WatchdogXml = Join-Path $PSScriptRoot "kobe_watchdog_task.xml"
+
+    if (-not (Test-Path $WatchdogXml)) {
+        Write-Warning "Watchdog XML not found: $WatchdogXml"
+    } else {
+        # Remove existing watchdog task if present
+        $existingWatchdog = Get-ScheduledTask -TaskName $WatchdogName -ErrorAction SilentlyContinue
+        if ($existingWatchdog) {
+            Unregister-ScheduledTask -TaskName $WatchdogName -Confirm:$false
+        }
+
+        try {
+            Register-ScheduledTask -Xml (Get-Content $WatchdogXml -Raw) -TaskName $WatchdogName | Out-Null
+            Write-Host ""
+            Write-Host "====================================="
+            Write-Host " Kobe Watchdog Registered"
+            Write-Host "====================================="
+            Write-Host ""
+            Write-Host "Task Name: $WatchdogName"
+            Write-Host "Trigger:   Every 5 minutes"
+            Write-Host "Action:    python scripts\watchdog.py --restart-if-dead"
+            Write-Host ""
+            Write-Host "The watchdog will automatically restart the scheduler if it crashes."
+            Write-Host ""
+        } catch {
+            Write-Warning "Failed to register watchdog task: $_"
+        }
+    }
 }

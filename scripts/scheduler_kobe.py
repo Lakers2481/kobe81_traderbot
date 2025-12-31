@@ -147,6 +147,38 @@ SCHEDULE: List[ScheduleEntry] = [
     ScheduleEntry('DIVERGENCE_9', dtime(14, 45)),
     ScheduleEntry('DIVERGENCE_10', dtime(15, 15)),
     ScheduleEntry('DIVERGENCE_11', dtime(15, 45)),
+
+    # === INTRADAY SCANS (every 15 min, 8:00 AM - 3:45 PM ET) ===
+    # Lightweight scans to refresh Top-3 picks for manual review - NO auto-execution
+    # These supplement the main scans (FIRST_SCAN, AFTERNOON_SCAN, SWING_SCANNER)
+    ScheduleEntry('INTRADAY_SCAN_0800', dtime(8, 0)),
+    ScheduleEntry('INTRADAY_SCAN_0815', dtime(8, 15)),
+    ScheduleEntry('INTRADAY_SCAN_0830', dtime(8, 30)),
+    ScheduleEntry('INTRADAY_SCAN_0845', dtime(8, 45)),
+    ScheduleEntry('INTRADAY_SCAN_0900', dtime(9, 0)),
+    ScheduleEntry('INTRADAY_SCAN_0930', dtime(9, 30)),
+    ScheduleEntry('INTRADAY_SCAN_1000', dtime(10, 0)),
+    ScheduleEntry('INTRADAY_SCAN_1015', dtime(10, 15)),
+    ScheduleEntry('INTRADAY_SCAN_1030', dtime(10, 30)),
+    ScheduleEntry('INTRADAY_SCAN_1045', dtime(10, 45)),
+    ScheduleEntry('INTRADAY_SCAN_1100', dtime(11, 0)),
+    ScheduleEntry('INTRADAY_SCAN_1115', dtime(11, 15)),
+    ScheduleEntry('INTRADAY_SCAN_1130', dtime(11, 30)),
+    ScheduleEntry('INTRADAY_SCAN_1145', dtime(11, 45)),
+    ScheduleEntry('INTRADAY_SCAN_1200', dtime(12, 0)),
+    ScheduleEntry('INTRADAY_SCAN_1215', dtime(12, 15)),
+    ScheduleEntry('INTRADAY_SCAN_1230', dtime(12, 30)),
+    ScheduleEntry('INTRADAY_SCAN_1245', dtime(12, 45)),
+    ScheduleEntry('INTRADAY_SCAN_1300', dtime(13, 0)),
+    ScheduleEntry('INTRADAY_SCAN_1315', dtime(13, 15)),
+    ScheduleEntry('INTRADAY_SCAN_1330', dtime(13, 30)),
+    ScheduleEntry('INTRADAY_SCAN_1345', dtime(13, 45)),
+    ScheduleEntry('INTRADAY_SCAN_1400', dtime(14, 0)),
+    ScheduleEntry('INTRADAY_SCAN_1415', dtime(14, 15)),
+    ScheduleEntry('INTRADAY_SCAN_1445', dtime(14, 45)),
+    ScheduleEntry('INTRADAY_SCAN_1500', dtime(15, 0)),
+    ScheduleEntry('INTRADAY_SCAN_1515', dtime(15, 15)),
+    ScheduleEntry('INTRADAY_SCAN_1545', dtime(15, 45)),
 ]
 
 
@@ -479,6 +511,20 @@ def main() -> None:
                                     send_fn(f"<b>EOD_FINALIZE</b> [{stamp}] {'completed' if rc == 0 else 'failed'}")
                                 except Exception:
                                     send_fn(f"<b>EOD_FINALIZE</b> {'completed' if rc == 0 else 'failed'}")
+
+                        # === INTRADAY SCANS (v2.1) - Every 15 min refresh ===
+                        # Lightweight scans to find new setups throughout the day
+                        # Outputs to logs/daily_picks.csv for manual review - NO auto-execution
+                        elif entry.tag.startswith('INTRADAY_SCAN_'):
+                            rc = do_refresh_top3(args.universe, args.dotenv, args.cap, scan_date)
+                            # Only send Telegram notification on errors (to avoid spam)
+                            if send_fn and rc != 0:
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    send_fn(f"<b>INTRADAY_SCAN</b> [{stamp}] failed (rc={rc})")
+                                except Exception:
+                                    pass
 
                         # === OVERNIGHT_ANALYSIS (v2.0) - Placeholder ===
                         # Reserved for future overnight analysis features:
