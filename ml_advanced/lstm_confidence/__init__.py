@@ -20,6 +20,12 @@ from .config import LSTMConfig, DEFAULT_CONFIG
 # Check if TensorFlow is safe to import by looking for a marker file or env var
 import os
 
+# REPRODUCIBILITY FIX: Disable oneDNN for deterministic floating-point results
+# Must be set BEFORE TensorFlow is imported anywhere in the process
+# Without this, TensorFlow uses non-deterministic SIMD optimizations
+if 'TF_ENABLE_ONEDNN_OPTS' not in os.environ:
+    os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
 _TF_DISABLED = os.environ.get('KOBE_DISABLE_TENSORFLOW', '0') == '1'
 
 # Also check if there's a local disable marker

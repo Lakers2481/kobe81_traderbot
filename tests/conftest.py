@@ -3,6 +3,11 @@ Pytest configuration and shared fixtures for Kobe trading tests.
 """
 
 import os
+
+# REPRODUCIBILITY FIX: Disable oneDNN for deterministic test results
+# Must be set BEFORE TensorFlow is imported anywhere
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
 import sys
 from pathlib import Path
 

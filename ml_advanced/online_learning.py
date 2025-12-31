@@ -12,6 +12,13 @@ Key Features:
 MERGED FROM GAME_PLAN_2K28 - Production Ready
 """
 
+import os
+
+# REPRODUCIBILITY FIX: Disable oneDNN for deterministic floating-point results
+# Must be set BEFORE TensorFlow is imported
+if 'TF_ENABLE_ONEDNN_OPTS' not in os.environ:
+    os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
 from typing import Dict, List, Optional
 from dataclasses import dataclass
 from collections import deque
