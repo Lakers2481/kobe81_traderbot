@@ -68,7 +68,8 @@ def fetch_daily_bars_yfinance(symbol: str, start: str, end: str, cache_dir: Opti
             s_req = pd.to_datetime(start)
             e_req = pd.to_datetime(end)
             pattern = re.compile(rf"^{re.escape(symbol)}_(\d{{4}}-\d{{2}}-\d{{2}})_(\d{{4}}-\d{{2}}-\d{{2}})_yf\.csv$")
-            for f in cache_dir.glob(f"{symbol}_*_yf.csv"):
+            # DETERMINISM FIX: Sort glob results for consistent cache file selection
+            for f in sorted(cache_dir.glob(f"{symbol}_*_yf.csv")):
                 m = pattern.match(f.name)
                 if not m:
                     continue
@@ -134,7 +135,8 @@ def fetch_daily_bars_stooq(symbol: str, start: str, end: str, cache_dir: Optiona
             s_req = pd.to_datetime(start)
             e_req = pd.to_datetime(end)
             pattern = re.compile(rf"^{re.escape(symbol)}_(\d{{4}}-\d{{2}}-\d{{2}})_(\d{{4}}-\d{{2}}-\d{{2}})_stooq\.csv$")
-            for f in cache_dir.glob(f"{symbol}_*_stooq.csv"):
+            # DETERMINISM FIX: Sort glob results for consistent cache file selection
+            for f in sorted(cache_dir.glob(f"{symbol}_*_stooq.csv")):
                 m = pattern.match(f.name)
                 if not m:
                     continue

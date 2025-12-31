@@ -315,7 +315,8 @@ class DualStrategyScanner:
         result = pd.DataFrame(rows, columns=cols) if rows else pd.DataFrame(columns=cols)
 
         if not result.empty:
-            result = result.sort_values(['timestamp', 'score'], ascending=[True, False])
+            # DETERMINISM FIX: Use stable sort with symbol as tie-breaker
+            result = result.sort_values(['timestamp', 'score', 'symbol'], ascending=[True, False, True], kind='mergesort')
 
         return result
 
@@ -386,7 +387,8 @@ class DualStrategyScanner:
         result = pd.DataFrame(out, columns=cols) if out else pd.DataFrame(columns=cols)
 
         if not result.empty:
-            result = result.sort_values('score', ascending=False)
+            # DETERMINISM FIX: Use stable sort with tie-breakers (timestamp, symbol)
+            result = result.sort_values(['score', 'timestamp', 'symbol'], ascending=[False, True, True], kind='mergesort')
 
         return result
 

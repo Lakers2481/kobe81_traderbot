@@ -235,8 +235,12 @@ def apply_portfolio_filters(
     # Build returns data for correlation calculation
     returns_data = {}
     if price_data is not None and not price_data.empty:
-        for symbol in set(list([p.get('symbol', '') for p in current_positions]) +
-                         list(signals['symbol'].unique() if 'symbol' in signals.columns else [])):
+        # DETERMINISM FIX: Use sorted() instead of set() for deterministic iteration order
+        symbols_for_correlation = sorted(set(
+            list([p.get('symbol', '') for p in current_positions]) +
+            list(signals['symbol'].unique() if 'symbol' in signals.columns else [])
+        ))
+        for symbol in symbols_for_correlation:
             try:
                 sym_data = price_data[price_data['symbol'] == symbol].copy()
                 if len(sym_data) >= 60:
@@ -571,6 +575,11 @@ Examples:
         help="Verbose output",
     )
     ap.add_argument(
+        "--deterministic",
+        action="store_true",
+        help="Enforce 100% deterministic output order (stable sorts, seeded RNG)",
+    )
+    ap.add_argument(
         "--narrative",
         action="store_true",
         help="Generate Claude LLM narrative analysis for picks (human-like reasoning)",
@@ -640,6 +649,14 @@ Examples:
     else:
         if args.verbose:
             print(f"Warning: dotenv file not found: {dotenv_path}", file=sys.stderr)
+
+    # === DETERMINISM MODE: Enforce reproducible results ===
+    if args.deterministic:
+        import numpy as np
+        import hashlib
+        np.random.seed(42)  # Global numpy seed for reproducibility
+        if args.verbose:
+            print("[DETERMINISM] Mode ENABLED - using stable sorts and seeded RNG")
 
     # CRITICAL: Validate strategy imports at startup
     # This ensures we NEVER use deprecated standalone strategies
@@ -1068,8 +1085,9 @@ Examples:
                 if args.top3_mix == 'ict2_ibs1':
                     ict_df = df[df['strategy'].astype(str).str.lower().isin(['turtle_soup'])].copy()
                     ibs_df = df[df['strategy'].astype(str).str.lower().isin(['ibs_rsi','ibs'])].copy()
-                    ict_df = ict_df.sort_values('conf_score', ascending=False)
-                    ibs_df = ibs_df.sort_values('conf_score', ascending=False)
+                    # DETERMINISM FIX: Use stable sort with tie-breakers (timestamp, symbol)
+                    ict_df = ict_df.sort_values(['conf_score', 'timestamp', 'symbol'], ascending=[False, True, True], kind='mergesort')
+                    ibs_df = ibs_df.sort_values(['conf_score', 'timestamp', 'symbol'], ascending=[False, True, True], kind='mergesort')
                     parts = []
                     if not ict_df.empty:
                         parts.append(ict_df.head(2))
@@ -1083,13 +1101,15 @@ Examples:
                             keycols = ['timestamp','symbol','side']
                             remaining = remaining.merge(out_sel[keycols], on=keycols, how='left', indicator=True)
                             remaining = remaining[remaining['_merge'] == 'left_only'].drop(columns=['_merge'])
-                        remaining = remaining.sort_values('conf_score', ascending=False)
+                        # DETERMINISM FIX: Use stable sort with tie-breakers
+                        remaining = remaining.sort_values(['conf_score', 'timestamp', 'symbol'], ascending=[False, True, True], kind='mergesort')
                         need = 3 - len(out_sel)
                         if need > 0 and not remaining.empty:
                             out_sel = pd.concat([out_sel, remaining.head(need)], ignore_index=True)
                     picks = [out_sel]
                 else:
-                    picks = [df.sort_values('conf_score', ascending=False).head(3)]
+                    # DETERMINISM FIX: Use stable sort with tie-breakers
+                    picks = [df.sort_values(['conf_score', 'timestamp', 'symbol'], ascending=[False, True, True], kind='mergesort').head(3)]
             out = pd.concat(picks, ignore_index=True) if picks else pd.DataFrame()
             if out.empty:
                 print_signals_table(signals)
@@ -1117,7 +1137,8 @@ Examples:
                             else:  # IBS_RSI
                                 return min(score / 25.0, 1.0)
                         left['conf_score'] = left.apply(base_conf, axis=1)
-                    left = left.sort_values('conf_score', ascending=False)
+                    # DETERMINISM FIX: Use stable sort with tie-breakers
+                    left = left.sort_values(['conf_score', 'timestamp', 'symbol'], ascending=[False, True, True], kind='mergesort')
                     need = 3 - len(out)
                     if need > 0 and not left.empty:
                         out = pd.concat([out, left.head(need)], ignore_index=True)
@@ -1166,7 +1187,8 @@ Examples:
                 out.to_csv(picks_path, index=False)
 
                 # Choose Trade of the Day (highest confidence)
-                totd = out.sort_values('conf_score', ascending=False).head(1)
+                # DETERMINISM FIX: Use stable sort with tie-breakers
+                totd = out.sort_values(['conf_score', 'timestamp', 'symbol'], ascending=[False, True, True], kind='mergesort').head(1)
                 approve_totd = True
                 if args.ml and not totd.empty:
                     try:

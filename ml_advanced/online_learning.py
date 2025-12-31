@@ -77,13 +77,16 @@ class ExperienceReplayBuffer:
         self,
         max_size: int = 10000,
         min_size_for_learning: int = 100,
-        priority_alpha: float = 0.6
+        priority_alpha: float = 0.6,
+        random_seed: int = 42  # DETERMINISM FIX: Add seed for reproducibility
     ):
         self.max_size = max_size
         self.min_size = min_size_for_learning
         self.priority_alpha = priority_alpha
         self.buffer: deque = deque(maxlen=max_size)
         self.priorities: deque = deque(maxlen=max_size)
+        # DETERMINISM FIX: Use seeded random generator for reproducible sampling
+        self._rng = np.random.default_rng(seed=random_seed)
 
     def add(self, outcome: TradeOutcome, priority: Optional[float] = None):
         if priority is None:
@@ -100,7 +103,8 @@ class ExperienceReplayBuffer:
         priorities = priorities ** self.priority_alpha
         probs = priorities / priorities.sum()
 
-        indices = np.random.choice(len(self.buffer), size=batch_size, replace=False, p=probs)
+        # DETERMINISM FIX: Use seeded random generator instead of np.random.choice
+        indices = self._rng.choice(len(self.buffer), size=batch_size, replace=False, p=probs)
         return [self.buffer[i] for i in indices]
 
     def get_class_balance(self) -> Dict[int, float]:
