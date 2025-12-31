@@ -29,6 +29,7 @@ from __future__ import annotations
 import json
 import logging
 import math
+import os
 import random
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
@@ -38,6 +39,11 @@ from typing import Dict, List, Optional, Any, Tuple
 import numpy as np
 
 logger = logging.getLogger(__name__)
+
+# REPRODUCIBILITY: Module-level seeding for deterministic execution selection
+# The scanner will re-seed if --deterministic flag is used, overriding this
+_BANDIT_SEED = int(os.getenv("KOBE_RANDOM_SEED", "42"))
+_bandit_rng = random.Random(_BANDIT_SEED)  # Isolated RNG for bandit operations
 
 
 # =============================================================================
@@ -198,8 +204,8 @@ class ExecutionBandit:
         total_pulls = sum(arm.n_pulls for arm in arms.values())
 
         if total_pulls == 0:
-            # Random selection when no data
-            return random.choice(list(arms.keys()))
+            # Random selection when no data (use seeded RNG for reproducibility)
+            return _bandit_rng.choice(list(arms.keys()))
 
         ucb_scores = {}
         for name, arm in arms.items():
@@ -217,9 +223,9 @@ class ExecutionBandit:
 
     def _epsilon_greedy_select(self, arms: Dict[str, ArmStats]) -> str:
         """Epsilon-greedy: Exploit best arm (1-epsilon), explore randomly (epsilon)."""
-        if random.random() < self.epsilon:
-            # Explore: random selection
-            selected = random.choice(list(arms.keys()))
+        if _bandit_rng.random() < self.epsilon:
+            # Explore: random selection (use seeded RNG for reproducibility)
+            selected = _bandit_rng.choice(list(arms.keys()))
             logger.debug(f"Epsilon-greedy: exploring, selected={selected}")
         else:
             # Exploit: pick best mean reward

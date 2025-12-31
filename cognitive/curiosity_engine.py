@@ -361,7 +361,13 @@ class CuriosityEngine:
         """Generate hypotheses by combining known factors in novel ways."""
         hypotheses = []
         import random
-        
+        import os
+
+        # REPRODUCIBILITY: Use seeded RNG for deterministic hypothesis generation
+        # The seed can be overridden via environment variable KOBE_RANDOM_SEED
+        _curiosity_seed = int(os.getenv("KOBE_RANDOM_SEED", "42"))
+        _curiosity_rng = random.Random(_curiosity_seed)
+
         # Define known factors to combine.
         regimes = ['BULL', 'BEAR', 'CHOPPY']
         strategies = ['ibs_rsi', 'turtle_soup']
@@ -369,7 +375,7 @@ class CuriosityEngine:
 
         # To avoid a combinatorial explosion, only generate a few random combinations at a time.
         combinations = [(r, s, v) for r in regimes for s in strategies for v in vol_conditions]
-        sample = random.sample(combinations, min(3, len(combinations)))
+        sample = _curiosity_rng.sample(combinations, min(3, len(combinations)))
 
         for regime, strategy, vol_cond in sample:
             hyp_id = hashlib.md5(f"combo_{regime}_{strategy}_{vol_cond}".encode()).hexdigest()[:8]

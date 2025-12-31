@@ -672,11 +672,14 @@ Examples:
 
     # === DETERMINISM MODE: Enforce reproducible results ===
     if args.deterministic:
+        import random
         import numpy as np
         import hashlib
-        np.random.seed(42)  # Global numpy seed for reproducibility
+        # CRITICAL: Seed BOTH random modules for full determinism
+        random.seed(42)     # Python built-in random (used by execution_bandit, curiosity_engine)
+        np.random.seed(42)  # NumPy random (used by ML models, Thompson sampling)
         if args.verbose:
-            print("[DETERMINISM] Mode ENABLED - using stable sorts and seeded RNG")
+            print("[DETERMINISM] Mode ENABLED - seeded random + np.random + stable sorts")
 
     # CRITICAL: Validate strategy imports at startup
     # This ensures we NEVER use deprecated standalone strategies
