@@ -57,7 +57,37 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from core.clock.tz_utils import fmt_ct, now_et
+from core.clock.equities_calendar import EquitiesCalendar
 from core.journal import append_journal
+
+
+def is_early_close_day(date: datetime = None) -> bool:
+    """Check if given date is an early close day (1 PM close).
+
+    Early close days per NYSE calendar:
+    - July 3 (day before Independence Day)
+    - Black Friday (day after Thanksgiving)
+    - Christmas Eve (Dec 24)
+
+    Note: Dec 31 (New Year's Eve) is NOT an early close for stocks.
+    """
+    if date is None:
+        date = now_et()
+    cal = EquitiesCalendar()
+    is_early, _ = cal.is_early_close(date.date() if hasattr(date, 'date') else date)
+    return is_early
+
+
+def get_market_close_time(date: datetime = None) -> dtime:
+    """Get market close time for a given date (handles early closes).
+
+    Returns 13:00 for early close days, 16:00 for normal days.
+    """
+    if date is None:
+        date = now_et()
+    cal = EquitiesCalendar()
+    _, close_time = cal.get_market_hours(date.date() if hasattr(date, 'date') else date)
+    return close_time
 
 STATE_FILE = ROOT / 'state' / 'scheduler_master.json'
 ET = ZoneInfo('America/New_York')
@@ -120,10 +150,15 @@ SCHEDULE: List[ScheduleEntry] = [
     ScheduleEntry('POSITION_MANAGER_18', dtime(15, 0)),
     ScheduleEntry('POSITION_MANAGER_19', dtime(15, 15)),
 
-    ScheduleEntry('SWING_SCANNER', dtime(15, 30)),   # Swing setups
+    ScheduleEntry('SWING_SCANNER', dtime(15, 30)),   # Swing setups (normal days)
 
     ScheduleEntry('POSITION_MANAGER_20', dtime(15, 45)),
     ScheduleEntry('POSITION_CLOSE_CHECK', dtime(15, 55)), # Enforce time stops before close
+
+    # === EARLY CLOSE DAY SCHEDULE (1 PM close days: July 3, Black Friday, Dec 24) ===
+    # These run ONLY on early close days, ~15 min before 1 PM close
+    ScheduleEntry('SWING_SCANNER_EARLY', dtime(12, 45)),      # Swing setups (early close)
+    ScheduleEntry('POSITION_CLOSE_CHECK_EARLY', dtime(12, 50)), # Time stops (early close)
 
     # === MARKET CLOSE (16:00) ===
     ScheduleEntry('POST_GAME', dtime(16, 0)),        # AI Briefing + lessons
@@ -393,7 +428,7 @@ def main() -> None:
                                     send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if (rc is None or rc == 0) else 'failed'}")
                                 except Exception:
                                     send_fn(f"<b>{entry.tag}</b> {'completed' if (rc is None or rc == 0) else 'failed'}")
-                        elif entry.tag in ('AFTERNOON_SCAN','SWING_SCANNER'):
+                        elif entry.tag == 'AFTERNOON_SCAN':
                             rc = do_refresh_top3(args.universe, args.dotenv, args.cap, scan_date)
                             if send_fn:
                                 try:
@@ -402,6 +437,46 @@ def main() -> None:
                                     send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if (rc is None or rc == 0) else 'failed'}")
                                 except Exception:
                                     send_fn(f"<b>{entry.tag}</b> {'completed' if (rc is None or rc == 0) else 'failed'}")
+                        elif entry.tag == 'SWING_SCANNER':
+                            # Skip on early close days (use SWING_SCANNER_EARLY instead)
+                            if is_early_close_day():
+                                print(f"  Skipping SWING_SCANNER - early close day (use SWING_SCANNER_EARLY)")
+                            else:
+                                rc = do_refresh_top3(args.universe, args.dotenv, args.cap, scan_date)
+                                if send_fn:
+                                    try:
+                                        from core.clock.tz_utils import fmt_ct
+                                        now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                        send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if (rc is None or rc == 0) else 'failed'}")
+                                    except Exception:
+                                        send_fn(f"<b>{entry.tag}</b> {'completed' if (rc is None or rc == 0) else 'failed'}")
+                        elif entry.tag == 'SWING_SCANNER_EARLY':
+                            # Only run on early close days (1 PM close)
+                            if is_early_close_day():
+                                rc = do_refresh_top3(args.universe, args.dotenv, args.cap, scan_date)
+                                if send_fn:
+                                    try:
+                                        from core.clock.tz_utils import fmt_ct
+                                        now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                        send_fn(f"<b>SWING_SCANNER_EARLY</b> [{stamp}] Early close day - swing scan complete")
+                                    except Exception:
+                                        send_fn(f"<b>SWING_SCANNER_EARLY</b> Early close day - swing scan complete")
+                            else:
+                                pass  # Skip on normal days
+                        elif entry.tag == 'POSITION_CLOSE_CHECK_EARLY':
+                            # Only run on early close days (1 PM close)
+                            if is_early_close_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/position_manager.py'),
+                                              '--dotenv', args.dotenv, '--force-time-stop'])
+                                if send_fn:
+                                    try:
+                                        from core.clock.tz_utils import fmt_ct
+                                        now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                        send_fn(f"<b>POSITION_CLOSE_CHECK_EARLY</b> [{stamp}] Early close day - time stops checked")
+                                    except Exception:
+                                        send_fn(f"<b>POSITION_CLOSE_CHECK_EARLY</b> Early close day - time stops checked")
+                            else:
+                                pass  # Skip on normal days
                         elif entry.tag == 'DB_BACKUP':
                             rc = run_cmd([sys.executable, str(ROOT / 'scripts/backup_state.py')])
                             if send_fn:
@@ -455,7 +530,7 @@ def main() -> None:
                                     send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
 
                         # === POSITION MANAGER (v2.0) ===
-                        elif entry.tag.startswith('POSITION_MANAGER_') or entry.tag == 'POSITION_CLOSE_CHECK':
+                        elif entry.tag.startswith('POSITION_MANAGER_'):
                             rc = run_cmd([sys.executable, str(ROOT / 'scripts/position_manager.py'), '--dotenv', args.dotenv])
                             # Only send Telegram on issues (rc != 0)
                             if send_fn and rc != 0:
@@ -465,6 +540,19 @@ def main() -> None:
                                     send_fn(f"<b>POSITION_MANAGER</b> [{stamp}] exit(s) executed or issues detected")
                                 except Exception:
                                     pass
+                        elif entry.tag == 'POSITION_CLOSE_CHECK':
+                            # Skip on early close days (use POSITION_CLOSE_CHECK_EARLY instead)
+                            if is_early_close_day():
+                                print(f"  Skipping POSITION_CLOSE_CHECK - early close day (use POSITION_CLOSE_CHECK_EARLY)")
+                            else:
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/position_manager.py'), '--dotenv', args.dotenv])
+                                if send_fn and rc != 0:
+                                    try:
+                                        from core.clock.tz_utils import fmt_ct
+                                        now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                        send_fn(f"<b>POSITION_CLOSE_CHECK</b> [{stamp}] exit(s) executed or issues detected")
+                                    except Exception:
+                                        pass
 
                         # === DIVERGENCE MONITOR (v2.0) ===
                         elif entry.tag.startswith('DIVERGENCE_'):
