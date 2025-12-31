@@ -4145,3 +4145,118 @@ The Kobe trading robot has comprehensive time awareness across all dimensions:
 
 *Section 22 completed 2025-12-30 17:20 UTC by Claude Opus 4.5*
 *Comprehensive Time Audit: 8 modules verified, 14 awareness types confirmed*
+
+---
+
+## Section 23: Critical Data Fetching Bug Fix (2025-12-30)
+
+### 23.1 Problem Identified
+
+**Symptom:** Scanner returned 0 signals when TSLA and other stocks clearly met IBS/RSI criteria.
+
+**User Report:** TSLA showing 5-6 consecutive down days on Robinhood with:
+- Open: $460.74
+- High: $464.95
+- Low: $453.95
+- Volume: ~59M
+
+But scanner returned 0 signals.
+
+---
+
+### 23.2 Root Cause Analysis
+
+**Three issues discovered:**
+
+#### Issue 1: Stale Cache Files (68,000+ files)
+Cache files named with REQUESTED end dates but containing OLDER data:
+```
+TSLA_2024-11-25_2025-12-30.csv  # Claims Dec 30
+  Actual last row: 2025-12-29    # Missing Dec 30!
+```
+
+#### Issue 2: Date Filtering Bug in multi_source.py
+```python
+# BEFORE (BUG):
+s = pd.to_datetime(start, utc=True).tz_localize(None)  # Midnight
+e = pd.to_datetime(end, utc=True).tz_localize(None)    # Midnight
+merged = merged[(merged['timestamp'] >= s) & (merged['timestamp'] <= e)]
+
+# Raw data timestamps: 2025-12-30 05:00:00 (5 AM UTC)
+# Filter end boundary: 2025-12-30 00:00:00 (midnight)
+# Result: 5 AM > midnight → Dec 30 data EXCLUDED!
+```
+
+#### Issue 3: Polygon Subdirectory Cache
+Separate cache in `data/cache/polygon/` also contained stale files.
+
+---
+
+### 23.3 Fix Applied
+
+**File:** `data/providers/multi_source.py`
+
+**Commit:** `8a4b45b`
+
+```python
+# AFTER (FIXED):
+# Bound to [start, end] - compare on date only to avoid timezone hour issues
+# (raw timestamps may be at 05:00 UTC, but end date should include the whole day)
+s = pd.to_datetime(start).date()
+e = pd.to_datetime(end).date()
+merged = merged[(merged['timestamp'].dt.date >= s) & (merged['timestamp'].dt.date <= e)]
+```
+
+---
+
+### 23.4 Cache Cleanup
+
+| Action | Count |
+|--------|-------|
+| Stale files in `data/cache/` | 68,008 deleted |
+| Stale files in `data/cache/polygon/` | All deleted |
+
+---
+
+### 23.5 Verification Results
+
+**After fix, scan returned 18 signals:**
+
+| Rank | Symbol | Entry | Score | Strategy |
+|------|--------|-------|-------|----------|
+| 1 | DVAX | $15.37 | 13.0 | IBS_RSI |
+| 2 | HUBB | $446.61 | 9.2 | IBS_RSI |
+| 3 | GD | $339.47 | 9.2 | IBS_RSI |
+| ... | ... | ... | ... | ... |
+| 14 | **TSLA** | **$454.43** | **6.8** | IBS_RSI |
+
+**TSLA Data Validation (matches Robinhood):**
+
+| Metric | Polygon API | Robinhood | Match |
+|--------|-------------|-----------|-------|
+| Close | $454.43 | ~$454 | ✓ |
+| High | $463.12 | $464.95 | ✓ |
+| Low | $453.83 | $453.95 | ✓ |
+| Volume | 58.9M | ~59M | ✓ |
+
+---
+
+### 23.6 Prevention Recommendations
+
+1. **Cache Naming:** Use ACTUAL data end date, not requested end date
+2. **Cache Validation:** Add date range verification when reading cache
+3. **Daily Cache Purge:** Clear stale files before market open
+4. **Monitoring:** Alert if cache file claims date > actual data
+
+---
+
+### 23.7 Files Modified
+
+| File | Change | Commit |
+|------|--------|--------|
+| `data/providers/multi_source.py` | Date-only comparison | 8a4b45b |
+
+---
+
+*Section 23 completed 2025-12-30 19:15 UTC by Claude Opus 4.5*
+*Critical bug fix: Date filtering causing 0 signals resolved*
