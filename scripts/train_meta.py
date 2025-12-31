@@ -50,9 +50,11 @@ def train_for_strategy(df: pd.DataFrame, strategy_name: str) -> Dict:
     y_te = test_df['label'].astype(int).values
 
     base = default_model()
+    # Use sigmoid calibration instead of isotonic to preserve prediction discrimination
+    # Isotonic can collapse different predictions to same value
     if X_c is not None and len(X_c) > 0:
         base.fit(X_tr, y_tr)
-        model = CalibratedClassifierCV(base, method='isotonic', cv='prefit')
+        model = CalibratedClassifierCV(base, method='sigmoid', cv='prefit')
         model.fit(X_c, y_c)
     else:
         model = CalibratedClassifierCV(base, method='sigmoid', cv=3)

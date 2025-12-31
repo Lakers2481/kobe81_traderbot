@@ -7,7 +7,7 @@ from typing import Dict, Optional, Tuple
 import joblib
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 
@@ -22,9 +22,24 @@ FEATURE_COLS = [
 
 
 def default_model() -> Pipeline:
+    """
+    Use GradientBoosting for better non-linear pattern detection.
+    Parameters tuned to avoid overfitting on weak correlations:
+    - n_estimators=100: moderate ensemble size
+    - max_depth=3: shallow trees to prevent overfitting
+    - min_samples_leaf=50: require substantial samples per leaf
+    - subsample=0.8: add randomness for robustness
+    """
     return Pipeline([
         ("scaler", StandardScaler(with_mean=False)),
-        ("clf", LogisticRegression(max_iter=200, solver='lbfgs')),
+        ("clf", GradientBoostingClassifier(
+            n_estimators=100,
+            max_depth=3,
+            min_samples_leaf=50,
+            subsample=0.8,
+            learning_rate=0.1,
+            random_state=42,
+        )),
     ])
 
 
