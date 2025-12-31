@@ -92,9 +92,9 @@ jobs:
           from core.structured_log import jlog
           from core.config_pin import sha256_file
 
-          # Strategy imports
-          from strategies.ibs_rsi.strategy import IbsRsiStrategy
-          from strategies.ict.turtle_soup import TurtleSoupStrategy
+          # Strategy imports (use canonical registry, not deprecated direct imports)
+          from strategies.registry import get_production_scanner
+          from strategies.dual_strategy.combined import DualStrategyScanner
 
           # Risk imports
           from risk.policy_gate import PolicyGate, RiskLimits
@@ -116,9 +116,10 @@ jobs:
           sys.path.insert(0, '.')
           import pandas as pd
           import numpy as np
-          from strategies.ibs_rsi.strategy import IbsRsiStrategy
+          from strategies.registry import get_production_scanner
 
           # Create synthetic data
+          np.random.seed(42)  # Deterministic for reproducibility
           dates = pd.date_range(end='2024-01-01', periods=250, freq='B')
           df = pd.DataFrame({
               'timestamp': dates,
@@ -132,9 +133,10 @@ jobs:
           df['high'] = df[['open', 'high', 'close']].max(axis=1) + 0.5
           df['low'] = df[['open', 'low', 'close']].min(axis=1) - 0.5
 
-          strat = IbsRsiStrategy()
-          sigs = strat.generate_signals(df)
-          print(f'Strategy generated {len(sigs)} signals on synthetic data')
+          # Use canonical production scanner (DualStrategyScanner)
+          scanner = get_production_scanner()
+          sigs = scanner.generate_signals(df)
+          print(f'DualStrategyScanner generated {len(sigs)} signals on synthetic data')
           print('Strategy execution test passed')
           "
 
