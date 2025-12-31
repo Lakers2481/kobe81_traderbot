@@ -895,7 +895,7 @@ Examples:
             )
             post_count = len(signals)
             if args.verbose:
-                print(f"Quality gate: {pre_count} → {post_count} signal(s) (filtered {pre_count - post_count})")
+                print(f"Quality gate: {pre_count} -> {post_count} signal(s) (filtered {pre_count - post_count})")
             else:
                 print(f"Quality gate: filtered to {post_count} high-quality signal(s)")
         except Exception as e:

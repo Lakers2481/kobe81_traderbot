@@ -35,6 +35,17 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+def _normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Normalize DataFrame column names to title case (Open, High, Low, Close, Volume)."""
+    col_map = {
+        'open': 'Open', 'high': 'High', 'low': 'Low',
+        'close': 'Close', 'volume': 'Volume',
+        'OPEN': 'Open', 'HIGH': 'High', 'LOW': 'Low',
+        'CLOSE': 'Close', 'VOLUME': 'Volume',
+    }
+    return df.rename(columns={k: v for k, v in col_map.items() if k in df.columns})
+
+
 class MarketRegime(Enum):
     """Market regime states."""
     BULLISH = "BULLISH"
@@ -111,6 +122,9 @@ class HMMRegimeDetector:
         lookback_vol: int = 21
     ) -> pd.DataFrame:
         """Prepare observable features for HMM."""
+        # Normalize column names (handle lowercase 'close' from multi-source provider)
+        spy_data = _normalize_columns(spy_data)
+        vix_data = _normalize_columns(vix_data)
         spy_close = spy_data['Close']
         vix_close = vix_data['Close']
 
@@ -462,12 +476,16 @@ class AdaptiveRegimeDetector:
 
     def _rule_based_regime(self, spy_data: pd.DataFrame, vix_data: Optional[pd.DataFrame] = None) -> MarketRegime:
         """Simple rule-based regime detection."""
+        # Normalize column names (handle lowercase 'close' from multi-source provider)
+        spy_data = _normalize_columns(spy_data)
         spy_close = spy_data['Close']
 
         spy_price = spy_close.iloc[-1]
         spy_sma200 = spy_close.rolling(200).mean().iloc[-1]
 
         # Handle VIX data (use default of 20 if not available)
+        if vix_data is not None and not vix_data.empty:
+            vix_data = _normalize_columns(vix_data)
         if vix_data is not None and not vix_data.empty and 'Close' in vix_data.columns:
             vix_price = vix_data['Close'].iloc[-1]
         else:
