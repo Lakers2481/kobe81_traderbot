@@ -174,6 +174,22 @@ async def deactivate_kill_switch():
     return JSONResponse({"status": "deactivated", "timestamp": datetime.now().isoformat()})
 
 
+@app.get("/api/ml-confidence")
+async def get_ml_confidence():
+    """Get ML model confidence and status dashboard."""
+    try:
+        from dashboard.ml_confidence import get_ml_confidence_dashboard
+        dashboard = get_ml_confidence_dashboard()
+        return JSONResponse(dashboard.to_dict())
+    except Exception as e:
+        return JSONResponse({
+            "error": str(e),
+            "timestamp": datetime.now().isoformat(),
+            "overall_health": "unknown",
+            "components": []
+        }, status_code=500)
+
+
 @app.websocket("/ws/live")
 async def websocket_live_updates(websocket: WebSocket):
     """WebSocket endpoint for 5-second live updates."""

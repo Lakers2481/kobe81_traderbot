@@ -47,12 +47,15 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
+import numpy as np
 import pandas as pd
 
 # Import the NewsProcessor for sentiment analysis
 from altdata.news_processor import get_news_processor
 # Import the MarketMoodAnalyzer for holistic market emotional state
 from altdata.market_mood_analyzer import get_market_mood_analyzer
+# Import OnlineLearningManager for incremental model updates
+from ml_advanced.online_learning import OnlineLearningManager, create_online_learning_manager
 
 logger = logging.getLogger(__name__)
 
@@ -109,11 +112,17 @@ class CognitiveSignalProcessor:
         self._brain = None  # Lazy-loaded to avoid circular imports.
         self._news_processor = None # Lazy-loaded for news and sentiment.
         self._market_mood_analyzer = None # Lazy-loaded for market mood analysis.
+        self._online_learning_manager = None  # Lazy-loaded for incremental learning.
 
         # A dictionary to track the link between a unique decision identifier
         # (like symbol + strategy) and the brain's internal episode_id. This
         # is crucial for recording outcomes later.
         self._active_episodes: Dict[str, str] = {}
+
+        # Store signal features for online learning when outcomes are recorded.
+        # Maps decision_id -> (features_array, prediction_confidence, entry_timestamp)
+        self._signal_features: Dict[str, Tuple[np.ndarray, float, datetime]] = {}
+
         logger.info("CognitiveSignalProcessor initialized.")
 
     @property
@@ -137,6 +146,16 @@ class CognitiveSignalProcessor:
         if self._market_mood_analyzer is None:
             self._market_mood_analyzer = get_market_mood_analyzer()
         return self._market_mood_analyzer
+
+    @property
+    def online_learning_manager(self) -> OnlineLearningManager:
+        """Lazy-loads the OnlineLearningManager for incremental model updates."""
+        if self._online_learning_manager is None:
+            self._online_learning_manager = create_online_learning_manager(
+                update_frequency='daily',
+                auto_update=True
+            )
+        return self._online_learning_manager
 
     def build_market_context(
         self,
@@ -221,6 +240,65 @@ class CognitiveSignalProcessor:
         """Placeholder for calculating market breadth indicators."""
         return {}
 
+    def _extract_signal_features(self, signal: Dict[str, Any], context: Dict[str, Any]) -> np.ndarray:
+        """
+        Extracts a feature vector from a signal for online learning.
+
+        The feature vector captures the key characteristics of the trade setup
+        that can be used to train incremental ML models.
+
+        Args:
+            signal: The trading signal dictionary.
+            context: The market context dictionary.
+
+        Returns:
+            A numpy array of features.
+        """
+        # Extract numeric features from signal
+        entry_price = float(signal.get('entry_price', 0) or 0)
+        stop_loss = float(signal.get('stop_loss', 0) or 0)
+        take_profit = float(signal.get('take_profit', 0) or 0)
+        conf_score = float(signal.get('conf_score', 0.5) or 0.5)
+
+        # Calculate risk/reward ratio
+        risk = abs(entry_price - stop_loss) if entry_price and stop_loss else 1.0
+        reward = abs(take_profit - entry_price) if take_profit and entry_price else 1.0
+        rr_ratio = reward / risk if risk > 0 else 0.0
+
+        # Extract context features
+        vix = float(context.get('vix', 20.0) or 20.0)
+        regime_confidence = float(context.get('regime_confidence', 0.5) or 0.5)
+
+        # Encode regime as numeric
+        regime_map = {'BULL': 1.0, 'BEAR': -1.0, 'CHOPPY': 0.0, 'unknown': 0.0}
+        regime_val = regime_map.get(context.get('regime', 'unknown'), 0.0)
+
+        # Get market sentiment if available
+        sentiment = context.get('market_sentiment', {})
+        sentiment_compound = float(sentiment.get('compound', 0.0) if isinstance(sentiment, dict) else 0.0)
+
+        # Get market mood score if available
+        mood_score = float(context.get('market_mood_score', 0.0) or 0.0)
+
+        # Strategy encoding (simple one-hot for common strategies)
+        strategy = signal.get('strategy', '').lower()
+        is_ibs_rsi = 1.0 if 'ibs' in strategy or 'rsi' in strategy else 0.0
+        is_turtle_soup = 1.0 if 'turtle' in strategy or 'ict' in strategy else 0.0
+
+        # Build feature vector
+        features = np.array([
+            conf_score,           # 0: Signal confidence
+            rr_ratio,             # 1: Risk/reward ratio
+            vix / 100.0,          # 2: VIX normalized (0-1 range roughly)
+            regime_val,           # 3: Regime (-1 to 1)
+            regime_confidence,    # 4: Regime confidence
+            sentiment_compound,   # 5: Market sentiment (-1 to 1)
+            mood_score,           # 6: Market mood score
+            is_ibs_rsi,           # 7: IBS/RSI strategy flag
+            is_turtle_soup,       # 8: Turtle Soup strategy flag
+        ], dtype=np.float32)
+
+        return features
 
     def evaluate_signals(
         self,
@@ -289,6 +367,16 @@ class CognitiveSignalProcessor:
                 # 5. Store the episode_id so we can link the trade outcome back later.
                 decision_id = f"{symbol}|{signal_dict.get('strategy', 'unknown')}"
                 self._active_episodes[decision_id] = decision.episode_id
+
+                # 5b. Store signal features for online learning (for approved signals).
+                if eval_signal.approved:
+                    features = self._extract_signal_features(signal_dict, context)
+                    self._signal_features[decision_id] = (
+                        features,
+                        decision.confidence,
+                        datetime.now()
+                    )
+
                 logger.info(f"Cognitive evaluation for {symbol}: Approved={eval_signal.approved}, Confidence={eval_signal.cognitive_confidence:.2f}")
 
             except Exception as e:
@@ -309,6 +397,9 @@ class CognitiveSignalProcessor:
         """
         Records the final outcome of a trade, closing the learning loop.
 
+        This method now also feeds the outcome to the OnlineLearningManager
+        for incremental model updates and concept drift detection.
+
         Args:
             decision_id: A unique identifier for the decision (e.g., "AAPL|ibs_rsi").
             won: Whether the trade was profitable.
@@ -324,16 +415,51 @@ class CognitiveSignalProcessor:
             logger.warning(f"No active cognitive episode found for decision '{decision_id}'. Cannot record outcome.")
             return False
 
+        # Retrieve stored signal features for online learning.
+        signal_data = self._signal_features.pop(decision_id, None)
+
         try:
             # Tell the brain to learn from what happened.
             outcome_data = {'won': won, 'pnl': pnl, 'r_multiple': r_multiple}
             self.brain.learn_from_outcome(episode_id, outcome_data)
             logger.info(f"Successfully recorded outcome for episode {episode_id} linked to decision '{decision_id}'.")
+
+            # Feed outcome to online learning manager for incremental model updates.
+            if signal_data is not None:
+                features, prediction_confidence, entry_time = signal_data
+                holding_period = (datetime.now() - entry_time).days
+
+                # Extract symbol from decision_id
+                symbol = decision_id.split('|')[0] if '|' in decision_id else 'UNKNOWN'
+
+                try:
+                    self.online_learning_manager.record_trade_outcome(
+                        symbol=symbol,
+                        features=features,
+                        prediction=prediction_confidence,
+                        actual_pnl=pnl,
+                        holding_period=max(1, holding_period)  # At least 1 day
+                    )
+
+                    # Log drift detection status
+                    status = self.online_learning_manager.get_status()
+                    logger.info(
+                        f"Online learning updated: buffer={status['buffer_size']}, "
+                        f"ready={status['buffer_ready']}, "
+                        f"accuracy={status['drift_current_accuracy']:.2%}"
+                    )
+                except Exception as e:
+                    logger.warning(f"Online learning update failed: {e}")
+            else:
+                logger.debug(f"No stored features for decision '{decision_id}', skipping online learning.")
+
             return True
         except Exception as e:
             logger.error(f"Failed to record outcome for episode {episode_id}: {e}", exc_info=True)
             # Put it back in case it was a transient error.
             self._active_episodes[decision_id] = episode_id
+            if signal_data is not None:
+                self._signal_features[decision_id] = signal_data
             return False
 
     def record_outcome_by_symbol(self, symbol: str, strategy: str, **kwargs) -> bool:
@@ -371,10 +497,17 @@ class CognitiveSignalProcessor:
         except Exception as e:
             brain_status = {'error': str(e)}
 
+        try:
+            online_learning_status = self.online_learning_manager.get_status()
+        except Exception as e:
+            online_learning_status = {'error': str(e)}
+
         return {
             'processor_active': True,
             'brain_status': brain_status,
             'active_episodes': len(self._active_episodes),
+            'pending_features': len(self._signal_features),
+            'online_learning': online_learning_status,
         }
 
 # --- Singleton Implementation ---
