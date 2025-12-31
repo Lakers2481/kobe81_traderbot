@@ -9,7 +9,27 @@
 | Script | Use For | Strategy Class | Has Sweep Filter |
 |--------|---------|----------------|------------------|
 | `backtest_dual_strategy.py` | **Verification** | `DualStrategyScanner` | YES (0.3 ATR) |
-| `run_wf_polygon.py` | Research only | `TurtleSoupStrategy` | NO |
+| `run_wf_polygon.py` | Walk-forward | `DualStrategyScanner` | YES (0.3 ATR) |
+| `scan.py` | **Daily Scan** | `DualStrategyScanner` | YES (0.3 ATR) |
+
+## ONE Scanner System (Updated 2025-12-30)
+
+**THE ONLY SCANNER COMMAND:**
+```bash
+python scripts/scan.py --cap 900 --deterministic --top3
+```
+
+**Output Files:**
+- `logs/daily_picks.csv` - Top 3 picks (2x ICT + 1x IBS_RSI)
+- `logs/trade_of_day.csv` - Single highest-confidence TOTD
+- `logs/signals.jsonl` - All signals (append-only)
+
+**Raw Signals (no quality gate):**
+```bash
+python scripts/scan.py --cap 900 --deterministic --no-quality-gate
+```
+
+**There is ONLY ONE scanner: `scan.py`. All other scan scripts have been deleted.**
 
 **Verification Command:**
 ```bash

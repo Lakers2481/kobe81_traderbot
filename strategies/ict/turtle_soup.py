@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+
+import warnings as _warnings
+_warnings.warn(
+    "\n"
+    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+    "DEPRECATED: TurtleSoupStrategy imported directly\n"
+    "CRITICAL: Missing ts_min_sweep_strength filter (61% WR drops to 48%)\n"
+    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+    "Use: from strategies.registry import get_production_scanner\n"
+    "     scanner = get_production_scanner()\n"
+    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n",
+    DeprecationWarning,
+    stacklevel=2
+)
+
 """
 Turtle Soup Strategy (ICT Liquidity Sweep)
 

@@ -13,47 +13,39 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 
-class TestIbsRsiStrategy:
-    """Tests for IBS+RSI mean-reversion strategy."""
+class TestDualStrategyScanner:
+    """Tests for canonical DualStrategyScanner (IBS+RSI + Turtle Soup combined)."""
 
-    def test_strategy_import(self):
-        from strategies.ibs_rsi.strategy import IbsRsiStrategy
-        assert IbsRsiStrategy is not None
-
-    def test_signal_generation(self, sample_ohlcv_data):
-        from strategies.ibs_rsi.strategy import IbsRsiStrategy
-        strategy = IbsRsiStrategy()
-        signals = strategy.scan_signals_over_time(sample_ohlcv_data.copy())
-        assert isinstance(signals, pd.DataFrame)
-
-
-class TestICTTurtleSoupStrategy:
-    """Tests for ICT Turtle Soup strategy."""
-
-    def test_strategy_import(self):
-        from strategies.ict.turtle_soup import TurtleSoupStrategy
-        assert TurtleSoupStrategy is not None
+    def test_scanner_import(self):
+        from strategies.registry import get_production_scanner, DualStrategyScanner
+        assert DualStrategyScanner is not None
+        scanner = get_production_scanner()
+        assert scanner is not None
 
     def test_signal_generation(self, sample_ohlcv_data):
-        from strategies.ict.turtle_soup import TurtleSoupStrategy
-        strategy = TurtleSoupStrategy()
-        signals = strategy.scan_signals_over_time(sample_ohlcv_data.copy())
+        from strategies.registry import get_production_scanner
+        scanner = get_production_scanner()
+        signals = scanner.scan_signals_over_time(sample_ohlcv_data.copy())
         assert isinstance(signals, pd.DataFrame)
 
+    def test_scanner_has_required_methods(self):
+        from strategies.registry import get_production_scanner
+        scanner = get_production_scanner()
+        assert hasattr(scanner, 'generate_signals')
+        assert hasattr(scanner, 'scan_signals_over_time')
+        assert callable(getattr(scanner, 'generate_signals'))
+        assert callable(getattr(scanner, 'scan_signals_over_time'))
 
-class TestStrategyInterface:
-    """Test that selected strategies follow the common interface."""
 
-    @pytest.mark.parametrize("strategy_module,strategy_class", [
-        ("strategies.ibs_rsi.strategy", "IbsRsiStrategy"),
-        ("strategies.ict.turtle_soup", "TurtleSoupStrategy"),
-    ])
-    def test_strategy_has_required_methods(self, strategy_module, strategy_class):
-        import importlib
-        module = importlib.import_module(strategy_module)
-        cls = getattr(module, strategy_class)
-        strategy = cls()
-        assert hasattr(strategy, 'generate_signals')
-        assert hasattr(strategy, 'scan_signals_over_time')
-        assert callable(getattr(strategy, 'generate_signals'))
-        assert callable(getattr(strategy, 'scan_signals_over_time'))
+class TestStrategyRegistry:
+    """Test that strategy registry works correctly."""
+
+    def test_get_production_scanner(self):
+        from strategies.registry import get_production_scanner
+        scanner = get_production_scanner()
+        assert scanner is not None
+
+    def test_verified_performance_metadata(self):
+        from strategies.registry import VERIFIED_PERFORMANCE
+        assert VERIFIED_PERFORMANCE['version'] == 'v2.2'
+        assert VERIFIED_PERFORMANCE['combined']['win_rate'] > 0.60

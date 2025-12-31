@@ -134,14 +134,12 @@ def check_watchlist_signals(name: str) -> Dict[str, Any]:
         "symbols": {},
     }
 
-    # Try to import strategies and check for signals (IBS_RSI / ICT)
+    # Use canonical DualStrategyScanner for signal checking
     try:
-        from strategies.ibs_rsi.strategy import IbsRsiStrategy
-        from strategies.ict.turtle_soup import TurtleSoupStrategy
+        from strategies.registry import get_production_scanner
         from data.providers.polygon_eod import fetch_daily_bars_polygon
 
-        don_strat = IbsRsiStrategy()
-        ict_strat = TurtleSoupStrategy()
+        scanner = get_production_scanner()
 
         end_date = datetime.utcnow().date().isoformat()
         start_date = (datetime.utcnow().date() - timedelta(days=90)).isoformat()
@@ -154,13 +152,13 @@ def check_watchlist_signals(name: str) -> Dict[str, Any]:
                     continue
 
                 signals = []
-                # IBS_RSI
+                # Use combined DualStrategyScanner
                 try:
-                    s = don_strat.scan_signals_over_time(df)
+                    s = scanner.scan_signals_over_time(df)
                     if not s.empty:
                         latest = s.iloc[-1]
                         signals.append({
-                            "strategy": "ibs_rsi",
+                            "strategy": str(latest.get("strategy", "dual")),
                             "direction": str(latest.get("side", "N/A")),
                             "date": str(latest.get("timestamp", "N/A")),
                         })

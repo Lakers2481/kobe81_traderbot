@@ -16,11 +16,11 @@ class TestScanToSignalWorkflow:
     """Test scan -> signal generation workflow."""
 
     def test_strategy_generates_signals_from_data(self, sample_ohlcv_data):
-        """Test that strategy can generate signals from OHLCV data."""
-        from strategies.ibs_rsi.strategy import IbsRsiStrategy
+        """Test that DualStrategyScanner can generate signals from OHLCV data."""
+        from strategies.registry import get_production_scanner
 
-        strategy = IbsRsiStrategy()
-        signals = strategy.scan_signals_over_time(sample_ohlcv_data)
+        scanner = get_production_scanner()
+        signals = scanner.scan_signals_over_time(sample_ohlcv_data)
 
         # Should return a DataFrame
         assert isinstance(signals, pd.DataFrame)
@@ -36,9 +36,9 @@ class TestBacktestWorkflow:
     def test_backtest_produces_results(self, sample_ohlcv_data):
         """Test that backtest produces results."""
         from backtest.engine import Backtester, BacktestConfig
-        from strategies.ibs_rsi.strategy import IbsRsiStrategy
+        from strategies.registry import get_production_scanner
 
-        strategy = IbsRsiStrategy()
+        scanner = get_production_scanner()
 
         # Create backtester with strategy's signal function
         cfg = BacktestConfig(initial_cash=100000)
@@ -49,7 +49,7 @@ class TestBacktestWorkflow:
             df['symbol'] = symbol
             return df
 
-        bt = Backtester(cfg, strategy.scan_signals_over_time, fetch_data)
+        bt = Backtester(cfg, scanner.scan_signals_over_time, fetch_data)
 
         # Run on a single test symbol
         result = bt.run(['TEST'])

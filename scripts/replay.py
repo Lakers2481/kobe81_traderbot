@@ -26,18 +26,13 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from config.env_loader import load_env
-from strategies.ibs_rsi.strategy import IbsRsiStrategy
-from strategies.ict.turtle_soup import TurtleSoupStrategy
+from strategies.registry import get_production_scanner
 
 
-def create_strategy(strategy_name: str):
-    """Create strategy instance."""
-    if strategy_name in ('ibs_rsi','ibs','rsi2'):
-        return IbsRsiStrategy()
-    elif strategy_name in ('turtle_soup','ict'):
-        return TurtleSoupStrategy()
-    else:
-        raise ValueError(f"Unknown strategy: {strategy_name}")
+def create_strategy(strategy_name: str = None):
+    """Create strategy instance. Always returns DualStrategyScanner."""
+    # Deprecated: strategy_name is ignored. Always use DualStrategyScanner.
+    return get_production_scanner()
 
 
 def load_actual_trades(path: Path) -> pd.DataFrame:

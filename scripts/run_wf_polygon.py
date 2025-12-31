@@ -12,8 +12,8 @@ import pandas as pd
 import sys
 sys.path.insert(0, str(_P(__file__).resolve().parents[1]))
 
-from strategies.ibs_rsi.strategy import IbsRsiStrategy, IbsRsiParams
-from strategies.ict.turtle_soup import TurtleSoupStrategy, TurtleSoupParams
+from strategies.registry import get_production_scanner
+from strategies.dual_strategy.combined import DualStrategyParams
 from data.universe.loader import load_universe
 from data.providers.polygon_eod import fetch_daily_bars_polygon
 from data.providers.multi_source import fetch_daily_bars_multi
@@ -108,27 +108,25 @@ def main():
         spy_bars = fetch_spy_bars(args.start, args.end, cache_dir=cache_dir)
         print(f'Loaded {len(spy_bars)} SPY bars for regime filtering')
 
-    # Strategies
-    ibs_params = IbsRsiParams(
-        ibs_max=float(args.ibs_max),
-        rsi_max=float(args.rsi_max),
-        atr_mult=float(args.ibs_atr_mult),
-        r_multiple=float(args.ibs_r_mult),
-        time_stop_bars=int(args.ibs_time_stop),
+    # Use canonical DualStrategyScanner with CLI-overridable params
+    dual_params = DualStrategyParams(
+        # IBS+RSI params
+        ibs_entry=float(args.ibs_max),
+        rsi_entry=float(args.rsi_max),
+        ibs_rsi_stop_mult=float(args.ibs_atr_mult),
+        ibs_rsi_take_profit_mult=float(args.ibs_r_mult),
+        ibs_rsi_time_stop=int(args.ibs_time_stop),
+        # Turtle Soup params
+        ts_lookback=int(args.turtle_soup_lookback),
+        ts_min_bars_since_extreme=int(args.turtle_soup_min_bars),
+        ts_stop_buffer_mult=float(args.turtle_soup_stop_buf),
+        ts_r_multiple=float(args.turtle_soup_r_mult),
+        ts_time_stop=int(args.turtle_soup_time_stop),
+        ts_min_sweep_strength=float(args.turtle_soup_min_sweep),  # CRITICAL: v2.2 sweep filter
+        # Common params
         min_price=float(get_setting('selection.min_price', 10.0)),
     )
-    ibs = IbsRsiStrategy(ibs_params)
-
-    # Turtle Soup (ICT Liquidity Sweep) strategy
-    ts_params = TurtleSoupParams(
-        lookback=int(args.turtle_soup_lookback),
-        min_bars_since_extreme=int(args.turtle_soup_min_bars),
-        stop_buffer_mult=float(args.turtle_soup_stop_buf),
-        r_multiple=float(args.turtle_soup_r_mult),
-        time_stop_bars=int(args.turtle_soup_time_stop),
-        min_price=float(get_setting('selection.min_price', 10.0)),
-    )
-    turtle_soup = TurtleSoupStrategy(ts_params)
+    scanner = get_production_scanner(dual_params)
 
     def apply_regime_filter(signals: pd.DataFrame) -> pd.DataFrame:
         """Apply regime filter if enabled."""
@@ -152,22 +150,21 @@ def main():
     # No cross-sectional TOPN ranking in this two-strategy setup
 
     def get_ibs(df: pd.DataFrame) -> pd.DataFrame:
-        # Backtest-friendly: generate ALL historical signals over the window
-        sigs = ibs.scan_signals_over_time(df)
+        """Generate IBS+RSI signals using canonical DualStrategyScanner."""
+        sigs = scanner.scan_signals_over_time(df)
+        # Filter to IBS_RSI strategy only
+        if not sigs.empty and 'strategy' in sigs.columns:
+            sigs = sigs[sigs['strategy'] == 'IBS_RSI']
         sigs = apply_regime_filter(sigs)
         sigs = apply_earnings_filter(sigs)
         return sigs
 
     def get_turtle_soup(df: pd.DataFrame) -> pd.DataFrame:
-        """Turtle Soup (ICT Liquidity Sweep) - trades failed breakouts."""
-        sigs = turtle_soup.scan_signals_over_time(df)
-        # Enforce v2.2 sweep strength threshold (in ATR units)
-        try:
-            min_sweep = float(args.turtle_soup_min_sweep)
-            if 'sweep_strength' in sigs.columns:
-                sigs = sigs[sigs['sweep_strength'] >= min_sweep]
-        except Exception:
-            pass
+        """Generate Turtle Soup signals using canonical DualStrategyScanner."""
+        sigs = scanner.scan_signals_over_time(df)
+        # Filter to Turtle_Soup strategy only (sweep filter already applied in DualStrategyScanner)
+        if not sigs.empty and 'strategy' in sigs.columns:
+            sigs = sigs[sigs['strategy'].isin(['Turtle_Soup', 'TurtleSoup'])]
         sigs = apply_regime_filter(sigs)
         sigs = apply_earnings_filter(sigs)
         return sigs

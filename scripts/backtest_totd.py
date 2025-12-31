@@ -32,8 +32,7 @@ sys.path.insert(0, str(ROOT))
 from config.env_loader import load_env
 from data.providers.multi_source import fetch_daily_bars_multi
 from data.universe.loader import load_universe
-from strategies.ibs_rsi.strategy import IbsRsiStrategy, IbsRsiParams
-from strategies.ict.turtle_soup import TurtleSoupStrategy, TurtleSoupParams
+from strategies.registry import get_production_scanner
 from core.regime_filter import get_regime_filter_config, filter_signals_by_regime, fetch_spy_bars
 from core.earnings_filter import filter_signals_by_earnings
 

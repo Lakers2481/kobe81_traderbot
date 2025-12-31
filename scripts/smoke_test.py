@@ -10,8 +10,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from strategies.ibs_rsi.strategy import IbsRsiStrategy
-from strategies.ict.turtle_soup import TurtleSoupStrategy
+from strategies.registry import get_production_scanner
 from backtest.engine import Backtester, BacktestConfig
 
 
@@ -40,18 +39,19 @@ def main():
     frames = [synthetic_bars(s) for s in symbols]
     data = pd.concat(frames, ignore_index=True)
 
-    for name, strat in (
-        ('ibs_rsi', IbsRsiStrategy()),
-        ('turtle_soup', TurtleSoupStrategy()),
-    ):
-        def get_signals(df: pd.DataFrame) -> pd.DataFrame:
-            return strat.scan_signals_over_time(df)
-        def fetcher(sym: str) -> pd.DataFrame:
-            return data[data['symbol']==sym]
-        bt = Backtester(BacktestConfig(initial_cash=100_000.0), get_signals, fetcher)
-        res = bt.run(symbols, outdir=f'smoke_outputs/{name}')
-        m = res.get('metrics', {})
-        print(f"{name}: trades={len(res['trades'])} pnl={res.get('pnl',0.0):.2f} WR={m.get('win_rate',0.0):.2f} PF={m.get('profit_factor',0.0):.2f}")
+    # Use the canonical DualStrategyScanner (combines IBS+RSI and Turtle Soup)
+    scanner = get_production_scanner()
+
+    def get_signals(df: pd.DataFrame) -> pd.DataFrame:
+        return scanner.scan_signals_over_time(df)
+
+    def fetcher(sym: str) -> pd.DataFrame:
+        return data[data['symbol']==sym]
+
+    bt = Backtester(BacktestConfig(initial_cash=100_000.0), get_signals, fetcher)
+    res = bt.run(symbols, outdir='smoke_outputs/dual_strategy')
+    m = res.get('metrics', {})
+    print(f"dual_strategy: trades={len(res['trades'])} pnl={res.get('pnl',0.0):.2f} WR={m.get('win_rate',0.0):.2f} PF={m.get('profit_factor',0.0):.2f}")
 
 
 if __name__ == '__main__':

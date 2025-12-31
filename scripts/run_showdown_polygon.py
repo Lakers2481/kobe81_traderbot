@@ -10,8 +10,7 @@ import pandas as pd
 import sys
 sys.path.insert(0, str(_P(__file__).resolve().parents[1]))
 
-from strategies.ibs_rsi.strategy import IbsRsiStrategy
-from strategies.ict.turtle_soup import TurtleSoupStrategy
+from strategies.registry import get_production_scanner
 from backtest.engine import Backtester, BacktestConfig
 from data.universe.loader import load_universe
 from data.providers.polygon_eod import fetch_daily_bars_polygon
@@ -62,9 +61,8 @@ def main():
     def fetcher(sym: str) -> pd.DataFrame:
         return fetch_daily_bars_polygon(sym, args.start, args.end, cache_dir=cache_dir)
 
-    # Strategies
-    ibs = IbsRsiStrategy()
-    ict = TurtleSoupStrategy()
+    # Use canonical DualStrategyScanner (combines IBS+RSI and Turtle Soup with proper filters)
+    scanner = get_production_scanner()
 
     def apply_regime_filter(signals: pd.DataFrame) -> pd.DataFrame:
         if signals.empty:
@@ -82,21 +80,26 @@ def main():
             return pd.DataFrame(filtered)
         return signals
 
-    # No TOPN cross-sectional ranking in showdown when only comparing two distinct strategies
-
+    # Generate all signals with proper filters, then split by strategy type for comparison
     def get_ibs_rsi(df: pd.DataFrame) -> pd.DataFrame:
-        signals = ibs.generate_signals(df)
+        signals = scanner.scan_signals_over_time(df)
+        # Filter to IBS_RSI strategy only
+        if not signals.empty and 'strategy' in signals.columns:
+            signals = signals[signals['strategy'] == 'IBS_RSI']
         signals = apply_regime_filter(signals)
         signals = apply_earnings_filter(signals)
         return signals
 
     def get_turtle_soup(df: pd.DataFrame) -> pd.DataFrame:
-        signals = ict.scan_signals_over_time(df)
+        signals = scanner.scan_signals_over_time(df)
+        # Filter to Turtle_Soup strategy only
+        if not signals.empty and 'strategy' in signals.columns:
+            signals = signals[signals['strategy'].isin(['Turtle_Soup', 'TurtleSoup'])]
         signals = apply_regime_filter(signals)
         signals = apply_earnings_filter(signals)
         return signals
 
-    # Run per strategy
+    # Run per strategy (using same scanner, filtered by strategy type)
     cfg = BacktestConfig(initial_cash=100_000.0)
     bt_ibs = Backtester(cfg, get_ibs_rsi, fetcher)
     r1 = bt_ibs.run(symbols, outdir=str(outdir / 'ibs_rsi'))

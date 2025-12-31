@@ -226,17 +226,11 @@ def trace_signal_generation(
     print(f"Period: {start} to {end}")
     print("=" * 70 + "\n")
 
-    # Import strategy
+    # Use canonical DualStrategyScanner (strategy arg is deprecated)
     try:
-        if strategy in ("ibs_rsi","ibs","rsi2"):
-            from strategies.ibs_rsi.strategy import IbsRsiStrategy as Strat
-            strat = Strat()
-        elif strategy in ("turtle_soup","ict"):
-            from strategies.ict.turtle_soup import TurtleSoupStrategy as Strat
-            strat = Strat()
-        else:
-            print(f"Unknown strategy: {strategy}")
-            return pd.DataFrame()
+        from strategies.registry import get_production_scanner
+        strat = get_production_scanner()
+        print(f"  Note: Using DualStrategyScanner (strategy arg '{strategy}' ignored)")
     except ImportError as e:
         print(f"Failed to import strategy: {e}")
         return pd.DataFrame()

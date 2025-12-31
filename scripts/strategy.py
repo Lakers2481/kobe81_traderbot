@@ -28,7 +28,7 @@ sys.path.insert(0, str(ROOT))
 from config.env_loader import load_env
 # 
 
-from strategies.ibs_rsi.strategy import IbsRsiStrategy, IbsRsiParams # Correct import
+from strategies.registry import get_production_scanner, DualStrategyScanner, DualStrategyParams
 
 # Default paths
 STATE_DIR = ROOT / "state"
@@ -36,19 +36,13 @@ LOGS_DIR = ROOT / "logs"
 WF_OUTPUTS = ROOT / "wf_outputs"
 DEFAULT_DOTENV = "C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env"
 
-# Strategy registry
+# Strategy registry - now uses canonical DualStrategyScanner
 STRATEGIES = {
-    # "rsi2": { # This strategy is not implemented or exposed
-    #     "name": "Connors RSI-2",
-    #     "class": ConnorsRSI2Strategy,
-    #     "params_class": ConnorsRSI2Params,
-    #     "description": "Mean-reversion strategy using RSI(2) with SMA(200) trend filter",
-    # },
-    "ibs": {
-        "name": "IBS (Internal Bar Strength)",
-        "class": IbsRsiStrategy, # Corrected class reference
-        "params_class": IbsRsiParams, # Corrected params class reference
-        "description": "Mean-reversion strategy using IBS indicator with SMA(200) trend filter",
+    "dual": {
+        "name": "Dual Strategy (IBS+RSI + Turtle Soup)",
+        "class": DualStrategyScanner,
+        "params_class": DualStrategyParams,
+        "description": "Combined mean-reversion: IBS+RSI (59.9% WR) + Turtle Soup (61.0% WR) with 0.3 ATR sweep filter",
     },
 }
 

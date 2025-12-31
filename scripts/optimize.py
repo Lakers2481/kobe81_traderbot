@@ -29,9 +29,9 @@ import pandas as pd
 import sys
 sys.path.insert(0, str(_P(__file__).resolve().parents[1]))
 
-# from strategies.ibs_rsi.strategy import IBS_RSIBreakoutStrategy, IBS_RSIParams
-from strategies.ibs_rsi.strategy import IbsRsiStrategy, IbsRsiParams
-from strategies.ict.turtle_soup import TurtleSoupStrategy, TurtleSoupParams
+# Use canonical DualStrategyScanner - deprecated standalone strategies removed
+from strategies.registry import get_production_scanner
+from strategies.dual_strategy.combined import DualStrategyParams
 from backtest.engine import Backtester, BacktestConfig
 from data.universe.loader import load_universe
 from data.providers.multi_source import fetch_daily_bars_multi

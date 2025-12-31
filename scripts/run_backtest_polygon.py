@@ -10,8 +10,7 @@ import pandas as pd
 import sys, os
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from strategies.ibs_rsi.strategy import IbsRsiStrategy
-from strategies.ict.turtle_soup import TurtleSoupStrategy
+from strategies.registry import get_production_scanner
 from backtest.engine import Backtester, BacktestConfig
 from data.universe.loader import load_universe
 from data.providers.polygon_eod import fetch_daily_bars_polygon
@@ -23,7 +22,7 @@ def main():
     ap.add_argument('--universe', type=str, required=True, help='CSV with symbol column')
     ap.add_argument('--start', type=str, required=True, help='YYYY-MM-DD')
     ap.add_argument('--end', type=str, required=True, help='YYYY-MM-DD')
-    ap.add_argument('--strategy', type=str, default='ibs_rsi', choices=['ibs_rsi','turtle_soup','ict'])
+    # Deprecated: --strategy flag removed. Always uses DualStrategyScanner (IBS+RSI + Turtle Soup combined)
     ap.add_argument('--cache', type=str, default='data/cache')
     ap.add_argument('--cap', type=int, default=900, help='Max symbols to use')
     ap.add_argument('--dotenv', type=str, default='./.env')
@@ -39,20 +38,14 @@ def main():
 
     cache_dir = _P(args.cache)
 
-    # Strategy setup
-    don = IbsRsiStrategy()
-    ict = TurtleSoupStrategy()
+    # Use canonical DualStrategyScanner (combines IBS+RSI and Turtle Soup with 0.3 ATR filter)
+    scanner = get_production_scanner()
 
     def fetcher(sym: str) -> pd.DataFrame:
         return fetch_daily_bars_polygon(sym, args.start, args.end, cache_dir=cache_dir)
 
-    # Select get_signals function
-    if args.strategy in ('ibs_rsi',):
-        def get_signals(df: pd.DataFrame) -> pd.DataFrame:
-            return don.scan_signals_over_time(df)
-    else:  # 'turtle_soup' or alias 'ict'
-        def get_signals(df: pd.DataFrame) -> pd.DataFrame:
-            return ict.scan_signals_over_time(df)
+    def get_signals(df: pd.DataFrame) -> pd.DataFrame:
+        return scanner.scan_signals_over_time(df)
 
     cfg = BacktestConfig(initial_cash=100_000.0)
     bt = Backtester(cfg, get_signals, fetcher)

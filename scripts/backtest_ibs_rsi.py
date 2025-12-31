@@ -25,12 +25,12 @@ if env_path.exists():
 
 from data.providers.polygon_eod import fetch_daily_bars_polygon
 from data.universe.loader import load_universe
-from strategies.ibs_rsi.strategy import IbsRsiStrategy, IbsRsiParams
+from strategies.registry import get_production_scanner
 
 
-def run_backtest(symbols: List[str], start: str, end: str, params: IbsRsiParams, max_symbols: int) -> Dict:
-    """Run backtest with proper trade simulation."""
-    strategy = IbsRsiStrategy(params)
+def run_backtest(symbols: List[str], start: str, end: str, params=None, max_symbols: int = 200) -> Dict:
+    """Run backtest with proper trade simulation using DualStrategyScanner."""
+    scanner = get_production_scanner()
     cache_dir = Path("data/cache/polygon")
 
     print(f"Fetching data for {min(len(symbols), max_symbols)} symbols...")
@@ -53,12 +53,12 @@ def run_backtest(symbols: List[str], start: str, end: str, params: IbsRsiParams,
     combined = pd.concat(all_data, ignore_index=True)
     print(f"Got {len(all_data)} symbols, {len(combined)} bars")
 
-    # Compute indicators
-    combined = strategy._compute_indicators(combined)
-
-    # Generate signals
+    # Generate signals using canonical DualStrategyScanner
     print("Generating signals...")
-    signals = strategy.scan_signals_over_time(combined.copy())
+    signals = scanner.scan_signals_over_time(combined.copy())
+    # Filter to IBS_RSI signals only for this specific backtest
+    if not signals.empty and 'strategy' in signals.columns:
+        signals = signals[signals['strategy'] == 'IBS_RSI']
     print(f"Generated {len(signals)} signals")
 
     if signals.empty:

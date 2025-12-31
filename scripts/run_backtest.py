@@ -6,8 +6,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-from strategies.ibs_rsi.strategy import IbsRsiStrategy
-from strategies.ict.turtle_soup import TurtleSoupStrategy
+from strategies.registry import get_production_scanner
 from backtest.engine import Backtester, BacktestConfig
 
 # Synthetic fetcher (deterministic)
@@ -33,13 +32,12 @@ def fetch_bars(symbol: str) -> pd.DataFrame:
 
 
 def main():
-    # Choose one strategy at a time (IBS_RSI or ICT Turtle Soup)
-    strat = IbsRsiStrategy()
-    # strat = TurtleSoupStrategy()
+    # Use canonical DualStrategyScanner (combines IBS+RSI and Turtle Soup)
+    scanner = get_production_scanner()
 
     def get_signals(df: pd.DataFrame) -> pd.DataFrame:
         # Use backtest-friendly multi-bar scan
-        return strat.scan_signals_over_time(df)
+        return scanner.scan_signals_over_time(df)
 
     cfg = BacktestConfig(initial_cash=100_000.0)
     bt = Backtester(cfg, get_signals, fetch_bars)

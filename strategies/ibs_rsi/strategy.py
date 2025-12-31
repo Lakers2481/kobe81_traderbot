@@ -1,5 +1,18 @@
 from __future__ import annotations
 
+import warnings as _warnings
+_warnings.warn(
+    "\n"
+    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+    "DEPRECATED: IbsRsiStrategy imported directly\n"
+    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+    "Use: from strategies.registry import get_production_scanner\n"
+    "     scanner = get_production_scanner()\n"
+    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n",
+    DeprecationWarning,
+    stacklevel=2
+)
+
 """
 IBS + RSI(2) Mean-Reversion Strategy (long-only, daily) — v2.2 defaults
 
