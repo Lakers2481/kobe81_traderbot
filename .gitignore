@@ -92,3 +92,7 @@ notebooks/.ipynb_checkpoints/
 
 # History archives (use sparingly)
 docs/history/
+
+# AI prompts (session artifacts)
+docs/prompts/
+CLAUDE_PROMPT_*.md
