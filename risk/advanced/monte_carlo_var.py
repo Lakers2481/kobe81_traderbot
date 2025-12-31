@@ -119,6 +119,12 @@ class MonteCarloVaR:
         self.horizon_days = horizon_days
         self.random_seed = random_seed
 
+        # REPRODUCIBILITY: Use numpy Generator for deterministic simulations
+        # Default seed is 42 for consistency with other modules
+        seed = random_seed if random_seed is not None else 42
+        self._rng = np.random.Generator(np.random.PCG64(seed))
+
+        # Also set global seed for backward compatibility
         if random_seed is not None:
             np.random.seed(random_seed)
 
@@ -386,7 +392,8 @@ class MonteCarloVaR:
             chol_matrix = eigenvectors @ np.diag(np.sqrt(eigenvalues))
 
         # Generate uncorrelated standard normal random variables
-        uncorrelated_random = np.random.standard_normal((self.num_simulations, n_assets))
+        # Use seeded Generator for reproducibility
+        uncorrelated_random = self._rng.standard_normal((self.num_simulations, n_assets))
 
         # Apply Cholesky decomposition to create correlations
         correlated_random = uncorrelated_random @ chol_matrix.T

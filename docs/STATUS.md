@@ -74,6 +74,8 @@ This is **UNACCEPTABLE** for a trading system. Results MUST be reproducible.
 | Only `np.random` seeded | `scripts/scan.py:675-679` | Python `random` module unseeded |
 | Unseeded `random.choice()` | `execution/execution_bandit.py:202,220,222` | Thompson/UCB selection random |
 | Unseeded `random.sample()` | `cognitive/curiosity_engine.py:372` | Hypothesis generation random |
+| Unseeded `np.random.beta()` | `execution/execution_bandit.py:195` | Thompson Sampling beta draws random |
+| Unseeded `np.random.standard_normal()` | `risk/advanced/monte_carlo_var.py:389` | VaR simulations random |
 | Quality Gate filtering | `risk/signal_quality_gate.py` | Filtered all signals to 0 |
 
 ### Fixes Applied
@@ -106,16 +108,43 @@ _curiosity_rng = random.Random(_curiosity_seed)
 # Replace random.sample() with _curiosity_rng.sample()
 ```
 
+**4. execution_bandit.py - Seed numpy Beta sampling:**
+```python
+# Add numpy Generator for Thompson Sampling
+_bandit_np_rng = np.random.Generator(np.random.PCG64(_BANDIT_SEED))
+
+# Replace np.random.beta() with _bandit_np_rng.beta()
+```
+
+**5. monte_carlo_var.py - Seed VaR simulations:**
+```python
+# In __init__:
+seed = random_seed if random_seed is not None else 42
+self._rng = np.random.Generator(np.random.PCG64(seed))
+
+# Replace np.random.standard_normal() with self._rng.standard_normal()
+```
+
 ### Verification
 
-**3 consecutive scans with `--deterministic` flag:**
-```
-Run 1: TOP 3 = JPM ($323.42), C ($117.21), EA ($204.35) - 10 signals
-Run 2: TOP 3 = JPM ($323.42), C ($117.21), EA ($204.35) - 10 signals
-Run 3: TOP 3 = JPM ($323.42), C ($117.21), EA ($204.35) - 10 signals
+**6 determinism tests pass:** `pytest tests/test_scanner_determinism.py -v`
 
-*** REPRODUCIBILITY VERIFIED: All 3 scans produced IDENTICAL results ***
+**3 consecutive scans with `--deterministic` flag (2025-12-31 v2):**
 ```
+Run 1: SCAN_20251231_140221 - TOP 3 = JPM, GS, TSLA (conf: 0.722, 0.469, 0.396)
+Run 2: SCAN_20251231_140355 - TOP 3 = JPM, GS, TSLA (conf: 0.722, 0.469, 0.396)
+Run 3: SCAN_20251231_140519 - TOP 3 = JPM, GS, TSLA (conf: 0.722, 0.469, 0.396)
+
+*** 100% REPRODUCIBILITY VERIFIED: All runs produce IDENTICAL signals ***
+```
+
+**Verified components:**
+- Python random.choice/sample/random: SEEDED
+- NumPy np.random.beta: SEEDED (Generator)
+- NumPy np.random.standard_normal: SEEDED (Generator)
+- Cognitive brain: SEEDED
+- Execution bandit: SEEDED
+- VaR simulations: SEEDED
 
 ### Why Results Change Day-to-Day (EXPECTED)
 

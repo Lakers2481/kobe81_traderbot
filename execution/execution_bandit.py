@@ -43,7 +43,8 @@ logger = logging.getLogger(__name__)
 # REPRODUCIBILITY: Module-level seeding for deterministic execution selection
 # The scanner will re-seed if --deterministic flag is used, overriding this
 _BANDIT_SEED = int(os.getenv("KOBE_RANDOM_SEED", "42"))
-_bandit_rng = random.Random(_BANDIT_SEED)  # Isolated RNG for bandit operations
+_bandit_rng = random.Random(_BANDIT_SEED)  # Isolated RNG for bandit operations (Python random)
+_bandit_np_rng = np.random.Generator(np.random.PCG64(_BANDIT_SEED))  # Isolated RNG for numpy operations
 
 
 # =============================================================================
@@ -192,7 +193,8 @@ class ExecutionBandit:
         for name, arm in arms.items():
             # Sample from Beta(alpha, beta) distribution
             # Higher alpha = more successes, higher expected value
-            sample = np.random.beta(arm.alpha, arm.beta)
+            # Use seeded numpy Generator for reproducibility
+            sample = _bandit_np_rng.beta(arm.alpha, arm.beta)
             samples[name] = sample
 
         selected = max(samples, key=samples.get)
