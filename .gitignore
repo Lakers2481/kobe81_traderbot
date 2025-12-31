@@ -83,9 +83,16 @@ reports/*_latest.txt
 data/ml/
 data/sentiment/
 
-# Showdown/smoke outputs
+# Showdown/smoke outputs (variants, keep main only)
 showdown_*/
 smoke_*/
+
+# Walk-forward output variants (keep only wf_outputs/)
+wf_outputs_*/
+optimize_outputs_*/
+
+# Archive folder (old experiments)
+archive/
 
 # Notebooks checkpoints
 notebooks/.ipynb_checkpoints/

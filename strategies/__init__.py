@@ -30,17 +30,17 @@ See docs/V2.2_OPTIMIZATION_GUIDE.md for full methodology.
 # Primary Strategy - Use This
 from .dual_strategy.combined import DualStrategyScanner, DualStrategyParams
 
-# Component Strategies (used internally by DualStrategyScanner)
-from .ibs_rsi.strategy import IbsRsiStrategy, IbsRsiParams
-from .ict.turtle_soup import TurtleSoupStrategy, TurtleSoupParams
+# Production scanner factory
+from .registry import get_production_scanner
+
+# DEPRECATED: Standalone strategies are NOT exported at package level
+# They exist for reference/testing only. Use DualStrategyScanner instead.
+# DO NOT import: IbsRsiStrategy, TurtleSoupStrategy
+# These are kept in their modules but not exported here.
 
 __all__ = [
-    # Primary - Use This
+    # Production - Use These
     "DualStrategyScanner",
     "DualStrategyParams",
-    # Components
-    "IbsRsiStrategy",
-    "IbsRsiParams",
-    "TurtleSoupStrategy",
-    "TurtleSoupParams",
+    "get_production_scanner",
 ]
