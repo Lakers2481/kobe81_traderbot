@@ -28,13 +28,16 @@ MARKET HOURS (9:30 - 16:00)
 - 15:30 SWING_SCANNER      - Swing setups
 - 15:55 POSITION_CLOSE_CHECK - Enforce time stops before close
 
-POST-MARKET (16:00 - 21:00)
+POST-MARKET (16:00 - 22:00)
 - 16:00 POST_GAME          - AI Briefing + lessons
 - 16:05 EOD_REPORT         - Performance report
 - 16:15 RECONCILE_EOD      - Full reconciliation + report
 - 17:00 EOD_LEARNING       - Weekly ML training (Fridays)
+- 17:15 COGNITIVE_LEARN    - Daily hypothesis testing & edge discovery
+- 17:30 LEARN_ANALYSIS     - Daily trade learning analysis
 - 18:00 EOD_FINALIZE       - Finalize EOD data after provider delay
-- 21:00 OVERNIGHT_ANALYSIS - Overnight analysis
+- 21:00 RESEARCH_DISCOVER  - Daily research & pattern discovery
+- 22:00 ALPHA_SCREEN_WEEKLY - Weekly alpha screening (Saturdays)
 
 The scheduler stores last-run markers per tag/date to prevent duplicates.
 """
@@ -167,8 +170,11 @@ SCHEDULE: List[ScheduleEntry] = [
 
     # === POST-MARKET ===
     ScheduleEntry('EOD_LEARNING', dtime(17, 0)),     # Weekly ML training (Fridays)
+    ScheduleEntry('COGNITIVE_LEARN', dtime(17, 15)), # Daily cognitive consolidation (hypothesis testing)
+    ScheduleEntry('LEARN_ANALYSIS', dtime(17, 30)),  # Daily trade learning analysis
     ScheduleEntry('EOD_FINALIZE', dtime(18, 0)),     # Finalize EOD data after provider delay
-    ScheduleEntry('OVERNIGHT_ANALYSIS', dtime(21, 0)),
+    ScheduleEntry('RESEARCH_DISCOVER', dtime(21, 0)), # Daily research & pattern discovery
+    ScheduleEntry('ALPHA_SCREEN_WEEKLY', dtime(22, 0)), # Weekly alpha screening (Saturdays)
 
     # === DIVERGENCE MONITOR (runs alongside position manager) ===
     ScheduleEntry('DIVERGENCE_1', dtime(10, 0)),
@@ -517,6 +523,56 @@ def main() -> None:
                                     send_fn(f"<b>{entry.tag}</b> [{stamp}] completed (weekly promote)")
                                 except Exception:
                                     send_fn(f"<b>{entry.tag}</b> completed (weekly promote)")
+
+                        # === COGNITIVE LEARNING (Daily) ===
+                        elif entry.tag == 'COGNITIVE_LEARN':
+                            # Run daily cognitive consolidation - hypothesis testing & edge discovery
+                            rc = run_cmd([sys.executable, str(ROOT / 'scripts/cognitive_learn.py'),
+                                         '--dotenv', args.dotenv, '--consolidate', 'daily'])
+                            if send_fn:
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if rc == 0 else 'failed'} (hypothesis testing)")
+                                except Exception:
+                                    send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
+
+                        elif entry.tag == 'LEARN_ANALYSIS':
+                            # Daily trade learning analysis - what Kobe learned
+                            rc = run_cmd([sys.executable, str(ROOT / 'scripts/learn.py'), '--period', '1'])
+                            if send_fn:
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if rc == 0 else 'failed'} (trade analysis)")
+                                except Exception:
+                                    send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
+
+                        elif entry.tag == 'RESEARCH_DISCOVER':
+                            # Daily research & pattern discovery
+                            rc = run_cmd([sys.executable, str(ROOT / 'scripts/research_discover.py'),
+                                         '--dotenv', args.dotenv])
+                            if send_fn:
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if rc == 0 else 'failed'} (pattern discovery)")
+                                except Exception:
+                                    send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
+
+                        elif entry.tag == 'ALPHA_SCREEN_WEEKLY':
+                            # Weekly alpha screening - only run on Saturdays
+                            if datetime.now(ET).weekday() == 5:  # Saturday
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/run_alpha_screener.py'),
+                                             '--universe', args.universe, '--top', '20'])
+                                if send_fn:
+                                    try:
+                                        from core.clock.tz_utils import fmt_ct
+                                        now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                        send_fn(f"<b>{entry.tag}</b> [{stamp}] {'completed' if rc == 0 else 'failed'} (alpha screening)")
+                                    except Exception:
+                                        send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
+
                         elif entry.tag == 'POST_GAME':
                             # Generate comprehensive POST_GAME briefing with full day analysis
                             rc = run_cmd([sys.executable, str(ROOT / 'scripts/generate_briefing.py'),
@@ -631,15 +687,6 @@ def main() -> None:
                                         send_fn(f"<b>INTRADAY_CHECK</b> [{stamp}] issues: {', '.join(issues)}")
                                     except Exception:
                                         pass
-
-                        # === OVERNIGHT_ANALYSIS (v2.0) - Placeholder ===
-                        # Reserved for future overnight analysis features:
-                        # - Overnight gap analysis
-                        # - Pre-market movers detection
-                        # - Earnings surprise analysis
-                        elif entry.tag == 'OVERNIGHT_ANALYSIS':
-                            # Intentionally no action - slot reserved for future implementation
-                            pass
 
                         mark_ran(state, entry.tag, ymd)
                         save_state(state)
