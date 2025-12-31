@@ -218,8 +218,9 @@ def fetch_daily_bars_multi(symbol: str, start: str, end: str, cache_dir: Optiona
     merged = merged.drop_duplicates(subset=['timestamp'], keep='last')  # keep Polygon rows when overlapping
     merged = merged.drop(columns=['__src'])
     merged = merged.sort_values('timestamp').reset_index(drop=True)
-    # Bound to [start, end]
-    s = pd.to_datetime(start, utc=True).tz_localize(None)
-    e = pd.to_datetime(end, utc=True).tz_localize(None)
-    merged = merged[(merged['timestamp'] >= s) & (merged['timestamp'] <= e)]
+    # Bound to [start, end] - compare on date only to avoid timezone hour issues
+    # (raw timestamps may be at 05:00 UTC, but end date should include the whole day)
+    s = pd.to_datetime(start).date()
+    e = pd.to_datetime(end).date()
+    merged = merged[(merged['timestamp'].dt.date >= s) & (merged['timestamp'].dt.date <= e)]
     return merged
