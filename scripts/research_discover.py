@@ -19,6 +19,10 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+# Load environment variables for API keys
+from dotenv import load_dotenv
+load_dotenv(ROOT / '.env')
+
 from data.providers.multi_source import fetch_daily_bars_multi
 from data.universe.loader import load_universe
 from research.screener import screen_universe, save_screening_report

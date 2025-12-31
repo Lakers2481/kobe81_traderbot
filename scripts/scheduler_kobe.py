@@ -549,9 +549,9 @@ def main() -> None:
                                     send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
 
                         elif entry.tag == 'RESEARCH_DISCOVER':
-                            # Daily research & pattern discovery
+                            # Daily research & pattern discovery (env already loaded by scheduler)
                             rc = run_cmd([sys.executable, str(ROOT / 'scripts/research_discover.py'),
-                                         '--dotenv', args.dotenv])
+                                         '--cap', str(args.cap)])
                             if send_fn:
                                 try:
                                     from core.clock.tz_utils import fmt_ct
