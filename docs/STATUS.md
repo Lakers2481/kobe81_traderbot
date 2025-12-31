@@ -4446,3 +4446,225 @@ Turtle Soup Entry Logic:
 
 *Section 24 completed 2025-12-30 20:30 UTC by Claude Opus 4.5*
 *ICT Turtle Soup v2.2 parameters verified and frozen*
+
+---
+
+## 25. PERMANENT STRATEGY SAFEGUARDS (Dec 30, 2025)
+
+### 25.1 Problem Statement
+
+**CRITICAL ISSUE IDENTIFIED:** The standalone strategy classes (`TurtleSoupStrategy`, `IbsRsiStrategy`)
+do NOT have all the critical filters that `DualStrategyScanner` has. Using them directly causes:
+
+| Strategy Used | Win Rate | Profit Factor | Result |
+|---------------|----------|---------------|--------|
+| `DualStrategyScanner` (CORRECT) | **61.0%** | **1.37** | PROFITABLE |
+| `TurtleSoupStrategy` (WRONG) | ~48% | ~0.85 | LOSING MONEY |
+
+**Root Cause:** `DualStrategyScanner` has `ts_min_sweep_strength=0.3` filter. Standalone does NOT.
+
+---
+
+### 25.2 Safeguards Implemented
+
+**Five layers of protection to ensure correct strategy is ALWAYS used:**
+
+#### Layer 1: Deprecation Warnings in Source Files
+
+Both standalone strategy files now have prominent warning banners:
+
+**`strategies/ict/turtle_soup.py`:**
+```python
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!! DEPRECATED FOR PRODUCTION USE !!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+DO NOT use TurtleSoupStrategy directly for production trading or backtesting!
+
+This standalone class does NOT have the critical min_sweep_strength filter.
+Without it, win rate drops from 61% to ~48%.
+
+CORRECT USAGE:
+    from strategies.dual_strategy import DualStrategyScanner, DualStrategyParams
+```
+
+**`strategies/ibs_rsi/strategy.py`:**
+```python
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!! DEPRECATED FOR PRODUCTION USE !!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+DO NOT use IbsRsiStrategy directly for production trading or backtesting!
+
+CORRECT USAGE:
+    from strategies.dual_strategy import DualStrategyScanner, DualStrategyParams
+```
+
+#### Layer 2: Canonical Strategy Registry
+
+**New file: `strategies/registry.py`**
+
+Single source of truth for getting production strategies:
+
+```python
+from strategies.registry import get_production_scanner
+
+scanner = get_production_scanner()  # ALWAYS correct
+signals = scanner.scan_signals_over_time(df)
+```
+
+Functions provided:
+- `get_production_scanner()` - Returns verified DualStrategyScanner
+- `get_default_params()` - Returns verified v2.2 parameters
+- `validate_strategy_import()` - Warns if deprecated imports detected
+- `assert_no_deprecated_strategies()` - BLOCKS execution if wrong imports
+- `print_strategy_info()` - Shows verified performance metrics
+
+#### Layer 3: Runtime Validation in Critical Scripts
+
+**`scripts/runner.py`** - Added startup check:
+```python
+# CRITICAL: Validate strategy imports at startup
+from strategies.registry import validate_strategy_import
+validate_strategy_import()  # Warn about any bad imports
+```
+
+**`scripts/scan.py`** - Added startup check:
+```python
+# CRITICAL: Validate strategy imports at startup
+from strategies.registry import validate_strategy_import
+validate_strategy_import()
+```
+
+#### Layer 4: Frozen Parameters File
+
+**`config/frozen_strategy_params_v2.2.json`**
+
+Contains:
+- All verified parameters for both strategies
+- Backtest evidence (trades, WR, PF)
+- Usage notes with correct/wrong examples
+- Backtest command for verification
+
+#### Layer 5: CLAUDE.md Documentation
+
+Added CRITICAL section at the top of CLAUDE.md:
+
+```markdown
+## CRITICAL: ALWAYS Use DualStrategyScanner (NEVER Standalone Strategies)
+
+THIS IS NON-NEGOTIABLE. ALWAYS USE THE CORRECT STRATEGY CLASS.
+
+| WRONG (DEPRECATED) | CORRECT |
+|-------------------|---------|
+| `from strategies.ict.turtle_soup import TurtleSoupStrategy` | `from strategies.registry import get_production_scanner` |
+| `from strategies.ibs_rsi.strategy import IbsRsiStrategy` | `from strategies.dual_strategy import DualStrategyScanner` |
+```
+
+---
+
+### 25.3 Deprecation Warning Test
+
+When deprecated strategies are imported, this warning appears:
+
+```
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!! DEPRECATED STRATEGY IMPORT DETECTED !!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+You imported: strategies.ict.turtle_soup.TurtleSoupStrategy
+
+This is WRONG for production use!
+- Standalone TurtleSoupStrategy produces ~48-59% win rate
+- DualStrategyScanner produces 60-61% win rate
+
+CORRECT USAGE:
+    from strategies.registry import get_production_scanner
+    scanner = get_production_scanner()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+```
+
+---
+
+### 25.4 Files Created/Modified
+
+| File | Action | Purpose |
+|------|--------|---------|
+| `strategies/registry.py` | CREATED | Canonical strategy access |
+| `config/frozen_strategy_params_v2.2.json` | CREATED | Frozen verified params |
+| `strategies/ict/turtle_soup.py` | MODIFIED | Added deprecation warning |
+| `strategies/ibs_rsi/strategy.py` | MODIFIED | Added deprecation warning |
+| `scripts/runner.py` | MODIFIED | Added startup validation |
+| `scripts/scan.py` | MODIFIED | Added startup validation |
+| `CLAUDE.md` | MODIFIED | Added CRITICAL rule |
+| `docs/STATUS.md` | MODIFIED | Added Section 25 |
+
+---
+
+### 25.5 AI/ML/LLM Wiring Verification
+
+All AI/ML/LLM components verified connected to strategies:
+
+| Component | Wired To | File | Status |
+|-----------|----------|------|--------|
+| Calibration | Signal Quality Gate | `risk/signal_quality_gate.py:222` | CONNECTED |
+| Conformal | Signal Quality Gate | `risk/signal_quality_gate.py:234` | CONNECTED |
+| Conformal | Risk Manager | `portfolio/risk_manager.py:152` | CONNECTED |
+| Cognitive Brain | Scanner | `scripts/scan.py:148` | CONNECTED |
+| LLM Analyzer | Scanner | `scripts/scan.py:51` | CONNECTED |
+| Game Briefings | Briefing Script | `scripts/generate_briefing.py:119` | CONNECTED |
+| Socratic Narrative | Cognitive Module | `cognitive/socratic_narrative.py` | AVAILABLE |
+
+---
+
+### 25.6 Production Readiness Verification
+
+```bash
+# Preflight Check (2025-12-30)
+[1/5] Environment: OK - 11 vars loaded
+[2/5] Config Pin: OK - 0672528b...
+[3/5] Alpaca Trading API: OK
+[4/5] Alpaca Quotes API: OK
+[5/5] Polygon Data: OK - Fresh (2025-12-29)
+
+PREFLIGHT OK - Ready for trading
+
+# Live Scan Test
+[STRATEGY] Using canonical DualStrategyScanner (v2.2 verified)
+Fetched 50 symbols, 13,700 bars
+Quality gate working
+Data fresh through 2025-12-30
+```
+
+---
+
+### 25.7 Commit Record
+
+```
+Commit: f8e6126
+Message: feat: Add permanent safeguards to ALWAYS use correct DualStrategyScanner
+Files: 8 files changed, 593 insertions(+)
+Pushed: 2025-12-30 to origin/main
+```
+
+---
+
+### 25.8 Verification Checklist
+
+- [x] Deprecation warnings added to standalone strategies
+- [x] Strategy registry created with validation functions
+- [x] Runtime validation added to runner.py
+- [x] Runtime validation added to scan.py
+- [x] Frozen parameters file created
+- [x] CLAUDE.md updated with CRITICAL rule
+- [x] STATUS.md updated with Section 25
+- [x] All changes committed and pushed
+- [x] Live scan test passed
+- [x] Preflight checks passed
+- [x] AI/ML/LLM wiring verified
+
+**STATUS: PERMANENT STRATEGY SAFEGUARDS - IMPLEMENTED AND ACTIVE**
+
+---
+
+*Section 25 completed 2025-12-30 21:00 UTC by Claude Opus 4.5*
+*Strategy safeguards ensure correct DualStrategyScanner is ALWAYS used*
