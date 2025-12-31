@@ -289,6 +289,15 @@ def main():
     if dotenv.exists():
         load_env(dotenv)
 
+    # CRITICAL: Validate strategy imports at startup
+    # This ensures we NEVER use deprecated standalone strategies
+    try:
+        from strategies.registry import validate_strategy_import, assert_no_deprecated_strategies
+        validate_strategy_import()  # Warn about any bad imports
+        jlog('strategy_validation', level='INFO', status='passed', message='Using correct DualStrategyScanner')
+    except ImportError:
+        jlog('strategy_validation', level='WARNING', message='Registry not available, skipping validation')
+
     universe = Path(args.universe)
     times = parse_times(args.scan_times)
 

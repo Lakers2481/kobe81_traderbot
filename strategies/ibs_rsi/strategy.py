@@ -3,9 +3,29 @@ from __future__ import annotations
 """
 IBS + RSI(2) Mean-Reversion Strategy (long-only, daily) — v2.2 defaults
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!! DEPRECATED FOR PRODUCTION USE !!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+DO NOT use IbsRsiStrategy directly for production trading or backtesting!
+
+While this class has the same parameters as DualStrategyScanner's IBS+RSI,
+you should ALWAYS use DualStrategyScanner for consistency and to ensure
+both strategies are evaluated together.
+
+CORRECT USAGE:
+    from strategies.dual_strategy import DualStrategyScanner, DualStrategyParams
+    scanner = DualStrategyScanner(DualStrategyParams())
+    signals = scanner.scan_signals_over_time(df)
+
+This file is kept for:
+- Reference implementation
+- Parameter documentation
+- Unit testing of individual components
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 Entry conditions (evaluated on prior bar to avoid lookahead):
-- IBS(prev) < ibs_max (default 0.15)
-- RSI2(prev) < rsi_max (default 10)
+- IBS(prev) < ibs_max (default 0.08)
+- RSI2(prev) < rsi_max (default 5.0)
 - Close(prev) > SMA(200) (trend filter)
 
 Stops/targets:

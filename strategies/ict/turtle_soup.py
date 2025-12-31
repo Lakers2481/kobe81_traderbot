@@ -2,6 +2,27 @@
 """
 Turtle Soup Strategy (ICT Liquidity Sweep)
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!! DEPRECATED FOR PRODUCTION USE !!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+DO NOT use TurtleSoupStrategy directly for production trading or backtesting!
+
+This standalone class does NOT have the critical min_sweep_strength filter.
+Without it, win rate drops from 61% to ~48%.
+
+CORRECT USAGE:
+    from strategies.dual_strategy import DualStrategyScanner, DualStrategyParams
+    scanner = DualStrategyScanner(DualStrategyParams())
+    signals = scanner.scan_signals_over_time(df)
+
+The DualStrategyScanner includes ts_min_sweep_strength=0.3 which is ESSENTIAL.
+
+This file is kept for:
+- Reference implementation
+- Parameter documentation
+- Unit testing of individual components
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 Original: Linda Bradford Raschke & Larry Connors, "Street Smarts" (1995)
 ICT Alignment: Maps to "liquidity raid + revert" concept
 

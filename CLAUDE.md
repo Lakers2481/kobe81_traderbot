@@ -21,6 +21,40 @@ python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liq
 
 ---
 
+## CRITICAL: ALWAYS Use DualStrategyScanner (NEVER Standalone Strategies)
+
+**THIS IS NON-NEGOTIABLE. ALWAYS USE THE CORRECT STRATEGY CLASS.**
+
+| WRONG (DEPRECATED) | CORRECT |
+|-------------------|---------|
+| `from strategies.ict.turtle_soup import TurtleSoupStrategy` | `from strategies.registry import get_production_scanner` |
+| `from strategies.ibs_rsi.strategy import IbsRsiStrategy` | `from strategies.dual_strategy import DualStrategyScanner` |
+
+**Why This Matters:**
+- `DualStrategyScanner` has `ts_min_sweep_strength=0.3` filter = **61% WR, 1.37 PF**
+- `TurtleSoupStrategy` (standalone) has NO filter = **~48% WR, 0.85 PF** (FAIL!)
+- Using wrong strategy costs you **13% win rate** and turns a profitable system into a losing one
+
+**Canonical Usage:**
+```python
+# ALWAYS use this for production
+from strategies.registry import get_production_scanner
+scanner = get_production_scanner()
+signals = scanner.scan_signals_over_time(df)
+
+# Or this
+from strategies.dual_strategy import DualStrategyScanner, DualStrategyParams
+scanner = DualStrategyScanner(DualStrategyParams())
+```
+
+**Safeguards Implemented:**
+1. Deprecation warnings in `turtle_soup.py` and `ibs_rsi/strategy.py`
+2. Strategy registry at `strategies/registry.py` with validation
+3. Startup validation in `runner.py` and `scan.py`
+4. Frozen parameters at `config/frozen_strategy_params_v2.2.json`
+
+---
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository. The trading robot is named "Kobe". Do not refer to any prior system name.
 
 ## Project Overview

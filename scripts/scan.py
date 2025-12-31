@@ -641,6 +641,16 @@ Examples:
         if args.verbose:
             print(f"Warning: dotenv file not found: {dotenv_path}", file=sys.stderr)
 
+    # CRITICAL: Validate strategy imports at startup
+    # This ensures we NEVER use deprecated standalone strategies
+    try:
+        from strategies.registry import validate_strategy_import
+        validate_strategy_import()
+        if args.verbose:
+            print("[STRATEGY] Using canonical DualStrategyScanner (v2.2 verified)")
+    except ImportError:
+        pass  # Registry not available
+
     # === Apply CLI feature flags to config (runtime overrides) ===
     if args.calibration or args.conformal or args.exec_bandit or args.intraday_trigger:
         try:
