@@ -8,12 +8,16 @@ Outputs: reports/eod_report_YYYYMMDD.html
 """
 
 import argparse
+import sys
 from pathlib import Path
 from datetime import datetime
-from core.clock.tz_utils import now_et, fmt_ct
-import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from core.clock.tz_utils import now_et, fmt_ct
+import pandas as pd
 
 
 def html_table(df: pd.DataFrame, title: str) -> str:
