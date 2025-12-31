@@ -1,2 +1,3 @@
 {"prev_hash": null, "payload": {"event": "test1", "data": "foo"}, "this_hash": "c92111968844deac40e032c0daa9e4331275e2dc9303c2920b12db1bdc088ff6"}
 {"prev_hash": "c92111968844deac40e032c0daa9e4331275e2dc9303c2920b12db1bdc088ff6", "payload": {"event": "test2", "data": "bar"}, "this_hash": "067402f162d22f0b597d0a5a6fff458ea7a26c7ee37b63f295077fbc25d47889"}
+{"prev_hash": "067402f162d22f0b597d0a5a6fff458ea7a26c7ee37b63f295077fbc25d47889", "payload": {"decision_id": "DEC_20251231_190059_CFG_E26D85", "symbol": "CFG", "side": "BUY", "qty": 1, "limit_price": 58.92, "status": "OrderStatus.FILLED", "notes": null, "order_type": "IOC_LIMIT", "ts": "2025-12-31T19:01:01.929165"}, "this_hash": "f0635ec8610fa5ace14ae8cbc50d60eb91d7ab6aecfb61175e9626606685a750"}
