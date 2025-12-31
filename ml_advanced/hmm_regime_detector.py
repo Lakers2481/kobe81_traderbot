@@ -460,14 +460,18 @@ class AdaptiveRegimeDetector:
             timestamp=datetime.now()
         )
 
-    def _rule_based_regime(self, spy_data: pd.DataFrame, vix_data: pd.DataFrame) -> MarketRegime:
+    def _rule_based_regime(self, spy_data: pd.DataFrame, vix_data: Optional[pd.DataFrame] = None) -> MarketRegime:
         """Simple rule-based regime detection."""
         spy_close = spy_data['Close']
-        vix_close = vix_data['Close']
 
         spy_price = spy_close.iloc[-1]
         spy_sma200 = spy_close.rolling(200).mean().iloc[-1]
-        vix_price = vix_close.iloc[-1]
+
+        # Handle VIX data (use default of 20 if not available)
+        if vix_data is not None and not vix_data.empty and 'Close' in vix_data.columns:
+            vix_price = vix_data['Close'].iloc[-1]
+        else:
+            vix_price = 20.0  # Neutral VIX assumption
 
         if len(spy_close) >= 50:
             spy_momentum_50d = (spy_price / spy_close.iloc[-50] - 1) * 100

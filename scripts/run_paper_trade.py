@@ -47,9 +47,14 @@ def main():
     ap.add_argument('--cache', type=str, default='data/cache')
     ap.add_argument('--kill-switch', type=str, default='state/KILL_SWITCH')
     ap.add_argument('--max-spread-pct', type=float, default=0.02, help='Max bid/ask spread as fraction of mid (default 2%)')
-    ap.add_argument('--cognitive', action='store_true', help='Enable cognitive brain for smarter trading decisions')
+    ap.add_argument('--cognitive', action='store_true', default=True, help='Enable cognitive brain (ON by default)')
+    ap.add_argument('--no-cognitive', action='store_true', help='Disable cognitive brain')
     ap.add_argument('--cognitive-min-conf', type=float, default=0.5, help='Min cognitive confidence to trade')
     args = ap.parse_args()
+
+    # Handle --no-cognitive override
+    if args.no_cognitive:
+        args.cognitive = False
 
     # Env
     dotenv = Path(args.dotenv)

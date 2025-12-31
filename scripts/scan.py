@@ -65,6 +65,13 @@ try:
 except ImportError:
     ALPACA_LIVE_AVAILABLE = False
 
+# HMM Regime Detector (ML-powered market regime classification)
+try:
+    from ml_advanced.hmm_regime_detector import AdaptiveRegimeDetector, MarketRegime
+    HMM_REGIME_AVAILABLE = True
+except ImportError:
+    HMM_REGIME_AVAILABLE = False
+
 
 def get_last_trading_day(reference_date: datetime = None) -> tuple[str, bool, str]:
     """
@@ -534,7 +541,8 @@ Examples:
         action="store_true",
         help="Output signals as JSON",
     )
-    ap.add_argument("--ml", action="store_true", help="Score signals with ML meta-models if available")
+    ap.add_argument("--ml", action="store_true", default=True, help="Score signals with ML meta-models (ON by default)")
+    ap.add_argument("--no-ml", action="store_true", help="Disable ML scoring")
     ap.add_argument("--min-conf", type=float, default=0.55, help="Min confidence [0-1] to approve TOTD when --ml is on")
     ap.add_argument("--min-adv-usd", type=float, default=5000000.0, help="Minimum 60-day ADV in USD to consider for Top-3/TOTD")
     ap.add_argument("--ensure-top3", action="store_true", help="Guarantee 3 picks; fill from highest-confidence leftovers")
@@ -560,7 +568,13 @@ Examples:
     ap.add_argument(
         "--cognitive",
         action="store_true",
-        help="Enable cognitive brain evaluation for smarter signal filtering",
+        default=True,
+        help="Enable cognitive brain evaluation (ON by default)",
+    )
+    ap.add_argument(
+        "--no-cognitive",
+        action="store_true",
+        help="Disable cognitive brain evaluation",
     )
     ap.add_argument(
         "--cognitive-min-conf",
@@ -639,6 +653,12 @@ Examples:
         help="Use Alpaca live data for current prices (paper trading mode). Historical data still from Polygon.",
     )
     args = ap.parse_args()
+
+    # Handle --no-* override flags for ML and cognitive defaults
+    if args.no_ml:
+        args.ml = False
+    if args.no_cognitive:
+        args.cognitive = False
 
     # Load environment
     dotenv_path = Path(args.dotenv)
@@ -835,12 +855,25 @@ Examples:
     print("\nRunning strategies...")
     # Load SPY for regime filter if enabled
     spy_bars = None
+    hmm_regime_state = None
     apply_filters = not args.no_filters
     if apply_filters:
         try:
             spy_bars = fetch_spy_bars(start_date, end_date, cache_dir=CACHE_DIR)
         except Exception:
             spy_bars = None
+
+    # HMM Regime Detection (ML-enhanced)
+    if HMM_REGIME_AVAILABLE and args.ml and spy_bars is not None and not spy_bars.empty:
+        try:
+            regime_detector = AdaptiveRegimeDetector(use_hmm=True)
+            # Note: VIX data is optional, we'll pass None if not available
+            hmm_regime_state = regime_detector.detect_regime(spy_bars, vix_data=None)
+            if args.verbose:
+                print(f"  HMM Regime: {hmm_regime_state.regime.value} (conf={hmm_regime_state.confidence:.2f})")
+        except Exception as e:
+            if args.verbose:
+                print(f"  HMM regime detection failed: {e}", file=sys.stderr)
 
     # Selection config overrides
     sel_cfg = get_selection_config()
@@ -929,19 +962,11 @@ Examples:
             processor.min_confidence = args.cognitive_min_conf
 
             # Build fast confidences from ML scores
-            fast_confs = {}
-            if 'conf_score' in signals.columns:
-                for _, row in signals.iterrows():
-                    sym = row.get('symbol', '')
-                    if sym and pd.notna(row.get('conf_score')):
-                        fast_confs[sym] = float(row['conf_score'])
-
             # Evaluate through cognitive system
             approved_df, cognitive_evaluated = processor.evaluate_signals(
                 signals=signals,
                 market_data=combined,
                 spy_data=spy_bars,
-                fast_confidences=fast_confs,
             )
 
             if not approved_df.empty:
@@ -1235,8 +1260,12 @@ Examples:
                         vix = 20.0
                         sentiment_data = {}
 
-                        # Get regime from SPY data
-                        if spy_bars is not None and not spy_bars.empty:
+                        # Get regime from HMM detector (ML) or SPY SMA200 (fallback)
+                        if hmm_regime_state is not None:
+                            # Use ML-powered HMM regime detection
+                            regime = hmm_regime_state.regime.value
+                            regime_conf = hmm_regime_state.confidence
+                        elif spy_bars is not None and not spy_bars.empty:
                             try:
                                 spy_close = spy_bars['close'].iloc[-1]
                                 spy_sma200 = spy_bars['close'].rolling(200).mean().iloc[-1]

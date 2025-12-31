@@ -51,7 +51,31 @@ from typing import Any, Dict, List, Optional, Tuple
 from enum import Enum
 import hashlib
 
+import pandas as pd
+import numpy as np
+
 logger = logging.getLogger(__name__)
+
+
+def _sanitize_for_json(obj: Any) -> Any:
+    """
+    Recursively convert non-JSON-serializable objects to JSON-safe types.
+    Handles pandas Timestamps, numpy types, datetimes, etc.
+    """
+    if isinstance(obj, dict):
+        return {k: _sanitize_for_json(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [_sanitize_for_json(v) for v in obj]
+    elif isinstance(obj, (pd.Timestamp, datetime)):
+        return obj.isoformat()
+    elif isinstance(obj, (np.integer, np.floating)):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif pd.isna(obj):
+        return None
+    else:
+        return obj
 
 
 class EpisodeOutcome(Enum):
@@ -224,18 +248,23 @@ class EpisodicMemory:
         Returns:
             A unique episode_id string for tracking this decision process.
         """
+        # Sanitize contexts for JSON serialization (handles Timestamps, numpy types, etc.)
+        safe_signal_ctx = _sanitize_for_json(signal_context or {})
+        safe_market_ctx = _sanitize_for_json(market_context or {})
+        safe_portfolio_ctx = _sanitize_for_json(portfolio_context or {})
+
         # Create a unique but deterministic-ish ID.
         episode_id = (
             datetime.now().strftime("%Y%m%d_%H%M%S_") +
-            hashlib.md5(json.dumps(signal_context, sort_keys=True).encode()).hexdigest()[:6]
+            hashlib.md5(json.dumps(safe_signal_ctx, sort_keys=True).encode()).hexdigest()[:6]
         )
 
         episode = Episode(
             episode_id=episode_id,
             started_at=datetime.now(),
-            market_context=market_context or {},
-            signal_context=signal_context or {},
-            portfolio_context=portfolio_context or {},
+            market_context=safe_market_ctx,
+            signal_context=safe_signal_ctx,
+            portfolio_context=safe_portfolio_ctx,
         )
 
         self._active_episodes[episode_id] = episode
