@@ -346,3 +346,24 @@ def get_alerter() -> TelegramAlerter:
 
         _alerter = TelegramAlerter(enabled=alerts_enabled or telegram_enabled)
     return _alerter
+
+
+def send_telegram_message(msg: str, parse_mode: str = "HTML") -> bool:
+    """
+    Convenience function for simple message sending.
+
+    This is a module-level wrapper around TelegramAlerter for scripts
+    that need a simple send function without managing alerter instances.
+
+    Args:
+        msg: Message text (supports HTML if parse_mode="HTML")
+        parse_mode: "HTML" or "Markdown"
+
+    Returns:
+        True if sent successfully, False otherwise
+    """
+    try:
+        alerter = get_alerter()
+        return alerter.send_message(msg, parse_mode=parse_mode)
+    except Exception:
+        return False

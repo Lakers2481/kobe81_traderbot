@@ -512,19 +512,37 @@ def main() -> None:
                                 except Exception:
                                     send_fn(f"<b>EOD_FINALIZE</b> {'completed' if rc == 0 else 'failed'}")
 
-                        # === INTRADAY SCANS (v2.1) - Every 15 min refresh ===
-                        # Lightweight scans to find new setups throughout the day
-                        # Outputs to logs/daily_picks.csv for manual review - NO auto-execution
+                        # === INTRADAY SCANS (v2.2) - Every 15 min comprehensive check ===
+                        # 1. Refresh Top-3 picks for manual review
+                        # 2. Check/manage open positions (stops, exits)
+                        # 3. Health status validation
                         elif entry.tag.startswith('INTRADAY_SCAN_'):
-                            rc = do_refresh_top3(args.universe, args.dotenv, args.cap, scan_date)
-                            # Only send Telegram notification on errors (to avoid spam)
-                            if send_fn and rc != 0:
-                                try:
-                                    from core.clock.tz_utils import fmt_ct
-                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
-                                    send_fn(f"<b>INTRADAY_SCAN</b> [{stamp}] failed (rc={rc})")
-                                except Exception:
-                                    pass
+                            # Step 1: Refresh Top-3 signals
+                            rc_scan = do_refresh_top3(args.universe, args.dotenv, args.cap, scan_date)
+
+                            # Step 2: Position management (check stops, time exits, P&L)
+                            rc_pos = run_cmd([sys.executable, str(ROOT / 'scripts/position_manager.py'), '--dotenv', args.dotenv])
+
+                            # Step 3: Health/divergence check (broker sync validation)
+                            rc_health = run_cmd([sys.executable, str(ROOT / 'monitor/divergence_monitor.py'), '--dotenv', args.dotenv])
+
+                            # Notify on any issues
+                            if send_fn:
+                                issues = []
+                                if rc_scan != 0:
+                                    issues.append(f"scan:{rc_scan}")
+                                if rc_pos != 0:
+                                    issues.append(f"positions:{rc_pos}")
+                                if rc_health == 2:  # Critical divergence
+                                    issues.append("DIVERGENCE!")
+
+                                if issues:
+                                    try:
+                                        from core.clock.tz_utils import fmt_ct
+                                        now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                        send_fn(f"<b>INTRADAY_CHECK</b> [{stamp}] issues: {', '.join(issues)}")
+                                    except Exception:
+                                        pass
 
                         # === OVERNIGHT_ANALYSIS (v2.0) - Placeholder ===
                         # Reserved for future overnight analysis features:
