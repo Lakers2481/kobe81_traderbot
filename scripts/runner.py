@@ -23,14 +23,16 @@ import os
 import signal
 from pathlib import Path
 from datetime import datetime, timedelta, time as dtime
-from core.clock.tz_utils import fmt_ct, now_et, ET
 import subprocess
 import sys
 import time
 
+# Add project root to path BEFORE importing local modules
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'scripts'))
+
+from core.clock.tz_utils import fmt_ct, now_et, ET
 
 from core.structured_log import jlog
 from monitor.health_endpoints import start_health_server, update_request_counter

@@ -44,6 +44,21 @@ US_MARKET_HOLIDAYS = {
         (12, 24, "Christmas Eve (Early Close)", time(13, 0)),
         (12, 25, "Christmas Day", None),
     ],
+    2026: [
+        (1, 1, "New Year's Day", None),
+        (1, 19, "Martin Luther King Jr. Day", None),
+        (2, 16, "Presidents Day", None),
+        (4, 3, "Good Friday", None),
+        (5, 25, "Memorial Day", None),
+        (6, 19, "Juneteenth", None),
+        (7, 3, "Independence Day (Early Close)", time(13, 0)),
+        (7, 4, "Independence Day (Observed)", None),
+        (9, 7, "Labor Day", None),
+        (11, 26, "Thanksgiving", None),
+        (11, 27, "Black Friday (Early Close)", time(13, 0)),
+        (12, 24, "Christmas Eve (Early Close)", time(13, 0)),
+        (12, 25, "Christmas Day", None),
+    ],
 }
 
 # Regular market hours (Eastern Time)
