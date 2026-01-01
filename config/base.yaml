@@ -8,7 +8,7 @@ system:
   timezone: "America/New_York"
 
 # Trading Modes (Scheduler v2) - Controls risk limits per mode
-trading_mode: "micro"  # Options: micro | paper | real
+trading_mode: "real"  # Options: micro | paper | real
 
 modes:
   micro:
