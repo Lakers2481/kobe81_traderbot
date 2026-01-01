@@ -71,6 +71,12 @@ reports/data_quality/
 reports/evidence/
 reports/screening/
 reports/morning_report_*.html
+reports/eod_report_*.html
+reports/overnight_*.txt
+reports/pregame_*.json
+reports/pregame_*.md
+reports/premarket_check.json
+reports/morning_check.json
 reports/totd_*/
 reports/halftime_*.json
 reports/halftime_*.md
@@ -78,6 +84,16 @@ reports/postgame_*.json
 reports/postgame_*.md
 reports/pre_game_plan_*.html
 reports/*_latest.txt
+
+# Backups and outputs
+backups/
+outputs/
+
+# Log subdirectories
+logs/shadow/
+
+# Temp files
+temp_*.csv
 
 # Generated data
 data/ml/
