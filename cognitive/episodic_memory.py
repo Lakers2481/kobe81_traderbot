@@ -182,15 +182,15 @@ class Episode:
 
     def context_signature(self) -> str:
         """
-        Generates a consistent hash signature for the episode's context.
-        This is crucial for efficiently finding similar past episodes.
+        Generates a normalized hash signature for the episode's context.
+        Uses upper-case and consistent defaults for reproducible lookups.
         """
-        key_elements = [
-            self.market_context.get('regime', ''),
-            self.signal_context.get('strategy', ''),
-            self.signal_context.get('side', ''),
-        ]
-        return hashlib.md5('|'.join(str(e) for e in key_elements).encode()).hexdigest()[:8]
+        regime = str(self.market_context.get('regime', 'unknown')).upper()
+        strategy = str(self.signal_context.get('strategy', 'unknown')).upper()
+        side = str(self.signal_context.get('side', 'long')).upper()
+
+        key_elements = [regime, strategy, side]
+        return hashlib.md5('|'.join(key_elements).encode()).hexdigest()[:8]
 
 
 class EpisodicMemory:
@@ -379,9 +379,8 @@ class EpisodicMemory:
         Returns:
             A list of matching Episode objects, sorted by importance and recency.
         """
-        # 1. Generate the context signature for the current situation.
-        key_elements = [context.get('regime', ''), context.get('strategy', ''), context.get('side', '')]
-        sig = hashlib.md5('|'.join(str(e) for e in key_elements).encode()).hexdigest()[:8]
+        # 1. Generate the normalized context signature.
+        sig = self.normalize_context_signature(context)
 
         # 2. Use the index to quickly find all episodes with the same signature.
         episode_ids = self._context_index.get(sig, [])
@@ -428,6 +427,50 @@ class EpisodicMemory:
 
         # Return a unique list of lessons.
         return list(dict.fromkeys(lessons))
+
+    @staticmethod
+    def normalize_context_signature(context: Dict[str, Any]) -> str:
+        """
+        Creates a normalized context signature for consistent lookups.
+        All fields are upper-cased and joined with '|'.
+
+        Args:
+            context: Dict with 'regime', 'strategy', 'side' keys.
+
+        Returns:
+            A consistent MD5 hash signature (8 chars).
+        """
+        regime = str(context.get('regime', 'unknown')).upper()
+        strategy = str(context.get('strategy', 'unknown')).upper()
+        side = str(context.get('side', 'long')).upper()
+
+        key_elements = [regime, strategy, side]
+        return hashlib.md5('|'.join(key_elements).encode()).hexdigest()[:8]
+
+    def get_stats_for_signature(self, sig: str) -> Dict[str, Any]:
+        """
+        Returns stats for a specific context signature.
+
+        Args:
+            sig: An 8-character MD5 context signature.
+
+        Returns:
+            Dict with 'n' (sample size) and 'win_rate'.
+        """
+        episode_ids = self._context_index.get(sig, [])
+        if not episode_ids:
+            return {'n': 0, 'win_rate': 0.0}
+
+        episodes = [self._episodes[eid] for eid in episode_ids if eid in self._episodes]
+
+        wins = sum(1 for e in episodes if e.outcome == EpisodeOutcome.WIN)
+        losses = sum(1 for e in episodes if e.outcome == EpisodeOutcome.LOSS)
+        total = wins + losses
+
+        return {
+            'n': total,
+            'win_rate': (wins / total) if total > 0 else 0.0
+        }
 
     def get_win_rate_for_context(self, context: Dict[str, Any]) -> Tuple[float, int]:
         """

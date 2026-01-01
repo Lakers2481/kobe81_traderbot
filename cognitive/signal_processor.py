@@ -114,6 +114,7 @@ class CognitiveSignalProcessor:
         """
         self.min_confidence = min_confidence
         self._brain = None  # Lazy-loaded to avoid circular imports.
+        self._knowledge_boundary = None  # Lazy-loaded for acceptance decisions.
         self._news_processor = None # Lazy-loaded for news and sentiment.
         self._market_mood_analyzer = None # Lazy-loaded for market mood analysis.
         self._online_learning_manager = None  # Lazy-loaded for incremental learning.
@@ -136,6 +137,14 @@ class CognitiveSignalProcessor:
             from cognitive.cognitive_brain import get_cognitive_brain
             self._brain = get_cognitive_brain()
         return self._brain
+
+    @property
+    def knowledge_boundary(self):
+        """Lazy-loads the KnowledgeBoundary singleton instance."""
+        if self._knowledge_boundary is None:
+            from cognitive.knowledge_boundary import KnowledgeBoundary
+            self._knowledge_boundary = KnowledgeBoundary()
+        return self._knowledge_boundary
 
     @property
     def news_processor(self):
@@ -341,39 +350,73 @@ class CognitiveSignalProcessor:
                 symbol_sentiment = self.news_processor.get_aggregated_sentiment(symbols=[symbol])
 
                 # 3. The `deliberate` call is the core "thinking" step.
+                full_context = {
+                    **context, # Include overall market context
+                    'symbol': symbol,
+                    'price': signal_dict.get('entry_price', 0),
+                    'volume': signal_dict.get('volume', 0),
+                    'symbol_sentiment': symbol_sentiment, # Add symbol-specific sentiment
+                }
+                ensemble_confidence = float(signal_dict.get('conf_score', 0.5))
+
                 decision = self.brain.deliberate(
                     signal=signal_dict,
-                    context={
-                        **context, # Include overall market context
-                        'symbol': symbol,
-                        'price': signal_dict.get('entry_price', 0),
-                        'volume': signal_dict.get('volume', 0),
-                        'symbol_sentiment': symbol_sentiment, # Add symbol-specific sentiment
-                    },
-                    fast_confidence=float(signal_dict.get('conf_score', 0.5))
+                    context=full_context,
+                    fast_confidence=ensemble_confidence
                 )
 
-                # 4. Wrap the result in our structured `EvaluatedSignal` object.
+                # 4. Check if brain rejected but episodic/ensemble evidence supports acceptance.
+                #    This allows signals with strong historical support to pass even if brain
+                #    has limited live trading experience.
+                final_approved = decision.should_act
+                final_confidence = decision.confidence
+                final_size_multiplier = decision.action.get('size_multiplier', 1.0) if decision.action else 0.5
+                override_reasoning = []
+
+                if not decision.should_act:
+                    # Try knowledge_boundary.should_accept() as fallback
+                    accept_decision = self.knowledge_boundary.should_accept(
+                        signal=signal_dict,
+                        context=full_context,
+                        ensemble_confidence=ensemble_confidence
+                    )
+
+                    if accept_decision['accept']:
+                        # Override brain's rejection with episodic evidence
+                        final_approved = True
+                        # Use ensemble confidence or a reasonable minimum
+                        final_confidence = max(ensemble_confidence, 0.45)
+                        final_size_multiplier = accept_decision['size_multiplier']
+                        override_reasoning = [
+                            f"OVERRIDE: {accept_decision['decision']} via episodic evidence",
+                            accept_decision['reason']
+                        ]
+                        logger.info(
+                            f"  {symbol}: Brain rejected -> KnowledgeBoundary override: "
+                            f"{accept_decision['decision']} ({accept_decision['reason']})"
+                        )
+
+                # 5. Wrap the result in our structured `EvaluatedSignal` object.
                 eval_signal = EvaluatedSignal(
                     original_signal=signal_dict,
-                    approved=decision.should_act,
-                    cognitive_confidence=decision.confidence,
-                    reasoning_trace=decision.reasoning_trace,
+                    approved=final_approved,
+                    cognitive_confidence=final_confidence,
+                    reasoning_trace=decision.reasoning_trace + override_reasoning,
                     concerns=decision.concerns,
                     knowledge_gaps=decision.knowledge_gaps,
                     invalidators=decision.invalidators,
                     episode_id=decision.episode_id,
-                    decision_mode=decision.decision_mode,
-                    size_multiplier=decision.action.get('size_multiplier', 1.0) if decision.action else 0.5,
+                    decision_mode=decision.decision_mode if not override_reasoning else 'episodic_override',
+                    size_multiplier=final_size_multiplier,
                 )
                 evaluated_signals.append(eval_signal)
 
-                # 5. Store the episode_id so we can link the trade outcome back later.
+                # 6. Store the episode_id so we can link the trade outcome back later.
                 decision_id = f"{symbol}|{signal_dict.get('strategy', 'unknown')}"
                 self._active_episodes[decision_id] = decision.episode_id
 
-                # 5b. Store signal features for online learning (for approved signals).
-                if eval_signal.approved:
+                # 6b. Store signal features for online learning (for approved signals).
+                if final_approved:
                     features = self._extract_signal_features(signal_dict, context)
                     self._signal_features[decision_id] = (
                         features,

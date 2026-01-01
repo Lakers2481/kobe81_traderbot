@@ -193,9 +193,20 @@ class KnowledgeBoundary:
 
         # === CHECK 2: SUFFICIENT EXPERIENCE (SAMPLE SIZE) ===
         # Does the AI have enough past experience in this specific situation?
+        # Check both self_model (live trades) and episodic_memory (historical trades).
         strategy = signal.get('strategy', 'unknown')
+        side = signal.get('side', 'long')
+
+        # First, check self_model for live trade experience
         performance_stats = self.self_model.get_performance(strategy, regime)
         sample_size = performance_stats.total_trades if performance_stats else 0
+
+        # If self_model has no data, fall back to episodic memory (which has seeded historical data)
+        if sample_size < self.min_samples_for_confidence:
+            episodic_context = {'regime': regime, 'strategy': strategy, 'side': side}
+            _, episodic_sample_size = self.episodic_memory.get_win_rate_for_context(episodic_context)
+            sample_size = max(sample_size, episodic_sample_size)
+
         if sample_size < self.min_samples_for_confidence:
             uncertainty_sources.append(UncertaintySource.LOW_SAMPLE_SIZE)
             missing_info.append(f"More trade examples for {strategy} in {regime} (currently have {sample_size}).")
@@ -395,6 +406,131 @@ class KnowledgeBoundary:
         ceiling = 1.0 - (assessment.metadata.get('uncertainty_score', 0) * 0.5)
         # Ensure the ceiling doesn't go below a minimum reasonable value.
         return max(0.4, ceiling)
+
+    def should_accept(
+        self,
+        signal: Dict[str, Any],
+        context: Dict[str, Any],
+        ensemble_confidence: float = 0.0,
+    ) -> Dict[str, Any]:
+        """
+        Combined decision rule for accepting/rejecting signals.
+
+        Combines:
+        - Episodic evidence: historical sample size (n) and win rate (wr)
+        - Ensemble evidence: ML model confidence score
+        - Self-model evidence: performance stats from live trading
+
+        Decision rules:
+        1. If episodic n >= 100 and wr >= 0.50 and ensemble_confidence >= 0.45 → ACCEPT
+        2. Else if self_model has sufficient trades with good performance → ACCEPT
+        3. Else if ensemble_confidence >= 0.50 → PROVISIONAL (accept with reduced size)
+        4. Otherwise → REJECT
+
+        Args:
+            signal: The trading signal dict.
+            context: Market context dict.
+            ensemble_confidence: ML ensemble confidence score (0-1).
+
+        Returns:
+            Dict with 'accept', 'decision', 'reason', and 'size_multiplier'.
+        """
+        from cognitive.episodic_memory import EpisodicMemory
+
+        # Extract context for signature
+        regime = context.get('regime', 'unknown')
+        strategy = signal.get('strategy', 'unknown')
+        side = signal.get('side', 'long')
+
+        # 1. Get episodic evidence using normalized signature
+        episodic_context = {'regime': regime, 'strategy': strategy, 'side': side}
+        sig = EpisodicMemory.normalize_context_signature(episodic_context)
+        episodic_stats = self.episodic_memory.get_stats_for_signature(sig)
+        episodic_n = episodic_stats['n']
+        episodic_wr = episodic_stats['win_rate']
+
+        # 2. Get self-model evidence
+        perf = self.self_model.get_performance(strategy, regime)
+        self_model_n = perf.total_trades if perf else 0
+        self_model_wr = perf.win_rate if perf else 0.0
+
+        # Build decision result
+        result = {
+            'accept': False,
+            'decision': 'REJECT',
+            'reason': '',
+            'size_multiplier': 0.0,
+            'metadata': {
+                'signature': sig,
+                'ensemble_confidence': ensemble_confidence,
+                'episodic_n': episodic_n,
+                'episodic_wr': episodic_wr,
+                'self_model_n': self_model_n,
+                'self_model_wr': self_model_wr,
+            }
+        }
+
+        # === DECISION RULE 1: Strong episodic evidence + ensemble support ===
+        # Thresholds: n >= 100, wr >= 0.50 (50%), ensemble >= 0.45
+        if episodic_n >= 100 and episodic_wr >= 0.50 and ensemble_confidence >= 0.45:
+            result['accept'] = True
+            result['decision'] = 'ACCEPT'
+            result['reason'] = (
+                f'Episodic: n={episodic_n}, wr={episodic_wr:.1%}; '
+                f'Ensemble: {ensemble_confidence:.2f}'
+            )
+            result['size_multiplier'] = 1.0
+            logger.info(
+                f"ACCEPT signal: sig={sig}, {result['reason']}"
+            )
+            return result
+
+        # === DECISION RULE 2: Good self-model performance (from live trading) ===
+        if self_model_n >= 20 and self_model_wr >= 0.55:
+            result['accept'] = True
+            result['decision'] = 'ACCEPT'
+            result['reason'] = f'Self-model: n={self_model_n}, wr={self_model_wr:.1%}'
+            result['size_multiplier'] = 1.0
+            logger.info(
+                f"ACCEPT signal (self-model): sig={sig}, {result['reason']}"
+            )
+            return result
+
+        # === DECISION RULE 3: High ensemble confidence (provisional) ===
+        if ensemble_confidence >= 0.50:
+            result['accept'] = True
+            result['decision'] = 'PROVISIONAL'
+            result['reason'] = f'High ensemble: {ensemble_confidence:.2f} (reduced size)'
+            result['size_multiplier'] = 0.5  # Half position size
+            logger.info(
+                f"PROVISIONAL accept: sig={sig}, {result['reason']}"
+            )
+            return result
+
+        # === DECISION RULE 4: Moderate episodic evidence ===
+        # Accept if we have some historical support, even with lower ensemble
+        if episodic_n >= 50 and episodic_wr >= 0.48 and ensemble_confidence >= 0.40:
+            result['accept'] = True
+            result['decision'] = 'ACCEPT_MODERATE'
+            result['reason'] = (
+                f'Moderate episodic: n={episodic_n}, wr={episodic_wr:.1%}; '
+                f'Ensemble: {ensemble_confidence:.2f}'
+            )
+            result['size_multiplier'] = 0.75
+            logger.info(
+                f"ACCEPT_MODERATE signal: sig={sig}, {result['reason']}"
+            )
+            return result
+
+        # === REJECT ===
+        result['reason'] = (
+            f'Insufficient evidence: episodic n={episodic_n}, wr={episodic_wr:.1%}; '
+            f'ensemble={ensemble_confidence:.2f}; self_model n={self_model_n}'
+        )
+        logger.info(
+            f"REJECT signal: sig={sig}, {result['reason']}"
+        )
+        return result
 
     def introspect(self) -> str:
         """Generates a human-readable report of the component's internal state and philosophy."""
