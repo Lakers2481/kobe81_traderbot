@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
 Quick mini-backtest on a single stock - continuous validation.
+
+NOTE: Uses production-like criteria (IBS<0.2, RSI2<10, SMA200 filter).
+This is a SIMPLIFIED version - for accurate results use backtest_dual_strategy.py
 """
 from __future__ import annotations
 
@@ -26,18 +29,33 @@ def mini_backtest(symbol: str, days: int, dotenv: str) -> dict:
     load_env(Path(dotenv))
 
     end_date = now_et().date()
-    start_date = end_date - timedelta(days=days + 50)  # Extra for warmup
+    start_date = end_date - timedelta(days=days + 250)  # Extra for SMA200 warmup
 
     try:
         df = fetch_daily_bars_polygon(symbol, start_date.isoformat(), end_date.isoformat())
         if df is None or len(df) < 50:
             return {'symbol': symbol, 'status': 'insufficient_data'}
 
-        # Simple IBS mean reversion strategy
+        # Production-like IBS mean reversion strategy
         df['ibs'] = (df['close'] - df['low']) / (df['high'] - df['low']).replace(0, np.nan)
 
-        # Signals: long when IBS < 0.2, exit after 3 bars
-        df['signal'] = (df['ibs'].shift(1) < 0.2).astype(int)
+        # RSI(2)
+        delta = df['close'].diff()
+        gain = delta.where(delta > 0, 0).rolling(2).mean()
+        loss = (-delta.where(delta < 0, 0)).rolling(2).mean()
+        rs = gain / loss.replace(0, np.nan)
+        df['rsi2'] = 100 - (100 / (1 + rs))
+
+        # SMA(200) filter - only trade uptrends
+        df['sma200'] = df['close'].rolling(200).mean()
+
+        # Signals: IBS < 0.2, RSI2 < 10, above SMA200 (relaxed from production for more signals)
+        # Production uses IBS<0.08, RSI2<5 - we use looser thresholds for continuous learning
+        ibs_cond = df['ibs'].shift(1) < 0.2
+        rsi_cond = df['rsi2'].shift(1) < 10
+        sma_cond = df['close'].shift(1) > df['sma200'].shift(1)
+
+        df['signal'] = (ibs_cond & rsi_cond & sma_cond).astype(int)
         df['next_open'] = df['open'].shift(-1)
         df['exit_close'] = df['close'].shift(-3)
 
@@ -55,7 +73,7 @@ def mini_backtest(symbol: str, days: int, dotenv: str) -> dict:
 
             result = {
                 'symbol': symbol,
-                'strategy': 'IBS_MEAN_REVERSION',
+                'strategy': 'IBS_RSI_SMA200',  # Production-like
                 'days': days,
                 'trades': total,
                 'wins': wins,
@@ -70,11 +88,11 @@ def mini_backtest(symbol: str, days: int, dotenv: str) -> dict:
         else:
             result = {
                 'symbol': symbol,
-                'strategy': 'IBS_MEAN_REVERSION',
+                'strategy': 'IBS_RSI_SMA200',  # Production-like
                 'trades': 0,
                 'status': 'no_signals'
             }
-            print(f"[BACKTEST] {symbol}: No signals in period")
+            print(f"[BACKTEST] {symbol}: No signals (needs IBS<0.2, RSI2<10, >SMA200)")
 
         return result
 
