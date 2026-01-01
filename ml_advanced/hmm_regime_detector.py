@@ -14,7 +14,7 @@ Key Features:
 MERGED FROM GAME_PLAN_2K28 - Production Ready
 """
 
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
 import logging
@@ -109,10 +109,89 @@ class HMMRegimeDetector:
         self.regime_history: List[RegimeState] = []
         self.regime_sequence: List[int] = []
 
+        # Staleness tracking for auto-retrain
+        self.last_train_timestamp: Optional[datetime] = None
+        self.staleness_threshold_days: int = 30  # Retrain after 30 days
+        self.training_window_days: int = 504  # ~2 years of trading days
+
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         logger.info(f"HMMRegimeDetector initialized (n_states={n_states})")
+
+    # Historical VIX statistics (1990-2024) for fallback estimation
+    HISTORICAL_VIX_MEAN = 19.5
+    HISTORICAL_VIX_MEDIAN = 17.5
+    HISTORICAL_VIX_PERCENTILE_75 = 23.0
+
+    def _estimate_vix_from_realized_vol(
+        self,
+        spy_data: pd.DataFrame,
+        lookback: int = 21
+    ) -> float:
+        """Estimate implied VIX from realized SPY volatility.
+
+        Empirical relationship: VIX ≈ 0.9 * RealizedVol * sqrt(252) * 100 + 2
+        (VIX typically trades at a premium to realized vol)
+
+        Args:
+            spy_data: SPY OHLCV data
+            lookback: Days for realized volatility calculation (default: 21)
+
+        Returns:
+            Estimated VIX level (clamped to [10, 80])
+        """
+        spy_data = _normalize_columns(spy_data)
+        if 'Close' not in spy_data.columns:
+            return self.HISTORICAL_VIX_MEAN
+
+        returns = spy_data['Close'].pct_change().dropna()
+
+        if len(returns) < lookback:
+            return self.HISTORICAL_VIX_MEAN
+
+        realized_vol = returns.iloc[-lookback:].std() * np.sqrt(252) * 100
+        estimated_vix = realized_vol * 0.9 + 2.0  # VIX premium adjustment
+
+        # Clamp to reasonable range [10, 80]
+        return max(10.0, min(80.0, estimated_vix))
+
+    def _get_vix_with_fallback(
+        self,
+        vix_data: Optional[pd.DataFrame],
+        spy_data: pd.DataFrame
+    ) -> float:
+        """Get VIX level with intelligent fallback chain.
+
+        Fallback order:
+        1. Use provided VIX data if valid
+        2. Estimate from SPY realized volatility
+        3. Use historical VIX mean as last resort
+
+        Args:
+            vix_data: VIX OHLCV data (may be None or empty)
+            spy_data: SPY OHLCV data for realized vol estimation
+
+        Returns:
+            VIX level (actual or estimated)
+        """
+        # Try 1: Use provided VIX data
+        if vix_data is not None and not vix_data.empty:
+            vix_data = _normalize_columns(vix_data)
+            if 'Close' in vix_data.columns and len(vix_data) > 0:
+                vix_level = float(vix_data['Close'].iloc[-1])
+                if not np.isnan(vix_level) and vix_level > 0:
+                    return vix_level
+
+        # Try 2: Estimate from realized volatility
+        estimated_vix = self._estimate_vix_from_realized_vol(spy_data)
+
+        logger.warning(
+            f"VIX data unavailable. Using estimated VIX={estimated_vix:.1f} "
+            f"(from realized vol)"
+        )
+
+        return estimated_vix
 
     def prepare_features(
         self,
@@ -158,6 +237,77 @@ class HMMRegimeDetector:
             logger.warning(f"Only {len(features)} samples. Need 100+ for reliable training.")
 
         return features
+
+    def is_stale(self) -> bool:
+        """Check if model needs retraining.
+
+        Returns True if:
+        - Model is not fitted
+        - last_train_timestamp is None
+        - More than staleness_threshold_days have passed since training
+        """
+        if not self.is_fitted or self.last_train_timestamp is None:
+            return True
+        days_since_training = (datetime.now() - self.last_train_timestamp).days
+        return days_since_training > self.staleness_threshold_days
+
+    def retrain_if_stale(
+        self,
+        spy_data: pd.DataFrame,
+        vix_data: pd.DataFrame,
+        breadth_data: Optional[pd.DataFrame] = None,
+        force: bool = False
+    ) -> bool:
+        """Retrain model if stale. Returns True if retrained.
+
+        Uses a sliding window of training_window_days (~2 years) for training
+        to keep the model adapted to recent market conditions.
+
+        Args:
+            spy_data: SPY OHLCV data
+            vix_data: VIX OHLCV data
+            breadth_data: Optional market breadth data
+            force: Force retrain even if not stale
+
+        Returns:
+            True if model was retrained, False otherwise
+        """
+        if not force and not self.is_stale():
+            logger.debug(f"Model not stale (trained {self.last_train_timestamp})")
+            return False
+
+        # Use only recent data (sliding window)
+        cutoff = pd.Timestamp.now() - pd.Timedelta(days=self.training_window_days)
+
+        # Filter to recent data if index is datetime
+        if hasattr(spy_data.index, 'tz_localize') or isinstance(spy_data.index, pd.DatetimeIndex):
+            spy_recent = spy_data[spy_data.index >= cutoff]
+            vix_recent = vix_data[vix_data.index >= cutoff] if vix_data is not None else None
+        else:
+            # If no datetime index, use all data
+            spy_recent = spy_data
+            vix_recent = vix_data
+
+        logger.info(f"Retraining HMM (stale={self.is_stale()}, force={force}, samples={len(spy_recent)})")
+
+        self.fit(spy_recent, vix_recent, breadth_data)
+        self.last_train_timestamp = datetime.now()
+
+        # Save model with timestamp
+        model_path = self.save_model()
+
+        # Log retrain event
+        try:
+            from core.structured_log import jlog
+            jlog('hmm_retrain',
+                 model_path=model_path,
+                 training_samples=len(spy_recent),
+                 staleness_days=self.staleness_threshold_days,
+                 forced=force)
+        except ImportError:
+            pass  # Graceful degradation if jlog not available
+
+        return True
 
     def fit(
         self,
@@ -225,6 +375,60 @@ class HMMRegimeDetector:
 
         logger.info(f"State labels assigned: {self.state_labels}")
 
+    def _log_regime_transition(
+        self,
+        previous_regime: Optional[RegimeState],
+        current_regime: RegimeState
+    ) -> None:
+        """Log regime transition to structured event log.
+
+        Logs detailed information about regime state and transitions
+        to logs/events.jsonl for post-hoc analysis and audit trails.
+        """
+        try:
+            from core.structured_log import jlog
+        except ImportError:
+            return  # Graceful degradation
+
+        is_transition = (
+            previous_regime is not None and
+            previous_regime.regime != current_regime.regime
+        )
+
+        event_data = {
+            'regime': current_regime.regime.value,
+            'confidence': round(current_regime.confidence, 4),
+            'days_in_regime': current_regime.days_in_regime,
+            'expected_duration': round(current_regime.expected_duration, 1),
+            'is_transition': is_transition,
+        }
+
+        # Add probabilities
+        for regime, prob in current_regime.probabilities.items():
+            event_data[f'prob_{regime.value.lower()}'] = round(prob, 4)
+
+        # Add transition probs
+        for regime, prob in current_regime.transition_probs.items():
+            event_data[f'trans_to_{regime.value.lower()}'] = round(prob, 4)
+
+        # Add feature snapshot
+        for feature, value in current_regime.feature_snapshot.items():
+            if isinstance(value, float):
+                event_data[f'feat_{feature}'] = round(value, 4)
+            else:
+                event_data[f'feat_{feature}'] = value
+
+        if is_transition:
+            event_data['previous_regime'] = previous_regime.regime.value
+            event_data['previous_confidence'] = round(previous_regime.confidence, 4)
+            jlog('regime_transition', **event_data)
+            logger.info(
+                f"REGIME TRANSITION: {previous_regime.regime.value} -> "
+                f"{current_regime.regime.value} (conf={current_regime.confidence:.2f})"
+            )
+        else:
+            jlog('regime_update', **event_data)
+
     def detect_regime(
         self,
         spy_data: pd.DataFrame,
@@ -269,9 +473,15 @@ class HMMRegimeDetector:
             timestamp=datetime.now()
         )
 
+        # Store previous for transition detection
+        previous_regime = self.current_regime
+
         self.current_regime = regime_state
         self.regime_history.append(regime_state)
         self.regime_sequence.append(state_id)
+
+        # Log regime transition/update to events.jsonl
+        self._log_regime_transition(previous_regime, regime_state)
 
         return regime_state
 
@@ -351,6 +561,123 @@ class HMMRegimeDetector:
 
         return max(0.0, min(1.0, adjusted_mult))
 
+    def forecast_regime(
+        self,
+        days_ahead: int = 5,
+        current_state: Optional[RegimeState] = None
+    ) -> Dict[str, Any]:
+        """Forecast regime probabilities N days ahead.
+
+        Uses Chapman-Kolmogorov theorem: P(t+n) = P(t) @ A^n
+        where A is the transition matrix.
+
+        Args:
+            days_ahead: Number of days to forecast (default 5)
+            current_state: Current regime state (uses self.current_regime if None)
+
+        Returns:
+            Dict with:
+            - 'forecast_probs': {MarketRegime: probability}
+            - 'most_likely_regime': MarketRegime
+            - 'confidence': float (probability of most likely)
+            - 'regime_change_prob': float (probability of leaving current regime)
+            - 'days_ahead': int
+            - 'current_regime': MarketRegime
+        """
+        if not self.is_fitted:
+            raise RuntimeError("Model not trained. Call fit() first.")
+
+        state = current_state or self.current_regime
+        if state is None:
+            raise ValueError("No current regime. Call detect_regime() first.")
+
+        # Get current state index
+        current_state_id = None
+        for state_id, regime in self.state_labels.items():
+            if regime == state.regime:
+                current_state_id = state_id
+                break
+
+        if current_state_id is None:
+            raise ValueError(f"Unknown regime: {state.regime}")
+
+        # Compute transition matrix power: A^n (Chapman-Kolmogorov)
+        trans_matrix = self.model.transmat_
+        trans_matrix_n = np.linalg.matrix_power(trans_matrix, days_ahead)
+
+        # Get probabilities from current state row
+        future_probs = trans_matrix_n[current_state_id, :]
+
+        # Map to regimes
+        forecast_probs = {}
+        for state_id, regime in self.state_labels.items():
+            forecast_probs[regime] = float(future_probs[state_id])
+
+        # Find most likely regime
+        most_likely_id = int(np.argmax(future_probs))
+        most_likely_regime = self.state_labels.get(most_likely_id, MarketRegime.NEUTRAL)
+        confidence = float(future_probs[most_likely_id])
+
+        # Probability of leaving current regime
+        stay_prob = float(trans_matrix_n[current_state_id, current_state_id])
+        change_prob = 1.0 - stay_prob
+
+        return {
+            'forecast_probs': forecast_probs,
+            'most_likely_regime': most_likely_regime,
+            'confidence': confidence,
+            'regime_change_prob': change_prob,
+            'days_ahead': days_ahead,
+            'current_regime': state.regime,
+        }
+
+    def get_forecast_adjusted_multiplier(
+        self,
+        regime_state: RegimeState,
+        forecast_days: int = 5
+    ) -> float:
+        """Get position multiplier adjusted for regime forecast.
+
+        If regime likely to worsen in next N days, reduce position size proactively.
+        This allows the system to reduce exposure BEFORE a regime change occurs.
+
+        Args:
+            regime_state: Current regime state
+            forecast_days: Number of days to look ahead (default 5)
+
+        Returns:
+            Adjusted position multiplier (0.0 to 1.0)
+        """
+        base_mult = self.get_position_multiplier(regime_state)
+
+        try:
+            forecast = self.forecast_regime(days_ahead=forecast_days, current_state=regime_state)
+        except Exception:
+            return base_mult  # Fall back to base if forecast fails
+
+        # If high probability of transitioning to worse regime, reduce size
+        current = regime_state.regime
+        future = forecast['most_likely_regime']
+        change_prob = forecast['regime_change_prob']
+
+        # Regime ordering: BULLISH > NEUTRAL > BEARISH
+        regime_order = {MarketRegime.BULLISH: 2, MarketRegime.NEUTRAL: 1, MarketRegime.BEARISH: 0}
+
+        current_score = regime_order.get(current, 1)
+        future_score = regime_order.get(future, 1)
+
+        if future_score < current_score and change_prob > 0.3:
+            # Regime likely to worsen - reduce position proactively
+            reduction = change_prob * 0.5  # Up to 50% reduction
+            adjusted = base_mult * (1.0 - reduction)
+            logger.info(
+                f"Forecast adjustment: {current.value} -> {future.value} "
+                f"(prob={change_prob:.2f}), mult {base_mult:.2f} -> {adjusted:.2f}"
+            )
+            return adjusted
+
+        return base_mult
+
     def save_model(self, filepath: Optional[str] = None) -> str:
         """Save trained model to disk."""
         if not self.is_fitted:
@@ -369,7 +696,11 @@ class HMMRegimeDetector:
             'feature_means': self.feature_means,
             'feature_stds': self.feature_stds,
             'n_states': self.n_states,
-            'is_fitted': self.is_fitted
+            'is_fitted': self.is_fitted,
+            # Staleness tracking
+            'last_train_timestamp': self.last_train_timestamp,
+            'training_window_days': self.training_window_days,
+            'staleness_threshold_days': self.staleness_threshold_days,
         }
 
         with open(filepath, 'wb') as f:
@@ -391,7 +722,12 @@ class HMMRegimeDetector:
         self.n_states = model_data['n_states']
         self.is_fitted = model_data['is_fitted']
 
-        logger.info(f"Model loaded from {filepath}")
+        # Restore staleness tracking (with defaults for older models)
+        self.last_train_timestamp = model_data.get('last_train_timestamp')
+        self.training_window_days = model_data.get('training_window_days', 504)
+        self.staleness_threshold_days = model_data.get('staleness_threshold_days', 30)
+
+        logger.info(f"Model loaded from {filepath} (trained={self.last_train_timestamp})")
         return self
 
 
@@ -483,13 +819,24 @@ class AdaptiveRegimeDetector:
         spy_price = spy_close.iloc[-1]
         spy_sma200 = spy_close.rolling(200).mean().iloc[-1]
 
-        # Handle VIX data (use default of 20 if not available)
+        # Handle VIX data with smart fallback
+        vix_price = None
         if vix_data is not None and not vix_data.empty:
             vix_data = _normalize_columns(vix_data)
-        if vix_data is not None and not vix_data.empty and 'Close' in vix_data.columns:
-            vix_price = vix_data['Close'].iloc[-1]
-        else:
-            vix_price = 20.0  # Neutral VIX assumption
+            if 'Close' in vix_data.columns and len(vix_data) > 0:
+                vix_price = float(vix_data['Close'].iloc[-1])
+                if np.isnan(vix_price) or vix_price <= 0:
+                    vix_price = None
+
+        # Smart fallback: estimate from realized volatility
+        if vix_price is None:
+            returns = spy_close.pct_change().dropna()
+            if len(returns) >= 21:
+                realized_vol = returns.iloc[-21:].std() * np.sqrt(252) * 100
+                vix_price = realized_vol * 0.9 + 2.0  # VIX premium
+                vix_price = max(10.0, min(80.0, vix_price))
+            else:
+                vix_price = 19.5  # Historical mean fallback
 
         if len(spy_close) >= 50:
             spy_momentum_50d = (spy_price / spy_close.iloc[-50] - 1) * 100
