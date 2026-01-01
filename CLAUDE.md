@@ -344,7 +344,7 @@ See `docs/STATUS.md` Section 16 for detailed explanation.
 | Universe | `data/universe/loader.py` | Symbol list loading, dedup, cap |
 | Strategies | `strategies/dual_strategy/`, `strategies/ibs_rsi/`, `strategies/ict/` | Signal generation with shifted indicators |
 | Backtest | `backtest/engine.py`, `backtest/walk_forward.py` | Simulation engine, WF splits |
-| Risk | `risk/policy_gate.py` | Per-order ($75)  daily ($1k) budgets |
+| Risk | `risk/policy_gate.py`, `risk/equity_sizer.py` | 2% equity-based sizing, notional caps |
 | Risk Advanced | `risk/advanced/` | VaR, Kelly sizing, correlation limits |
 | ML Advanced | `ml_advanced/` | LSTM, HMM regime, ensemble, online learning |
 | OMS | `oms/order_state.py`, `oms/idempotency_store.py` | Order records, duplicate prevention |

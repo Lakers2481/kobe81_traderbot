@@ -478,7 +478,7 @@ min_price: 15.0          # Min stock price
 2. **Combined 64% win rate** on out-of-sample data
 3. **1.60 profit factor** - profitable edge
 4. **Automated scanning** for daily signals
-5. **Risk management** with PolicyGate ($75/order, $1k/day limits)
+5. **Risk management** with PolicyGate + 2% equity-based sizing
 6. **Paper trading** verified and ready
 7. **Live trading** ready (needs manual test)
 
@@ -1323,7 +1323,8 @@ PREFLIGHT OK - Ready for trading
 | Journal | `core/journal.py` | JSONL event logging | OK |
 | Alerts | `core/alerts.py` | Telegram integration | OK |
 | Drift Detector | `monitor/drift_detector.py` | Model drift detection | OK |
-| Policy Gate | `risk/policy_gate.py` | $75/order, $1k/day limits | OK |
+| Policy Gate | `risk/policy_gate.py` | $21k/order, $63k/day limits | OK |
+| Equity Sizer | `risk/equity_sizer.py` | 2% equity-based position sizing | OK |
 | Broker Alpaca | `execution/broker_alpaca.py` | IOC LIMIT orders | OK |
 | Scheduler | `ops/windows/register_all_tasks.ps1` | 23 Windows tasks | OK |
 
@@ -2349,7 +2350,8 @@ The Donchian strategy was deprecated and removed. Zero code imports remain. Docu
 
 | Mechanism | Status | Purpose |
 |-----------|--------|---------|
-| PolicyGate | ✅ ACTIVE | Budget enforcement ($75/order, $1k/day) |
+| PolicyGate | ✅ ACTIVE | Notional caps ($21k/order, $63k/day) |
+| Equity Sizer | ✅ ACTIVE | 2% equity-based position sizing |
 | Kill Switch | ✅ READY | Emergency halt via `state/KILL_SWITCH` |
 | Idempotency Store | ✅ ACTIVE | Prevents duplicate orders |
 | Liquidity Gates | ✅ ACTIVE | ADV-based position limits |
@@ -2566,7 +2568,7 @@ Expected: 329 passed
 |-------|--------|-------|
 | Strategy Logic Match | GO | DualStrategyScanner consistent in backtest and live paths |
 | Config for Paper Trading | GO | `base.yaml` properly configured, API keys from env |
-| Risk Systems Enabled | GO | PolicyGate active ($75/order, $1k/day), kill switch ready |
+| Risk Systems Enabled | GO | PolicyGate + Equity Sizer (2% risk), kill switch ready |
 | Data Pipeline Live | GO | `alpaca_live.py` integrated with `--live-data` flag |
 
 **FINAL STATUS: GO FOR PAPER TRADING**
@@ -3154,7 +3156,8 @@ python -c "from monitor.health_endpoints import sync_bandit_metrics_from_instanc
 - **Backtest Engine** (`backtest/engine.py`): Event-driven simulation with vectorized operations
 - **Walk-Forward Analysis** (`backtest/walk_forward.py`): Train/test splits (252/63 days)
 - **Data Providers** (`data/providers/`): Polygon.io EOD, Stooq, YFinance, Alpaca
-- **Basic Risk Gates** (`risk/policy_gate.py`): Per-order ($75) and daily ($1k) budgets
+- **Basic Risk Gates** (`risk/policy_gate.py`): Per-order and daily notional caps
+- **Equity Sizer** (`risk/equity_sizer.py`): 2% equity-based position sizing (NEW)
 - **Audit System** (`core/hash_chain.py`): Append-only tamper-proof ledger
 - **Kill Switch** (`core/kill_switch.py`): Emergency halt mechanism
 
@@ -3291,7 +3294,8 @@ python -c "from monitor.health_endpoints import sync_bandit_metrics_from_instanc
 │       ├── Max concurrent trades check (one-at-a-time mode)                      │
 │       ├── alerts/telegram_commander.py [if confirm_enabled]                     │
 │       ├── execution/intraday_trigger.py [if --intraday-trigger]                 │
-│       └── risk/policy_gate.py (PolicyGate - $75/order, $1k/day)                 │
+│       ├── risk/policy_gate.py (PolicyGate - notional caps)                      │
+│       └── risk/equity_sizer.py (2% equity-based sizing)                         │
 └─────────────────────────────────────────────────────────────────────────────────┘
                                         │
                                         ▼
@@ -3395,8 +3399,9 @@ DualStrategyScanner (2023-2024, 150 symbols):
 | | IOC LIMIT orders only | ✅ |
 | | Idempotency preventing duplicates | ✅ |
 | | Rate limiter active | ✅ |
-| **Risk Management** | PolicyGate enforcing $75/order | ✅ |
-| | Daily budget limit $1,000 | ✅ |
+| **Risk Management** | PolicyGate notional caps ($21k/order) | ✅ |
+| | Equity Sizer (2% risk-based sizing) | ✅ |
+| | Daily budget limit $63k | ✅ |
 | | Kill switch ready | ✅ |
 | | Macro blackout gate active | ✅ |
 | | Position limits enforced | ✅ |
@@ -5033,9 +5038,9 @@ Multi-stage AI evaluation system:
 
 | Rule | Setting | Purpose |
 |------|---------|---------|
-| Max Notional/Order | $2,500 | Position size limit |
-| Max Daily Notional | $10,000 | Daily exposure limit |
-| Risk per Trade | 2% | Stop loss sizing |
+| Max Notional/Order | $21,000 | 20% of account (position cap) |
+| Max Daily Notional | $63,000 | 3 positions at max size |
+| Risk per Trade | 2% of equity | Proper equity-based sizing |
 | Max Positions | 5 | Concentration limit |
 | Stop Loss | ATR(14) x 2 | Exit on adverse move |
 | Time Stop | 7 bars (IBS) / 3 bars (TS) | Exit if thesis broken |
