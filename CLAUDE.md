@@ -12,7 +12,7 @@
 | `run_wf_polygon.py` | Walk-forward | `DualStrategyScanner` | YES (0.3 ATR) |
 | `scan.py` | **Daily Scan** | `DualStrategyScanner` | YES (0.3 ATR) |
 
-## ONE Scanner System (Updated 2025-12-30)
+## ONE Scanner System (Updated 2025-12-31)
 
 **THE ONLY SCANNER COMMAND:**
 ```bash
@@ -20,7 +20,7 @@ python scripts/scan.py --cap 900 --deterministic --top3
 ```
 
 **Output Files:**
-- `logs/daily_picks.csv` - Top 3 picks (2x ICT + 1x IBS_RSI)
+- `logs/daily_picks.csv` - Top 3 picks (quality gate filtered)
 - `logs/trade_of_day.csv` - Single highest-confidence TOTD
 - `logs/signals.jsonl` - All signals (append-only)
 
@@ -28,6 +28,11 @@ python scripts/scan.py --cap 900 --deterministic --top3
 ```bash
 python scripts/scan.py --cap 900 --deterministic --no-quality-gate
 ```
+
+**Quality Gate Settings (2025-12-31):**
+- Threshold: 55 (lowered from 70 because ML ensemble models not trained)
+- Max signals per day: 3 (default)
+- When ML models are trained, raise threshold back to 70
 
 **There is ONLY ONE scanner: `scan.py`. All other scan scripts have been deleted.**
 
