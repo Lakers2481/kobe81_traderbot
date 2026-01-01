@@ -21,7 +21,7 @@ from data.universe.loader import load_universe
 from data.providers.polygon_eod import fetch_daily_bars_polygon
 from strategies.dual_strategy import DualStrategyScanner, DualStrategyParams
 from execution.broker_alpaca import get_best_ask, get_best_bid, construct_decision, place_ioc_limit
-from risk.policy_gate import PolicyGate, RiskLimits
+from risk.policy_gate import PolicyGate, RiskLimits, load_limits_from_config
 from risk.position_limit_gate import PositionLimitGate, PositionLimits
 from oms.order_state import OrderStatus
 from core.hash_chain import append_block
@@ -71,9 +71,15 @@ def main():
     # Strategies (IBS+RSI + ICT Turtle Soup) via dual scanner
     scanner = DualStrategyScanner(DualStrategyParams())
 
-    # Risk/Policy
-    policy = PolicyGate(RiskLimits(max_notional_per_order=75.0, max_daily_notional=1000.0, min_price=3.0, allow_shorts=False))
-    position_gate = PositionLimitGate(PositionLimits(max_positions=5, max_per_symbol=1))
+    # Risk/Policy - LOAD FROM CONFIG (respects trading_mode: micro/paper/real)
+    risk_limits = load_limits_from_config()
+    policy = PolicyGate(risk_limits)
+    position_gate = PositionLimitGate(PositionLimits(max_positions=risk_limits.max_positions, max_per_symbol=1))
+
+    print(f"Trading Mode: {risk_limits.mode_name.upper()}")
+    print(f"  Max Notional/Order: ${risk_limits.max_notional_per_order:,.0f}")
+    print(f"  Max Daily Notional: ${risk_limits.max_daily_notional:,.0f}")
+    print(f"  Risk per Trade: {risk_limits.risk_per_trade_pct*100:.1f}%")
 
     # Check current position count before proceeding
     pos_status = position_gate.get_status()
@@ -153,6 +159,26 @@ def main():
     elif args.cognitive and not COGNITIVE_AVAILABLE:
         print("  [WARN] Cognitive system not available")
 
+    # SELECT ONLY THE BEST SIGNAL (Trade of the Day)
+    # Sort by cognitive confidence (or conf_score) and take top 1
+    if not todays.empty:
+        # Get confidence column
+        if 'cognitive_confidence' in todays.columns:
+            conf_col = 'cognitive_confidence'
+        elif 'conf_score' in todays.columns:
+            conf_col = 'conf_score'
+        else:
+            conf_col = None
+
+        if conf_col and len(todays) > 1:
+            todays = todays.sort_values(conf_col, ascending=False).head(1)
+            best_sym = todays.iloc[0]['symbol']
+            best_conf = todays.iloc[0].get(conf_col, 'N/A')
+            print(f"  TRADE OF THE DAY: {best_sym} (conf={best_conf})")
+            jlog('trade_of_day_selected', symbol=best_sym, confidence=best_conf)
+        elif len(todays) == 1:
+            print(f"  Single signal: {todays.iloc[0]['symbol']}")
+
     # Kill switch check
     if Path(args.kill_switch).exists():
         jlog('kill_switch_active', level='WARN', path=str(args.kill_switch))
@@ -178,9 +204,9 @@ def main():
             jlog('skip_wide_spread', symbol=sym, spread=spread)
             print(f"Skip {sym}: spread {spread:.2%} > max {args.max_spread_pct:.2%}")
             continue
-        # Sizing: fit under per-order budget
+        # Sizing: fit under per-order budget (from config)
         limit_px = round(ask * 1.001, 2)
-        base_qty = max(1, int(75.0 // limit_px))
+        base_qty = max(1, int(risk_limits.max_notional_per_order // limit_px))
 
         # Apply cognitive size multiplier if available
         size_multiplier = 1.0
