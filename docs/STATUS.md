@@ -1,12 +1,13 @@
 ﻿# Kobe81 Traderbot - STATUS
 
-> **Last Updated:** 2025-12-31 23:55 UTC
-> **Verified By:** Claude Opus 4.5 (Quality Gate Fix + ML Investigation)
+> **Last Updated:** 2026-01-01 18:45 UTC
+> **Verified By:** Claude Opus 4.5 (Autonomous Operation Mode)
 > **Document Type:** AI GOVERNANCE & SYSTEM BLUEPRINT
 > **Audit Status:** GRADE A+ - 947 tests passing, DETERMINISM VERIFIED, REPRODUCIBLE SCANS
 >
-> **Latest Scan (2025-12-31):** 3 SIGNALS - TOP 3: MPWR, EOSE, TSLA (IBS_RSI strategy)
-> **Previous Top-3 (2025-12-30):** JPM, EXEL, GD (different market conditions)
+> **System Status:** AUTONOMOUS 24/7 MODE ACTIVE
+> **Next Trade:** Friday Jan 2, 2026 @ 9:35 AM ET - AEHR (TOTD, conf 0.536)
+> **Latest Scan (2025-12-31):** 3 SIGNALS - TOP 3: AEHR, TNA, LOGI (IBS_RSI strategy)
 
 ---
 
@@ -4952,3 +4953,217 @@ Pushed: 2025-12-30 to origin/main
 
 *Section 25 completed 2025-12-30 21:00 UTC by Claude Opus 4.5*
 *Strategy safeguards ensure correct DualStrategyScanner is ALWAYS used*
+
+
+---
+
+## Section 26: AUTONOMOUS OPERATION STATUS (2026-01-01)
+
+> **Updated:** 2026-01-01 12:40 PM CT
+> **Status:** FULLY OPERATIONAL - Autonomous 24/7 Mode Active
+> **Next Trade:** Friday, January 2, 2026 @ 9:35 AM ET
+
+---
+
+### 26.1 System Architecture
+
+Kobe is an **autonomous trading robot** with two parallel runners:
+
+| Runner | Purpose | Status |
+|--------|---------|--------|
+| **Paper Runner** (PID 93800) | Trade execution at market hours | RUNNING |
+| **Overnight Runner** (bcfc5cb) | 24/7 learning and monitoring | RUNNING (Cycle 10+) |
+
+---
+
+### 26.2 Strategies
+
+#### Strategy 1: IBS + RSI (Mean Reversion)
+
+**Logic:** When a stock closes near its daily low (IBS < 0.08) with extreme oversold RSI (< 5) while in an uptrend, high probability of bounce.
+
+**Formula:**
+```
+Score = (0.08 - IBS) * 100 + (5.0 - RSI2)
+```
+
+**Parameters:**
+- IBS threshold: 0.08
+- RSI(2) threshold: 5
+- SMA(200) filter: price must be above
+- Time stop: 7 bars
+
+#### Strategy 2: ICT Turtle Soup (Liquidity Sweep)
+
+**Logic:** Institutions sweep below prior lows to grab liquidity (stop losses), then reverse. We enter AFTER the sweep.
+
+**Formula:**
+```
+Score = (sweep_distance / ATR) * 100
+Minimum sweep strength: 0.3 ATR
+```
+
+**Parameters:**
+- Lookback: 20 days
+- Min sweep: 0.3 ATR
+- Time stop: 3 bars
+
+---
+
+### 26.3 Cognitive Brain
+
+Multi-stage AI evaluation system:
+
+| Stage | Component | Function |
+|-------|-----------|----------|
+| 1 | Fast Thinking | ML ensemble probability (80%) + sentiment (20%) |
+| 2 | Slow Thinking | Episodic memory search, knowledge gaps |
+| 3 | Confidence Adjustment | Historical win rate, semantic rules |
+| 4 | Decision | Approve/reject + size multiplier |
+
+**Current Stats:**
+- Episodic Memory: 928 episodes
+- Historical Win Rate: 57.87%
+- Lessons Learned: 428
+- Calibration: Verified
+
+---
+
+### 26.4 Risk Management
+
+| Rule | Setting | Purpose |
+|------|---------|---------|
+| Max Notional/Order | $2,500 | Position size limit |
+| Max Daily Notional | $10,000 | Daily exposure limit |
+| Risk per Trade | 2% | Stop loss sizing |
+| Max Positions | 5 | Concentration limit |
+| Stop Loss | ATR(14) x 2 | Exit on adverse move |
+| Time Stop | 7 bars (IBS) / 3 bars (TS) | Exit if thesis broken |
+| Kill Switch | state/KILL_SWITCH | Emergency halt |
+
+---
+
+### 26.5 Current Portfolio
+
+| Metric | Value |
+|--------|-------|
+| Account Value | $105,143.86 |
+| Cash | $105,085.45 |
+| Open Positions | 1 (CFG - 1 share) |
+| Trading Mode | REAL |
+
+---
+
+### 26.6 Friday Execution Plan (January 2, 2026)
+
+#### Timeline (All times ET)
+
+| Time | Event |
+|------|-------|
+| 00:00-09:30 | Overnight runner: health checks, learning, monitoring |
+| 09:30 | Market opens |
+| 09:35 | **FIRST SCAN - Trade of the Day execution** |
+| 10:30 | Second scan (usually no action) |
+| 15:55 | Final scan |
+| 16:00 | Market close, EOD report |
+
+#### Trade of the Day
+
+| Field | Value |
+|-------|-------|
+| Symbol | AEHR |
+| Side | LONG |
+| Strategy | IBS_RSI |
+| Entry | ~$20.19 |
+| Stop Loss | $17.28 |
+| Confidence | 53.6% |
+| Size Multiplier | 0.5x (conservative) |
+| Estimated Qty | ~62 shares |
+| Notional | ~$1,255 |
+
+#### Execution Flow
+
+```
+1. Scanner runs at 09:35
+2. Fetches fresh price data for 900 stocks
+3. Generates signals (IBS < 0.08 AND RSI < 5)
+4. Cognitive brain evaluates each signal
+5. Selects TOP 1 by confidence (TOTD)
+6. Risk checks: PolicyGate + PositionGate
+7. Places IOC LIMIT order at best_ask * 1.001
+8. Logs to hash chain (tamper-proof audit)
+9. Monitors position throughout day
+```
+
+---
+
+### 26.7 Autonomous Tasks
+
+| Task | Frequency | Last Run | Status |
+|------|-----------|----------|--------|
+| Health Check | 30 min | 12:26 PM | PASS |
+| Learning Cycle | 60 min | 11:56 AM | SUCCESS |
+| Scan Preview | 2 hours | 10:56 AM | 3 signals |
+| Report Generation | 4 hours | 10:56 AM | SUCCESS |
+
+---
+
+### 26.8 Key Fixes Applied (2026-01-01)
+
+| Issue | Fix | Status |
+|-------|-----|--------|
+| 2026 holidays missing | Added to market_calendar.py | COMMITTED |
+| Runner import order bug | sys.path before imports | COMMITTED |
+| Hardcoded $75 limit | Load from config | COMMITTED |
+| Trading all 3 signals | Select only TOTD | COMMITTED |
+
+---
+
+### 26.9 Files Modified Today
+
+| File | Change |
+|------|--------|
+| scripts/market_calendar.py | Added 2026 NYSE holidays |
+| scripts/runner.py | Fixed import order |
+| scripts/run_paper_trade.py | Config-based limits + TOTD selection |
+| config/base.yaml | Changed trading_mode: micro -> real |
+
+---
+
+### 26.10 Verification Commands
+
+```bash
+# Check runner status
+type state\heartbeat.json
+
+# Check current picks
+type logs\daily_picks.csv
+
+# Check config settings
+python -c "from risk.policy_gate import load_limits_from_config; l=load_limits_from_config(); print(f'Mode: {l.mode_name}, Max: ${l.max_notional_per_order}')"
+
+# Run preflight
+python scripts/preflight.py --dotenv ./.env
+```
+
+---
+
+### 26.11 Summary
+
+**Kobe is 100% ready for autonomous trading:**
+
+- [x] Paper Runner: RUNNING (PID 93800)
+- [x] Overnight Runner: RUNNING (Cycle 10+)
+- [x] Health Checks: ALL PASSING
+- [x] Cognitive Brain: 928 episodes loaded
+- [x] Risk Limits: REAL mode ($2,500 max)
+- [x] TOTD Selection: AEHR (0.536 confidence)
+- [x] Market Calendar: 2026 holidays added
+- [x] All Fixes: Committed and pushed
+
+**Friday 9:35 AM ET:** Kobe executes Trade of the Day (AEHR) autonomously.
+
+---
+
+*Section 26 completed 2026-01-01 12:40 PM CT by Claude Opus 4.5*
+*System is fully autonomous and ready for Friday trading*

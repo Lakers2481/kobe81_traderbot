@@ -1,8 +1,29 @@
-﻿# Kobe81 Traderbot — Backtesting, Paper, Live (Micro)
+﻿# Kobe81 Traderbot — Autonomous AI Trading System
 
-> **Version:** v2.3 — Comprehensive AI Briefing System
-> **Last Updated:** 2025-12-29
-> **Status:** Production Ready with LLM/ML/AI Integration
+> **Version:** v2.4 — Cognitive Brain + Autonomous 24/7 Operation
+> **Last Updated:** 2026-01-01
+> **Status:** LIVE - Paper Trading with Full Cognitive System
+
+---
+
+## What Is Kobe?
+
+Kobe is an **autonomous trading robot** that combines:
+- **Quantitative Strategies** - Time-tested IBS+RSI and ICT Turtle Soup patterns
+- **Cognitive AI Brain** - Episodic memory, learning, confidence scoring
+- **Risk Management** - ATR stops, position limits, kill switch
+- **24/7 Automation** - Runs continuously without human intervention
+
+### How It Works
+1. **Scans** 900 stocks at market open
+2. **Evaluates** signals through cognitive brain (928 episodes, 57.87% historical WR)
+3. **Picks** the single best Trade of the Day (TOTD)
+4. **Sizes** position based on confidence (2% risk, $2,500 max)
+5. **Executes** IOC LIMIT order via Alpaca
+6. **Manages** with ATR stop loss and 7-bar time stop
+7. **Learns** from every outcome, win or lose
+
+---
 
 ## Performance (v2.2 - Quant Interview Ready)
 
@@ -128,9 +149,52 @@ Time Zones
 - Trading operations (schedules, scan dates) run on New York time (ET). Displays (live dashboard) default to Central Time (CT) with AM/PM.
 - Windows Task registration (ops/windows/register_all_tasks.ps1) registers jobs at ET hours converted to your local clock (handles DST automatically).
 
+## Autonomous Operation (24/7)
+
+Kobe runs two parallel systems:
+
+### Paper Trading Runner
+Executes trades during market hours.
+```bash
+python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv --cap 50 --scan-times 09:35,10:30,15:55 --dotenv ./.env
+```
+
+### Overnight Runner
+Continuous learning and monitoring.
+```bash
+python scripts/overnight_runner.py
+```
+
+### What Runs Automatically
+| Task | Frequency | Purpose |
+|------|-----------|---------|
+| Health Checks | Every 30 min | Verify all systems operational |
+| Learning Cycles | Every 60 min | Update episodic memory, self-model |
+| Scan Preview | Every 2 hours | Refresh signals, update picks |
+| Report Generation | Every 4 hours | Generate overnight/EOD reports |
+| Trade Execution | 09:35, 10:30, 15:55 ET | Execute Trade of the Day |
+
+### Cognitive Brain Components
+| Component | Purpose |
+|-----------|---------|
+| Episodic Memory | 928 past trades with outcomes |
+| Self-Model | Strengths, weaknesses, calibration |
+| Metacognitive Governor | Fast vs slow thinking routing |
+| Knowledge Boundary | Uncertainty detection |
+| Reflection Engine | Post-trade learning |
+
+### Current State (2026-01-01)
+- **Mode:** Paper trading (REAL risk settings)
+- **Portfolio:** $105,143.86
+- **Position:** CFG (1 share from micro mode)
+- **Next Trade:** AEHR @ $20.19 (conf 0.536)
+- **Risk Settings:** $2,500 max/order, 2% risk
+
+---
+
 Safety
 - Kill switch: create file `state/KILL_SWITCH` to halt submissions.
-- Policy Gate: per-order and daily budgets ($75 / $1,000), price bounds, shorts disabled by default.
+- Policy Gate: per-order and daily budgets (configurable via `config/base.yaml`).
 - Audit: verify `python scripts/verify_hash_chain.py`.
 - Reconciliation: `python scripts/reconcile_alpaca.py --dotenv ./.env`.
 
