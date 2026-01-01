@@ -52,6 +52,9 @@ def hunt_patterns(symbol: str, dotenv: str) -> dict:
         # IBS
         df['ibs'] = (df['close'] - df['low']) / (df['high'] - df['low']).replace(0, np.nan)
 
+        # Bollinger Band width (for compression detection)
+        df['bb_width'] = (df['close'].rolling(20).std() * 2) / df['sma_20']
+
         # RSI(2)
         delta = df['close'].diff()
         gain = delta.where(delta > 0, 0).rolling(2).mean()
@@ -112,7 +115,6 @@ def hunt_patterns(symbol: str, dotenv: str) -> dict:
             })
 
         # 4. Price Compression (Bollinger Band squeeze)
-        df['bb_width'] = (df['close'].rolling(20).std() * 2) / df['sma_20']
         if latest['bb_width'] < df['bb_width'].quantile(0.1):
             patterns.append({
                 'type': 'COMPRESSION',
