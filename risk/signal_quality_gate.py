@@ -116,7 +116,9 @@ class QualityScore:
 class QualityGateConfig:
     """Configuration for the quality gate."""
     # Score thresholds
-    min_score_to_pass: float = 70.0
+    # NOTE: Lowered from 70 to 55 because ML ensemble models are not trained yet.
+    # When ensemble (XGBoost/LightGBM) models are loaded, raise back to 70.
+    min_score_to_pass: float = 55.0
     elite_threshold: float = 90.0
     excellent_threshold: float = 80.0
     good_threshold: float = 70.0
