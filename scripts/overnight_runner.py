@@ -165,7 +165,7 @@ def run_scan_preview():
         result = subprocess.run(
             [
                 sys.executable, 'scripts/scan.py',
-                '--cap', '100',
+                '--cap', '900',  # Full universe
                 '--deterministic',
                 '--top3',
             ],
