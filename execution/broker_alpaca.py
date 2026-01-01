@@ -136,25 +136,38 @@ def get_best_bid(symbol: str, timeout: int = 5) -> Optional[float]:
         return None
 
 
-def get_quote_with_sizes(symbol: str, timeout: int = 5) -> Tuple[Optional[float], Optional[float], Optional[int], Optional[int]]:
+def get_quote_with_sizes(symbol: str, timeout: int = 5) -> Tuple[Optional[float], Optional[float], Optional[int], Optional[int], Optional[datetime]]:
     """
-    Fetch bid, ask, bid size, and ask size from Alpaca.
+    Fetch bid, ask, bid size, ask size, and quote timestamp from Alpaca.
 
     Returns:
-        Tuple of (bid, ask, bid_size, ask_size) - any can be None if unavailable
+        Tuple of (bid, ask, bid_size, ask_size, quote_timestamp)
+        - any can be None if unavailable
+        - quote_timestamp is UTC datetime of when the quote was generated
     """
     q = _fetch_quotes(symbol, timeout=timeout)
     if not q:
-        return None, None, None, None
+        return None, None, None, None, None
 
     try:
         bid = float(q.get("bp") or q.get("bid_price") or 0) or None
         ask = float(q.get("ap") or q.get("ask_price") or 0) or None
         bid_size = int(q.get("bs") or q.get("bid_size") or 0) or None
         ask_size = int(q.get("as") or q.get("ask_size") or 0) or None
-        return bid, ask, bid_size, ask_size
+
+        # Extract quote timestamp (Alpaca returns ISO format with 't' key)
+        quote_ts = None
+        ts_raw = q.get("t")
+        if ts_raw:
+            try:
+                # Alpaca returns timestamps like "2025-12-31T15:30:00.123456789Z"
+                quote_ts = datetime.fromisoformat(ts_raw.replace("Z", "+00:00"))
+            except (ValueError, AttributeError):
+                pass
+
+        return bid, ask, bid_size, ask_size, quote_ts
     except Exception:
-        return None, None, None, None
+        return None, None, None, None, None
 
 def get_avg_volume(symbol: str, lookback_days: int = 20, timeout: int = 10) -> Optional[int]:
     """
@@ -262,7 +275,7 @@ def check_liquidity_for_order(
     gate = get_liquidity_gate()
 
     # Fetch current quote
-    bid, ask, _, _ = get_quote_with_sizes(symbol)
+    bid, ask, _, _, _ = get_quote_with_sizes(symbol)
 
     # Use mid price if price not provided
     if price is None:
@@ -479,7 +492,7 @@ def place_ioc_limit(order: OrderRecord, resolve_status: bool = True) -> BrokerEx
     store = IdempotencyStore()
 
     # Get current market quote BEFORE placing the order for TCA benchmarking
-    market_bid_at_execution, market_ask_at_execution, _, _ = get_quote_with_sizes(order.symbol)
+    market_bid_at_execution, market_ask_at_execution, _, _, quote_ts = get_quote_with_sizes(order.symbol)
 
     # If quotes are unavailable, we cannot reliably place order or perform TCA.
     if market_bid_at_execution is None or market_ask_at_execution is None:
@@ -488,6 +501,23 @@ def place_ioc_limit(order: OrderRecord, resolve_status: bool = True) -> BrokerEx
         order.notes = "no_quotes_available"
         log_trade_event(order, market_bid=None, market_ask=None)
         return BrokerExecutionResult(order=order, market_bid_at_execution=None, market_ask_at_execution=None)
+
+    # STALENESS GUARD: Reject order if quote is more than 5 minutes old
+    MAX_QUOTE_AGE_SECONDS = 300  # 5 minutes
+    if quote_ts is not None:
+        quote_age_seconds = (datetime.now(quote_ts.tzinfo) - quote_ts).total_seconds()
+        if quote_age_seconds > MAX_QUOTE_AGE_SECONDS:
+            logger.warning(
+                f"Stale quote for {order.symbol}: {quote_age_seconds:.0f}s old (max: {MAX_QUOTE_AGE_SECONDS}s)"
+            )
+            order.status = OrderStatus.REJECTED
+            order.notes = f"stale_quote_{quote_age_seconds:.0f}s"
+            log_trade_event(order, market_bid=market_bid_at_execution, market_ask=market_ask_at_execution)
+            return BrokerExecutionResult(
+                order=order,
+                market_bid_at_execution=market_bid_at_execution,
+                market_ask_at_execution=market_ask_at_execution
+            )
 
     # Idempotency guard
     if store.exists(order.decision_id):
@@ -852,7 +882,7 @@ def place_bracket_order(
     store = IdempotencyStore()
 
     # Get current market quote for TCA benchmarking
-    market_bid, market_ask, _, _ = get_quote_with_sizes(symbol)
+    market_bid, market_ask, _, _, _ = get_quote_with_sizes(symbol)
 
     # Construct order record
     now = datetime.utcnow().strftime("%Y%m%d_%H%M%S")

@@ -67,6 +67,27 @@ risk:
   # One-at-a-time mode (limit concurrent new trades)
   max_concurrent_trades: 2  # Max open positions before blocking new entries
 
+# VIX Trading Pause (blocks signal generation when VIX is elevated)
+vix:
+  pause_enabled: true         # Master switch for VIX pause logic
+  pause_threshold: 30.0       # Pause trading when VIX >= this level
+  elevated_threshold: 25.0    # Warning level (half position sizing)
+  extreme_threshold: 40.0     # Extreme level (zero trading)
+  data_source: "yfinance"     # Data source: yfinance or polygon
+  cache_ttl_seconds: 3600     # Cache VIX for 1 hour to minimize API calls
+  fallback_vix: 20.0          # Default VIX if fetch fails
+
+# Watchdog Restart Backoff (prevents restart storms)
+watchdog:
+  enabled: true               # Master switch for backoff logic
+  base_delay_seconds: 30      # Initial delay before first restart
+  max_delay_seconds: 3600     # Maximum delay (1 hour)
+  backoff_multiplier: 2.0     # Delay doubles each attempt (30, 60, 120, ...)
+  max_attempts_per_hour: 5    # Maximum restarts per hour before blocking
+  jitter_enabled: true        # Add randomness to prevent thundering herd
+  jitter_factor: 0.1          # +/- 10% jitter
+  cooldown_hours: 1.0         # Reset attempt counter after this period
+
 # Strategy Filters (config-gated)
 filters:
   # Earnings proximity filter

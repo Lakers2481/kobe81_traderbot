@@ -25,6 +25,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+# Exponential backoff for restarts (prevents restart storms)
+try:
+    from core.restart_backoff import get_restart_backoff, RestartBackoffConfig
+    BACKOFF_AVAILABLE = True
+except ImportError:
+    BACKOFF_AVAILABLE = False
+
 STATE_FILE = ROOT / "state" / "scheduler_master.json"
 HEARTBEAT_FILE = ROOT / "state" / "heartbeat.json"
 WATCHDOG_LOG = ROOT / "logs" / "watchdog.jsonl"
@@ -176,7 +183,25 @@ def cmd_status(args) -> int:
     print(f"Threshold:    {STALE_THRESHOLD_MINUTES} min")
     print()
 
+    # Show backoff status
+    if BACKOFF_AVAILABLE:
+        print()
+        print("Restart Backoff:")
+        try:
+            backoff = get_restart_backoff()
+            status = backoff.get_status()
+            print(f"  Attempts:     {status['attempt_count']}/{status['max_attempts_per_hour']}")
+            print(f"  Last Restart: {status['last_restart_time'] or 'Never'}")
+            print(f"  Next Allowed: {status['next_restart_allowed_at'] or 'Now'}")
+            print(f"  Base Delay:   {status['base_delay_seconds']}s")
+        except Exception as e:
+            print(f"  (error: {e})")
+    else:
+        print()
+        print("Restart Backoff: Not available")
+
     # Show recent watchdog events
+    print()
     if WATCHDOG_LOG.exists():
         print("Recent Watchdog Events:")
         try:
@@ -206,9 +231,29 @@ def cmd_check(args) -> int:
     log_event("scheduler_dead", {"reason": reason})
 
     if args.restart_if_dead:
+        # Apply exponential backoff to prevent restart storms
+        if BACKOFF_AVAILABLE:
+            backoff = get_restart_backoff()
+            allowed, delay, backoff_reason = backoff.should_restart()
+
+            if not allowed:
+                print(f"Restart BLOCKED: {backoff_reason}")
+                log_event("restart_blocked", {"reason": backoff_reason})
+                return 1
+
+            if delay > 0:
+                print(f"Backoff: waiting {delay:.1f}s before restart...")
+                log_event("restart_delayed", {"delay_seconds": delay})
+                time.sleep(delay)
+
         print("Restarting scheduler...")
         if start_scheduler():
             log_event("scheduler_restarted", {"trigger": "watchdog"})
+
+            # Record successful restart for backoff tracking
+            if BACKOFF_AVAILABLE:
+                backoff.record_success()
+
             time.sleep(3)
 
             # Verify restart
@@ -219,9 +264,13 @@ def cmd_check(args) -> int:
             else:
                 print("Restart may have failed - no PID found")
                 log_event("restart_verification_failed")
+                if BACKOFF_AVAILABLE:
+                    backoff.record_failure("no_pid_after_restart")
                 return 1
         else:
             print("Failed to start scheduler")
+            if BACKOFF_AVAILABLE:
+                backoff.record_failure("start_scheduler_failed")
             return 1
 
     return 1

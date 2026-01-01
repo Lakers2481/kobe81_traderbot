@@ -72,6 +72,13 @@ try:
 except ImportError:
     HMM_REGIME_AVAILABLE = False
 
+# VIX Monitor (pause trading when VIX > 30)
+try:
+    from core.vix_monitor import get_vix_monitor, VIXConfig
+    VIX_MONITOR_AVAILABLE = True
+except ImportError:
+    VIX_MONITOR_AVAILABLE = False
+
 
 def get_last_trading_day(reference_date: datetime = None) -> tuple[str, bool, str]:
     """
@@ -754,6 +761,26 @@ Examples:
     if not os.getenv("POLYGON_API_KEY"):
         print("Error: POLYGON_API_KEY not set. Please provide via --dotenv.", file=sys.stderr)
         return 1
+
+    # VIX Pause Check: Block signal generation when VIX > 30
+    if VIX_MONITOR_AVAILABLE:
+        try:
+            vix_monitor = get_vix_monitor()
+            should_pause, vix_level, reason = vix_monitor.should_pause_trading()
+
+            if should_pause:
+                print(f"\n*** TRADING PAUSED: {reason} ***")
+                print(f"*** VIX = {vix_level:.1f} (threshold: {vix_monitor.config.pause_threshold}) ***")
+                print("*** Scan aborted. No signals will be generated. ***\n")
+                return 0  # Clean exit, not an error
+
+            if args.verbose:
+                print(f"[VIX] Level: {vix_level:.1f} - {reason}")
+
+        except Exception as e:
+            # VIX fetch failed - continue with warning
+            if args.verbose:
+                print(f"[VIX] Warning: Could not check VIX level: {e}")
 
     # Load universe
     universe_path = Path(args.universe)
