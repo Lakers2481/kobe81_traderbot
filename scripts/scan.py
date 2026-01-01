@@ -593,8 +593,8 @@ Examples:
     ap.add_argument(
         "--cognitive-min-conf",
         type=float,
-        default=0.5,
-        help="Minimum cognitive confidence to approve signal (default: 0.5)",
+        default=0.45,
+        help="Minimum cognitive confidence to approve signal (default: 0.45, lowered from 0.5 because ML ensemble predicts honestly around 45-50%%)",
     )
     ap.add_argument(
         "--verbose",

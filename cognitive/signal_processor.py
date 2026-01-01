@@ -100,13 +100,17 @@ class CognitiveSignalProcessor:
     the `CognitiveBrain`, orchestrating evaluation and learning.
     """
 
-    def __init__(self, min_confidence: float = 0.51):
+    def __init__(self, min_confidence: float = 0.45):
         """
         Initializes the processor.
 
         Args:
             min_confidence: The minimum cognitive confidence required for a
                             signal to be considered "approved."
+
+        NOTE: Lowered from 0.51 to 0.45 (2025-12-31) because ML ensemble models
+        predict honestly around 45-50% for mean-reversion signals, which is
+        appropriate given the ~48% baseline win rate in training data.
         """
         self.min_confidence = min_confidence
         self._brain = None  # Lazy-loaded to avoid circular imports.

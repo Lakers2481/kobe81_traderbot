@@ -123,7 +123,7 @@ class CognitiveBrain:
 
     def __init__(
         self,
-        min_confidence_to_act: float = 0.5,
+        min_confidence_to_act: float = 0.45,
         max_processing_time_ms: int = 5000,
     ):
         """
@@ -133,6 +133,9 @@ class CognitiveBrain:
             min_confidence_to_act: The confidence threshold required to take action.
             max_processing_time_ms: A timeout for the deliberation process to prevent
                                     the system from getting stuck.
+
+        NOTE: Lowered from 0.5 to 0.45 (2025-12-31) because ML ensemble models
+        predict honestly around 45-50% for mean-reversion signals.
         """
         self.min_confidence_to_act = min_confidence_to_act
         self.max_processing_time_ms = max_processing_time_ms

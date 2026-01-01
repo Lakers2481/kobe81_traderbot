@@ -306,7 +306,9 @@ class KnowledgeBoundary:
             recommendations.append("Proceed with caution and reduced size.")
 
         # The higher the uncertainty, the more we should penalize the final confidence.
-        confidence_adjustment = -uncertainty_score * 0.5
+        # NOTE: Reduced from 0.5 to 0.25 (2025-12-31) because ML ensemble models
+        # now provide good predictions even without episodic memory examples.
+        confidence_adjustment = -uncertainty_score * 0.25
 
         assessment = KnowledgeAssessment(
             uncertainty_level=level,

@@ -83,6 +83,10 @@ class BaseModelWrapper(ABC):
 class XGBoostWrapper(BaseModelWrapper):
     """Wrapper for XGBoost model."""
 
+    # Feature names expected by the model (from training)
+    FEATURE_NAMES = ['atr14', 'sma20_over_200', 'rv20', 'don20_width',
+                     'pos_in_don20', 'ret5', 'log_vol']
+
     def __init__(self, name: str = "xgboost", task_type: str = "classification"):
         super().__init__(name)
         self.task_type = task_type
@@ -103,7 +107,8 @@ class XGBoostWrapper(BaseModelWrapper):
         elif features.ndim == 3:
             features = features.reshape(features.shape[0], -1)
 
-        dmatrix = xgb.DMatrix(features)
+        # Create DMatrix with feature names to match trained model
+        dmatrix = xgb.DMatrix(features, feature_names=self.FEATURE_NAMES)
         prediction = self.model.predict(dmatrix)[0]
 
         if self.task_type == "classification":

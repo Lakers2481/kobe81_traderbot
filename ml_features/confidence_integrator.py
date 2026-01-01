@@ -102,14 +102,19 @@ class ConfidenceIntegrator:
 
     @property
     def ensemble_predictor(self):
-        """Lazy load EnsemblePredictor."""
+        """Lazy load EnsemblePredictor with trained models."""
         if self._ensemble_predictor is None:
             try:
-                from ml_advanced.ensemble.ensemble_predictor import EnsemblePredictor
-                self._ensemble_predictor = EnsemblePredictor()
-                # Note: Models need to be loaded separately
-            except ImportError:
-                logger.warning("EnsemblePredictor not available")
+                from ml_advanced.ensemble.loader import get_ensemble_predictor
+                self._ensemble_predictor = get_ensemble_predictor()
+                if self._ensemble_predictor and self._ensemble_predictor.models:
+                    logger.info(
+                        f"Ensemble loaded with models: {list(self._ensemble_predictor.models.keys())}"
+                    )
+                else:
+                    logger.warning("Ensemble loaded but no models available")
+            except ImportError as e:
+                logger.warning(f"EnsemblePredictor not available: {e}")
         return self._ensemble_predictor
 
     @property
@@ -259,8 +264,36 @@ class ConfidenceIntegrator:
 
         Use this for integration with PortfolioRiskManager.
         """
-        result = self.calculate_confidence(signal, price_data, spy_data, vix_level)
+        # Extract features from signal if available
+        features = self._extract_features_from_signal(signal)
+        result = self.calculate_confidence(signal, price_data, spy_data, vix_level, features)
         return result.confidence
+
+    def _extract_features_from_signal(
+        self,
+        signal: Dict[str, Any],
+    ) -> Optional[np.ndarray]:
+        """
+        Extract ML features from signal dict if available.
+
+        Expected feature columns (from ml_meta/features.py):
+        - atr14, sma20_over_200, rv20, don20_width, pos_in_don20, ret5, log_vol
+        """
+        FEATURE_COLS = ['atr14', 'sma20_over_200', 'rv20', 'don20_width',
+                        'pos_in_don20', 'ret5', 'log_vol']
+
+        # Check if features are in signal
+        if all(col in signal for col in FEATURE_COLS):
+            try:
+                features = np.array([
+                    float(signal.get(col, 0.0) or 0.0)
+                    for col in FEATURE_COLS
+                ])
+                return features
+            except (ValueError, TypeError) as e:
+                logger.debug(f"Failed to extract features from signal: {e}")
+
+        return None
 
     def get_status(self) -> Dict[str, Any]:
         """Get status of all confidence components."""
