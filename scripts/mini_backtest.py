@@ -84,7 +84,9 @@ def mini_backtest(symbol: str, days: int, dotenv: str) -> dict:
                 'timestamp': datetime.now().isoformat()
             }
 
-            print(f"[BACKTEST] {symbol}: {total} trades, {win_rate:.1%} WR, {total_return:.1%} return")
+            # Warn if sample size too small for statistical significance
+            reliability = "" if total >= 10 else " [n<10: UNRELIABLE]"
+            print(f"[BACKTEST] {symbol}: {total} trades, {win_rate:.1%} WR, {total_return:.1%} return{reliability}")
         else:
             result = {
                 'symbol': symbol,
