@@ -576,8 +576,8 @@ Examples:
     ap.add_argument(
         "--quality-max-signals",
         type=int,
-        default=1,
-        help="Max signals per day when quality gate is enabled (default: 1)",
+        default=3,
+        help="Max signals per day when quality gate is enabled (default: 3)",
     )
     ap.add_argument(
         "--cognitive",
