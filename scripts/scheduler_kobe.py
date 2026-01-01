@@ -36,10 +36,68 @@ POST-MARKET (16:00 - 22:00)
 - 17:15 COGNITIVE_LEARN    - Daily hypothesis testing & edge discovery
 - 17:30 LEARN_ANALYSIS     - Daily trade learning analysis
 - 18:00 EOD_FINALIZE       - Finalize EOD data after provider delay
-SATURDAY MORNING (8:30 AM CT = 9:30 AM ET)
-- 08:30 RESEARCH_DISCOVER   - Pattern discovery (Saturdays)
-- 09:00 ALPHA_SCREEN_WEEKLY - Alpha screening (Saturdays)
-- 09:30 WEEKEND_WATCHLIST   - Build watchlist for next week (Saturdays, FINAL)
+SATURDAY MORNING (8:30 AM CT = 9:30 AM ET) - Also runs on holidays!
+- 08:30 RESEARCH_DISCOVER   - Pattern discovery
+- 09:00 ALPHA_SCREEN_WEEKLY - Alpha screening
+- 09:30 WEEKEND_WATCHLIST   - Build watchlist for next trading day
+
+HOLIDAY/WEEKEND SCHEDULE (36 tasks for market-closed days):
+- Robot learns, adapts, researches instead of idling on closed days
+- Runs on ALL market-closed days (weekends + NYSE holidays)
+
+Early Morning (5:30-6:30 AM ET):
+- 05:30 HOLIDAY_BACKUP         - State backup
+- 06:00 HOLIDAY_HEALTH_CHECK   - Full system health
+- 06:15 HOLIDAY_LOG_CLEANUP    - Purge old logs
+
+Morning (6:30-8:00 AM ET):
+- 06:30 HOLIDAY_DATA_INTEGRITY   - Missing bars, duplicates, outliers
+- 06:45 HOLIDAY_CORPORATE_ACTIONS- Splits, dividends sync
+- 07:00 HOLIDAY_UNIVERSE_REFRESH - Delistings, halted tickers
+- 07:30 HOLIDAY_BROKER_TEST      - Broker connectivity test
+
+Research Phase (8:00-10:00 AM ET):
+- 08:00 HOLIDAY_RESEARCH_START  - Start research session
+- 08:30 HOLIDAY_PATTERN_SCAN    - Scan for new patterns
+- 09:00 HOLIDAY_ALPHA_DISCOVERY - Alpha screening
+- 09:30 HOLIDAY_EDGE_ANALYSIS   - Edge discovery analysis
+
+Backtesting Phase (10:00 AM-12:00 PM ET):
+- 10:00 HOLIDAY_BACKTEST_QUICK  - Quick backtest validation
+- 10:30 HOLIDAY_WF_TEST         - Walk-forward test
+- 11:00 HOLIDAY_STRATEGY_COMPARE- Strategy comparison
+- 11:30 HOLIDAY_PARAM_DRIFT     - Parameter drift check
+
+Optimization & Tuning (12:00-2:00 PM ET):
+- 12:00 HOLIDAY_OPTIMIZE_START  - Start optimization
+- 12:30 HOLIDAY_GRID_SEARCH     - Grid search parameters
+- 13:00 HOLIDAY_THRESHOLD_TUNE  - Tune confidence thresholds
+- 13:30 HOLIDAY_RISK_CALIBRATE  - Calibrate risk limits
+
+ML Training (2:00-4:00 PM ET):
+- 14:00 HOLIDAY_ML_TRAIN        - ML model training
+- 14:30 HOLIDAY_META_RETRAIN    - Meta model retrain
+- 15:00 HOLIDAY_ENSEMBLE_UPDATE - Ensemble update
+- 15:30 HOLIDAY_HMM_REGIME      - HMM regime recalibration
+
+Cognitive Learning (4:00-6:00 PM ET):
+- 16:00 HOLIDAY_COGNITIVE_REFLECT - Cognitive reflection
+- 16:30 HOLIDAY_HYPOTHESIS_TEST   - Test hypotheses
+- 17:00 HOLIDAY_MEMORY_CONSOLIDATE- Memory consolidation
+- 17:30 HOLIDAY_SELF_CALIBRATE    - Self-model calibration
+
+Simulation & Stress Test (6:00-8:00 PM ET):
+- 18:00 HOLIDAY_MONTE_CARLO      - Monte Carlo simulation
+- 18:30 HOLIDAY_STRESS_TEST      - Stress testing
+- 19:00 HOLIDAY_VAR_CALC         - VaR recalculation
+- 19:30 HOLIDAY_DRAWDOWN_ANALYSIS- Drawdown analysis
+
+Next Day Prep (8:00-10:00 PM ET):
+- 20:00 HOLIDAY_NEXT_DAY_PREP   - Prepare for next day
+- 20:30 HOLIDAY_WATCHLIST_BUILD - Build watchlist
+- 21:00 HOLIDAY_PREVIEW_SCAN    - Preview mode scan
+- 21:30 HOLIDAY_FINAL_BACKUP    - Final backup
+- 22:00 HOLIDAY_COMPLETE        - Holiday schedule complete
 
 The scheduler stores last-run markers per tag/date to prevent duplicates.
 """
@@ -81,6 +139,22 @@ def is_early_close_day(date: datetime = None) -> bool:
     cal = EquitiesCalendar()
     is_early, _ = cal.is_early_close(date.date() if hasattr(date, 'date') else date)
     return is_early
+
+
+def is_market_closed_day(date: datetime = None) -> bool:
+    """Check if given date is a market-closed day (weekend or holiday).
+
+    Returns True for:
+    - Saturdays and Sundays
+    - NYSE holidays (New Year's, MLK Day, Presidents Day, Good Friday,
+      Memorial Day, Juneteenth, Independence Day, Labor Day, Thanksgiving,
+      Christmas, etc.)
+    """
+    if date is None:
+        date = now_et()
+    cal = EquitiesCalendar()
+    d = date.date() if hasattr(date, 'date') else date
+    return not cal.is_trading_day(d)
 
 
 def get_market_close_time(date: datetime = None) -> dtime:
@@ -225,6 +299,67 @@ SCHEDULE: List[ScheduleEntry] = [
     ScheduleEntry('INTRADAY_SCAN_1500', dtime(15, 0)),
     ScheduleEntry('INTRADAY_SCAN_1515', dtime(15, 15)),
     ScheduleEntry('INTRADAY_SCAN_1545', dtime(15, 45)),
+
+    # =============================================================================
+    # HOLIDAY/WEEKEND SCHEDULE (36 tasks for market-closed days)
+    # =============================================================================
+    # These run ONLY on market-closed days (holidays + weekends)
+    # Robot learns, adapts, researches, optimizes instead of idling
+    # =============================================================================
+
+    # === EARLY MORNING: System Health & Backup (5:30-6:30 AM ET) ===
+    ScheduleEntry('HOLIDAY_BACKUP', dtime(5, 30)),           # State backup
+    ScheduleEntry('HOLIDAY_HEALTH_CHECK', dtime(6, 0)),      # Full system health
+    ScheduleEntry('HOLIDAY_LOG_CLEANUP', dtime(6, 15)),      # Purge old logs
+
+    # === MORNING: Data Integrity & Prep (6:30-8:00 AM ET) ===
+    ScheduleEntry('HOLIDAY_DATA_INTEGRITY', dtime(6, 30)),   # Missing bars, duplicates, outliers
+    ScheduleEntry('HOLIDAY_CORPORATE_ACTIONS', dtime(6, 45)),# Splits, dividends sync
+    ScheduleEntry('HOLIDAY_UNIVERSE_REFRESH', dtime(7, 0)),  # Delistings, halted tickers
+    ScheduleEntry('HOLIDAY_BROKER_TEST', dtime(7, 30)),      # Broker connectivity test
+
+    # === RESEARCH PHASE: Pattern Discovery (8:00-10:00 AM ET) ===
+    ScheduleEntry('HOLIDAY_RESEARCH_START', dtime(8, 0)),    # Start research session
+    ScheduleEntry('HOLIDAY_PATTERN_SCAN', dtime(8, 30)),     # Scan for new patterns
+    ScheduleEntry('HOLIDAY_ALPHA_DISCOVERY', dtime(9, 0)),   # Alpha screening
+    ScheduleEntry('HOLIDAY_EDGE_ANALYSIS', dtime(9, 30)),    # Edge discovery analysis
+
+    # === BACKTESTING PHASE: Validation (10:00 AM-12:00 PM ET) ===
+    ScheduleEntry('HOLIDAY_BACKTEST_QUICK', dtime(10, 0)),   # Quick backtest validation
+    ScheduleEntry('HOLIDAY_WF_TEST', dtime(10, 30)),         # Walk-forward test
+    ScheduleEntry('HOLIDAY_STRATEGY_COMPARE', dtime(11, 0)), # Strategy comparison
+    ScheduleEntry('HOLIDAY_PARAM_DRIFT', dtime(11, 30)),     # Parameter drift check
+
+    # === MIDDAY: Optimization & Tuning (12:00-2:00 PM ET) ===
+    ScheduleEntry('HOLIDAY_OPTIMIZE_START', dtime(12, 0)),   # Start optimization
+    ScheduleEntry('HOLIDAY_GRID_SEARCH', dtime(12, 30)),     # Grid search parameters
+    ScheduleEntry('HOLIDAY_THRESHOLD_TUNE', dtime(13, 0)),   # Tune confidence thresholds
+    ScheduleEntry('HOLIDAY_RISK_CALIBRATE', dtime(13, 30)),  # Calibrate risk limits
+
+    # === AFTERNOON: ML Training (2:00-4:00 PM ET) ===
+    ScheduleEntry('HOLIDAY_ML_TRAIN', dtime(14, 0)),         # ML model training
+    ScheduleEntry('HOLIDAY_META_RETRAIN', dtime(14, 30)),    # Meta model retrain
+    ScheduleEntry('HOLIDAY_ENSEMBLE_UPDATE', dtime(15, 0)),  # Ensemble update
+    ScheduleEntry('HOLIDAY_HMM_REGIME', dtime(15, 30)),      # HMM regime recalibration
+
+    # === EVENING: Cognitive Learning (4:00-6:00 PM ET) ===
+    ScheduleEntry('HOLIDAY_COGNITIVE_REFLECT', dtime(16, 0)),# Cognitive reflection
+    ScheduleEntry('HOLIDAY_HYPOTHESIS_TEST', dtime(16, 30)), # Test hypotheses
+    ScheduleEntry('HOLIDAY_MEMORY_CONSOLIDATE', dtime(17, 0)),# Memory consolidation
+    ScheduleEntry('HOLIDAY_SELF_CALIBRATE', dtime(17, 30)),  # Self-model calibration
+
+    # === NIGHT: Simulation & Stress Test (6:00-8:00 PM ET) ===
+    ScheduleEntry('HOLIDAY_MONTE_CARLO', dtime(18, 0)),      # Monte Carlo simulation
+    ScheduleEntry('HOLIDAY_STRESS_TEST', dtime(18, 30)),     # Stress testing
+    ScheduleEntry('HOLIDAY_VAR_CALC', dtime(19, 0)),         # VaR recalculation
+    ScheduleEntry('HOLIDAY_DRAWDOWN_ANALYSIS', dtime(19, 30)),# Drawdown analysis
+
+    # === LATE NIGHT: Prep for Next Trading Day (8:00-10:00 PM ET) ===
+    ScheduleEntry('HOLIDAY_NEXT_DAY_PREP', dtime(20, 0)),    # Prepare for next day
+    ScheduleEntry('HOLIDAY_WATCHLIST_BUILD', dtime(20, 30)), # Build watchlist
+    ScheduleEntry('HOLIDAY_PREVIEW_SCAN', dtime(21, 0)),     # Preview mode scan
+    ScheduleEntry('HOLIDAY_FINAL_BACKUP', dtime(21, 30)),    # Final backup
+    ScheduleEntry('HOLIDAY_COMPLETE', dtime(22, 0)),         # Holiday schedule complete
 ]
 
 
@@ -553,10 +688,11 @@ def main() -> None:
                                 except Exception:
                                     send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
 
-                        # === SATURDAY MORNING TASKS (Weekend Work) ===
+                        # === SATURDAY/HOLIDAY MORNING TASKS (Weekend + Holiday Work) ===
+                        # Now runs on ANY market-closed day (weekends + holidays)
                         elif entry.tag == 'RESEARCH_DISCOVER':
-                            # Pattern discovery - only run on Saturdays (8:30 AM ET = 7:30 AM CT)
-                            if datetime.now(ET).weekday() == 5:  # Saturday
+                            # Pattern discovery - runs on all market-closed days
+                            if is_market_closed_day():
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/research_discover.py'),
                                              '--cap', str(args.cap)])
                                 if send_fn:
@@ -568,8 +704,8 @@ def main() -> None:
                                         send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
 
                         elif entry.tag == 'ALPHA_SCREEN_WEEKLY':
-                            # Alpha screening - only run on Saturdays (9:00 AM ET = 8:00 AM CT)
-                            if datetime.now(ET).weekday() == 5:  # Saturday
+                            # Alpha screening - runs on all market-closed days
+                            if is_market_closed_day():
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/run_alpha_screener.py'),
                                              '--universe', args.universe, '--top', '20'])
                                 if send_fn:
@@ -581,9 +717,8 @@ def main() -> None:
                                         send_fn(f"<b>{entry.tag}</b> {'completed' if rc == 0 else 'failed'}")
 
                         elif entry.tag == 'WEEKEND_WATCHLIST':
-                            # Build watchlist for next week - only run on Saturdays (9:30 AM ET = 8:30 AM CT)
-                            # This is the FINAL weekend task
-                            if datetime.now(ET).weekday() == 5:  # Saturday
+                            # Build watchlist for next trading day - runs on all market-closed days
+                            if is_market_closed_day():
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/scan.py'),
                                              '--cap', str(args.cap), '--deterministic', '--top3',
                                              '--dotenv', args.dotenv])
@@ -591,9 +726,14 @@ def main() -> None:
                                     try:
                                         from core.clock.tz_utils import fmt_ct
                                         now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
-                                        send_fn(f"<b>WEEKEND COMPLETE</b> [{stamp}] Watchlist ready for next week!")
+                                        # Find next trading day
+                                        cal = EquitiesCalendar()
+                                        next_day = datetime.now(ET).date() + timedelta(days=1)
+                                        while not cal.is_trading_day(next_day):
+                                            next_day += timedelta(days=1)
+                                        send_fn(f"<b>WATCHLIST READY</b> [{stamp}] Prepared for {next_day}!")
                                     except Exception:
-                                        send_fn(f"<b>WEEKEND COMPLETE</b> Watchlist ready!")
+                                        send_fn(f"<b>WATCHLIST READY</b> Prepared for next trading day!")
 
                         elif entry.tag == 'POST_GAME':
                             # Generate comprehensive POST_GAME briefing with full day analysis
@@ -709,6 +849,288 @@ def main() -> None:
                                         send_fn(f"<b>INTRADAY_CHECK</b> [{stamp}] issues: {', '.join(issues)}")
                                     except Exception:
                                         pass
+
+                        # =============================================================================
+                        # HOLIDAY/WEEKEND SCHEDULE HANDLERS (36 tasks)
+                        # =============================================================================
+                        # All holiday tasks check is_market_closed_day() before running
+                        # Robot learns, adapts, researches instead of idling on closed days
+                        # =============================================================================
+
+                        # === EARLY MORNING: System Health & Backup ===
+                        elif entry.tag == 'HOLIDAY_BACKUP':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/backup_state.py')])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_BACKUP</b> State backup {'completed' if rc == 0 else 'failed'}")
+
+                        elif entry.tag == 'HOLIDAY_HEALTH_CHECK':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/preflight.py'), '--dotenv', args.dotenv])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_HEALTH_CHECK</b> System health {'OK' if rc == 0 else 'ISSUES'}")
+
+                        elif entry.tag == 'HOLIDAY_LOG_CLEANUP':
+                            if is_market_closed_day():
+                                # Purge logs older than 30 days
+                                rc = run_cmd([sys.executable, '-c',
+                                    'import os, time; from pathlib import Path; '
+                                    '[f.unlink() for f in Path("logs").glob("*.log") '
+                                    'if time.time() - f.stat().st_mtime > 30*86400]'])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_LOG_CLEANUP</b> Old logs purged")
+
+                        # === MORNING: Data Integrity & Prep ===
+                        elif entry.tag == 'HOLIDAY_DATA_INTEGRITY':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/data_integrity_check.py'),
+                                             '--universe', args.universe, '--dotenv', args.dotenv])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_DATA_INTEGRITY</b> {'PASS' if rc == 0 else 'issues found'}")
+
+                        elif entry.tag == 'HOLIDAY_CORPORATE_ACTIONS':
+                            if is_market_closed_day():
+                                # Sync corporate actions (splits, dividends)
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/sync_corporate_actions.py'),
+                                             '--universe', args.universe, '--dotenv', args.dotenv])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_CORPORATE_ACTIONS</b> {'synced' if rc == 0 else 'failed'}")
+
+                        elif entry.tag == 'HOLIDAY_UNIVERSE_REFRESH':
+                            if is_market_closed_day():
+                                # Check for delistings, halted tickers
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/validate_universe.py'),
+                                             '--universe', args.universe, '--dotenv', args.dotenv])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_UNIVERSE_REFRESH</b> {'OK' if rc == 0 else 'updates needed'}")
+
+                        elif entry.tag == 'HOLIDAY_BROKER_TEST':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/preflight.py'),
+                                             '--dotenv', args.dotenv, '--broker-only'])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_BROKER_TEST</b> Broker {'connected' if rc == 0 else 'OFFLINE'}")
+
+                        # === RESEARCH PHASE: Pattern Discovery ===
+                        elif entry.tag == 'HOLIDAY_RESEARCH_START':
+                            if is_market_closed_day():
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_RESEARCH</b> Starting research session...")
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/research_discover.py'),
+                                             '--cap', str(args.cap)])
+
+                        elif entry.tag == 'HOLIDAY_PATTERN_SCAN':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/pattern_scanner.py'),
+                                             '--universe', args.universe, '--top', '50'])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_PATTERN_SCAN</b> Pattern scan complete")
+
+                        elif entry.tag == 'HOLIDAY_ALPHA_DISCOVERY':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/run_alpha_screener.py'),
+                                             '--universe', args.universe, '--top', '20'])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_ALPHA_DISCOVERY</b> Alpha screening complete")
+
+                        elif entry.tag == 'HOLIDAY_EDGE_ANALYSIS':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/cognitive_learn.py'),
+                                             '--dotenv', args.dotenv, '--edge-discovery'])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_EDGE_ANALYSIS</b> Edge analysis complete")
+
+                        # === BACKTESTING PHASE: Validation ===
+                        elif entry.tag == 'HOLIDAY_BACKTEST_QUICK':
+                            if is_market_closed_day():
+                                # Quick validation backtest (last 3 months)
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/backtest_dual_strategy.py'),
+                                             '--universe', args.universe, '--cap', '100',
+                                             '--start', (datetime.now(ET) - timedelta(days=90)).strftime('%Y-%m-%d'),
+                                             '--end', datetime.now(ET).strftime('%Y-%m-%d')])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_BACKTEST_QUICK</b> Quick validation complete")
+
+                        elif entry.tag == 'HOLIDAY_WF_TEST':
+                            if is_market_closed_day():
+                                # Walk-forward test (last year)
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/run_wf_polygon.py'),
+                                             '--universe', args.universe, '--cap', '150',
+                                             '--start', (datetime.now(ET) - timedelta(days=365)).strftime('%Y-%m-%d'),
+                                             '--end', datetime.now(ET).strftime('%Y-%m-%d'),
+                                             '--train-days', '126', '--test-days', '21'])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_WF_TEST</b> Walk-forward test complete")
+
+                        elif entry.tag == 'HOLIDAY_STRATEGY_COMPARE':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/strategy_showdown.py'),
+                                             '--universe', args.universe, '--cap', '100'])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_STRATEGY_COMPARE</b> Strategy comparison complete")
+
+                        elif entry.tag == 'HOLIDAY_PARAM_DRIFT':
+                            if is_market_closed_day():
+                                # Check for parameter drift
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/param_drift_check.py'),
+                                             '--dotenv', args.dotenv])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_PARAM_DRIFT</b> Drift check complete")
+
+                        # === MIDDAY: Optimization & Tuning ===
+                        elif entry.tag == 'HOLIDAY_OPTIMIZE_START':
+                            if is_market_closed_day():
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_OPTIMIZE</b> Starting optimization phase...")
+
+                        elif entry.tag == 'HOLIDAY_GRID_SEARCH':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/grid_search_params.py'),
+                                             '--universe', args.universe, '--cap', '100'])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_GRID_SEARCH</b> Grid search complete")
+
+                        elif entry.tag == 'HOLIDAY_THRESHOLD_TUNE':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/tune_thresholds.py'),
+                                             '--dotenv', args.dotenv])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_THRESHOLD_TUNE</b> Threshold tuning complete")
+
+                        elif entry.tag == 'HOLIDAY_RISK_CALIBRATE':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/calibrate_risk.py'),
+                                             '--dotenv', args.dotenv])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_RISK_CALIBRATE</b> Risk calibration complete")
+
+                        # === AFTERNOON: ML Training ===
+                        elif entry.tag == 'HOLIDAY_ML_TRAIN':
+                            if is_market_closed_day():
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_ML_TRAIN</b> Starting ML training...")
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/train_meta.py'),
+                                             '--wfdir', args.wfdir])
+
+                        elif entry.tag == 'HOLIDAY_META_RETRAIN':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/train_meta.py'),
+                                             '--wfdir', args.wfdir, '--retrain'])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_META_RETRAIN</b> Meta model retrained")
+
+                        elif entry.tag == 'HOLIDAY_ENSEMBLE_UPDATE':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/update_ensemble.py'),
+                                             '--dotenv', args.dotenv])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_ENSEMBLE_UPDATE</b> Ensemble updated")
+
+                        elif entry.tag == 'HOLIDAY_HMM_REGIME':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/recalibrate_hmm.py'),
+                                             '--dotenv', args.dotenv])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_HMM_REGIME</b> HMM regime recalibrated")
+
+                        # === EVENING: Cognitive Learning ===
+                        elif entry.tag == 'HOLIDAY_COGNITIVE_REFLECT':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/cognitive_learn.py'),
+                                             '--dotenv', args.dotenv, '--consolidate', 'weekly'])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_COGNITIVE_REFLECT</b> Cognitive reflection complete")
+
+                        elif entry.tag == 'HOLIDAY_HYPOTHESIS_TEST':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/cognitive_learn.py'),
+                                             '--dotenv', args.dotenv, '--test-hypotheses'])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_HYPOTHESIS_TEST</b> Hypothesis testing complete")
+
+                        elif entry.tag == 'HOLIDAY_MEMORY_CONSOLIDATE':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/cognitive_learn.py'),
+                                             '--dotenv', args.dotenv, '--consolidate', 'memory'])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_MEMORY_CONSOLIDATE</b> Memory consolidated")
+
+                        elif entry.tag == 'HOLIDAY_SELF_CALIBRATE':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/cognitive_learn.py'),
+                                             '--dotenv', args.dotenv, '--self-calibrate'])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_SELF_CALIBRATE</b> Self-model calibrated")
+
+                        # === NIGHT: Simulation & Stress Test ===
+                        elif entry.tag == 'HOLIDAY_MONTE_CARLO':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/monte_carlo_sim.py'),
+                                             '--universe', args.universe, '--simulations', '10000'])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_MONTE_CARLO</b> Monte Carlo simulation complete")
+
+                        elif entry.tag == 'HOLIDAY_STRESS_TEST':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/stress_test.py'),
+                                             '--dotenv', args.dotenv])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_STRESS_TEST</b> Stress testing complete")
+
+                        elif entry.tag == 'HOLIDAY_VAR_CALC':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/calculate_var.py'),
+                                             '--dotenv', args.dotenv])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_VAR_CALC</b> VaR recalculated")
+
+                        elif entry.tag == 'HOLIDAY_DRAWDOWN_ANALYSIS':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/drawdown_analysis.py'),
+                                             '--dotenv', args.dotenv])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_DRAWDOWN_ANALYSIS</b> Drawdown analysis complete")
+
+                        # === LATE NIGHT: Prep for Next Trading Day ===
+                        elif entry.tag == 'HOLIDAY_NEXT_DAY_PREP':
+                            if is_market_closed_day():
+                                # Find next trading day and prep
+                                cal = EquitiesCalendar()
+                                next_day = datetime.now(ET).date() + timedelta(days=1)
+                                while not cal.is_trading_day(next_day):
+                                    next_day += timedelta(days=1)
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_NEXT_DAY_PREP</b> Next trading day: {next_day}")
+
+                        elif entry.tag == 'HOLIDAY_WATCHLIST_BUILD':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/scan.py'),
+                                             '--cap', str(args.cap), '--deterministic', '--top3',
+                                             '--dotenv', args.dotenv, '--preview'])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_WATCHLIST_BUILD</b> Watchlist ready")
+
+                        elif entry.tag == 'HOLIDAY_PREVIEW_SCAN':
+                            if is_market_closed_day():
+                                rc = do_refresh_top3(args.universe, args.dotenv, args.cap,
+                                                     datetime.now(ET).strftime('%Y-%m-%d'))
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_PREVIEW_SCAN</b> Preview scan complete")
+
+                        elif entry.tag == 'HOLIDAY_FINAL_BACKUP':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/backup_state.py')])
+                                if send_fn:
+                                    send_fn(f"<b>HOLIDAY_FINAL_BACKUP</b> Final backup complete")
+
+                        elif entry.tag == 'HOLIDAY_COMPLETE':
+                            if is_market_closed_day():
+                                if send_fn:
+                                    cal = EquitiesCalendar()
+                                    next_day = datetime.now(ET).date() + timedelta(days=1)
+                                    while not cal.is_trading_day(next_day):
+                                        next_day += timedelta(days=1)
+                                    send_fn(f"<b>HOLIDAY LEARNING COMPLETE</b> Robot ready for {next_day}!")
 
                         mark_ran(state, entry.tag, ymd)
                         save_state(state)
