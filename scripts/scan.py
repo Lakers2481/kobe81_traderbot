@@ -150,6 +150,13 @@ try:
 except ImportError:
     QUALITY_GATE_AVAILABLE = False
 
+# Signal Adjudicator (4-factor ranking - complements quality gate)
+try:
+    from cognitive.signal_adjudicator import adjudicate_signals
+    ADJUDICATOR_AVAILABLE = True
+except ImportError:
+    ADJUDICATOR_AVAILABLE = False
+
 # Cognitive system (optional)
 try:
     from cognitive.signal_processor import get_signal_processor
@@ -907,6 +914,24 @@ Examples:
     elif not QUALITY_GATE_AVAILABLE and not args.no_quality_gate:
         if args.verbose:
             print("  [INFO] Quality gate not available (module not found)")
+
+    # === SIGNAL ADJUDICATOR (4-factor ranking) ===
+    # Ranks quality-passed signals by: signal strength, pattern confluence,
+    # volatility contraction, and sector strength
+    if ADJUDICATOR_AVAILABLE and not args.no_quality_gate and not signals.empty:
+        try:
+            signals = adjudicate_signals(
+                signals=signals,
+                price_data=combined,
+                spy_data=spy_bars,
+                max_signals=20,  # Keep top 20 for further processing
+            )
+            if args.verbose and 'adjudication_score' in signals.columns:
+                top_score = signals['adjudication_score'].iloc[0] if len(signals) > 0 else 0
+                print(f"Adjudicator: ranked {len(signals)} signals (top score: {top_score:.1f})")
+        except Exception as e:
+            if args.verbose:
+                print(f"  [WARN] Signal adjudication failed: {e}", file=sys.stderr)
 
     # Optional ML scoring
     if args.ml and not signals.empty:

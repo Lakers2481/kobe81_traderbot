@@ -59,6 +59,13 @@ from cognitive.dynamic_policy_generator import (
     PolicyStatus,
     get_policy_generator,
 )
+from cognitive.signal_adjudicator import (
+    SignalAdjudicator,
+    AdjudicatorConfig,
+    AdjudicationResult,
+    get_adjudicator,
+    adjudicate_signals,
+)
 # Also expose via the shorter alias name for convenience
 from cognitive import policy_generator  # noqa: F401 - alias module
 
@@ -89,4 +96,9 @@ __all__ = [
     'get_signal_processor',
     'get_symbolic_reasoner',
     'get_policy_generator',
+    'SignalAdjudicator',
+    'AdjudicatorConfig',
+    'AdjudicationResult',
+    'get_adjudicator',
+    'adjudicate_signals',
 ]

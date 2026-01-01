@@ -488,9 +488,38 @@ class _Handler(BaseHTTPRequestHandler):
                 self.end_headers()
                 return
             self._json(get_metrics())
+        elif self.path == "/metrics/prometheus":
+            # Prometheus text format endpoint
+            self._prometheus()
         else:
             self.send_response(404)
             self.end_headers()
+
+    def _prometheus(self):
+        """Serve Prometheus text format metrics."""
+        try:
+            from trade_logging.prometheus_metrics import get_metrics_text, get_content_type
+            output = get_metrics_text()
+            self.send_response(200)
+            self.send_header("Content-Type", get_content_type())
+            self.send_header("Content-Length", str(len(output)))
+            self.end_headers()
+            self.wfile.write(output)
+        except ImportError:
+            # Fallback if prometheus_client not installed
+            body = b"# prometheus_client not installed\n# Install with: pip install prometheus-client\n"
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        except Exception as e:
+            body = f"# Error: {e}\n".encode("utf-8")
+            self.send_response(500)
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
 
     def log_message(self, format, *args):
         return  # quiet
