@@ -8,6 +8,7 @@ Provides:
 - Data versioning and reproducibility tracking
 - Visualization (Plotly/Matplotlib)
 - Monte Carlo simulation for confidence intervals
+- Multi-timeframe (MTF) utilities for combining signals across timeframes
 """
 from __future__ import annotations
 
@@ -51,6 +52,22 @@ from .monte_carlo import (
     MonteCarloResults,
     run_monte_carlo_analysis,
 )
+from .multi_timeframe import (
+    resample_ohlcv,
+    resample_apply,
+    mtf_sma,
+    mtf_rsi,
+    mtf_atr,
+    mtf_trend_filter,
+    mtf_filter,
+    bars_since,
+    crossover,
+    crossunder,
+    weekly_sma,
+    weekly_rsi,
+    monthly_sma,
+    monthly_trend,
+)
 
 __all__ = [
     # Engine exports
@@ -87,4 +104,19 @@ __all__ = [
     "MonteCarloConfig",
     "MonteCarloResults",
     "run_monte_carlo_analysis",
+    # Multi-timeframe exports
+    "resample_ohlcv",
+    "resample_apply",
+    "mtf_sma",
+    "mtf_rsi",
+    "mtf_atr",
+    "mtf_trend_filter",
+    "mtf_filter",
+    "bars_since",
+    "crossover",
+    "crossunder",
+    "weekly_sma",
+    "weekly_rsi",
+    "monthly_sma",
+    "monthly_trend",
 ]
