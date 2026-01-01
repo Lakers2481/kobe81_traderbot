@@ -149,11 +149,28 @@ def resample_apply(
     if not isinstance(result, pd.Series):
         result = pd.Series(result, index=resampled.index)
 
-    # Align back to original timeframe
-    aligned = result.reindex(original_index)
+    # Align back to original timeframe using merge_asof for proper date matching
+    # This handles timezone mismatches and different date formats
 
-    if ffill:
-        aligned = aligned.ffill()
+    # Create a temporary DataFrame for merge
+    result_df = result.reset_index()
+    result_df.columns = ['htf_date', 'value']
+    result_df['htf_date'] = pd.to_datetime(result_df['htf_date']).dt.tz_localize(None)
+
+    original_df = pd.DataFrame({'orig_date': original_index})
+    original_df['orig_date_clean'] = pd.to_datetime(original_df['orig_date']).dt.tz_localize(None)
+
+    # Use merge_asof to find the most recent HTF value for each original date
+    merged = pd.merge_asof(
+        original_df.sort_values('orig_date_clean'),
+        result_df.sort_values('htf_date'),
+        left_on='orig_date_clean',
+        right_on='htf_date',
+        direction='backward'  # Use most recent HTF value
+    )
+
+    # Create aligned series
+    aligned = pd.Series(merged['value'].values, index=original_index)
 
     if column_name:
         aligned.name = column_name
