@@ -56,6 +56,8 @@ from altdata.news_processor import get_news_processor
 from altdata.market_mood_analyzer import get_market_mood_analyzer
 # Import OnlineLearningManager for incremental model updates
 from ml_advanced.online_learning import OnlineLearningManager, create_online_learning_manager
+# Import structured logging for audit trail
+from core.structured_log import jlog
 
 logger = logging.getLogger(__name__)
 
@@ -380,6 +382,24 @@ class CognitiveSignalProcessor:
                         context=full_context,
                         ensemble_confidence=ensemble_confidence
                     )
+
+                    # Log the cognitive decision with full evidence for audit
+                    metadata = accept_decision.get('metadata', {})
+                    jlog('cognitive_decision',
+                         symbol=symbol,
+                         decision=accept_decision['decision'],
+                         accept=accept_decision['accept'],
+                         reason=accept_decision['reason'],
+                         size_multiplier=accept_decision['size_multiplier'],
+                         signature=metadata.get('signature'),
+                         ensemble_confidence=metadata.get('ensemble_confidence'),
+                         episodic_n=metadata.get('episodic_n'),
+                         episodic_wr=metadata.get('episodic_wr'),
+                         self_model_n=metadata.get('self_model_n'),
+                         self_model_wr=metadata.get('self_model_wr'),
+                         vix=metadata.get('vix'),
+                         regime=metadata.get('regime'),
+                         strategy=metadata.get('strategy'))
 
                     if accept_decision['accept']:
                         # Override brain's rejection with episodic evidence

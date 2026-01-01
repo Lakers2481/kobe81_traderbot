@@ -441,9 +441,10 @@ class KnowledgeBoundary:
         regime = context.get('regime', 'unknown')
         strategy = signal.get('strategy', 'unknown')
         side = signal.get('side', 'long')
+        vix = context.get('vix', context.get('vix_level', 20))
 
-        # 1. Get episodic evidence using normalized signature
-        episodic_context = {'regime': regime, 'strategy': strategy, 'side': side}
+        # 1. Get episodic evidence using normalized signature (now includes VIX band)
+        episodic_context = {'regime': regime, 'strategy': strategy, 'side': side, 'vix': vix}
         sig = EpisodicMemory.normalize_context_signature(episodic_context)
         episodic_stats = self.episodic_memory.get_stats_for_signature(sig)
         episodic_n = episodic_stats['n']
@@ -454,7 +455,7 @@ class KnowledgeBoundary:
         self_model_n = perf.total_trades if perf else 0
         self_model_wr = perf.win_rate if perf else 0.0
 
-        # Build decision result
+        # Build decision result with full evidence for logging
         result = {
             'accept': False,
             'decision': 'REJECT',
@@ -467,6 +468,9 @@ class KnowledgeBoundary:
                 'episodic_wr': episodic_wr,
                 'self_model_n': self_model_n,
                 'self_model_wr': self_model_wr,
+                'vix': vix,
+                'regime': regime,
+                'strategy': strategy,
             }
         }
 

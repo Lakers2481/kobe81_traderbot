@@ -433,9 +433,10 @@ class EpisodicMemory:
         """
         Creates a normalized context signature for consistent lookups.
         All fields are upper-cased and joined with '|'.
+        Includes VIX band for volatility stratification.
 
         Args:
-            context: Dict with 'regime', 'strategy', 'side' keys.
+            context: Dict with 'regime', 'strategy', 'side', and optionally 'vix' keys.
 
         Returns:
             A consistent MD5 hash signature (8 chars).
@@ -444,7 +445,22 @@ class EpisodicMemory:
         strategy = str(context.get('strategy', 'unknown')).upper()
         side = str(context.get('side', 'long')).upper()
 
-        key_elements = [regime, strategy, side]
+        # Add VIX band for volatility stratification
+        vix = context.get('vix', context.get('vix_level', 20))
+        try:
+            vix = float(vix)
+        except (TypeError, ValueError):
+            vix = 20.0
+        if vix < 15:
+            vix_band = 'LOW'
+        elif vix < 25:
+            vix_band = 'MED'
+        elif vix < 35:
+            vix_band = 'HIGH'
+        else:
+            vix_band = 'EXTREME'
+
+        key_elements = [regime, strategy, side, vix_band]
         return hashlib.md5('|'.join(key_elements).encode()).hexdigest()[:8]
 
     def get_stats_for_signature(self, sig: str) -> Dict[str, Any]:

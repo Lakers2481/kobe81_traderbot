@@ -268,6 +268,15 @@ class DualStrategyScanner:
                     entry = float(row['close'])
                     atr_val = float(row['atr14'] if self.preview_mode else row['atr14_sig'])
                     stop = entry - self.params.ibs_rsi_stop_mult * atr_val
+                    rsi_val = float(row['rsi2'])
+
+                    # Determine oversold tier based on RSI2
+                    if rsi_val <= 5.0:
+                        oversold_tier = 'EXTREME'
+                    elif rsi_val <= 10.0:
+                        oversold_tier = 'NEAR_EXTREME'
+                    else:
+                        oversold_tier = 'MODERATE'
 
                     rows.append({
                         'timestamp': row['timestamp'],
@@ -282,7 +291,8 @@ class DualStrategyScanner:
                         'atr': round(atr_val, 2),
                         'time_stop_bars': self.params.ibs_rsi_time_stop,
                         'ibs': round(float(row['ibs']), 3),
-                        'rsi2': round(float(row['rsi2']), 2),
+                        'rsi2': round(rsi_val, 2),
+                        'oversold_tier': oversold_tier,
                     })
 
                 # Check Turtle Soup (lower frequency, higher conviction)
@@ -311,7 +321,7 @@ class DualStrategyScanner:
                     })
 
         cols = ['timestamp', 'symbol', 'side', 'strategy', 'entry_price', 'stop_loss',
-                'take_profit', 'reason', 'score', 'atr', 'time_stop_bars', 'ibs', 'rsi2']
+                'take_profit', 'reason', 'score', 'atr', 'time_stop_bars', 'ibs', 'rsi2', 'oversold_tier']
         result = pd.DataFrame(rows, columns=cols) if rows else pd.DataFrame(columns=cols)
 
         if not result.empty:
@@ -340,6 +350,15 @@ class DualStrategyScanner:
                 entry = float(row['close'])
                 atr_val = float(row['atr14'] if self.preview_mode else row['atr14_sig'])
                 stop = entry - self.params.ibs_rsi_stop_mult * atr_val
+                rsi_val = float(row['rsi2'])
+
+                # Determine oversold tier based on RSI2
+                if rsi_val <= 5.0:
+                    oversold_tier = 'EXTREME'
+                elif rsi_val <= 10.0:
+                    oversold_tier = 'NEAR_EXTREME'
+                else:
+                    oversold_tier = 'MODERATE'
 
                 out.append({
                     'timestamp': row['timestamp'],
@@ -354,7 +373,8 @@ class DualStrategyScanner:
                     'atr': round(atr_val, 2),
                     'time_stop_bars': self.params.ibs_rsi_time_stop,
                     'ibs': round(float(row['ibs']), 3),
-                    'rsi2': round(float(row['rsi2']), 2),
+                    'rsi2': round(rsi_val, 2),
+                    'oversold_tier': oversold_tier,
                 })
 
             # Check Turtle Soup
@@ -383,7 +403,7 @@ class DualStrategyScanner:
                 })
 
         cols = ['timestamp', 'symbol', 'side', 'strategy', 'entry_price', 'stop_loss',
-                'take_profit', 'reason', 'score', 'atr', 'time_stop_bars', 'ibs', 'rsi2']
+                'take_profit', 'reason', 'score', 'atr', 'time_stop_bars', 'ibs', 'rsi2', 'oversold_tier']
         result = pd.DataFrame(out, columns=cols) if out else pd.DataFrame(columns=cols)
 
         if not result.empty:

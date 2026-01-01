@@ -97,7 +97,20 @@ class PolicyGate:
         if today > self._last_reset_date:
             self.reset_daily()
 
-    def check(self, symbol: str, side: str, price: float, qty: int) -> tuple[bool, str]:
+    def check(self, symbol: str, side: str, price: float, qty: int,
+              stop_loss: Optional[float] = None) -> tuple[bool, str]:
+        """Check if order passes all risk gates.
+
+        Args:
+            symbol: Stock symbol
+            side: 'long' or 'short'
+            price: Entry price
+            qty: Number of shares
+            stop_loss: Optional stop loss price for risk validation
+
+        Returns:
+            Tuple of (passed, reason)
+        """
         # Auto-reset daily budget at start of each new day
         self._auto_reset_if_new_day()
 
@@ -112,6 +125,15 @@ class PolicyGate:
             return False, "exceeds_per_order_budget"
         if self._daily_notional + notional > self.limits.max_daily_notional:
             return False, "exceeds_daily_budget"
+
+        # NEW: Check risk amount if stop loss provided
+        if stop_loss is not None:
+            risk_per_share = abs(price - stop_loss)
+            risk_amount = qty * risk_per_share
+            max_risk = self.limits.max_notional_per_order * self.limits.risk_per_trade_pct
+            if risk_amount > max_risk * 1.05:  # 5% tolerance for rounding
+                return False, f"exceeds_max_risk: ${risk_amount:.2f} > ${max_risk:.2f}"
+
         # Passed; update budget
         self._daily_notional += notional
         return True, "ok"
