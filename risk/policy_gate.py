@@ -126,13 +126,8 @@ class PolicyGate:
         if self._daily_notional + notional > self.limits.max_daily_notional:
             return False, "exceeds_daily_budget"
 
-        # NEW: Check risk amount if stop loss provided
-        if stop_loss is not None:
-            risk_per_share = abs(price - stop_loss)
-            risk_amount = qty * risk_per_share
-            max_risk = self.limits.max_notional_per_order * self.limits.risk_per_trade_pct
-            if risk_amount > max_risk * 1.05:  # 5% tolerance for rounding
-                return False, f"exceeds_max_risk: ${risk_amount:.2f} > ${max_risk:.2f}"
+        # Note: Risk-based sizing is now handled by equity_sizer.calculate_position_size()
+        # which enforces 2% of account equity per trade. PolicyGate only checks notional caps.
 
         # Passed; update budget
         self._daily_notional += notional

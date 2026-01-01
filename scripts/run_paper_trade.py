@@ -23,6 +23,7 @@ from strategies.dual_strategy import DualStrategyScanner, DualStrategyParams
 from execution.broker_alpaca import get_best_ask, get_best_bid, construct_decision, place_ioc_limit
 from risk.policy_gate import PolicyGate, RiskLimits, load_limits_from_config
 from risk.position_limit_gate import PositionLimitGate, PositionLimits
+from risk.equity_sizer import calculate_position_size, get_account_equity, format_size_summary
 from oms.order_state import OrderStatus
 from core.hash_chain import append_block
 from core.structured_log import jlog
@@ -213,17 +214,13 @@ def main():
             jlog('skip_wide_spread', symbol=sym, spread=spread)
             print(f"Skip {sym}: spread {spread:.2%} > max {args.max_spread_pct:.2%}")
             continue
-        # RISK-AWARE SIZING (Critical fix: enforce $50 max risk cap)
+        # EQUITY-BASED POSITION SIZING (2% of account per trade)
         limit_px = round(ask * 1.001, 2)
 
         # Get stop loss from signal (fallback to 5% if missing)
         stop_loss = row.get('stop_loss')
         if stop_loss is None or pd.isna(stop_loss):
             stop_loss = limit_px * 0.95  # 5% fallback
-        risk_per_share = abs(limit_px - float(stop_loss))
-
-        # Base max risk = max_notional × risk_pct (e.g., $2,500 × 2% = $50)
-        base_max_risk = risk_limits.max_notional_per_order * risk_limits.risk_per_trade_pct
 
         # Get cognitive multiplier and confidence
         size_multiplier = 1.0
@@ -233,24 +230,26 @@ def main():
             size_multiplier = cog.get('size_multiplier', 1.0)
             cognitive_conf = cog.get('confidence')
 
-        # Apply cognitive multiplier to RISK BUDGET (not qty!)
-        # This ensures hard risk cap always holds
-        effective_risk = base_max_risk * size_multiplier  # e.g., $50 × 0.5 = $25
-
-        # Calculate max qty by risk (primary constraint)
-        max_qty_by_risk = int(effective_risk / risk_per_share) if risk_per_share > 0.01 else 1
-
-        # Calculate max qty by notional (hard cap)
-        max_qty_by_notional = int(risk_limits.max_notional_per_order // limit_px)
-
-        # Take the LESSER of the two (enforce both caps)
-        max_qty = max(1, min(max_qty_by_risk, max_qty_by_notional))
+        # Calculate position size using 2% of account equity
+        # Formula: Risk $ = Account × 2%, Shares = Risk $ / (Entry - Stop)
+        pos_size = calculate_position_size(
+            entry_price=limit_px,
+            stop_loss=float(stop_loss),
+            risk_pct=risk_limits.risk_per_trade_pct,  # 2% from config
+            cognitive_multiplier=size_multiplier,
+            max_notional_pct=0.20,  # Max 20% of account per position
+        )
+        max_qty = pos_size.shares
 
         # Log computed risk for audit trail
-        computed_risk = max_qty * risk_per_share
         jlog('risk_sizing', symbol=sym, entry=limit_px, stop=float(stop_loss),
-             risk_per_share=round(risk_per_share, 2), effective_risk_budget=round(effective_risk, 2),
-             qty=max_qty, computed_risk=round(computed_risk, 2), multiplier=size_multiplier)
+             risk_per_share=pos_size.risk_per_share,
+             risk_dollars=pos_size.risk_dollars,
+             account_equity=pos_size.account_equity,
+             risk_pct=pos_size.risk_pct,
+             qty=max_qty, notional=pos_size.notional,
+             multiplier=size_multiplier, capped=pos_size.capped)
+        print(f"  {format_size_summary(pos_size, sym)}")
         ok, reason = policy.check(sym, 'long' if side=='BUY' else 'short', limit_px, max_qty, float(stop_loss))
         if not ok:
             jlog('policy_veto', symbol=sym, reason=reason, price=limit_px, qty=max_qty)
@@ -308,7 +307,7 @@ def main():
                     risk_checks=[
                         RiskCheck(name='policy_gate', passed=True, details='notional_ok'),
                         RiskCheck(name='position_limit', passed=True, details='within_limits'),
-                        RiskCheck(name='risk_sizing', passed=True, details=f'risk=${computed_risk:.2f}'),
+                        RiskCheck(name='risk_sizing', passed=True, details=f'risk=${pos_size.risk_dollars:.2f}'),
                     ],
                     model_info=ModelInfo(
                         ml_confidence=cognitive_conf if cognitive_conf else 0.0,

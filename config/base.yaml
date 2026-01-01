@@ -12,22 +12,22 @@ trading_mode: "real"  # Options: micro | paper | real
 
 modes:
   micro:
-    max_notional_per_order: 75
-    max_daily_notional: 1000
+    max_notional_per_order: 1000       # 1% of $100k account
+    max_daily_notional: 3000           # Allow 3 positions
     max_positions: 3
     risk_per_trade_pct: 0.005  # 0.5% per trade
     description: "Training wheels mode - minimal real money exposure"
 
   paper:
-    max_notional_per_order: 1500
-    max_daily_notional: 5000
+    max_notional_per_order: 15000      # 15% of $100k account
+    max_daily_notional: 45000          # Allow 3 positions
     max_positions: 5
     risk_per_trade_pct: 0.01  # 1% per trade
     description: "Paper trading mode - simulate realistic sizing"
 
   real:
-    max_notional_per_order: 2500
-    max_daily_notional: 10000
+    max_notional_per_order: 21000      # 20% of $105k account (max_notional_pct cap)
+    max_daily_notional: 63000          # Allow 3 positions at max size
     max_positions: 5
     risk_per_trade_pct: 0.02  # 2% per trade - risk-based sizing
     description: "Live trading mode - full production sizing"
