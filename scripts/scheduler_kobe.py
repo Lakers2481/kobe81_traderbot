@@ -424,6 +424,127 @@ def now_et_date_time() -> Tuple[str, dtime]:
     return now.date().isoformat(), dtime(now.hour, now.minute)
 
 
+# =============================================================================
+# CONTINUOUS WORK SYSTEM - Never idle, always learning
+# =============================================================================
+# When no scheduled task is running, the robot picks up continuous work:
+# - Stock-by-stock analysis (cycles through 900 stocks)
+# - Pattern discovery on random stocks
+# - Mini-backtests on random symbols
+# - Alpha research and edge discovery
+# - Data quality checks
+# - Feature engineering experiments
+# =============================================================================
+
+import random
+
+CONTINUOUS_WORK_QUEUE = [
+    'ANALYZE_STOCK',        # Analyze single stock from universe
+    'PATTERN_HUNT',         # Hunt for patterns in random stock
+    'MINI_BACKTEST',        # Quick backtest on random symbol
+    'ALPHA_RESEARCH',       # Research alpha factors
+    'DATA_QUALITY',         # Check data quality for random stocks
+    'FEATURE_EXPERIMENT',   # Test feature engineering ideas
+    'CORRELATION_CHECK',    # Check correlations between stocks
+    'REGIME_ANALYSIS',      # Analyze current regime
+    'VOLATILITY_STUDY',     # Study volatility patterns
+    'SECTOR_ROTATION',      # Analyze sector rotation
+]
+
+# Track which stock index we're on for systematic analysis
+_stock_analysis_index = 0
+
+
+def load_universe_symbols(universe_path: str) -> List[str]:
+    """Load symbols from universe file."""
+    import pandas as pd
+    try:
+        df = pd.read_csv(universe_path)
+        return df['symbol'].tolist() if 'symbol' in df.columns else df.iloc[:, 0].tolist()
+    except Exception:
+        return []
+
+
+def do_continuous_work(universe: str, dotenv: str, cap: int, send_fn=None) -> None:
+    """Execute continuous work when no scheduled task is running.
+
+    Never idle - always learning, discovering, analyzing.
+    """
+    global _stock_analysis_index
+
+    # Pick a random work type
+    work_type = random.choice(CONTINUOUS_WORK_QUEUE)
+    symbols = load_universe_symbols(universe)
+
+    if not symbols:
+        return
+
+    # Get current stock for systematic analysis
+    current_symbol = symbols[_stock_analysis_index % len(symbols)]
+    random_symbol = random.choice(symbols)
+
+    try:
+        if work_type == 'ANALYZE_STOCK':
+            # Systematic stock-by-stock analysis
+            rc = run_cmd([sys.executable, str(ROOT / 'scripts/analyze_stock.py'),
+                         '--symbol', current_symbol, '--dotenv', dotenv])
+            _stock_analysis_index += 1  # Move to next stock
+            if send_fn and rc == 0:
+                progress = f"{_stock_analysis_index}/{len(symbols)}"
+                send_fn(f"<b>CONTINUOUS</b> Analyzed {current_symbol} ({progress})")
+
+        elif work_type == 'PATTERN_HUNT':
+            # Hunt for patterns in random stock
+            rc = run_cmd([sys.executable, str(ROOT / 'scripts/pattern_hunt.py'),
+                         '--symbol', random_symbol, '--dotenv', dotenv])
+
+        elif work_type == 'MINI_BACKTEST':
+            # Quick backtest on random symbol
+            rc = run_cmd([sys.executable, str(ROOT / 'scripts/mini_backtest.py'),
+                         '--symbol', random_symbol, '--days', '90', '--dotenv', dotenv])
+
+        elif work_type == 'ALPHA_RESEARCH':
+            # Research alpha factors
+            rc = run_cmd([sys.executable, str(ROOT / 'scripts/alpha_research.py'),
+                         '--symbol', random_symbol, '--dotenv', dotenv])
+
+        elif work_type == 'DATA_QUALITY':
+            # Check data quality for random stocks
+            batch = random.sample(symbols, min(10, len(symbols)))
+            rc = run_cmd([sys.executable, str(ROOT / 'scripts/check_data_quality.py'),
+                         '--symbols', ','.join(batch), '--dotenv', dotenv])
+
+        elif work_type == 'FEATURE_EXPERIMENT':
+            # Test feature engineering ideas
+            rc = run_cmd([sys.executable, str(ROOT / 'scripts/feature_experiment.py'),
+                         '--symbol', random_symbol, '--dotenv', dotenv])
+
+        elif work_type == 'CORRELATION_CHECK':
+            # Check correlations between stocks
+            batch = random.sample(symbols, min(20, len(symbols)))
+            rc = run_cmd([sys.executable, str(ROOT / 'scripts/correlation_check.py'),
+                         '--symbols', ','.join(batch), '--dotenv', dotenv])
+
+        elif work_type == 'REGIME_ANALYSIS':
+            # Analyze current regime
+            rc = run_cmd([sys.executable, str(ROOT / 'scripts/regime_analysis.py'),
+                         '--dotenv', dotenv])
+
+        elif work_type == 'VOLATILITY_STUDY':
+            # Study volatility patterns
+            rc = run_cmd([sys.executable, str(ROOT / 'scripts/volatility_study.py'),
+                         '--symbol', random_symbol, '--dotenv', dotenv])
+
+        elif work_type == 'SECTOR_ROTATION':
+            # Analyze sector rotation
+            rc = run_cmd([sys.executable, str(ROOT / 'scripts/sector_rotation.py'),
+                         '--dotenv', dotenv])
+
+    except Exception as e:
+        # Log error but don't crash - continuous work is best-effort
+        print(f"Continuous work error ({work_type}): {e}")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description='Kobe Master Scheduler (24/7)')
     ap.add_argument('--universe', type=str, default='data/universe/optionable_liquid_900.csv')
@@ -1154,7 +1275,25 @@ def main() -> None:
                     append_journal('scheduler_job_failed', {'tag': entry.tag, 'error': str(e)})
                 except Exception:
                     pass
-        time.sleep(max(5, int(args.tick_seconds)))
+
+        # =================================================================
+        # CONTINUOUS WORK - Never idle, always learning
+        # =================================================================
+        # Instead of sleeping, do continuous work when no scheduled task ran
+        # This ensures the robot is ALWAYS doing something productive:
+        # - Analyzing stocks from the 900 universe
+        # - Hunting for patterns
+        # - Running mini-backtests
+        # - Researching alpha factors
+        # - Checking data quality
+        # =================================================================
+        try:
+            do_continuous_work(args.universe, args.dotenv, args.cap, send_fn)
+        except Exception as e:
+            print(f"Continuous work error: {e}")
+
+        # Brief pause to prevent CPU hogging, but much shorter than before
+        time.sleep(2)  # 2 seconds between continuous work cycles
 
 
 if __name__ == '__main__':
