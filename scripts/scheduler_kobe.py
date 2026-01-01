@@ -1286,9 +1286,10 @@ def main() -> None:
         # - Running mini-backtests
         # - Researching alpha factors
         # - Checking data quality
+        # NOTE: Runs silently - no Telegram spam for individual stocks
         # =================================================================
         try:
-            do_continuous_work(args.universe, args.dotenv, args.cap, send_fn)
+            do_continuous_work(args.universe, args.dotenv, args.cap, send_fn=None)
         except Exception as e:
             print(f"Continuous work error: {e}")
 
