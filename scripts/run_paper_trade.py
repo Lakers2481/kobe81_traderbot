@@ -20,10 +20,12 @@ from core.earnings_filter import filter_signals_by_earnings
 from data.universe.loader import load_universe
 from data.providers.polygon_eod import fetch_daily_bars_polygon
 from strategies.dual_strategy import DualStrategyScanner, DualStrategyParams
-from execution.broker_alpaca import get_best_ask, get_best_bid, construct_decision, place_ioc_limit
+from execution.broker_alpaca import get_best_ask, get_best_bid, construct_decision, place_ioc_limit, place_bracket_order
 from risk.policy_gate import PolicyGate, RiskLimits, load_limits_from_config
 from risk.position_limit_gate import PositionLimitGate, PositionLimits
 from risk.equity_sizer import calculate_position_size, get_account_equity, format_size_summary
+from risk.weekly_exposure_gate import get_weekly_exposure_gate
+from risk.dynamic_position_sizer import calculate_dynamic_allocations, format_allocation_summary
 from oms.order_state import OrderStatus
 from core.hash_chain import append_block
 from core.structured_log import jlog
@@ -86,6 +88,9 @@ def main():
     policy = PolicyGate(risk_limits)
     position_gate = PositionLimitGate(PositionLimits(max_positions=risk_limits.max_positions, max_per_symbol=1))
 
+    # Weekly Exposure Gate - Professional Portfolio Allocation
+    weekly_gate = get_weekly_exposure_gate()
+
     print(f"Trading Mode: {risk_limits.mode_name.upper()}")
     print(f"  Max Notional/Order: ${risk_limits.max_notional_per_order:,.0f}")
     print(f"  Max Daily Notional: ${risk_limits.max_daily_notional:,.0f}")
@@ -97,6 +102,17 @@ def main():
           f"(available: {pos_status['positions_available']})")
     if pos_status['open_symbols']:
         print(f"  Open: {', '.join(pos_status['open_symbols'])}")
+
+    # Weekly budget status - Professional Portfolio Allocation
+    weekly_status = weekly_gate.get_status()
+    print(f"\nWeekly Budget Status:")
+    print(f"  Week: {weekly_status['week']}")
+    print(f"  Current Exposure: {weekly_status['exposure']['current_pct']} of {weekly_status['exposure']['max_weekly_pct']} max")
+    print(f"  Daily Entries Today: {weekly_status['daily']['entries_today']}/{weekly_status['daily']['max_per_day']}")
+    print(f"  Weekly Positions: {weekly_status['positions']['total_this_week']}")
+    can_enter, block_reason = weekly_gate.check_can_enter('TEST', 0, get_account_equity())
+    if not can_enter:
+        print(f"  WARNING: Cannot enter new positions - {block_reason}")
 
     # Fetch latest bars (daily)
     frames = []
@@ -169,8 +185,9 @@ def main():
     elif args.cognitive and not COGNITIVE_AVAILABLE:
         print("  [WARN] Cognitive system not available")
 
-    # SELECT ONLY THE BEST SIGNAL (Trade of the Day)
-    # Sort by cognitive confidence (or conf_score) and take top 1
+    # SELECT BEST 2 SIGNALS (Professional Portfolio Allocation)
+    # Sort by cognitive confidence (or conf_score) and take top 2
+    max_trades_per_day = 2  # Professional limit
     if not todays.empty:
         # Get confidence column
         if 'cognitive_confidence' in todays.columns:
@@ -180,14 +197,36 @@ def main():
         else:
             conf_col = None
 
-        if conf_col and len(todays) > 1:
-            todays = todays.sort_values(conf_col, ascending=False).head(1)
-            best_sym = todays.iloc[0]['symbol']
-            best_conf = todays.iloc[0].get(conf_col, 'N/A')
-            print(f"  TRADE OF THE DAY: {best_sym} (conf={best_conf})")
-            jlog('trade_of_day_selected', symbol=best_sym, confidence=best_conf)
+        if conf_col and len(todays) > max_trades_per_day:
+            todays = todays.sort_values(conf_col, ascending=False).head(max_trades_per_day)
+            print(f"\n  TOP {len(todays)} TRADES FOR TODAY:")
+            for i, (_, sig) in enumerate(todays.iterrows(), 1):
+                print(f"    {i}. {sig['symbol']} (conf={sig.get(conf_col, 'N/A')})")
+            jlog('top_trades_selected', count=len(todays),
+                 symbols=[r['symbol'] for _, r in todays.iterrows()])
         elif len(todays) == 1:
             print(f"  Single signal: {todays.iloc[0]['symbol']}")
+        else:
+            print(f"\n  TOP {len(todays)} TRADES FOR TODAY:")
+            for i, (_, sig) in enumerate(todays.iterrows(), 1):
+                conf_val = sig.get(conf_col, 'N/A') if conf_col else 'N/A'
+                print(f"    {i}. {sig['symbol']} (conf={conf_val})")
+
+    # Check weekly budget before proceeding
+    if not todays.empty:
+        account_equity = get_account_equity()
+        available_daily = weekly_gate.get_available_daily_budget(account_equity)
+        available_weekly = weekly_gate.get_available_weekly_budget(account_equity)
+        print(f"\n  Available Budget: ${available_daily:,.0f} daily / ${available_weekly:,.0f} weekly")
+
+        if available_daily <= 0:
+            jlog('daily_budget_exhausted', level='WARN')
+            print("  WARNING: Daily budget exhausted - no new positions today")
+            todays = pd.DataFrame()
+        elif available_weekly <= 0:
+            jlog('weekly_budget_exhausted', level='WARN')
+            print("  WARNING: Weekly budget exhausted - no new positions this week")
+            todays = pd.DataFrame()
 
     # Kill switch check
     if Path(args.kill_switch).exists():
@@ -237,7 +276,7 @@ def main():
             stop_loss=float(stop_loss),
             risk_pct=risk_limits.risk_per_trade_pct,  # 2% from config
             cognitive_multiplier=size_multiplier,
-            max_notional_pct=0.20,  # Max 20% of account per position
+            max_notional_pct=0.10,  # Max 10% of account per position (20% daily total)
         )
         max_qty = pos_size.shares
 
@@ -256,13 +295,43 @@ def main():
             print(f"VETO {sym}: {reason}")
             continue
         # Position limit check
-        pos_ok, pos_reason = position_gate.check(sym, 'long' if side=='BUY' else 'short')
+        pos_ok, pos_reason = position_gate.check(sym, 'long' if side=='BUY' else 'short', limit_px, max_qty)
         if not pos_ok:
             jlog('position_limit_veto', symbol=sym, reason=pos_reason)
             print(f"VETO {sym}: {pos_reason}")
             continue
+
+        # Weekly exposure gate check (Professional Portfolio Allocation)
+        notional = max_qty * limit_px
+        weekly_ok, weekly_reason = weekly_gate.check_can_enter(sym, notional, pos_size.account_equity)
+        if not weekly_ok:
+            jlog('weekly_gate_veto', symbol=sym, reason=weekly_reason, notional=notional)
+            print(f"VETO {sym}: {weekly_reason}")
+            continue
+
         decision = construct_decision(sym, 'long' if side=='BUY' else 'short', max_qty, ask)
-        rec = place_ioc_limit(decision)
+
+        # Calculate take profit (2R target)
+        risk_per_share = limit_px - float(stop_loss)
+        take_profit_px = round(limit_px + (risk_per_share * 2), 2)  # 2:1 R:R
+
+        # Use bracket order with automatic stop loss and take profit
+        bracket_result = place_bracket_order(
+            symbol=sym,
+            side='buy' if side == 'BUY' else 'sell',
+            qty=max_qty,
+            limit_price=limit_px,
+            stop_loss=float(stop_loss),
+            take_profit=take_profit_px,
+            time_in_force='gtc',  # Good til canceled for swing trades
+        )
+        rec = bracket_result.order
+
+        jlog('bracket_order_placed', symbol=sym, entry=limit_px, stop=float(stop_loss),
+             target=take_profit_px, qty=max_qty, stop_order_id=bracket_result.stop_order_id,
+             tp_order_id=bracket_result.profit_order_id)
+        print(f"  BRACKET ORDER: entry=${limit_px:.2f}, stop=${float(stop_loss):.2f}, target=${take_profit_px:.2f}")
+
         # Build audit block with cognitive data if available
         audit_data = {
             'decision_id': rec.decision_id,
@@ -283,6 +352,16 @@ def main():
         append_block(audit_data)
         jlog('order_submit', symbol=sym, status=str(rec.status), qty=max_qty, price=limit_px,
              decision_id=rec.decision_id, cognitive_conf=cognitive_conf)
+
+        # Record entry with weekly exposure gate (Professional Portfolio Allocation)
+        if str(rec.status).upper().endswith('SUBMITTED') or str(rec.status).upper() == 'ACCEPTED':
+            weekly_gate.record_entry(
+                symbol=sym,
+                notional=notional,
+                account_equity=pos_size.account_equity,
+            )
+            jlog('weekly_entry_recorded', symbol=sym, notional=notional,
+                 new_exposure_pct=weekly_gate.get_status()['current_exposure_pct'])
 
         # Create Decision Card for audit trail
         if DECISION_CARDS_AVAILABLE:
@@ -308,6 +387,8 @@ def main():
                         RiskCheck(name='policy_gate', passed=True, details='notional_ok'),
                         RiskCheck(name='position_limit', passed=True, details='within_limits'),
                         RiskCheck(name='risk_sizing', passed=True, details=f'risk=${pos_size.risk_dollars:.2f}'),
+                        RiskCheck(name='weekly_exposure', passed=True,
+                                  details=f'exp={weekly_gate.get_status()["exposure"]["current_pct"]}'),
                     ],
                     model_info=ModelInfo(
                         ml_confidence=cognitive_conf if cognitive_conf else 0.0,

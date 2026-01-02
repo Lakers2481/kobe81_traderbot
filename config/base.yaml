@@ -26,11 +26,13 @@ modes:
     description: "Paper trading mode - simulate realistic sizing"
 
   real:
-    max_notional_per_order: 21000      # 20% of $105k account (max_notional_pct cap)
-    max_daily_notional: 63000          # Allow 3 positions at max size
-    max_positions: 5
+    max_notional_per_order: 11000      # 10% of $105k account (max_notional_pct cap)
+    max_daily_notional: 22000          # 20% total daily exposure (2 positions max)
+    max_positions: 2                   # Max 2 positions per day
     risk_per_trade_pct: 0.02  # 2% per trade - risk-based sizing
-    description: "Live trading mode - full production sizing"
+    max_notional_pct: 0.10    # 10% of account per position (CRITICAL!)
+    max_daily_exposure_pct: 0.20  # 20% total daily exposure (CRITICAL!)
+    description: "Live trading mode - conservative 10%/position, 20%/day"
 
 # Data Provider Settings
 data:
@@ -66,6 +68,35 @@ risk:
   macro_blackout_enabled: true
   # One-at-a-time mode (limit concurrent new trades)
   max_concurrent_trades: 2  # Max open positions before blocking new entries
+
+# Professional Portfolio Allocation System (NEW - Jan 2026)
+# Institutional-grade capital management with defense-in-depth
+portfolio_allocation:
+  enabled: true
+
+  # Position sizing (per position)
+  max_per_position_pct: 0.10      # 10% max per position (HARD cap)
+  min_per_position_pct: 0.05      # 5% min (floor for 4+ signals)
+
+  # Daily limits
+  max_daily_exposure_pct: 0.20    # 20% new positions per day (HARD cap)
+  max_positions_per_day: 2        # Max 2 new entries per day (HARD cap)
+
+  # Weekly limits
+  max_weekly_exposure_pct: 0.40   # 40% concurrent exposure (HARD cap)
+  max_positions_per_week: 10      # 10 positions/week (SOFT - warning only)
+  week_reset_day: "friday"        # Reset on Friday after close IF all positions closed
+
+  # Budget recovery
+  free_budget_on_close: true      # Freed when positions close
+  budget_available_at: "next_scan"  # Available at next scan (not immediate)
+
+  # Quality requirements for execution
+  min_quality_score: 70           # Only A+ signals (score >= 70)
+  min_confidence: 0.65            # Confidence threshold
+
+  # State file
+  state_file: "state/weekly_budget.json"
 
 # VIX Trading Pause (blocks signal generation when VIX is elevated)
 vix:
@@ -161,17 +192,31 @@ regime_filter:
     max_ann_vol: 0.25  # Max annualized vol threshold (e.g., 0.25 for 25%)
 
 # Signal Selection (config-gated)
+# Phase 5: Top-N Selection with Portfolio Gates (Codex #4)
 selection:
-  enabled: false  # Disabled in two-strategy setup (no cross-sectional TOPN)
-  top_n: 5        # Ignored when selection.enabled is false
-  # Note: legacy RSI2/IBS/CRSI weights removed; selection not used for IBS_RSI/ICT
-  min_price: 10.0  # Generic floor used by some helpers when present
+  enabled: true               # Enable Top-N selection with portfolio gates
+  mode: "top_n"               # "totd" (single best) | "top_n" (multiple positions)
+  min_price: 10.0             # Minimum price for any candidate
+  # Top-N Selection Mode Settings
+  top_n:
+    enabled: true             # ENABLED: Top-5 watchlist, execute best 2
+    n: 5                      # Watchlist: top 5 signals per day
+    execute_n: 2              # Trade: best 2 of top 5 (NEW)
+    max_correlation: 0.70     # Max correlation with existing positions (0-1)
+    max_sector_pct: 0.40      # Max sector concentration (40% of portfolio)
+    max_single_name_pct: 0.10 # Max single position size (10% - aligned with allocation)
+    min_diversification: 2    # Minimum unique sectors in top-N picks
+    # Selection priority weights
+    priority:
+      confidence: 0.40        # Weight for ML confidence score
+      strategy_mix: 0.30      # Weight for strategy diversification (ICT/IBS mix)
+      sector_diversity: 0.30  # Weight for sector diversification
 
 # Signal Quality Gate (v2.0 - reduces ~50/week to ~5/week)
 quality_gate:
   enabled: true
-  min_score_to_pass: 70.0  # Minimum composite score to pass gate
-  max_signals_per_day: 1   # Target: 5 trades/week
+  min_score_to_pass: 70.0  # Minimum composite score to pass gate (A+ only)
+  max_signals_per_day: 2   # Max 2 trades per day (aligned with portfolio_allocation)
 
   # Component weights (total = 100)
   weights:
@@ -374,7 +419,8 @@ telegram:
 # LLM Trade Analyzer settings (Claude human-like reasoning)
 # Note: Part of cognitive architecture
 llm_analyzer:
-  enabled: true                       # Enable LLM-powered narrative generation
+  enabled: true                       # Master switch - enable LLM-powered narrative generation
+  mode: "briefings_only"              # "off" | "briefings_only" | "full"
   model: "claude-3-haiku-20240307"    # Claude model to use (haiku for speed, sonnet for quality)
   max_tokens: 1500                    # Maximum response tokens
   temperature: 0.7                    # Response temperature (0-1)
@@ -389,9 +435,22 @@ llm_analyzer:
     max: 0.75                         # Maximum confidence to call LLM
   # Token budget management
   budget:
-    enabled: false                    # Enable token budget tracking
+    enabled: true                     # Enable token budget tracking
     tokens_per_day: 100000            # Daily token limit
     state_file: "state/llm_token_usage.json"  # Token usage state file
+  # USD Cost Tracking (Phase 4 - Codex #2)
+  cost_tracking:
+    enabled: true                     # Enable USD cost tracking
+    max_daily_usd: 50.0               # Hard limit - halt LLM calls when exceeded
+    alert_threshold_usd: 25.0         # Warning level - log alert when exceeded
+  # Cache settings
+  cache:
+    enabled: true                     # Enable response caching
+    ttl_hours: 24                     # Cache entries expire after 24 hours
+  # Fallback behavior
+  fallback:
+    enabled: true                     # Use cached/deterministic on API failure
+    use_cached_on_failure: true       # Try cached response on API failure
 
 # ML Meta-Layer Settings (AI Reliability & Execution Upgrade)
 ml:

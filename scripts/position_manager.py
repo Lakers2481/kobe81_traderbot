@@ -39,6 +39,7 @@ sys.path.insert(0, str(ROOT))
 from config.env_loader import load_env
 from risk.policy_gate import PolicyGate
 from risk.trailing_stops import get_trailing_stop_manager, StopUpdate
+from risk.weekly_exposure_gate import get_weekly_exposure_gate
 from oms.order_state import OrderRecord, OrderStatus
 from core.kill_switch import is_kill_switch_active
 from core.structured_log import get_logger
@@ -251,6 +252,7 @@ class PositionManager:
         self.verbose = verbose
         self.tsm = get_trailing_stop_manager()
         self.policy_gate = PolicyGate.from_config()
+        self.weekly_gate = get_weekly_exposure_gate()  # Professional Portfolio Allocation
         self.position_states: Dict[str, PositionState] = load_position_state()
 
     def run_cycle(self) -> Dict[str, Any]:
@@ -396,6 +398,13 @@ class PositionManager:
                 success = close_position(state.symbol, state.qty, state.side)
                 if success:
                     exits_executed += 1
+                    # Record exit with weekly exposure gate (Professional Portfolio Allocation)
+                    # This frees budget for next scan
+                    self.weekly_gate.record_exit(
+                        symbol=state.symbol,
+                        exit_reason=state.exit_reason or "CLOSED"
+                    )
+                    logger.info(f"  {state.symbol}: Budget freed (available at next scan)")
                     # Remove from state tracking
                     self.tsm.reset_position(state.symbol)
                     if state.symbol in self.position_states:
@@ -408,6 +417,12 @@ class PositionManager:
         for symbol in list(self.position_states.keys()):
             if symbol not in current_symbols:
                 logger.info(f"Position {symbol} no longer exists - removing from state")
+                # Record exit with weekly exposure gate (position closed externally - target/stop hit)
+                self.weekly_gate.record_exit(
+                    symbol=symbol,
+                    exit_reason="CLOSED_EXTERNAL"
+                )
+                logger.info(f"  {symbol}: Budget freed (closed externally)")
                 self.tsm.reset_position(symbol)
                 del self.position_states[symbol]
 
@@ -418,13 +433,15 @@ class PositionManager:
         self.policy_gate.update_position_count(len(positions))
 
         # Summary
+        weekly_status = self.weekly_gate.get_status()
         summary = {
             "timestamp": datetime.utcnow().isoformat(),
             "positions": len(positions),
             "exits_needed": len(exits_needed),
             "exits_executed": exits_executed,
             "stop_updates": len(stop_updates),
-            "policy_gate": self.policy_gate.get_status()
+            "policy_gate": self.policy_gate.get_status(),
+            "weekly_gate": weekly_status
         }
 
         logger.info("\nCYCLE SUMMARY:")
@@ -434,6 +451,10 @@ class PositionManager:
         logger.info(f"  Stop updates: {summary['stop_updates']}")
         logger.info(f"  Trading mode: {summary['policy_gate']['trading_mode']}")
         logger.info(f"  Daily remaining: ${summary['policy_gate']['daily_remaining']:.2f}")
+        logger.info(f"\nWEEKLY BUDGET:")
+        logger.info(f"  Current Exposure: {weekly_status['exposure']['current_pct']}")
+        logger.info(f"  Daily Entries Today: {weekly_status['daily']['entries_today']}/{weekly_status['daily']['max_per_day']}")
+        logger.info(f"  Budget Freed Pending: ${weekly_status['budget'].get('freed_pending', 0):,.0f}")
 
         return summary
 
