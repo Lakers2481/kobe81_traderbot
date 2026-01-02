@@ -26,6 +26,7 @@ from risk.position_limit_gate import PositionLimitGate, PositionLimits
 from risk.equity_sizer import calculate_position_size, get_account_equity, format_size_summary
 from risk.weekly_exposure_gate import get_weekly_exposure_gate
 from risk.dynamic_position_sizer import calculate_dynamic_allocations, format_allocation_summary
+from risk.kill_zone_gate import get_kill_zone_gate, can_trade_now, check_trade_allowed
 from oms.order_state import OrderStatus
 from core.hash_chain import append_block
 from core.structured_log import jlog
@@ -62,6 +63,10 @@ def main():
     ap.add_argument('--cognitive', action='store_true', default=True, help='Enable cognitive brain (ON by default)')
     ap.add_argument('--no-cognitive', action='store_true', help='Disable cognitive brain')
     ap.add_argument('--cognitive-min-conf', type=float, default=0.5, help='Min cognitive confidence to trade')
+    ap.add_argument('--watchlist-only', action='store_true', help='Only trade stocks from validated watchlist')
+    ap.add_argument('--watchlist-path', type=str, default='state/watchlist/today_validated.json', help='Path to validated watchlist')
+    ap.add_argument('--fallback-enabled', action='store_true', help='Enable fallback scan if watchlist fails')
+    ap.add_argument('--fallback-min-score', type=int, default=75, help='Min quality score for fallback trades (default 75)')
     args = ap.parse_args()
 
     # Handle --no-cognitive override
@@ -113,6 +118,74 @@ def main():
     can_enter, block_reason = weekly_gate.check_can_enter('TEST', 0, get_account_equity())
     if not can_enter:
         print(f"  WARNING: Cannot enter new positions - {block_reason}")
+
+    # === KILL ZONE GATE - Professional Time-Based Trade Blocking ===
+    kill_zone_gate = get_kill_zone_gate()
+    kz_status = kill_zone_gate.check_can_trade()
+    print(f"\nKill Zone Status:")
+    print(f"  Current Zone: {kz_status.current_zone.value}")
+    print(f"  Can Trade: {kz_status.can_trade}")
+    print(f"  Reason: {kz_status.reason}")
+    if kz_status.next_window_opens:
+        print(f"  Next Window: {kz_status.next_window_opens}")
+        if kz_status.minutes_until_window:
+            print(f"  Minutes Until: {kz_status.minutes_until_window}")
+
+    if not kz_status.can_trade:
+        jlog('kill_zone_block', zone=kz_status.current_zone.value, reason=kz_status.reason)
+        print(f"\n{'='*60}")
+        print(f"TRADING BLOCKED: {kz_status.reason}")
+        print(f"{'='*60}")
+        print("No trades will be executed during this kill zone.")
+        if kz_status.next_window_opens:
+            print(f"Next trading window opens at {kz_status.next_window_opens}")
+        return
+
+    # === WATCHLIST-ONLY MODE ===
+    # If --watchlist-only is set, restrict to validated watchlist symbols
+    watchlist_symbols = []
+    watchlist_data = {}
+    if args.watchlist_only:
+        watchlist_file = ROOT / args.watchlist_path
+        if watchlist_file.exists():
+            try:
+                import json
+                with open(watchlist_file) as f:
+                    watchlist_data = json.load(f)
+                watchlist_stocks = watchlist_data.get('watchlist', [])
+                watchlist_symbols = [s['symbol'] for s in watchlist_stocks if s.get('symbol')]
+                print(f"\n{'='*60}")
+                print(f"WATCHLIST-ONLY MODE")
+                print(f"{'='*60}")
+                print(f"Validated watchlist: {len(watchlist_symbols)} stocks")
+                for s in watchlist_stocks[:5]:
+                    status = s.get('validation_status', 'UNKNOWN')
+                    sym = s.get('symbol', '?')
+                    print(f"  [{status}] {sym}")
+                # Filter universe to only watchlist symbols
+                symbols = [s for s in symbols if s in watchlist_symbols]
+                if not symbols:
+                    print("WARNING: No watchlist symbols found in universe!")
+                    if args.fallback_enabled:
+                        print("Fallback mode enabled - will scan full universe with higher bar")
+                        symbols = load_universe(Path(args.universe), cap=args.cap)
+                    else:
+                        print("No watchlist and fallback disabled. Exiting.")
+                        return
+                jlog('watchlist_mode', symbols=watchlist_symbols, filtered_count=len(symbols))
+            except Exception as e:
+                jlog('watchlist_load_error', error=str(e), level='WARN')
+                print(f"WARNING: Could not load watchlist: {e}")
+                if not args.fallback_enabled:
+                    print("Fallback disabled. Exiting.")
+                    return
+        else:
+            jlog('watchlist_not_found', path=str(watchlist_file), level='WARN')
+            print(f"WARNING: No validated watchlist found at {watchlist_file}")
+            if not args.fallback_enabled:
+                print("Fallback disabled. Exiting.")
+                return
+            print("Fallback mode enabled - will scan full universe with higher bar")
 
     # Fetch latest bars (daily)
     frames = []

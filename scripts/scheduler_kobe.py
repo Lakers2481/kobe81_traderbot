@@ -193,11 +193,17 @@ SCHEDULE: List[ScheduleEntry] = [
     ScheduleEntry('MORNING_REPORT', dtime(6, 30)),
     ScheduleEntry('PREMARKET_CHECK', dtime(6, 45)),  # Data staleness, splits check
     ScheduleEntry('PRE_GAME', dtime(8, 0)),          # AI Briefing (evidence-locked)
+    ScheduleEntry('PREMARKET_VALIDATOR', dtime(8, 0)),  # Validate overnight watchlist (gaps, news)
     ScheduleEntry('MARKET_NEWS', dtime(9, 0)),       # Update sentiment
     ScheduleEntry('PREMARKET_SCAN', dtime(9, 15)),   # Build plan (portfolio-aware)
 
-    # === MARKET OPEN - ENTRY WINDOW (9:45) ===
-    ScheduleEntry('FIRST_SCAN', dtime(9, 45)),       # ENTRY WINDOW - Submit orders
+    # === OPENING RANGE - OBSERVE ONLY (9:30-10:00) ===
+    ScheduleEntry('OPENING_RANGE_OBSERVER_1', dtime(9, 30)),  # First observation
+    ScheduleEntry('OPENING_RANGE_OBSERVER_2', dtime(9, 45)),  # Second observation
+
+    # === MARKET OPEN - ENTRY WINDOW (10:00) ===
+    # NOTE: Changed from 9:45 to 10:00 - Professional execution waits for opening range to settle
+    ScheduleEntry('FIRST_SCAN', dtime(10, 0)),       # PRIMARY ENTRY WINDOW - After opening range
 
     # === POSITION MANAGER (every 15 min during market hours) ===
     ScheduleEntry('POSITION_MANAGER_1', dtime(9, 50)),
@@ -230,6 +236,7 @@ SCHEDULE: List[ScheduleEntry] = [
     ScheduleEntry('POSITION_MANAGER_19', dtime(15, 15)),
 
     ScheduleEntry('SWING_SCANNER', dtime(15, 30)),   # Swing setups (normal days)
+    ScheduleEntry('OVERNIGHT_WATCHLIST', dtime(15, 30)),  # Build next day's Top 5 watchlist
 
     ScheduleEntry('POSITION_MANAGER_20', dtime(15, 45)),
     ScheduleEntry('POSITION_CLOSE_CHECK', dtime(15, 55)), # Enforce time stops before close
@@ -938,6 +945,65 @@ def main() -> None:
                                     send_fn(f"<b>EOD_FINALIZE</b> [{stamp}] {'completed' if rc == 0 else 'failed'}")
                                 except Exception:
                                     send_fn(f"<b>EOD_FINALIZE</b> {'completed' if rc == 0 else 'failed'}")
+
+                        # =============================================================================
+                        # PROFESSIONAL EXECUTION FLOW (v3.0)
+                        # =============================================================================
+                        # Implements quant-grade execution:
+                        # 1. Build overnight watchlist (3:30 PM previous day)
+                        # 2. Validate watchlist in premarket (8:00 AM)
+                        # 3. Observe opening range (9:30-10:00 AM) - NO TRADES
+                        # 4. Execute from watchlist at 10:00 AM (after opening range settles)
+                        # =============================================================================
+
+                        # === PREMARKET VALIDATOR (8:00 AM) ===
+                        # Validates overnight watchlist against morning conditions
+                        elif entry.tag == 'PREMARKET_VALIDATOR':
+                            rc = run_cmd([sys.executable, str(ROOT / 'scripts/premarket_validator.py'),
+                                         '--dotenv', args.dotenv, '--gap-threshold', '0.03'])
+                            if send_fn:
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    send_fn(f"<b>PREMARKET_VALIDATOR</b> [{stamp}] Watchlist validated (gaps/news checked)")
+                                except Exception:
+                                    send_fn(f"<b>PREMARKET_VALIDATOR</b> Watchlist validated")
+
+                        # === OPENING RANGE OBSERVER (9:30, 9:45 AM) ===
+                        # Observes but does NOT trade - let opening range volatility settle
+                        elif entry.tag.startswith('OPENING_RANGE_OBSERVER_'):
+                            rc = run_cmd([sys.executable, str(ROOT / 'scripts/opening_range_observer.py'),
+                                         '--dotenv', args.dotenv, '--snapshot'])
+                            if send_fn:
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    obs_num = entry.tag.split('_')[-1]
+                                    send_fn(f"<b>OPENING_RANGE</b> [{stamp}] Observation #{obs_num} (NO TRADES - observing)")
+                                except Exception:
+                                    send_fn(f"<b>OPENING_RANGE</b> Observation recorded (NO TRADES)")
+
+                        # === OVERNIGHT WATCHLIST (3:30 PM) ===
+                        # Builds Top 5 watchlist for NEXT trading day
+                        elif entry.tag == 'OVERNIGHT_WATCHLIST':
+                            if not is_early_close_day():  # Skip on early close days
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/overnight_watchlist.py'),
+                                             '--universe', args.universe, '--cap', str(args.cap),
+                                             '--top', '5', '--dotenv', args.dotenv])
+                                if send_fn:
+                                    try:
+                                        from core.clock.tz_utils import fmt_ct
+                                        now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                        # Get next trading day
+                                        cal = EquitiesCalendar()
+                                        next_day = datetime.now(ET).date() + timedelta(days=1)
+                                        while not cal.is_trading_day(next_day):
+                                            next_day += timedelta(days=1)
+                                        send_fn(f"<b>OVERNIGHT_WATCHLIST</b> [{stamp}] Top 5 ready for {next_day}")
+                                    except Exception:
+                                        send_fn(f"<b>OVERNIGHT_WATCHLIST</b> Top 5 watchlist built for next day")
+
+                        # === END PROFESSIONAL EXECUTION FLOW ===
 
                         # === INTRADAY SCANS (v2.2) - Every 15 min comprehensive check ===
                         # 1. Refresh Top-3 picks for manual review
