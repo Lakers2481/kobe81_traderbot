@@ -300,7 +300,7 @@ class TestCognitiveBrain:
         from cognitive.cognitive_brain import CognitiveBrain
 
         brain = CognitiveBrain()
-        assert brain.min_confidence_to_act == 0.5
+        assert brain.min_confidence_to_act == 0.45
 
     def test_deliberate(self):
         from cognitive.cognitive_brain import CognitiveBrain, DecisionType

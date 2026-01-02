@@ -20,7 +20,7 @@ class TestCognitiveBrainInitialization:
         from cognitive.cognitive_brain import CognitiveBrain
 
         brain = CognitiveBrain()
-        assert brain.min_confidence_to_act == 0.5
+        assert brain.min_confidence_to_act == 0.45
         assert brain.max_processing_time_ms == 5000
         assert brain._initialized == False
         assert brain._decision_count == 0

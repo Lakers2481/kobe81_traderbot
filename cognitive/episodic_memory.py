@@ -184,12 +184,28 @@ class Episode:
         """
         Generates a normalized hash signature for the episode's context.
         Uses upper-case and consistent defaults for reproducible lookups.
+        Includes VIX band for volatility stratification (must match normalize_context_signature).
         """
         regime = str(self.market_context.get('regime', 'unknown')).upper()
         strategy = str(self.signal_context.get('strategy', 'unknown')).upper()
         side = str(self.signal_context.get('side', 'long')).upper()
 
-        key_elements = [regime, strategy, side]
+        # Add VIX band for volatility stratification (must match normalize_context_signature)
+        vix = self.market_context.get('vix', self.market_context.get('vix_level', 20))
+        try:
+            vix = float(vix)
+        except (TypeError, ValueError):
+            vix = 20.0
+        if vix < 15:
+            vix_band = 'LOW'
+        elif vix < 25:
+            vix_band = 'MED'
+        elif vix < 35:
+            vix_band = 'HIGH'
+        else:
+            vix_band = 'EXTREME'
+
+        key_elements = [regime, strategy, side, vix_band]
         return hashlib.md5('|'.join(key_elements).encode()).hexdigest()[:8]
 
 

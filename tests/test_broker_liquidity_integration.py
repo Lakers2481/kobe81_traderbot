@@ -74,7 +74,7 @@ class TestCheckLiquidityForOrder:
     @patch('execution.broker_alpaca.get_avg_volume')
     def test_check_passes_good_stock(self, mock_volume, mock_quotes):
         """Should pass for stocks with good liquidity."""
-        mock_quotes.return_value = (149.98, 150.02, 1000, 1000)
+        mock_quotes.return_value = (149.98, 150.02, 1000, 1000, datetime.now())
         mock_volume.return_value = 50_000_000
 
         check = check_liquidity_for_order(
@@ -91,7 +91,7 @@ class TestCheckLiquidityForOrder:
     @patch('execution.broker_alpaca.get_avg_volume')
     def test_check_fails_low_volume(self, mock_volume, mock_quotes):
         """Should fail for stocks with low ADV."""
-        mock_quotes.return_value = (9.98, 10.02, 100, 100)
+        mock_quotes.return_value = (9.98, 10.02, 100, 100, datetime.now())
         mock_volume.return_value = 1_000  # Only $10k ADV
 
         check = check_liquidity_for_order(
@@ -107,7 +107,7 @@ class TestCheckLiquidityForOrder:
     @patch('execution.broker_alpaca.get_avg_volume')
     def test_check_fails_wide_spread(self, mock_volume, mock_quotes):
         """Should fail for stocks with wide spread."""
-        mock_quotes.return_value = (49.00, 51.00, 1000, 1000)  # 4% spread
+        mock_quotes.return_value = (49.00, 51.00, 1000, 1000, datetime.now())  # 4% spread
         mock_volume.return_value = 1_000_000
 
         check = check_liquidity_for_order(
@@ -122,7 +122,7 @@ class TestCheckLiquidityForOrder:
     @patch('execution.broker_alpaca.get_quote_with_sizes')
     def test_check_fails_no_quote(self, mock_quotes):
         """Should fail when no quote available."""
-        mock_quotes.return_value = (None, None, None, None)
+        mock_quotes.return_value = (None, None, None, None, None)
 
         check = check_liquidity_for_order(
             symbol='NOQUOTE',

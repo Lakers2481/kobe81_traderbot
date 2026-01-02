@@ -100,7 +100,7 @@ pyportfolioopt>=1.5.5  # Mean-variance, HRP, Black-Litterman
 riskfolio-lib>=6.0.0  # CVaR, CDaR, factor models
 
 # Time Series Features (Lopez de Prado)
-fracdiff>=0.9.0  # Fractional differentiation for stationarity
+# fracdiff>=0.9.0  # Fractional differentiation - requires Python <3.10, install manually if needed
 # mlfinlab is commercial - use our custom triple_barrier.py instead
 
 # Change Point Detection
