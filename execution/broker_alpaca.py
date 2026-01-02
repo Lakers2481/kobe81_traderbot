@@ -988,3 +988,453 @@ def place_bracket_order(
             market_bid_at_execution=market_bid,
             market_ask_at_execution=market_ask,
         )
+
+
+# ============================================================================
+# Alpaca Broker Class (Implements BrokerBase)
+# ============================================================================
+
+from typing import List
+from execution.broker_base import (
+    BrokerBase,
+    BrokerType,
+    Quote,
+    Position,
+    Account,
+    Order as BrokerOrder,
+    OrderResult as BrokerOrderResult,
+    OrderSide,
+    OrderType,
+    TimeInForce as BrokerTimeInForce,
+    BrokerOrderStatus,
+)
+from execution.broker_factory import register_broker
+
+
+class AlpacaBroker(BrokerBase):
+    """
+    Alpaca broker implementation using the BrokerBase interface.
+
+    Wraps existing module-level functions for backward compatibility
+    while providing the standardized broker interface.
+
+    Supports:
+    - Stocks (US equities)
+    - Paper and live trading modes
+    - IOC LIMIT orders (recommended for our strategy)
+    - Bracket orders (OCO with stop-loss and take-profit)
+    """
+
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        api_secret: Optional[str] = None,
+        base_url: Optional[str] = None,
+        paper: bool = True,
+    ):
+        """
+        Initialize Alpaca broker.
+
+        Args:
+            api_key: Alpaca API key (or from env: ALPACA_API_KEY_ID)
+            api_secret: Alpaca API secret (or from env: ALPACA_API_SECRET_KEY)
+            base_url: Alpaca API base URL (or from env: ALPACA_BASE_URL)
+            paper: If True (default), use paper trading endpoint
+        """
+        self.paper = paper
+        self._connected = False
+
+        # Load from env if not provided
+        self._api_key = api_key or os.getenv("APCA_API_KEY_ID") or os.getenv("ALPACA_API_KEY_ID", "")
+        self._api_secret = api_secret or os.getenv("APCA_API_SECRET_KEY") or os.getenv("ALPACA_API_SECRET_KEY", "")
+
+        if base_url:
+            self._base_url = base_url
+        elif paper:
+            self._base_url = "https://paper-api.alpaca.markets"
+        else:
+            self._base_url = os.getenv("ALPACA_BASE_URL", "https://api.alpaca.markets")
+
+    # === Properties ===
+
+    @property
+    def broker_type(self) -> BrokerType:
+        return BrokerType.ALPACA
+
+    @property
+    def name(self) -> str:
+        mode = "Paper" if self.paper else "Live"
+        return f"Alpaca ({mode})"
+
+    @property
+    def supports_extended_hours(self) -> bool:
+        return True
+
+    @property
+    def is_24_7(self) -> bool:
+        return False  # US equities only
+
+    # === Connection ===
+
+    def connect(self) -> bool:
+        """Verify connection to Alpaca API."""
+        if not self._api_key or not self._api_secret:
+            logger.error("Alpaca API credentials not configured")
+            return False
+
+        try:
+            # Test connection by fetching account
+            account = self.get_account()
+            if account:
+                self._connected = True
+                logger.info(f"Connected to Alpaca ({self.name})")
+                return True
+            return False
+        except Exception as e:
+            logger.error(f"Failed to connect to Alpaca: {e}")
+            return False
+
+    def disconnect(self) -> None:
+        self._connected = False
+        logger.info("Disconnected from Alpaca")
+
+    def is_connected(self) -> bool:
+        return self._connected
+
+    # === Market Data ===
+
+    def get_quote(self, symbol: str, timeout: int = 5) -> Optional[Quote]:
+        """Get current market quote from Alpaca."""
+        bid, ask, bid_size, ask_size, ts = get_quote_with_sizes(symbol, timeout)
+
+        if bid is None and ask is None:
+            return None
+
+        last = (bid + ask) / 2 if bid and ask else bid or ask
+
+        return Quote(
+            symbol=symbol.upper(),
+            bid=bid,
+            ask=ask,
+            bid_size=bid_size,
+            ask_size=ask_size,
+            last=last,
+            volume=None,  # Would need separate call
+            timestamp=ts or datetime.now(),
+        )
+
+    def get_quotes(self, symbols: List[str], timeout: int = 10) -> Dict[str, Quote]:
+        """Get quotes for multiple symbols."""
+        quotes = {}
+        for symbol in symbols:
+            quote = self.get_quote(symbol, timeout)
+            if quote:
+                quotes[symbol] = quote
+        return quotes
+
+    def is_market_open(self) -> bool:
+        """Check if US market is currently open."""
+        try:
+            cfg = _alpaca_cfg()
+            url = f"{cfg.base_url}/v2/clock"
+            r = requests.get(url, headers=_auth_headers(cfg), timeout=5)
+            if r.status_code == 200:
+                return r.json().get("is_open", False)
+        except Exception:
+            pass
+        return False
+
+    # === Account & Positions ===
+
+    def get_account(self) -> Optional[Account]:
+        """Get Alpaca account information."""
+        try:
+            cfg = _alpaca_cfg()
+            url = f"{cfg.base_url}/v2/account"
+            r = requests.get(url, headers=_auth_headers(cfg), timeout=10)
+            if r.status_code != 200:
+                return None
+
+            data = r.json()
+            return Account(
+                account_id=data.get("id", ""),
+                equity=float(data.get("equity", 0)),
+                cash=float(data.get("cash", 0)),
+                buying_power=float(data.get("buying_power", 0)),
+                currency=data.get("currency", "USD"),
+                pattern_day_trader=data.get("pattern_day_trader", False),
+                trading_blocked=data.get("trading_blocked", False),
+                transfers_blocked=data.get("transfers_blocked", False),
+                account_blocked=data.get("account_blocked", False),
+                portfolio_value=float(data.get("portfolio_value", 0)),
+                last_equity=float(data.get("last_equity", 0)),
+                multiplier=float(data.get("multiplier", 1)),
+            )
+        except Exception as e:
+            logger.error(f"Failed to get Alpaca account: {e}")
+            return None
+
+    def get_positions(self) -> List[Position]:
+        """Get all current positions from Alpaca."""
+        try:
+            cfg = _alpaca_cfg()
+            url = f"{cfg.base_url}/v2/positions"
+            r = requests.get(url, headers=_auth_headers(cfg), timeout=10)
+            if r.status_code != 200:
+                return []
+
+            positions = []
+            for p in r.json():
+                qty = int(float(p.get("qty", 0)))
+                avg_price = float(p.get("avg_entry_price", 0))
+                current_price = float(p.get("current_price", 0))
+                market_value = float(p.get("market_value", 0))
+                unrealized_pnl = float(p.get("unrealized_pl", 0))
+
+                positions.append(Position(
+                    symbol=p.get("symbol", ""),
+                    qty=qty,
+                    avg_price=avg_price,
+                    current_price=current_price,
+                    market_value=market_value,
+                    unrealized_pnl=unrealized_pnl,
+                    side="long" if qty > 0 else "short",
+                    cost_basis=float(p.get("cost_basis", 0)),
+                    unrealized_pnl_pct=float(p.get("unrealized_plpc", 0)) * 100,
+                ))
+
+            return positions
+        except Exception as e:
+            logger.error(f"Failed to get Alpaca positions: {e}")
+            return []
+
+    def get_position(self, symbol: str) -> Optional[Position]:
+        """Get position for specific symbol."""
+        try:
+            cfg = _alpaca_cfg()
+            url = f"{cfg.base_url}/v2/positions/{symbol.upper()}"
+            r = requests.get(url, headers=_auth_headers(cfg), timeout=10)
+            if r.status_code != 200:
+                return None
+
+            p = r.json()
+            qty = int(float(p.get("qty", 0)))
+
+            return Position(
+                symbol=p.get("symbol", ""),
+                qty=qty,
+                avg_price=float(p.get("avg_entry_price", 0)),
+                current_price=float(p.get("current_price", 0)),
+                market_value=float(p.get("market_value", 0)),
+                unrealized_pnl=float(p.get("unrealized_pl", 0)),
+                side="long" if qty > 0 else "short",
+                cost_basis=float(p.get("cost_basis", 0)),
+                unrealized_pnl_pct=float(p.get("unrealized_plpc", 0)) * 100,
+            )
+        except Exception as e:
+            logger.debug(f"Position for {symbol} not found or error: {e}")
+            return None
+
+    # === Orders ===
+
+    def place_order(self, order: BrokerOrder) -> BrokerOrderResult:
+        """Place an order via Alpaca."""
+        # Check kill switch first
+        if is_kill_switch_active():
+            return BrokerOrderResult(
+                success=False,
+                status=BrokerOrderStatus.REJECTED,
+                error_message="kill_switch_active",
+            )
+
+        # Get current quote for TCA
+        quote = self.get_quote(order.symbol)
+
+        # Convert to OrderRecord for existing functions
+        order_record = construct_decision(
+            symbol=order.symbol,
+            side="BUY" if order.side == OrderSide.BUY else "SELL",
+            qty=order.qty,
+            best_ask=quote.ask if quote else order.limit_price,
+        )
+
+        # Override with provided limit price if any
+        if order.limit_price:
+            order_record.limit_price = order.limit_price
+
+        if order.client_order_id:
+            order_record.decision_id = order.client_order_id
+            order_record.idempotency_key = order.client_order_id
+
+        # Place order based on type
+        if order.order_type == OrderType.MARKET or (
+            order.order_type == OrderType.LIMIT and order.time_in_force == BrokerTimeInForce.IOC
+        ):
+            result = place_ioc_limit(order_record)
+
+            # Map status
+            status_map = {
+                OrderStatus.SUBMITTED: BrokerOrderStatus.SUBMITTED,
+                OrderStatus.FILLED: BrokerOrderStatus.FILLED,
+                OrderStatus.CANCELLED: BrokerOrderStatus.CANCELLED,
+                OrderStatus.REJECTED: BrokerOrderStatus.REJECTED,
+                OrderStatus.CLOSED: BrokerOrderStatus.CANCELLED,
+            }
+
+            return BrokerOrderResult(
+                success=result.order.status in (OrderStatus.SUBMITTED, OrderStatus.FILLED),
+                broker_order_id=result.order.broker_order_id,
+                client_order_id=order.client_order_id or order_record.decision_id,
+                status=status_map.get(result.order.status, BrokerOrderStatus.PENDING),
+                filled_qty=result.order.filled_qty or 0,
+                fill_price=result.order.fill_price,
+                error_message=result.order.notes if result.order.status == OrderStatus.REJECTED else None,
+                market_bid_at_execution=result.market_bid_at_execution,
+                market_ask_at_execution=result.market_ask_at_execution,
+            )
+
+        # For other order types (limit day, stop, etc.) use direct API
+        return self._place_order_direct(order, quote)
+
+    def _place_order_direct(self, order: BrokerOrder, quote: Optional[Quote]) -> BrokerOrderResult:
+        """Place order directly via Alpaca API (non-IOC)."""
+        cfg = _alpaca_cfg()
+        store = IdempotencyStore()
+
+        client_order_id = order.client_order_id or f"ORDER_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
+
+        # Idempotency check
+        if store.exists(client_order_id):
+            return BrokerOrderResult(
+                success=False,
+                status=BrokerOrderStatus.REJECTED,
+                error_message="duplicate_order_id",
+            )
+
+        # Build payload
+        payload = {
+            "symbol": order.symbol.upper(),
+            "qty": order.qty,
+            "side": "buy" if order.side == OrderSide.BUY else "sell",
+            "type": order.order_type.value,
+            "time_in_force": order.time_in_force.value,
+            "client_order_id": client_order_id,
+            "extended_hours": order.extended_hours,
+        }
+
+        if order.limit_price:
+            payload["limit_price"] = round(order.limit_price, 2)
+        if order.stop_price:
+            payload["stop_price"] = round(order.stop_price, 2)
+
+        # Handle bracket orders
+        if order.take_profit_limit and order.stop_loss_price:
+            payload["order_class"] = "bracket"
+            payload["take_profit"] = {"limit_price": round(order.take_profit_limit, 2)}
+            payload["stop_loss"] = {"stop_price": round(order.stop_loss_price, 2)}
+            if order.stop_loss_limit:
+                payload["stop_loss"]["limit_price"] = round(order.stop_loss_limit, 2)
+
+        try:
+            url = f"{cfg.base_url}{ALPACA_ORDERS_URL}"
+            r = requests.post(url, json=payload, headers=_auth_headers(cfg), timeout=10)
+
+            if r.status_code not in (200, 201):
+                return BrokerOrderResult(
+                    success=False,
+                    status=BrokerOrderStatus.REJECTED,
+                    error_message=f"alpaca_http_{r.status_code}: {r.text[:200]}",
+                    market_bid_at_execution=quote.bid if quote else None,
+                    market_ask_at_execution=quote.ask if quote else None,
+                )
+
+            data = r.json()
+            store.put(client_order_id, client_order_id)
+
+            return BrokerOrderResult(
+                success=True,
+                broker_order_id=data.get("id"),
+                client_order_id=client_order_id,
+                status=BrokerOrderStatus.SUBMITTED,
+                filled_qty=int(float(data.get("filled_qty", 0))),
+                fill_price=float(data.get("filled_avg_price")) if data.get("filled_avg_price") else None,
+                market_bid_at_execution=quote.bid if quote else None,
+                market_ask_at_execution=quote.ask if quote else None,
+            )
+
+        except Exception as e:
+            return BrokerOrderResult(
+                success=False,
+                status=BrokerOrderStatus.REJECTED,
+                error_message=str(e),
+            )
+
+    def cancel_order(self, broker_order_id: str) -> bool:
+        """Cancel an order by broker order ID."""
+        try:
+            cfg = _alpaca_cfg()
+            url = f"{cfg.base_url}{ALPACA_ORDERS_URL}/{broker_order_id}"
+            r = requests.delete(url, headers=_auth_headers(cfg), timeout=10)
+            if r.status_code in (200, 204):
+                logger.info(f"Cancelled order {broker_order_id}")
+                return True
+            logger.warning(f"Failed to cancel order {broker_order_id}: HTTP {r.status_code}")
+            return False
+        except Exception as e:
+            logger.error(f"Cancel order exception: {e}")
+            return False
+
+    def get_order_status(self, broker_order_id: str) -> Optional[BrokerOrderStatus]:
+        """Get order status by broker order ID."""
+        data = get_order_by_id(broker_order_id)
+        if not data:
+            return None
+
+        status = data.get("status", "").lower()
+        status_map = {
+            "new": BrokerOrderStatus.PENDING,
+            "pending_new": BrokerOrderStatus.PENDING,
+            "accepted": BrokerOrderStatus.ACCEPTED,
+            "partially_filled": BrokerOrderStatus.PARTIALLY_FILLED,
+            "filled": BrokerOrderStatus.FILLED,
+            "canceled": BrokerOrderStatus.CANCELLED,
+            "cancelled": BrokerOrderStatus.CANCELLED,
+            "expired": BrokerOrderStatus.EXPIRED,
+            "rejected": BrokerOrderStatus.REJECTED,
+        }
+        return status_map.get(status, BrokerOrderStatus.PENDING)
+
+    def get_orders(
+        self,
+        status: str = "all",
+        limit: int = 100,
+        after: Optional[datetime] = None,
+    ) -> List[Dict[str, Any]]:
+        """Get orders from Alpaca."""
+        try:
+            cfg = _alpaca_cfg()
+            params = {"limit": limit}
+
+            if status == "open":
+                params["status"] = "open"
+            elif status == "closed":
+                params["status"] = "closed"
+            # else: all (default)
+
+            if after:
+                params["after"] = after.isoformat() + "Z"
+
+            url = f"{cfg.base_url}{ALPACA_ORDERS_URL}"
+            r = requests.get(url, params=params, headers=_auth_headers(cfg), timeout=10)
+
+            if r.status_code != 200:
+                return []
+
+            return r.json()
+        except Exception as e:
+            logger.error(f"Failed to get orders: {e}")
+            return []
+
+
+# Auto-register Alpaca broker
+register_broker("alpaca", AlpacaBroker)

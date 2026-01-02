@@ -413,3 +413,224 @@ ml:
   # Regime-Conditional Ensemble Weights (future)
   ensemble:
     regime_adaptive_weights: false    # Use regime-specific model weights
+
+# Drift Detection Settings (Production Edge Monitoring)
+drift_detection:
+  enabled: true
+  baseline_window_days: 90            # Days for baseline performance
+  recent_window_days: 14              # Days for recent performance comparison
+  state_file: "state/drift_state.json"
+
+  # Relative degradation thresholds
+  thresholds:
+    min_delta_accuracy: -0.02         # Accuracy drop > 2%
+    min_delta_wr: -0.02               # Win rate drop > 2%
+    min_delta_pf: -0.10               # Profit factor drop > 0.10
+    min_delta_sharpe: -0.10           # Sharpe drop > 0.10
+
+  # Absolute thresholds (triggers regardless of baseline)
+  absolute:
+    min_win_rate: 0.50                # WR below 50% = problem
+    min_profit_factor: 1.0            # PF below 1.0 = losing money
+    min_sharpe: 0.0                   # Negative Sharpe = bad
+
+  # Severity thresholds (cumulative degradation)
+  severity:
+    minor: 0.02
+    moderate: 0.05
+    severe: 0.10
+    critical: 0.20
+
+  # Position scaling by severity
+  scaling:
+    minor: 0.80                       # 80% position size
+    moderate: 0.50                    # 50% position size
+    severe: 0.25                      # 25% position size
+    critical: 0.0                     # No new positions
+
+  # Alerting
+  alerts:
+    telegram_on_severe: true          # Send Telegram alert on severe drift
+    telegram_on_critical: true        # Send Telegram alert on critical drift
+
+# Edge Analytics Settings
+edge_analytics:
+  enabled: true
+
+  # Edge Decomposition
+  decomposition:
+    dimensions:
+      - "day_of_week"
+      - "vix_bucket"
+      - "regime"
+      - "liquidity"
+      - "gap"
+      - "sector"
+      - "strategy"
+    min_bucket_size: 5                # Min trades per bucket for stats
+
+  # Factor Attribution
+  attribution:
+    min_trades: 30                    # Minimum trades for attribution
+    standardize_factors: true         # Z-score normalize factors
+    include_interactions: false       # Include factor interactions
+    factors:
+      - "ibs"
+      - "rsi"
+      - "sweep_strength"
+      - "atr_multiple"
+      - "volume_ratio"
+      - "vix"
+
+  # Auto Stand-down
+  standdown:
+    enabled: true
+    lookback_trades: 20               # Rolling window for metrics
+    consecutive_loss_threshold: 5     # Max consecutive losses
+    drawdown_threshold_pct: 10        # Max drawdown before standdown
+    min_win_rate: 0.40                # Absolute minimum WR
+    min_profit_factor: 0.80           # Absolute minimum PF
+
+# Net Exposure Gate Settings
+net_exposure:
+  enabled: true
+  max_net_exposure_pct: 80            # Max 80% net long or short
+  warning_threshold_pct: 60           # Warning at 60%
+  enforce_on_new_positions: true      # Block new positions that exceed limit
+  allow_hedge_positions: true         # Allow positions that reduce net exposure
+
+# Volatility Targeting Settings
+volatility_targeting:
+  enabled: false                      # Disabled by default (conservative)
+  target_annual_vol: 0.15             # Target 15% annualized portfolio vol
+  lookback_days: 60                   # Days for realized vol calculation
+  min_scale: 0.5                      # Minimum position scale
+  max_scale: 1.5                      # Maximum position scale
+  rebalance_threshold: 0.10           # Rebalance when vol deviates >10%
+
+# Gap Risk Model Settings
+gap_risk:
+  enabled: true
+  lookback_days: 252                  # Historical data for gap distribution
+  confidence_level: 0.95              # VaR confidence level
+  simulation_count: 10000             # Monte Carlo simulations
+
+  # VIX-based adjustments
+  vix_multipliers:
+    low: 0.6                          # VIX < 15
+    normal: 1.0                       # VIX 15-20
+    elevated: 1.5                     # VIX 20-30
+    high: 2.5                         # VIX 30-50
+    crisis: 4.0                       # VIX > 50
+
+  # Event multipliers
+  event_multipliers:
+    normal: 1.0
+    earnings: 3.0
+    fomc: 2.0
+    cpi: 1.5
+    nfp: 1.5
+
+# Regime Adaptive Slippage Settings
+regime_slippage:
+  enabled: true
+  base_slippage_bps: 5                # Base slippage in basis points
+
+  # VIX regime thresholds and multipliers
+  regimes:
+    low_vol:
+      vix_max: 15
+      multiplier: 0.6
+    normal:
+      vix_min: 15
+      vix_max: 20
+      multiplier: 1.0
+    elevated:
+      vix_min: 20
+      vix_max: 30
+      multiplier: 1.5
+    high_vol:
+      vix_min: 30
+      vix_max: 50
+      multiplier: 2.5
+    crisis:
+      vix_min: 50
+      multiplier: 4.0
+
+  # Time-of-day adjustments
+  time_adjustments:
+    open_minutes: 30                  # First 30 min of market open
+    close_minutes: 30                 # Last 30 min before close
+    open_multiplier: 1.5              # Higher slippage at open
+    close_multiplier: 1.3             # Higher slippage at close
+
+# Options Live Trading Settings
+options_live:
+  enabled: false                      # Disabled by default
+  paper_mode: true                    # Paper trading by default
+
+  # Chain fetching
+  chain:
+    data_source: "polygon"            # polygon or alpaca
+    expiration_range_days: 60
+    min_dte: 1
+    max_dte: 90
+    strike_range_pct: 0.20            # +/- 20% of underlying
+    include_greeks: true
+
+  # Spread defaults
+  spreads:
+    default_quantity: 1
+    default_target_delta: 0.30
+    min_credit: 0.10                  # Minimum credit to accept
+    max_debit: 500                    # Maximum debit to pay
+
+  # Order routing
+  routing:
+    commission_per_contract: 0.65
+    max_spread_pct: 20                # Max bid-ask spread percentage
+    time_in_force: "day"
+
+  # Risk limits
+  risk:
+    max_contracts_per_position: 10
+    max_options_exposure_pct: 20      # Max 20% of account in options
+    max_loss_per_trade: 500           # Maximum loss per options trade
+
+# TradingView Webhook Settings
+webhooks:
+  enabled: true
+  endpoint: "/webhook/tradingview"
+
+  # Security
+  hmac:
+    enabled: true
+    secret_env: "TRADINGVIEW_HMAC_SECRET"  # Load from environment
+    algorithm: "sha256"
+
+  # Rate limiting
+  rate_limit:
+    enabled: true
+    requests_per_minute: 60
+    burst_limit: 10
+
+  # Signal handling
+  signals:
+    expiry_minutes: 5                 # Signals expire after 5 minutes
+    queue_file: "state/signal_queue.jsonl"
+    max_queue_size: 100
+    dedupe_window_minutes: 60         # Ignore duplicate signals within window
+
+# Broker Abstraction Settings
+broker:
+  default: "alpaca"                   # Default broker
+  config_file: "config/brokers.yaml"  # Detailed broker config
+
+  # Failover settings
+  failover:
+    enabled: true
+    fallback_order:
+      - "alpaca"
+      - "paper"
+    retry_attempts: 3
+    circuit_breaker_threshold: 5

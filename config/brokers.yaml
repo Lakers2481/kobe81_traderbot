@@ -1,0 +1,121 @@
+# Broker Configuration for Kobe Trading System
+# Multi-broker abstraction layer settings
+
+# Default broker selection
+default_broker: "alpaca"
+
+# Alpaca Configuration
+alpaca:
+  enabled: true
+  paper_mode: true  # Override with env ALPACA_PAPER_MODE=false for live
+  # API credentials loaded from environment:
+  #   ALPACA_API_KEY_ID
+  #   ALPACA_API_SECRET_KEY
+  #   ALPACA_BASE_URL (paper-api.alpaca.markets or api.alpaca.markets)
+
+  # Order defaults
+  order_defaults:
+    time_in_force: "ioc"  # Immediate-or-cancel
+    limit_offset_pct: 0.001  # 0.1% above best ask for limit orders
+    max_retries: 3
+    retry_delay_sec: 1
+
+  # Rate limits (requests per minute)
+  rate_limits:
+    orders_per_minute: 200
+    positions_per_minute: 100
+    account_per_minute: 50
+
+# Paper Trading Configuration
+paper:
+  enabled: true
+  # Simulated account settings
+  initial_equity: 100000.0
+  fill_probability: 1.0  # 100% fill rate for paper
+  slippage_bps: 5  # 5 basis points simulated slippage
+  commission_per_share: 0.0  # Zero commission simulation
+  max_position_size: 1000  # Max shares per position
+
+  # State persistence
+  state_file: "state/paper_positions.json"
+
+# Crypto Configuration (CCXT-based)
+crypto:
+  enabled: false  # Enable with --enable-crypto flag
+  exchange: "binance"  # Primary exchange
+
+  # Exchange-specific settings
+  binance:
+    testnet: true
+    # API credentials from environment:
+    #   BINANCE_API_KEY
+    #   BINANCE_API_SECRET
+    rate_limit: 1200  # requests per minute
+
+  coinbase:
+    sandbox: true
+    # API credentials from environment:
+    #   COINBASE_API_KEY
+    #   COINBASE_API_SECRET
+    #   COINBASE_PASSPHRASE
+
+  kraken:
+    # API credentials from environment:
+    #   KRAKEN_API_KEY
+    #   KRAKEN_API_SECRET
+
+  # Common crypto settings
+  common:
+    quote_currency: "USDT"
+    min_order_size: 10.0  # Minimum order in quote currency
+    max_position_pct: 0.10  # Max 10% of account per position
+
+# Options Configuration
+options:
+  enabled: false  # Enable with --enable-options flag
+  data_source: "polygon"  # polygon or alpaca
+
+  # Chain fetching
+  chain:
+    expiration_range_days: 60
+    min_dte: 1
+    strike_range_pct: 0.20  # +/- 20% of underlying
+    include_greeks: true
+
+  # Spread defaults
+  spreads:
+    default_quantity: 1
+    min_credit: 0.10  # Minimum credit to accept
+    max_spread_width: 10.0  # Max strike width
+
+  # Order routing
+  routing:
+    paper_mode: true
+    default_commission: 0.65  # Per contract
+
+# Interactive Brokers (future expansion)
+ibkr:
+  enabled: false
+  # Port 7496 for live, 7497 for paper
+  gateway_port: 7497
+  client_id: 1
+
+# Webhook/External Signal Configuration
+webhooks:
+  enabled: true
+  hmac_secret: ""  # Set via TRADINGVIEW_HMAC_SECRET env
+  rate_limit:
+    requests_per_minute: 60
+    burst_limit: 10
+  signal_expiry_minutes: 5
+
+# Broker Failover
+failover:
+  enabled: true
+  fallback_order:
+    - "alpaca"
+    - "paper"
+  retry_attempts: 3
+  circuit_breaker:
+    failure_threshold: 5
+    reset_timeout_sec: 300

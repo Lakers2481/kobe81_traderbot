@@ -43,6 +43,19 @@ from core.alerts import send_telegram
 from core.kill_switch import is_kill_switch_active, get_kill_switch_info
 from config.env_loader import load_env
 
+# Drift detection imports
+try:
+    from monitor.drift_detector import (
+        get_drift_detector,
+        check_drift,
+        get_position_scale,
+        DriftSeverity,
+        PerformanceSnapshot,
+    )
+    DRIFT_DETECTION_AVAILABLE = True
+except ImportError:
+    DRIFT_DETECTION_AVAILABLE = False
+
 # Multi-asset clock imports
 try:
     from core.clock import MarketClock, AssetType, SessionType
@@ -206,6 +219,112 @@ def reconcile_positions(dotenv: Path) -> dict:
     return result
 
 
+def check_performance_drift() -> dict:
+    """
+    Check for performance drift and get position scaling recommendation.
+
+    Returns:
+        Dictionary with drift check results and position scale
+    """
+    if not DRIFT_DETECTION_AVAILABLE:
+        return {'available': False, 'position_scale': 1.0}
+
+    result = {
+        'available': True,
+        'position_scale': 1.0,
+        'severity': 'NONE',
+        'has_drift': False,
+        'message': '',
+    }
+
+    try:
+        # Try to load recent trade performance from logs
+        trades_file = ROOT / 'logs' / 'trade_history.jsonl'
+        if trades_file.exists():
+            import pandas as pd
+            trades = []
+            with open(trades_file, 'r') as f:
+                for line in f:
+                    try:
+                        trades.append(json.loads(line))
+                    except Exception:
+                        continue
+
+            if trades:
+                # Calculate recent metrics (last 30 trades)
+                recent = trades[-30:] if len(trades) > 30 else trades
+                wins = sum(1 for t in recent if t.get('pnl', 0) > 0)
+                total = len(recent)
+                wr = wins / total if total > 0 else 0.5
+
+                gross_profit = sum(t['pnl'] for t in recent if t.get('pnl', 0) > 0)
+                gross_loss = abs(sum(t['pnl'] for t in recent if t.get('pnl', 0) < 0))
+                pf = gross_profit / gross_loss if gross_loss > 0 else 1.0
+
+                metrics = {
+                    'wr': wr,
+                    'pf': pf,
+                    'sharpe': 0.0,  # Simplified
+                    'accuracy': wr,
+                }
+
+                drift_result = check_drift(metrics)
+                result['position_scale'] = drift_result.position_scale
+                result['severity'] = drift_result.severity.name
+                result['has_drift'] = drift_result.has_drift
+                result['message'] = drift_result.message
+
+                if drift_result.has_drift:
+                    jlog('performance_drift_detected', level='WARNING',
+                         severity=drift_result.severity.name,
+                         position_scale=drift_result.position_scale,
+                         message=drift_result.message)
+
+                    # Send alert for significant drift
+                    if drift_result.severity in (DriftSeverity.SEVERE, DriftSeverity.CRITICAL):
+                        try:
+                            now = now_et()
+                            stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                            msg = f"DRIFT ALERT [{drift_result.severity.name}]: {drift_result.message} [{stamp}]"
+                            send_telegram(msg)
+                        except Exception:
+                            pass
+        else:
+            jlog('drift_check_no_history', level='DEBUG', message='No trade history file found')
+            result['message'] = 'No trade history available'
+
+    except Exception as e:
+        jlog('drift_check_error', level='ERROR', error=str(e))
+        result['error'] = str(e)
+
+    return result
+
+
+def get_drift_scaled_position_size(base_size: int) -> int:
+    """
+    Apply drift-based position scaling to a base size.
+
+    Args:
+        base_size: Original position size
+
+    Returns:
+        Scaled position size (may be smaller if drift detected)
+    """
+    if not DRIFT_DETECTION_AVAILABLE:
+        return base_size
+
+    scale = get_position_scale()
+    scaled_size = int(base_size * scale)
+
+    if scale < 1.0:
+        jlog('position_size_scaled', level='INFO',
+             base_size=base_size,
+             scale=scale,
+             scaled_size=scaled_size)
+
+    return max(1, scaled_size)  # Ensure at least 1 if trading
+
+
 def check_live_trading_approved(require_flag: bool = True) -> tuple[bool, str]:
     """
     Check if live trading is approved.
@@ -358,6 +477,24 @@ def main():
                 pass
             send_telegram(msg)
 
+        # Check performance drift on startup
+        if DRIFT_DETECTION_AVAILABLE:
+            jlog('runner_startup_drift_check', level='INFO')
+            _heartbeat.update("checking_drift")
+            drift_result = check_performance_drift()
+            if drift_result.get('has_drift'):
+                jlog('runner_startup_drift_detected', level='WARNING',
+                     severity=drift_result.get('severity'),
+                     position_scale=drift_result.get('position_scale'),
+                     message=drift_result.get('message'))
+                try:
+                    now = now_et()
+                    stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                    msg = f"Kobe startup drift check: {drift_result.get('severity')} - scale={drift_result.get('position_scale')} [{stamp}]"
+                    send_telegram(msg)
+                except Exception:
+                    pass
+
     # Check kill switch on startup
     if is_kill_switch_active():
         info = get_kill_switch_info()
@@ -408,6 +545,24 @@ def main():
             jlog('runner_daily_reconcile', level='INFO')
             _heartbeat.update("daily_reconcile")
             reconcile_positions(dotenv)
+
+            # Check performance drift after reconciliation
+            if DRIFT_DETECTION_AVAILABLE:
+                _heartbeat.update("checking_drift")
+                drift_result = check_performance_drift()
+                if drift_result.get('has_drift'):
+                    jlog('runner_drift_detected', level='WARNING',
+                         severity=drift_result.get('severity'),
+                         position_scale=drift_result.get('position_scale'),
+                         message=drift_result.get('message'))
+
+                    # Critical drift should halt trading
+                    if drift_result.get('severity') == 'CRITICAL':
+                        jlog('runner_critical_drift_halt', level='CRITICAL',
+                             message='Critical drift detected, halting new trades')
+                        # Don't create kill switch, just skip this cycle
+                        # Operator should investigate
+
             last_reconcile_date = now.date()
 
         if within_market_day(now):

@@ -1,15 +1,17 @@
 """
-Kobe Trading System - Synthetic Options Module.
+Kobe Trading System - Options Module.
 
-Provides complete synthetic options infrastructure for backtesting:
+Provides complete options infrastructure for backtesting and live trading:
 - Black-Scholes pricing model with Greeks
 - Realized volatility estimation (no IV needed)
 - Delta-targeted strike selection via binary search
 - Position sizing with 2% risk enforcement
 - Options backtester with daily repricing
 
-All pricing is synthetic (no real options chains required).
-Uses realized volatility when IV is unavailable (free data sources).
+Live Trading Components:
+- Chain fetcher for real options data (Polygon.io)
+- Multi-leg spread strategies (verticals, iron condors, straddles)
+- Options order router with broker integration
 """
 
 from .black_scholes import (
@@ -58,6 +60,36 @@ from .backtest import (
     run_options_backtest,
 )
 
+# Live trading components
+from .chain_fetcher import (
+    ChainFetcher,
+    OptionsChain,
+    OptionContract,
+    OptionType as LiveOptionType,
+    get_chain_fetcher,
+)
+
+from .spreads import (
+    SpreadBuilder,
+    OptionsSpread,
+    SpreadLeg,
+    SpreadType,
+    get_spread_builder,
+)
+
+from .order_router import (
+    OptionsOrderRouter,
+    OptionsOrder,
+    OptionsOrderLeg,
+    OptionsOrderResult,
+    OptionsOrderType,
+    OptionsOrderSide,
+    OptionsOrderStatus,
+    get_options_router,
+    quick_buy_call,
+    quick_buy_put,
+)
+
 __all__ = [
     # Black-Scholes
     'BlackScholes',
@@ -95,4 +127,27 @@ __all__ = [
     'OptionsPosition',
     'TradeAction',
     'run_options_backtest',
+    # Live Chain Fetching
+    'ChainFetcher',
+    'OptionsChain',
+    'OptionContract',
+    'LiveOptionType',
+    'get_chain_fetcher',
+    # Spreads
+    'SpreadBuilder',
+    'OptionsSpread',
+    'SpreadLeg',
+    'SpreadType',
+    'get_spread_builder',
+    # Order Router
+    'OptionsOrderRouter',
+    'OptionsOrder',
+    'OptionsOrderLeg',
+    'OptionsOrderResult',
+    'OptionsOrderType',
+    'OptionsOrderSide',
+    'OptionsOrderStatus',
+    'get_options_router',
+    'quick_buy_call',
+    'quick_buy_put',
 ]

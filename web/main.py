@@ -37,12 +37,25 @@ from cognitive.reflection_engine import get_reflection_engine
 from cognitive.self_model import get_self_model
 from execution.tca.transaction_cost_analyzer import get_tca_analyzer
 
+# Import webhook router
+try:
+    from web.api.webhooks import router as webhooks_router
+    WEBHOOKS_AVAILABLE = True
+except ImportError as e:
+    WEBHOOKS_AVAILABLE = False
+    webhooks_router = None
+
 logger = logging.getLogger(__name__)
 app = FastAPI(
     title="Kobe81 Traderbot Dashboard API",
     description="API for monitoring and introspecting the Kobe81 Traderbot's status and cognitive state.",
     version="1.0.0",
 )
+
+# Mount webhook router if available
+if WEBHOOKS_AVAILABLE and webhooks_router:
+    app.include_router(webhooks_router)
+    logger.info("Webhook endpoints mounted at /webhook/*")
 
 @app.get("/", response_class=HTMLResponse, summary="Home Page")
 async def read_root():

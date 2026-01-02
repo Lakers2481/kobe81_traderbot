@@ -46,6 +46,7 @@ class FeatureCategory(Enum):
     PRICE_PATTERN = "price_pattern"
     LAG = "lag"  # NEW: Lag features for time series ML
     TIME = "time"  # NEW: Calendar/time features for seasonality
+    MICROSTRUCTURE = "microstructure"  # NEW: Amihud, Roll spread, liquidity
     ALL = "all"
 
 
@@ -146,8 +147,9 @@ class FeaturePipeline:
                 FeatureCategory.VOLUME,
                 FeatureCategory.ANOMALY,
                 FeatureCategory.PRICE_PATTERN,
-                FeatureCategory.LAG,  # NEW
-                FeatureCategory.TIME,  # NEW
+                FeatureCategory.LAG,
+                FeatureCategory.TIME,
+                FeatureCategory.MICROSTRUCTURE,  # NEW: Amihud, Roll spread
             ]
 
         for category in categories:
@@ -167,6 +169,8 @@ class FeaturePipeline:
                 df = self._add_lag_features(df)
             elif category == FeatureCategory.TIME:
                 df = self._add_time_features(df)
+            elif category == FeatureCategory.MICROSTRUCTURE:
+                df = self._add_microstructure_features(df)
 
         # Get feature columns
         feature_cols = [c for c in df.columns if c not in original_cols]
@@ -398,6 +402,164 @@ class FeaturePipeline:
 
         except Exception as e:
             jlog("time_features_error", level="WARNING", error=str(e))
+
+        return df
+
+    def _add_microstructure_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Add market microstructure features from EOD data.
+
+        These features capture liquidity, trading friction, and market quality
+        without requiring tick-level data. Based on:
+        - Amihud (2002): Illiquidity ratio
+        - Roll (1984): Bid-ask spread estimator
+        - Academic research on liquidity risk
+
+        All features are EOD-compatible (use close, volume, high, low, open).
+        """
+        if 'close' not in df.columns or 'volume' not in df.columns:
+            jlog("microstructure_missing_columns", level="WARNING",
+                 message="Need close and volume for microstructure features")
+            return df
+
+        # ============================================================
+        # 1. AMIHUD ILLIQUIDITY RATIO (Amihud 2002)
+        # ============================================================
+        # Formula: ILLIQ = mean(|return| / dollar_volume)
+        # Interpretation: Higher = less liquid (avoid), Lower = more liquid (prefer)
+        # Use: Filter out illiquid stocks that may have large slippage
+
+        returns = df['close'].pct_change()
+
+        # Dollar volume (in millions for numerical stability)
+        dollar_volume = df['close'] * df['volume'] / 1e6
+
+        # Amihud ratio: |return| / dollar_volume
+        # Add epsilon to avoid division by zero
+        epsilon = 1e-9
+        amihud_raw = returns.abs() / (dollar_volume + epsilon)
+
+        # Rolling averages at different windows
+        for window in [5, 10, 20]:
+            df[f'amihud_illiq_{window}d'] = amihud_raw.rolling(window).mean()
+
+        # Amihud percentile rank (0-1, higher = less liquid vs history)
+        df['amihud_illiq_pct'] = df['amihud_illiq_20d'].rank(pct=True)
+
+        # ============================================================
+        # 2. ROLL SPREAD ESTIMATOR (Roll 1984)
+        # ============================================================
+        # Estimates effective bid-ask spread from price changes
+        # Formula: spread = 2 * sqrt(-cov(Δp_t, Δp_{t-1}))
+        # Interpretation: Higher = wider spread (higher friction)
+
+        price_change = df['close'].diff()
+
+        # Rolling covariance of consecutive price changes
+        def roll_spread_estimator(series, window=20):
+            """Estimate spread from price change serial covariance."""
+            result = pd.Series(index=series.index, dtype=float)
+            for i in range(window, len(series)):
+                window_data = series.iloc[i-window:i]
+                cov = window_data.cov(window_data.shift(1))
+                # Spread formula: 2 * sqrt(-cov) if cov < 0
+                if cov < 0:
+                    result.iloc[i] = 2 * np.sqrt(-cov)
+                else:
+                    result.iloc[i] = 0  # No bounce = near-zero spread
+            return result
+
+        df['roll_spread_20d'] = roll_spread_estimator(price_change, window=20)
+
+        # Normalize by price for comparability
+        df['roll_spread_pct'] = df['roll_spread_20d'] / df['close']
+
+        # ============================================================
+        # 3. KYLE'S LAMBDA (Simplified from EOD data)
+        # ============================================================
+        # Price impact per unit of volume (simplified version)
+        # Full Kyle's lambda requires tick data, this is EOD approximation
+        # Formula: lambda ≈ |return| / sqrt(volume)
+
+        df['kyle_lambda_approx'] = returns.abs() / (np.sqrt(df['volume']) + epsilon)
+        df['kyle_lambda_20d'] = df['kyle_lambda_approx'].rolling(20).mean()
+
+        # ============================================================
+        # 4. VOLUME TURNOVER RATIO
+        # ============================================================
+        # Relative trading activity (proxy for liquidity)
+
+        for window in [5, 10, 20]:
+            df[f'volume_turnover_{window}d'] = df['volume'].rolling(window).sum() / df['volume'].rolling(window * 2).mean()
+
+        # ============================================================
+        # 5. PRICE IMPACT RATIO (Simplified Almgren-Chriss)
+        # ============================================================
+        # How much does price move per unit of volume?
+
+        # Absolute return per dollar volume (normalized impact)
+        df['price_impact_ratio'] = (returns.abs() * 10000) / (dollar_volume + epsilon)
+        df['price_impact_20d'] = df['price_impact_ratio'].rolling(20).mean()
+
+        # ============================================================
+        # 6. HIGH-LOW SPREAD ESTIMATOR (Corwin-Schultz 2012)
+        # ============================================================
+        # Uses high-low range to estimate bid-ask spread
+        # More robust than Roll for EOD data
+
+        if 'high' in df.columns and 'low' in df.columns:
+            beta = (np.log(df['high'] / df['low']) ** 2).rolling(2).sum()
+            gamma = (np.log(df['high'].rolling(2).max() / df['low'].rolling(2).min())) ** 2
+
+            alpha = (np.sqrt(2 * beta) - np.sqrt(beta)) / (3 - 2 * np.sqrt(2))
+            alpha = alpha - np.sqrt(gamma / (3 - 2 * np.sqrt(2)))
+
+            # Clip and transform to spread estimate
+            alpha_clipped = alpha.clip(lower=0)
+            df['cs_spread'] = (2 * (np.exp(alpha_clipped) - 1)) / (1 + np.exp(alpha_clipped))
+            df['cs_spread_20d'] = df['cs_spread'].rolling(20).mean()
+
+        # ============================================================
+        # 7. RELATIVE SPREAD (Price-based proxy)
+        # ============================================================
+        # True range relative to price as spread proxy
+
+        if 'high' in df.columns and 'low' in df.columns:
+            true_range = df['high'] - df['low']
+            df['relative_spread'] = true_range / df['close']
+            df['relative_spread_20d'] = df['relative_spread'].rolling(20).mean()
+
+        # ============================================================
+        # 8. LIQUIDITY SCORE (Composite)
+        # ============================================================
+        # Combine multiple liquidity measures into single score
+        # Higher score = MORE liquid (better for trading)
+
+        # Normalize each component to 0-1 range using percentile rank
+        if 'amihud_illiq_20d' in df.columns:
+            # Invert Amihud (lower is better)
+            amihud_score = 1 - df['amihud_illiq_20d'].rank(pct=True)
+        else:
+            amihud_score = 0.5
+
+        # Volume-based score (higher volume = more liquid)
+        vol_score = df['volume'].rank(pct=True)
+
+        # Roll spread score (lower spread = more liquid)
+        if 'roll_spread_pct' in df.columns:
+            spread_score = 1 - df['roll_spread_pct'].rank(pct=True)
+        else:
+            spread_score = 0.5
+
+        # Composite liquidity score (equal weighted)
+        df['liquidity_score'] = (amihud_score + vol_score + spread_score) / 3
+
+        jlog("microstructure_features_added", level="DEBUG",
+             features_added=[
+                 'amihud_illiq_*', 'roll_spread_*', 'kyle_lambda_*',
+                 'volume_turnover_*', 'price_impact_*', 'cs_spread_*',
+                 'relative_spread_*', 'liquidity_score'
+             ])
 
         return df
 

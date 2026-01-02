@@ -81,3 +81,43 @@ hmmlearn>=0.3
 # Install these manually for full ensemble functionality:
 # pip install xgboost>=2.0
 # pip install lightgbm>=4.0
+
+# =============================================================================
+# NEW RESEARCH-BASED ENHANCEMENTS (2026-01-01)
+# Based on comprehensive research across GitHub, academic papers, and quant libraries
+# =============================================================================
+
+# FinBERT Sentiment Analysis
+transformers>=4.36.0
+torch>=2.0  # Required for FinBERT, can use CPU-only version
+
+# Portfolio Analytics & Reporting
+quantstats>=0.0.62  # Modern tearsheet generation (replaces pyfolio)
+empyrical>=0.5.5  # Risk metrics (alpha, beta, Sharpe)
+
+# Portfolio Optimization
+pyportfolioopt>=1.5.5  # Mean-variance, HRP, Black-Litterman
+riskfolio-lib>=6.0.0  # CVaR, CDaR, factor models
+
+# Time Series Features (Lopez de Prado)
+fracdiff>=0.9.0  # Fractional differentiation for stationarity
+# mlfinlab is commercial - use our custom triple_barrier.py instead
+
+# Change Point Detection
+ruptures>=1.1.8  # PELT, Dynp for regime detection
+
+# Factor Analysis
+alphalens-reloaded>=0.4.3  # Factor validation (Quantopian fork)
+
+# ICT / Smart Money Concepts (pip install if using enhanced ICT)
+# smartmoneyconcepts>=0.0.21  # Order blocks, FVG, liquidity sweeps
+
+# Advanced Time Series Features
+# tsfresh>=0.20.0  # 787 automated features (large dependency)
+
+# Fast Backtesting (optional - significant speed improvement)
+# vectorbt>=0.26.0  # 10-100x faster vectorized backtesting
+
+# Temporal Fusion Transformer (advanced ML forecasting)
+# pytorch-forecasting>=1.0.0  # TFT implementation
+# pytorch-lightning>=2.0.0  # Training framework
