@@ -86,6 +86,27 @@ def _data_api_base(cfg: AlpacaConfig) -> str:
     return data_base.rstrip("/")
 
 
+def get_account_info(timeout: int = 10) -> Optional[Dict[str, Any]]:
+    """
+    Get account information from Alpaca.
+
+    Returns dict with equity, buying_power, cash, portfolio_value, etc.
+    Returns None on error.
+    """
+    cfg = _alpaca_cfg()
+    url = f"{cfg.base_url}/v2/account"
+
+    try:
+        resp = requests.get(url, headers=_auth_headers(cfg), timeout=timeout)
+        if resp.status_code == 200:
+            return resp.json()
+        logger.warning(f"Failed to get account info: {resp.status_code} - {resp.text}")
+        return None
+    except Exception as e:
+        logger.error(f"Error fetching account info: {e}")
+        return None
+
+
 def _fetch_quotes(symbol: str, timeout: int = 5) -> Optional[Dict[str, Any]]:
     cfg = _alpaca_cfg()
     if not cfg.key_id or not cfg.secret:
@@ -597,6 +618,261 @@ def _apply_clamp(raw_limit: float, best_quote: float, atr_value: Optional[float]
     # Clamp the limit price within bounds
     clamped = max(lower_bound, min(raw_limit, upper_bound))
     return round(clamped, 2)
+
+
+# ============================================================================
+# VIX-Aware Adaptive Clamp (Phase 3: Execution Calibration)
+# ============================================================================
+
+IOC_TELEMETRY_PATH = Path("state/ioc_telemetry.json")
+
+
+def _calculate_adaptive_offset(
+    vix_level: Optional[float] = None,
+    regime: Optional[str] = None,
+) -> float:
+    """
+    Calculate VIX-aware and regime-aware limit price offset.
+
+    In high volatility environments, wider offsets increase fill probability.
+    In choppy regimes, additional buffer helps avoid slippage.
+
+    Args:
+        vix_level: Current VIX level (fetched if None)
+        regime: Current market regime (BULLISH, NEUTRAL, BEARISH, CHOPPY)
+
+    Returns:
+        Offset as decimal (e.g., 0.001 = 0.1%, 0.003 = 0.3%)
+
+    Reference (from plan):
+        Default: 0.1% offset (10 bps)
+        High VIX (>25): 0.3% offset
+        Extreme VIX (>35): 0.5% offset
+        CHOPPY regime: +0.1% additional
+    """
+    base_offset = 0.001  # 10 basis points default
+
+    # VIX-based adjustment
+    if vix_level is not None:
+        if vix_level > 35:
+            base_offset = 0.005  # 50 bps for extreme volatility
+        elif vix_level > 25:
+            base_offset = 0.003  # 30 bps for high volatility
+
+    # Regime-based adjustment
+    if regime is not None:
+        regime_upper = regime.upper()
+        if regime_upper == "CHOPPY":
+            base_offset += 0.001  # Additional 10 bps for choppy markets
+        elif regime_upper == "BEARISH":
+            base_offset += 0.0005  # 5 bps extra in bearish
+
+    return base_offset
+
+
+def apply_adaptive_clamp(
+    symbol: str,
+    side: str,
+    base_price: float,
+    vix_level: Optional[float] = None,
+    regime: Optional[str] = None,
+    atr_value: Optional[float] = None,
+) -> float:
+    """
+    Apply VIX-aware and regime-aware limit price clamp.
+
+    This is an enhanced version of _apply_clamp that considers market conditions.
+    For BUY orders: limit = base_price * (1 + offset)
+    For SELL orders: limit = base_price * (1 - offset)
+
+    Args:
+        symbol: Stock symbol
+        side: "BUY" or "SELL"
+        base_price: The base price (typically best_ask for buys, best_bid for sells)
+        vix_level: Current VIX level
+        regime: Current market regime
+        atr_value: Optional ATR for additional clamping
+
+    Returns:
+        Clamped limit price
+    """
+    # Calculate adaptive offset
+    offset = _calculate_adaptive_offset(vix_level, regime)
+
+    # Apply offset based on side
+    side_upper = side.upper()
+    if side_upper in ("BUY", "LONG"):
+        raw_limit = base_price * (1 + offset)
+    else:
+        raw_limit = base_price * (1 - offset)
+
+    # Apply standard clamp on top for safety
+    clamped = _apply_clamp(raw_limit, base_price, atr_value)
+
+    logger.debug(
+        f"Adaptive clamp {symbol} {side}: base={base_price:.2f}, "
+        f"offset={offset*100:.2f}%, raw={raw_limit:.2f}, clamped={clamped:.2f}"
+    )
+
+    return clamped
+
+
+def record_fill_telemetry(
+    order: OrderRecord,
+    intended_qty: int,
+    filled_qty: int,
+    intended_price: float,
+    fill_price: Optional[float],
+    vix_at_execution: Optional[float] = None,
+    regime: Optional[str] = None,
+) -> None:
+    """
+    Record IOC fill rate telemetry for analysis and model improvement.
+
+    Tracks:
+    - Fill rate (filled_qty / intended_qty)
+    - Slippage in basis points
+    - VIX and regime context
+    - Timestamp for time-of-day analysis
+
+    Data is appended to state/ioc_telemetry.json for later analysis.
+
+    Args:
+        order: The executed OrderRecord
+        intended_qty: Original intended quantity
+        filled_qty: Actually filled quantity
+        intended_price: Original limit price
+        fill_price: Actual fill price (None if not filled)
+        vix_at_execution: VIX level when order was placed
+        regime: Market regime when order was placed
+    """
+    IOC_TELEMETRY_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    # Calculate metrics
+    fill_rate = filled_qty / intended_qty if intended_qty > 0 else 0.0
+
+    slippage_bps = 0.0
+    if fill_price is not None and intended_price > 0:
+        slippage_bps = (fill_price - intended_price) / intended_price * 10000
+
+    telemetry_record = {
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "symbol": order.symbol,
+        "side": order.side,
+        "decision_id": order.decision_id,
+        "intended_qty": intended_qty,
+        "filled_qty": filled_qty,
+        "fill_rate": round(fill_rate, 4),
+        "intended_price": round(intended_price, 2),
+        "fill_price": round(fill_price, 2) if fill_price else None,
+        "slippage_bps": round(slippage_bps, 2),
+        "vix_at_execution": round(vix_at_execution, 2) if vix_at_execution else None,
+        "regime": regime,
+        "status": order.status.value if hasattr(order.status, "value") else str(order.status),
+    }
+
+    try:
+        # Load existing telemetry
+        telemetry_data = []
+        if IOC_TELEMETRY_PATH.exists():
+            with open(IOC_TELEMETRY_PATH, "r", encoding="utf-8") as f:
+                try:
+                    telemetry_data = json.load(f)
+                except json.JSONDecodeError:
+                    telemetry_data = []
+
+        # Append new record
+        telemetry_data.append(telemetry_record)
+
+        # Keep only last 1000 records to prevent unbounded growth
+        if len(telemetry_data) > 1000:
+            telemetry_data = telemetry_data[-1000:]
+
+        # Write back
+        with open(IOC_TELEMETRY_PATH, "w", encoding="utf-8") as f:
+            json.dump(telemetry_data, f, indent=2)
+
+        logger.debug(
+            f"Recorded fill telemetry: {order.symbol} fill_rate={fill_rate:.2%}, "
+            f"slippage={slippage_bps:.1f}bps"
+        )
+
+    except Exception as e:
+        logger.warning(f"Failed to record fill telemetry: {e}")
+
+
+def get_fill_telemetry_stats(lookback_days: int = 7) -> Dict[str, Any]:
+    """
+    Get summary statistics from IOC fill telemetry.
+
+    Args:
+        lookback_days: Number of days to analyze
+
+    Returns:
+        Dict with fill rate stats, slippage stats, and regime breakdown
+    """
+    if not IOC_TELEMETRY_PATH.exists():
+        return {
+            "n_records": 0,
+            "avg_fill_rate": None,
+            "avg_slippage_bps": None,
+            "message": "No telemetry data available",
+        }
+
+    try:
+        with open(IOC_TELEMETRY_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        if not data:
+            return {"n_records": 0, "message": "No telemetry records"}
+
+        # Filter by lookback period
+        from datetime import timedelta
+        cutoff = datetime.utcnow() - timedelta(days=lookback_days)
+        recent = [
+            r for r in data
+            if datetime.fromisoformat(r["timestamp"].replace("Z", "+00:00")).replace(tzinfo=None) > cutoff
+        ]
+
+        if not recent:
+            return {"n_records": 0, "message": f"No records in last {lookback_days} days"}
+
+        # Calculate stats
+        fill_rates = [r["fill_rate"] for r in recent if r["fill_rate"] is not None]
+        slippage_vals = [r["slippage_bps"] for r in recent if r["slippage_bps"] is not None]
+
+        # Group by regime
+        regime_stats = {}
+        for r in recent:
+            regime = r.get("regime") or "UNKNOWN"
+            if regime not in regime_stats:
+                regime_stats[regime] = {"count": 0, "fill_rates": [], "slippage": []}
+            regime_stats[regime]["count"] += 1
+            if r["fill_rate"] is not None:
+                regime_stats[regime]["fill_rates"].append(r["fill_rate"])
+            if r["slippage_bps"] is not None:
+                regime_stats[regime]["slippage"].append(r["slippage_bps"])
+
+        # Calculate regime averages
+        for regime, stats in regime_stats.items():
+            stats["avg_fill_rate"] = sum(stats["fill_rates"]) / len(stats["fill_rates"]) if stats["fill_rates"] else None
+            stats["avg_slippage"] = sum(stats["slippage"]) / len(stats["slippage"]) if stats["slippage"] else None
+            del stats["fill_rates"]
+            del stats["slippage"]
+
+        return {
+            "n_records": len(recent),
+            "lookback_days": lookback_days,
+            "avg_fill_rate": sum(fill_rates) / len(fill_rates) if fill_rates else None,
+            "avg_slippage_bps": sum(slippage_vals) / len(slippage_vals) if slippage_vals else None,
+            "min_fill_rate": min(fill_rates) if fill_rates else None,
+            "max_fill_rate": max(fill_rates) if fill_rates else None,
+            "by_regime": regime_stats,
+        }
+
+    except Exception as e:
+        logger.warning(f"Failed to compute fill telemetry stats: {e}")
+        return {"error": str(e)}
 
 
 def construct_decision(

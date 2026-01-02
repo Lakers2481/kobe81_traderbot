@@ -660,7 +660,7 @@ Market Movement: {market_movement}
 
 For EACH position, provide:
 
-**{symbol}** ({side} @ ${entry_price:.2f})
+**[SYMBOL]** ([SIDE] @ $[ENTRY])
 - STATUS: [Performance vs expectations - cite specific P&L %]
 - ANALYSIS: [Why working/not working - be specific]
 - RECOMMENDATION: [HOLD | ADJUST_STOP (new level: $X.XX) | TAKE_PROFIT | EXIT]
@@ -959,9 +959,12 @@ class GameBriefingEngine:
         # Get portfolio heat - skip for now if no positions, calculate after getting positions
         # Will be calculated below after positions are loaded
 
-        # Get positions
+        # Get positions - check reconcile folder first (broker sync), then state folder
         try:
-            positions_file = ROOT / 'state' / 'positions.json'
+            positions_file = ROOT / 'state' / 'reconcile' / 'positions.json'
+            if not positions_file.exists():
+                # Fall back to legacy location
+                positions_file = ROOT / 'state' / 'positions.json'
             if positions_file.exists():
                 with open(positions_file) as f:
                     positions_data = json.load(f)
@@ -974,8 +977,10 @@ class GameBriefingEngine:
                     context.positions = []
                 context.total_positions = len(context.positions)
                 context.unrealized_pnl = sum(
-                    p.get('unrealized_pnl', 0) for p in context.positions if isinstance(p, dict)
+                    float(p.get('unrealized_pl', 0) or p.get('unrealized_pnl', 0))
+                    for p in context.positions if isinstance(p, dict)
                 )
+                logger.debug(f"Loaded {context.total_positions} positions from {positions_file}")
         except Exception as e:
             logger.debug(f"Could not get positions: {e}")
 
@@ -1216,18 +1221,26 @@ class GameBriefingEngine:
         # Analyze positions
         position_statuses = []
         for pos in context.positions:
+            # Handle broker field naming (avg_entry_price vs entry_price, strings vs floats)
+            entry = float(pos.get('avg_entry_price') or pos.get('entry_price') or 0)
+            current = float(pos.get('current_price') or pos.get('lastday_price') or entry)
+            shares = int(float(pos.get('qty') or pos.get('shares') or 0))
+            unrealized = float(pos.get('unrealized_pl') or pos.get('unrealized_pnl') or 0)
+            cost_basis = float(pos.get('cost_basis') or 0) or (entry * shares)
+            pnl_pct = (unrealized / cost_basis * 100) if cost_basis else 0
+
             status = PositionStatus(
                 symbol=pos.get('symbol', ''),
                 side=pos.get('side', 'long'),
-                entry_price=pos.get('entry_price', 0),
-                current_price=pos.get('current_price', pos.get('entry_price', 0)),
-                shares=pos.get('shares', 0),
+                entry_price=entry,
+                current_price=current,
+                shares=shares,
                 entry_date=pos.get('entry_date', ''),
                 days_held=pos.get('days_held', 0),
-                unrealized_pnl=pos.get('unrealized_pnl', 0),
-                pnl_percent=pos.get('pnl_percent', 0),
-                stop_loss=pos.get('stop_loss', 0),
-                take_profit=pos.get('take_profit')
+                unrealized_pnl=unrealized,
+                pnl_percent=pnl_pct,
+                stop_loss=float(pos.get('stop_loss') or 0),
+                take_profit=float(pos.get('take_profit') or 0) if pos.get('take_profit') else None
             )
             position_statuses.append(status)
 

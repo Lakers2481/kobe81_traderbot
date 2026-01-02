@@ -197,8 +197,8 @@ Phases:
                 if briefing.position_analysis:
                     print("POSITION STATUS:")
                     for p in briefing.position_analysis:
-                        emoji = "🟢" if p.pnl_percent > 0 else "🔴"
-                        print(f"  {emoji} {p.symbol}: {p.pnl_percent:+.1f}% | Rec: {p.recommendation}")
+                        status = "[+]" if p.pnl_percent > 0 else "[-]"
+                        print(f"  {status} {p.symbol}: {p.pnl_percent:+.1f}% | Rec: {p.recommendation}")
                     print()
 
                 if briefing.whats_working:

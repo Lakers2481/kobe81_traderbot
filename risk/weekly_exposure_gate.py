@@ -421,6 +421,9 @@ class WeeklyExposureGate:
 
         return {
             'week': f"{self.state.week_start} to {self.state.week_end}",
+            # Top-level convenience keys for compatibility
+            'current_exposure_pct': self.state.current_exposure_pct,
+            'open_symbols': [p['symbol'] for p in open_positions],
             'exposure': {
                 'current_pct': f"{self.state.current_exposure_pct:.1%}",
                 'max_weekly_pct': f"{self.state.max_weekly_pct:.0%}",

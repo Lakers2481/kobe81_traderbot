@@ -263,3 +263,65 @@ This incident demonstrates:
 | `docs/STATUS.md` | Added to NEVER DO table | ✅ Complete |
 | `docs/CRITICAL_FIX_20260102.md` | This document | ✅ Complete |
 | `CLAUDE.md` | Add position sizing warning | ⏳ Pending |
+
+---
+
+## SESSION 2 FIXES (Jan 2, 2026 - Afternoon)
+
+> **FOCUS:** 24/7 automation, position sync, and scheduler verification
+
+### Issues Found and Fixed
+
+| Issue | Root Cause | Fix Applied |
+|-------|------------|-------------|
+| Halftime report showing 0 positions | Looking at `state/positions.json` instead of `state/reconcile/positions.json` | Updated `cognitive/game_briefings.py` line 964 |
+| Position prices as strings not floats | Broker returns all values as strings | Added type conversion in position parsing |
+| Console emoji encoding error | Windows cp1252 can't encode emojis | Replaced emojis with ASCII `[+]` and `[-]` |
+| Missing `get_account_info` function | Not implemented in broker module | Added to `execution/broker_alpaca.py` |
+| Health check missing dotenv | Environment variables not loaded | Added `load_dotenv()` to health check script |
+| Weekly gate missing convenience keys | `get_status()` nested structure | Added top-level `current_exposure_pct` and `open_symbols` |
+
+### Files Modified (Session 2)
+
+| File | Change |
+|------|--------|
+| `execution/broker_alpaca.py` | Added `get_account_info()` function |
+| `cognitive/game_briefings.py` | Fixed position file path, added type conversions |
+| `scripts/generate_briefing.py` | Replaced emojis with ASCII |
+| `scripts/health_check_full.py` | NEW - Full system health check |
+| `risk/weekly_exposure_gate.py` | Added convenience keys to `get_status()` |
+
+### Verification Commands
+
+```bash
+# Full system health check
+python scripts/health_check_full.py
+
+# Generate halftime report (now shows positions)
+python scripts/generate_briefing.py --phase halftime
+
+# Quick integration test
+python -c "
+from risk.weekly_exposure_gate import WeeklyExposureGate
+gate = WeeklyExposureGate()
+print(gate.get_status())
+"
+```
+
+### System Status After Fixes
+
+| Component | Status |
+|-----------|--------|
+| Scheduler (120 tasks) | ✅ Running (PID 105216) |
+| Broker Connection | ✅ Connected ($104,653 equity) |
+| Weekly Exposure Gate | ✅ 20.2% exposure, 2 open positions |
+| Position Manager | ✅ 3 positions tracked |
+| Briefing Engine | ✅ Generating with positions |
+| Health Check | ✅ All systems healthy |
+
+### 24/7 Schedule Verified
+
+- **120 total tasks** defined in `scheduler_kobe.py`
+- **49 tasks remaining** for today (Jan 2, 2026)
+- **21 Windows Tasks** registered as backup
+- Next tasks: 13:30 - DIVERGENCE_7, HOLIDAY_RISK_CALIBRATE, INTRADAY_SCAN_1330, POSITION_MANAGER_13
