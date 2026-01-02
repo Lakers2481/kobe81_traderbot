@@ -43,6 +43,136 @@ python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liq
 **Expected:** ~64% WR, ~1.60 PF
 
 **System Audit (2025-12-29):** Grade A+ (100/100), 22/22 modules verified, 14/14 AI/LLM/ML verified, 942 tests, 0 critical issues.
+n---
+
+## CRITICAL: Position Sizing (2026-01-02 INCIDENT)
+
+> **READ `docs/CRITICAL_FIX_20260102.md` FOR FULL DETAILS**
+>
+> **NEVER place manual orders. ALWAYS use `run_paper_trade.py` which has dual caps:**
+> - 2% risk cap per trade
+> - 20% notional cap per position
+> - Formula: `final_shares = min(shares_by_risk, shares_by_notional)`
+
+---
+
+## CRITICAL: Professional Execution Flow (v3.0)
+
+> **THIS IS HOW PROFESSIONALS TRADE. FOLLOW THIS EXACTLY.**
+>
+> Full documentation: `docs/PROFESSIONAL_EXECUTION_FLOW.md`
+
+### Kill Zones (ICT-Style Time-Based Blocking)
+
+**NEVER trade outside valid kill zones. The system enforces this automatically.**
+
+| Time (ET) | Zone | Trading | Reason |
+|-----------|------|---------|--------|
+| Before 9:30 | `pre_market` | ❌ BLOCKED | Market not open |
+| 9:30-10:00 | `opening_range` | ❌ **BLOCKED** | Amateur hour - let volatility settle |
+| 10:00-11:30 | `london_close` | ✅ **PRIMARY WINDOW** | Best setups develop here |
+| 11:30-14:00 | `lunch_chop` | ❌ BLOCKED | Low volume, fake moves |
+| 14:00-14:30 | `lunch_chop` | ❌ BLOCKED | Extended lunch |
+| 14:30-15:30 | `power_hour` | ✅ **SECONDARY WINDOW** | Institutional positioning |
+| 15:30-16:00 | `close` | ❌ BLOCKED | No new entries, manage only |
+| After 16:00 | `after_hours` | ❌ BLOCKED | Market closed |
+
+**Check Kill Zone:**
+```python
+from risk.kill_zone_gate import can_trade_now, check_trade_allowed, get_current_zone
+
+if can_trade_now():
+    execute_trade()
+else:
+    allowed, reason = check_trade_allowed()
+    print(f"BLOCKED: {reason}")
+```
+
+### Daily Execution Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    PREVIOUS DAY (3:30 PM)                           │
+├─────────────────────────────────────────────────────────────────────┤
+│  OVERNIGHT_WATCHLIST                                                 │
+│  ├── Scan 900 stocks for NEXT DAY setups                            │
+│  ├── Generate Top 5 watchlist + TOTD                                │
+│  └── Save to state/watchlist/next_day.json                          │
+└─────────────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    PREMARKET (8:00 AM)                              │
+├─────────────────────────────────────────────────────────────────────┤
+│  PREMARKET_VALIDATOR                                                 │
+│  ├── Load overnight watchlist                                        │
+│  ├── Check each stock for gaps > 3%, news, corporate actions        │
+│  ├── Flag: VALID, GAP_INVALIDATED, NEWS_RISK, IMPROVED, DEGRADED    │
+│  └── Save to state/watchlist/today_validated.json                   │
+└─────────────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    OPENING RANGE (9:30-10:00)                       │
+├─────────────────────────────────────────────────────────────────────┤
+│  OPENING_RANGE_OBSERVER (9:30, 9:45 AM)                             │
+│  ├── ⛔ NO TRADES - OBSERVE ONLY                                    │
+│  ├── Log opening prices, strength/weakness                          │
+│  └── Save to state/watchlist/opening_range.json                     │
+└─────────────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                 PRIMARY WINDOW (10:00-11:30)                        │
+├─────────────────────────────────────────────────────────────────────┤
+│  FIRST_SCAN (10:00 AM)                                              │
+│  ├── Trade ONLY from validated watchlist                            │
+│  ├── Quality: Score >= 65, Confidence >= 0.60, R:R >= 1.5:1        │
+│  └── Max 2 trades from watchlist                                    │
+│                                                                      │
+│  FALLBACK_SCAN (10:30 AM) - Only if watchlist fails                 │
+│  ├── Scan 900 stocks with HIGHER bar                                │
+│  ├── Quality: Score >= 75, Confidence >= 0.70, R:R >= 2.0:1        │
+│  └── Max 1 trade from fallback                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### State Files
+
+| File | Purpose | Updated By |
+|------|---------|------------|
+| `state/watchlist/next_day.json` | Tomorrow's Top 5 | overnight_watchlist.py (3:30 PM) |
+| `state/watchlist/today_validated.json` | Today's validated watchlist | premarket_validator.py (8:00 AM) |
+| `state/watchlist/opening_range.json` | Opening observations | opening_range_observer.py (9:30, 9:45) |
+
+### Professional Execution Scripts
+
+| Script | Time | Purpose |
+|--------|------|---------|
+| `scripts/overnight_watchlist.py` | 3:30 PM | Build Top 5 for next day |
+| `scripts/premarket_validator.py` | 8:00 AM | Validate gaps/news |
+| `scripts/opening_range_observer.py` | 9:30, 9:45 | Observe (NO TRADES) |
+| `scripts/run_paper_trade.py --watchlist-only` | 10:00 AM | Trade from watchlist |
+
+### Edge Cases Covered
+
+| Scenario | Handling |
+|----------|----------|
+| All 5 watchlist stocks gap > 3% | Fallback scan with higher quality bar |
+| TOTD gaps up 5% | Removed from watchlist, flagged GAP_INVALIDATED |
+| News hits premarket | Flagged NEWS_RISK, may remove or downgrade |
+| Signal at 9:35 AM | **BLOCKED** - must wait until 10:00 AM |
+| No signals all day | Capital preservation - no trades is valid |
+| 3 watchlist stocks trigger | Take best 2 only (daily limit) |
+
+### Quality Gates by Source
+
+| Source | Min Score | Min Confidence | Min R:R | Max Trades |
+|--------|-----------|----------------|---------|------------|
+| Watchlist (TOTD) | 60 | 0.55 | 1.5:1 | Priority |
+| Watchlist (Top 5) | 65 | 0.60 | 1.5:1 | Up to 2 |
+| Fallback (900 scan) | 75 | 0.70 | 2.0:1 | Max 1 |
+| Power Hour | 70 | 0.65 | 1.5:1 | Max 1 |
 
 ---
 
@@ -352,6 +482,16 @@ See `docs/STATUS.md` Section 16 for detailed explanation.
 | Core | `core/hash_chain.py`, `core/structured_log.py` | Audit chain, JSON logging |
 | Monitor | `monitor/health_endpoints.py` | Health check endpoint |
 
+### Professional Execution (`risk/` + `scripts/`)
+| Module | Purpose |
+|--------|---------|
+| `risk/kill_zone_gate.py` | ICT-style time-based trade blocking (9:30-10:00 blocked) |
+| `risk/weekly_exposure_gate.py` | 40% weekly / 20% daily exposure caps |
+| `risk/dynamic_position_sizer.py` | Adaptive sizing based on signal count |
+| `scripts/overnight_watchlist.py` | Build Top 5 watchlist (3:30 PM) |
+| `scripts/premarket_validator.py` | Validate gaps/news (8:00 AM) |
+| `scripts/opening_range_observer.py` | Observe opening range (9:30-10:00) |
+
 ### Advanced Risk Management (`risk/advanced/`)
 | Module | Purpose |
 |--------|---------|
@@ -417,6 +557,9 @@ Output columns: `timestamp, symbol, side, entry_price, stop_loss, take_profit, r
 - **Execution**: IOC LIMIT only (limit = best_ask x 1.001)
 - **Kill switch**: Create `state/KILL_SWITCH` to halt submissions
 - **Weekend scanning**: Auto-uses Friday's close + preview mode (bypasses shift(1))
+- **Kill zones**: NO trades 9:30-10:00 AM (opening range) or 11:30-14:30 (lunch chop)
+- **Watchlist-first**: Trade from validated watchlist; fallback requires higher bar
+- **Position limits**: 10% per position, 20% daily, 40% weekly exposure caps
 
 ### Evidence Artifacts
 - `wf_outputs/wf_summary_compare.csv` - strategy comparison

@@ -1,12 +1,12 @@
 ﻿# Kobe81 Traderbot - STATUS
 
-> **Last Updated:** 2026-01-01 22:00 UTC
+> **Last Updated:** 2026-01-02 14:00 UTC
 > **Verified By:** Claude Opus 4.5 (Autonomous Operation Mode)
 > **Document Type:** AI GOVERNANCE & SYSTEM BLUEPRINT
 > **Audit Status:** GRADE A+ - 947 tests passing, DETERMINISM VERIFIED, REPRODUCIBLE SCANS
 >
-> **System Status:** AUTONOMOUS 24/7 MODE ACTIVE
-> **Next Trade:** Friday Jan 2, 2026 @ 9:35 AM ET - AEHR (TOTD, conf 0.536)
+> **System Status:** AUTONOMOUS 24/7 MODE ACTIVE + PROFESSIONAL EXECUTION FLOW v3.0
+> **Next Trade:** Friday Jan 2, 2026 @ 2:30 PM ET (Power Hour) - Kill Zone gate active
 > **Latest Scan (2025-12-31):** 3 SIGNALS - TOP 3: AEHR, TNA, LOGI (IBS_RSI strategy)
 
 ---
@@ -50,6 +50,93 @@
 | Do your own thing / deviate from plan | Breaks system coherence |
 | Use 24-hour time format in displays | System uses 12-hour CT/ET |
 | Bypass PolicyGate risk limits | Safety critical |
+| **Manual orders without notional cap** | **SEE docs/CRITICAL_FIX_20260102.md** |
+| Calculate shares by risk formula only | Must apply BOTH 2% risk AND 20% notional caps |
+| **Trade during opening range (9:30-10:00)** | **Amateur hour - use `risk/kill_zone_gate.py`** |
+| **Trade during lunch chop (11:30-14:30)** | **Low volume, fake moves - blocked by kill zone** |
+| **Trade outside watchlist without higher bar** | **Fallback scan requires score >= 75 vs 65** |
+
+---
+
+## PROFESSIONAL EXECUTION FLOW v3.0 (2026-01-02) - QUANT GRADE
+
+> **THIS IS HOW PROFESSIONALS TRADE. THE SYSTEM ENFORCES THIS AUTOMATICALLY.**
+> **Full documentation: `docs/PROFESSIONAL_EXECUTION_FLOW.md`**
+
+### Kill Zones - Time-Based Trade Blocking
+
+The system uses ICT-style kill zones to prevent trading during high-risk periods:
+
+| Time (ET) | Zone | Can Trade | Reason |
+|-----------|------|-----------|--------|
+| Before 9:30 | `pre_market` | NO | Market not open |
+| **9:30-10:00** | `opening_range` | **NO** | **Amateur hour - volatility too high** |
+| **10:00-11:30** | `london_close` | **YES** | **PRIMARY WINDOW - best setups** |
+| 11:30-14:30 | `lunch_chop` | NO | Low volume, fake moves |
+| **14:30-15:30** | `power_hour` | **YES** | **SECONDARY WINDOW - institutional flow** |
+| 15:30-16:00 | `close` | NO | No new entries, manage only |
+| After 16:00 | `after_hours` | NO | Market closed |
+
+**Code:**
+```python
+from risk.kill_zone_gate import can_trade_now, check_trade_allowed
+
+if not can_trade_now():
+    allowed, reason = check_trade_allowed()
+    print(f"BLOCKED: {reason}")  # e.g., "Opening Range (9:30-10:00): Amateur hour"
+```
+
+### Daily Execution Timeline
+
+| Time (ET) | Task | Script | Output |
+|-----------|------|--------|--------|
+| **3:30 PM (prev)** | Build overnight watchlist | `overnight_watchlist.py` | `state/watchlist/next_day.json` |
+| **8:00 AM** | Validate watchlist (gaps/news) | `premarket_validator.py` | `state/watchlist/today_validated.json` |
+| **9:30 AM** | Observe opening (NO TRADES) | `opening_range_observer.py` | `state/watchlist/opening_range.json` |
+| **9:45 AM** | Second observation (NO TRADES) | `opening_range_observer.py` | Appends to opening_range.json |
+| **10:00 AM** | PRIMARY SCAN - Trade watchlist | `run_paper_trade.py --watchlist-only` | Orders submitted |
+| **10:30 AM** | Fallback if watchlist failed | `run_paper_trade.py --fallback-enabled` | Higher bar (75 vs 65) |
+| **14:30 PM** | Power hour scan | `run_paper_trade.py` | Secondary window |
+
+### Quality Gates by Source
+
+| Source | Min Score | Min Confidence | Min R:R | Why |
+|--------|-----------|----------------|---------|-----|
+| **Watchlist (TOTD)** | 60 | 0.55 | 1.5:1 | Pre-validated overnight |
+| **Watchlist (Top 5)** | 65 | 0.60 | 1.5:1 | Pre-validated overnight |
+| **Fallback (900 scan)** | 75 | 0.70 | 2.0:1 | Higher bar - not pre-validated |
+| **Power Hour** | 70 | 0.65 | 1.5:1 | End of day positioning |
+
+### Edge Cases the System Handles
+
+| Scenario | What Happens |
+|----------|--------------|
+| All 5 watchlist stocks gap > 3% | Fallback scan with higher bar (75 vs 65) |
+| TOTD gaps up 5% | Removed from watchlist, flagged `GAP_INVALIDATED` |
+| News hits premarket | Flagged `NEWS_RISK`, may remove or downgrade |
+| Signal triggers at 9:35 AM | **BLOCKED** by kill zone gate until 10:00 AM |
+| No signals all day | Capital preservation - no trades is a valid outcome |
+| 3 watchlist stocks trigger | Take best 2 only (daily limit) |
+| Power hour signal after 2 trades | Skip - respect daily limit |
+
+### State Files
+
+| File | Contents | When Updated |
+|------|----------|--------------|
+| `state/watchlist/next_day.json` | Top 5 for next trading day | 3:30 PM (overnight scan) |
+| `state/watchlist/today_validated.json` | Validated watchlist | 8:00 AM (premarket) |
+| `state/watchlist/opening_range.json` | Opening observations | 9:30 + 9:45 AM |
+| `state/weekly_budget.json` | Weekly exposure tracking | After each trade |
+
+### Position Limits (Defense in Depth)
+
+| Limit | Value | Type | Enforcement |
+|-------|-------|------|-------------|
+| Per position | 10% of account | HARD | `risk/equity_sizer.py` |
+| Daily exposure | 20% of account | HARD | `risk/weekly_exposure_gate.py` |
+| Weekly exposure | 40% of account | HARD | `risk/weekly_exposure_gate.py` |
+| Daily entries | 2 positions max | HARD | `risk/weekly_exposure_gate.py` |
+| Weekly positions | 10 max | SOFT | Warning at 8 |
 
 ---
 
