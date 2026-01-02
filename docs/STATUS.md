@@ -1,6 +1,6 @@
 ﻿# Kobe81 Traderbot - STATUS
 
-> **Last Updated:** 2026-01-02 14:00 UTC
+> **Last Updated:** 2026-01-02 18:40 UTC
 > **Verified By:** Claude Opus 4.5 (Autonomous Operation Mode)
 > **Document Type:** AI GOVERNANCE & SYSTEM BLUEPRINT
 > **Audit Status:** GRADE A+ - 947 tests passing, DETERMINISM VERIFIED, REPRODUCIBLE SCANS
@@ -137,6 +137,126 @@ if not can_trade_now():
 | Weekly exposure | 40% of account | HARD | `risk/weekly_exposure_gate.py` |
 | Daily entries | 2 positions max | HARD | `risk/weekly_exposure_gate.py` |
 | Weekly positions | 10 max | SOFT | Warning at 8 |
+
+---
+
+## PRE-GAME BLUEPRINT SYSTEM (2026-01-02) - EVIDENCE-BACKED TRADE ANALYSIS
+
+> **EVERY TRADE MUST HAVE FULL DETAILS. This is the coach's game plan before each trading day.**
+> **Goal: Any human or AI reading should be 100% confident WHY trades were selected.**
+
+### What the Blueprint Provides
+
+| Component | Description | Example |
+|-----------|-------------|---------|
+| **Historical Patterns** | Consecutive day analysis with reversal rates | "TSLA down 7 days, 100% reversal rate (2 samples)" |
+| **Expected Move** | Options-implied weekly range using realized volatility | "+/-5.4% ($23.55), 16.9% upside room remaining" |
+| **Support/Resistance** | Pivot points with justification | "$417.50 support (pivot touched 6 times)" |
+| **Sector Strength** | Performance vs sector ETF | "Underperforming XLY by -1.1%, beta 2.50" |
+| **Volume Profile** | Volume trends and buying pressure | "Normal volume, 52% buying pressure" |
+| **AI Confidence** | Weighted score breakdown | "Technical: 85%, Historical: 90%, Sentiment: 72%" |
+| **Bull/Bear Cases** | Narrative for both scenarios | "If entry triggers, target $182.50 within 3-5 days" |
+| **What Could Go Wrong** | Risk factors and invalidation | "Broader tech sell-off, unexpected news" |
+
+### Schedule
+
+| Time (ET) | Task | Script | Output |
+|-----------|------|--------|--------|
+| **08:15** | PREGAME_BLUEPRINT | `scripts/generate_pregame_blueprint.py` | `reports/pregame_YYYYMMDD.json` + `.md` |
+
+### Files Created
+
+| File | Purpose |
+|------|---------|
+| `analysis/__init__.py` | Analysis package |
+| `analysis/historical_patterns.py` | Consecutive day patterns, reversal rates, S/R levels, volume |
+| `analysis/options_expected_move.py` | Weekly expected move calculator (realized volatility) |
+| `explainability/trade_thesis_builder.py` | Full trade thesis with AI confidence breakdown |
+| `scripts/generate_pregame_blueprint.py` | Main entry point (runs at 08:15 AM) |
+
+### Usage
+
+**For existing positions (analyze what you already hold):**
+```bash
+python scripts/generate_pregame_blueprint.py --positions TSLA PLTR
+```
+
+**For scanner mode (find new trades):**
+```bash
+python scripts/generate_pregame_blueprint.py --cap 900 --top 5 --execute 2
+```
+
+### Output Example (TSLA 2026-01-02)
+
+```
+TSLA Analysis:
+  Pattern: consecutive_down (7 days)
+  Reversal Rate: 100% (2 samples) - LOW confidence
+  Week Move: -9.9% from Monday open
+  Room: 16.9% upside remaining in expected range
+  Support: $417.50 (pivot touched 6x)
+  Resistance: $469.82 (pivot touched 4x)
+  Sector: Underperforming XLY by -1.1%
+```
+
+### Trade Thesis Structure
+
+Every trade generates a complete `TradeThesis` with:
+
+```python
+@dataclass
+class TradeThesis:
+    # Core Trade Info
+    symbol, strategy, side, entry_price, stop_loss, take_profit, risk_reward_ratio
+
+    # Historical Evidence
+    consecutive_pattern  # {pattern_type, streak, reversal_rate, sample_size, confidence}
+    support_resistance_levels  # [{price, type, strength, bounces, justification}]
+    volume_analysis  # {avg_20d, avg_50d, buying_pressure, trend}
+    sector_relative_strength  # {etf, return, beta, outperforming}
+
+    # Options/Volatility
+    expected_move  # {weekly_pct, upper/lower_bound, remaining_room, vol_percentile}
+
+    # AI Analysis
+    ai_confidence  # 0-100 weighted score
+    ai_confidence_breakdown  # {technical, historical, sentiment, options, sector, volume}
+    bull_case, bear_case  # Narratives
+    what_could_go_wrong  # [risk factors]
+
+    # Price Justification (WHY each level)
+    entry_justification  # "Entry at $175.80 after 6 consecutive down days..."
+    stop_justification   # "Stop at $172.00 below support at $172.50..."
+    target_justification # "Target at $182.50 near resistance at $183.00..."
+
+    # Decision
+    trade_grade  # "A+", "A", "B", "C"
+    recommendation  # "EXECUTE", "WATCHLIST", "SKIP"
+    executive_summary  # Full narrative summary
+```
+
+### AI Confidence Scoring
+
+| Factor | Weight | How It's Calculated |
+|--------|--------|---------------------|
+| Technical | 25% | R:R ratio (>2.0 = 90, >1.5 = 75, >1.0 = 60) |
+| Historical | 20% | Pattern confidence (HIGH=90, MEDIUM=75, >60% rate=70) |
+| Sentiment | 15% | News compound score alignment with trade direction |
+| Options | 15% | Expected move room in trade direction |
+| Sector | 10% | Relative strength vs sector ETF |
+| Volume | 15% | Buying pressure alignment with trade direction |
+
+### Integration with Scheduler
+
+The scheduler runs PREGAME_BLUEPRINT at 08:15 AM ET:
+
+```python
+# In scripts/scheduler_kobe.py
+ScheduleEntry('PREGAME_BLUEPRINT', dtime(8, 15)),
+
+# Handler runs:
+python scripts/generate_pregame_blueprint.py --cap 900 --top 5 --execute 2 --format both
+```
 
 ---
 
@@ -1146,6 +1266,7 @@ Performance: 61.0% WR, 1.37 PF (305 trades)
 | 06:00 | DATA_UPDATE | Fetch latest EOD bars |
 | 06:30 | MORNING_REPORT | `reports/morning_report_YYYYMMDD.html` |
 | **08:00** | **PRE_GAME BRIEFING** | `reports/pregame_YYYYMMDD.json` + `.md` (regime, Top-3, TOTD) |
+| **08:15** | **PREGAME_BLUEPRINT** | `reports/pregame_YYYYMMDD.json` + `.md` (historical patterns, expected move, evidence) |
 | 09:45 | FIRST_SCAN + SHADOW | `logs/daily_picks.csv`, `logs/trade_of_day.csv` |
 | 10:05 | DIVERGENCE | Compare shadow vs actual |
 | **12:00** | **HALF_TIME BRIEFING** | `reports/halftime_YYYYMMDD.json` + `.md` (position P&L, adjustments) |
@@ -1200,6 +1321,7 @@ PRE-MARKET (5:30 - 9:30 ET)
 06:30  MORNING_REPORT      Generate morning summary
 06:45  PREMARKET_CHECK     Data staleness, splits check [NEW]
 08:00  PRE_GAME            AI Briefing (evidence-locked)
+08:15  PREGAME_BLUEPRINT   Comprehensive blueprint (historical patterns, expected move) [NEW]
 09:00  MARKET_NEWS         Update sentiment
 09:15  PREMARKET_SCAN      Build plan (portfolio-aware)
 

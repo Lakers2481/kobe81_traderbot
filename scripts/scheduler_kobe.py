@@ -15,6 +15,7 @@ PRE-MARKET (5:30 - 9:30)
 - 06:30 MORNING_REPORT     - Generate morning summary
 - 06:45 PREMARKET_CHECK    - Data staleness, splits, missing bars
 - 08:00 PRE_GAME           - AI Briefing (evidence-locked)
+- 08:15 PREGAME_BLUEPRINT  - Comprehensive Pre-Game Blueprint (historical patterns, expected move)
 - 09:00 MARKET_NEWS        - Update sentiment
 - 09:15 PREMARKET_SCAN     - Build plan (portfolio-aware)
 
@@ -194,6 +195,7 @@ SCHEDULE: List[ScheduleEntry] = [
     ScheduleEntry('PREMARKET_CHECK', dtime(6, 45)),  # Data staleness, splits check
     ScheduleEntry('PRE_GAME', dtime(8, 0)),          # AI Briefing (evidence-locked)
     ScheduleEntry('PREMARKET_VALIDATOR', dtime(8, 0)),  # Validate overnight watchlist (gaps, news)
+    ScheduleEntry('PREGAME_BLUEPRINT', dtime(8, 15)),   # Comprehensive Pre-Game Blueprint (historical patterns, expected move)
     ScheduleEntry('MARKET_NEWS', dtime(9, 0)),       # Update sentiment
     ScheduleEntry('PREMARKET_SCAN', dtime(9, 15)),   # Build plan (portfolio-aware)
 
@@ -968,6 +970,20 @@ def main() -> None:
                                     send_fn(f"<b>PREMARKET_VALIDATOR</b> [{stamp}] Watchlist validated (gaps/news checked)")
                                 except Exception:
                                     send_fn(f"<b>PREMARKET_VALIDATOR</b> Watchlist validated")
+
+                        # === PREGAME BLUEPRINT (8:15 AM) ===
+                        # Comprehensive Pre-Game Blueprint with historical patterns, expected move, evidence
+                        elif entry.tag == 'PREGAME_BLUEPRINT':
+                            rc = run_cmd([sys.executable, str(ROOT / 'scripts/generate_pregame_blueprint.py'),
+                                         '--cap', str(args.cap), '--top', '5', '--execute', '2',
+                                         '--dotenv', args.dotenv, '--format', 'both'])
+                            if send_fn:
+                                try:
+                                    from core.clock.tz_utils import fmt_ct
+                                    now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+                                    send_fn(f"<b>PREGAME_BLUEPRINT</b> [{stamp}] {'Generated' if rc == 0 else 'Failed'} - reports/pregame_*.json|md")
+                                except Exception:
+                                    send_fn(f"<b>PREGAME_BLUEPRINT</b> {'Generated' if rc == 0 else 'Failed'}")
 
                         # === OPENING RANGE OBSERVER (9:30, 9:45 AM) ===
                         # Observes but does NOT trade - let opening range volatility settle

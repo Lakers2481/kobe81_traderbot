@@ -252,9 +252,35 @@ python scripts/verify_hash_chain.py
 
 # Reconcile broker positions
 python scripts/reconcile_alpaca.py
+
+# Pre-Game Blueprint (comprehensive evidence-backed analysis)
+python scripts/generate_pregame_blueprint.py --positions TSLA PLTR  # Analyze existing positions
+python scripts/generate_pregame_blueprint.py --cap 900 --top 5 --execute 2  # Scanner mode
 ```
 
 All scripts accept `--dotenv` to specify env file location.
+
+## Pre-Game Blueprint System (08:15 AM ET)
+
+Generates comprehensive evidence-backed analysis for every trade:
+
+| Component | Description |
+|-----------|-------------|
+| Historical Patterns | Consecutive days, reversal rates, sample sizes |
+| Expected Move | Weekly range using realized volatility |
+| Support/Resistance | Pivot points with justification |
+| Sector Strength | Performance vs sector ETF, beta |
+| AI Confidence | Weighted score breakdown |
+| Bull/Bear Cases | Narratives for both scenarios |
+| What Could Go Wrong | Risk factors |
+
+**Output:** `reports/pregame_YYYYMMDD.json` + `reports/pregame_YYYYMMDD.md`
+
+**Files:**
+- `analysis/historical_patterns.py` - Pattern analysis
+- `analysis/options_expected_move.py` - Expected move calculator
+- `explainability/trade_thesis_builder.py` - Full trade thesis
+- `scripts/generate_pregame_blueprint.py` - Main entry point
 
 ## Weekend-Safe Scanning
 
