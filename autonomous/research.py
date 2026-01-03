@@ -179,15 +179,16 @@ class ResearchEngine:
     def get_parameter_space(self) -> Dict[str, Dict[str, Any]]:
         """Define the parameter space for exploration."""
         return {
-            "ibs_threshold": {"current": 0.08, "range": (0.03, 0.15), "step": 0.01, "type": "float"},
+            # v2.6 PRODUCTION PARAMETERS - MUST match DualStrategyParams exactly
+            "ibs_entry": {"current": 0.08, "range": (0.03, 0.15), "step": 0.01, "type": "float"},
             "rsi_period": {"current": 2, "range": (2, 7), "step": 1, "type": "int"},
-            "rsi_threshold": {"current": 5, "range": (3, 15), "step": 1, "type": "int"},
-            "atr_multiplier": {"current": 2.0, "range": (1.5, 3.5), "step": 0.25, "type": "float"},
-            "time_stop_bars": {"current": 7, "range": (3, 15), "step": 1, "type": "int"},
-            "ts_lookback": {"current": 20, "range": (10, 40), "step": 5, "type": "int"},
-            "ts_min_sweep_strength": {"current": 0.3, "range": (0.1, 0.6), "step": 0.05, "type": "float"},
-            "ts_max_sweep_strength": {"current": 1.0, "range": (0.5, 1.5), "step": 0.1, "type": "float"},
-            "risk_per_trade": {"current": 0.02, "range": (0.01, 0.03), "step": 0.005, "type": "float"},
+            "rsi_entry": {"current": 10.0, "range": (3, 15), "step": 1, "type": "float"},  # v2.3 validated
+            "ibs_rsi_stop_mult": {"current": 2.0, "range": (1.5, 3.5), "step": 0.25, "type": "float"},
+            "ibs_rsi_time_stop": {"current": 7, "range": (3, 15), "step": 1, "type": "int"},
+            "ts_lookback": {"current": 15, "range": (10, 30), "step": 5, "type": "int"},  # v2.4 validated
+            "ts_min_sweep_strength": {"current": 0.3, "range": (0.2, 0.6), "step": 0.05, "type": "float"},
+            "ts_r_multiple": {"current": 0.75, "range": (0.5, 1.5), "step": 0.25, "type": "float"},  # v2.5 validated
+            "ts_time_stop": {"current": 3, "range": (2, 7), "step": 1, "type": "int"},
         }
 
     def generate_random_variation(self) -> Tuple[str, Dict[str, Any]]:
@@ -233,54 +234,36 @@ class ResearchEngine:
         return exp
 
     def run_experiment(self, experiment: Experiment) -> Dict[str, Any]:
-        """Run a backtest experiment with simulated results."""
-        logger.info(f"Running experiment: {experiment.hypothesis}")
+        """Run a REAL backtest experiment - NO SIMULATIONS."""
+        logger.info(f"Running REAL experiment: {experiment.hypothesis}")
         experiment.status = "running"
 
         try:
-            # Simulate experiment results based on parameter changes
-            # In production, this would run actual backtests
-            base_wr = 0.61
-            base_pf = 1.60
+            # Run actual backtest with parameter changes
+            result = self._run_real_backtest_with_metrics(experiment.parameter_changes)
 
-            # Simulate impact of parameter changes
-            wr_delta = random.gauss(0, 0.03)  # Random walk around base
-            pf_delta = random.gauss(0, 0.15)
+            if result.get("status") == "error":
+                experiment.status = "failed"
+                experiment.result = result
+                logger.error(f"Experiment failed: {result.get('error')}")
+                self.save_state()
+                return result
 
-            # Some parameters have known directional effects
-            for param, change in experiment.parameter_changes.items():
-                if param == "ts_min_sweep_strength":
-                    # Higher sweep strength = better quality but fewer trades
-                    if change["to"] > change["from"]:
-                        wr_delta += 0.02
-                        pf_delta += 0.1
-                elif param == "atr_multiplier":
-                    # Wider stops = lower win rate but better R:R
-                    if change["to"] > change["from"]:
-                        wr_delta -= 0.01
-                        pf_delta += 0.05
-
-            new_wr = max(0.40, min(0.75, base_wr + wr_delta))
-            new_pf = max(0.8, min(2.5, base_pf + pf_delta))
-
-            result = {
-                "trades": random.randint(80, 200),
-                "win_rate": round(new_wr, 4),
-                "profit_factor": round(new_pf, 4),
-                "parameters": experiment.parameter_changes,
-                "timestamp": datetime.now(ET).isoformat(),
-            }
+            # Get baseline for comparison (current v2.6 params)
+            baseline_pf = 1.49  # From verified backtest
+            new_pf = result.get("profit_factor", 1.0)
+            new_wr = result.get("win_rate", 0.5)
 
             experiment.status = "completed"
             experiment.result = result
-            experiment.improvement = ((new_pf - base_pf) / base_pf) * 100
+            experiment.improvement = ((new_pf - baseline_pf) / baseline_pf) * 100
 
-            # Record discovery if significant improvement
+            # Only record discovery if REAL improvement > 5%
             if experiment.improvement > 5:
                 self._record_discovery(experiment)
 
             logger.info(
-                f"Experiment complete: WR={new_wr:.1%}, PF={new_pf:.2f}, "
+                f"REAL Experiment complete: WR={new_wr:.1%}, PF={new_pf:.2f}, "
                 f"Improvement={experiment.improvement:+.1f}%"
             )
 
@@ -291,6 +274,109 @@ class ResearchEngine:
 
         self.save_state()
         return experiment.result or {}
+
+    def _run_real_backtest_with_metrics(self, param_changes: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Run REAL backtest with actual P&L calculation.
+        Returns win_rate and profit_factor from real trades.
+        """
+        try:
+            from pathlib import Path
+            import pandas as pd
+            from strategies.dual_strategy import DualStrategyScanner, DualStrategyParams
+            from data.providers.polygon_eod import fetch_daily_bars_polygon
+
+            # Load universe (sample for speed)
+            universe_path = Path("data/universe/optionable_liquid_900.csv")
+            if not universe_path.exists():
+                return {"status": "error", "error": "Universe file not found"}
+
+            symbols_df = pd.read_csv(universe_path)
+            symbols = symbols_df['symbol'].tolist()[:50]  # Sample 50 for speed
+
+            # Create scanner with modified params
+            # NOTE: Parameter names now EXACTLY match DualStrategyParams
+            params = DualStrategyParams()
+            for key, change in param_changes.items():
+                if hasattr(params, key):
+                    new_val = change.get("to", change) if isinstance(change, dict) else change
+                    setattr(params, key, new_val)
+                else:
+                    logger.warning(f"Unknown param: {key} - skipping")
+
+            scanner = DualStrategyScanner(params)
+
+            # Collect signals and calculate real P&L
+            all_trades = []
+            for symbol in symbols:
+                try:
+                    df = fetch_daily_bars_polygon(symbol, "2023-01-01", "2024-12-31")
+                    if df is None or len(df) < 100:
+                        continue
+                    signals = scanner.scan_signals_over_time(df)
+                    if signals is not None and len(signals) > 0:
+                        # Calculate actual P&L for each signal
+                        for _, sig in signals.iterrows():
+                            entry = sig.get('entry_price', 0)
+                            stop = sig.get('stop_loss', 0)
+                            tp = sig.get('take_profit', 0)
+
+                            # Find exit price from future bars
+                            sig_ts = pd.to_datetime(sig.get('timestamp'))
+                            future = df[df['timestamp'] > sig_ts].head(10)
+
+                            if len(future) == 0:
+                                continue
+
+                            # Determine if hit TP, stop, or time exit
+                            pnl_pct = 0
+                            for _, bar in future.iterrows():
+                                if bar['low'] <= stop:
+                                    pnl_pct = (stop - entry) / entry * 100
+                                    break
+                                elif bar['high'] >= tp:
+                                    pnl_pct = (tp - entry) / entry * 100
+                                    break
+                            else:
+                                # Time exit at last bar
+                                exit_price = future.iloc[-1]['close']
+                                pnl_pct = (exit_price - entry) / entry * 100
+
+                            all_trades.append(pnl_pct)
+                except Exception:
+                    continue
+
+            if not all_trades:
+                return {"status": "error", "error": "No trades generated"}
+
+            # Calculate REAL metrics
+            wins = [t for t in all_trades if t > 0]
+            losses = [t for t in all_trades if t <= 0]
+
+            win_rate = len(wins) / len(all_trades) if all_trades else 0
+
+            gross_profit = sum(wins) if wins else 0
+            gross_loss = abs(sum(losses)) if losses else 0.001
+            profit_factor = gross_profit / gross_loss if gross_loss > 0 else 1.0
+
+            return {
+                "status": "success",
+                "trades": len(all_trades),
+                "wins": len(wins),
+                "losses": len(losses),
+                "win_rate": round(win_rate, 4),
+                "profit_factor": round(profit_factor, 2),
+                "gross_profit_pct": round(gross_profit, 2),
+                "gross_loss_pct": round(gross_loss, 2),
+                "param_changes": param_changes,
+                "symbols_tested": len(symbols),
+                "data_source": "REAL_BACKTEST",
+                "timestamp": datetime.now(ET).isoformat(),
+            }
+
+        except Exception as e:
+            logger.error(f"Real backtest failed: {e}")
+            return {"status": "error", "error": str(e)}
 
     def _record_discovery(self, experiment: Experiment):
         """Record a significant discovery."""
@@ -455,38 +541,34 @@ class ResearchEngine:
         return result
 
     def _run_pf_experiment(self, exp: Experiment, idea: Dict) -> Dict[str, Any]:
-        """Run a PF-focused experiment."""
+        """Run a REAL PF-focused experiment using actual backtest data."""
         exp.status = "running"
 
         try:
-            # Simulate impact based on idea type
-            base_pf = 1.47  # Current v2.4 PF
-            base_wr = 0.635
+            # Run REAL backtest with the parameter change
+            backtest_result = self._run_real_backtest_with_metrics(exp.parameter_changes)
 
-            # Different ideas have different expected impacts
-            if "exit" in idea['name'].lower() or "tp" in idea['name'].lower() or "trail" in idea['name'].lower():
-                # Exit strategies have highest PF impact
-                pf_impact = random.gauss(0.15, 0.1)  # Mean +0.15 PF
-                wr_impact = random.gauss(-0.01, 0.02)  # Slight WR decrease
-            elif "filter" in idea['name'].lower() or "confirm" in idea['name'].lower():
-                # Filters reduce trades but improve quality
-                pf_impact = random.gauss(0.08, 0.08)
-                wr_impact = random.gauss(0.02, 0.02)
-            else:
-                pf_impact = random.gauss(0.05, 0.1)
-                wr_impact = random.gauss(0, 0.02)
+            if backtest_result.get("status") == "error":
+                exp.status = "failed"
+                exp.result = backtest_result
+                return {"status": "error", "error": backtest_result.get("error")}
 
-            new_pf = max(1.0, min(3.0, base_pf + pf_impact))
-            new_wr = max(0.50, min(0.75, base_wr + wr_impact))
+            # Get actual metrics from real backtest
+            base_pf = 1.49  # Current v2.6 baseline
+            new_pf = backtest_result.get("profit_factor", 1.0)
+            new_wr = backtest_result.get("win_rate", 0.5)
+
+            pf_improvement = ((new_pf - base_pf) / base_pf) * 100
 
             result = {
                 "experiment_type": "pf_optimization",
                 "idea": idea['name'],
                 "rationale": idea['rationale'],
-                "trades": random.randint(100, 200),
+                "trades": backtest_result.get("trades", 0),
                 "win_rate": round(new_wr, 4),
                 "profit_factor": round(new_pf, 4),
-                "pf_improvement": round((new_pf - base_pf) / base_pf * 100, 2),
+                "pf_improvement": round(pf_improvement, 2),
+                "data_source": "REAL_BACKTEST",
                 "timestamp": datetime.now(ET).isoformat(),
             }
 
@@ -494,23 +576,24 @@ class ResearchEngine:
             exp.result = result
             exp.improvement = result["pf_improvement"]
 
-            # Record discovery if PF improved significantly
+            # Record discovery if REAL PF improved > 5%
             if result["pf_improvement"] > 5:
                 disc = Discovery(
                     id=f"pf_disc_{datetime.now(ET).strftime('%Y%m%d_%H%M%S')}",
                     type="pf_optimization",
-                    description=f"PF Improvement: {idea['name']} (+{result['pf_improvement']:.1f}%)",
+                    description=f"REAL PF Improvement: {idea['name']} (+{result['pf_improvement']:.1f}%)",
                     evidence=result,
                     confidence=min(0.9, 0.5 + result["pf_improvement"] / 30),
                 )
                 self.discoveries.append(disc)
-                logger.info(f"PF Discovery: {disc.description}")
+                logger.info(f"REAL PF Discovery: {disc.description}")
 
-            logger.info(f"PF Experiment: {idea['name']} -> PF={new_pf:.2f} ({result['pf_improvement']:+.1f}%)")
+            logger.info(f"REAL PF Experiment: {idea['name']} -> PF={new_pf:.2f} ({result['pf_improvement']:+.1f}%)")
 
         except Exception as e:
             exp.status = "failed"
             result = {"error": str(e)}
+            logger.error(f"PF experiment failed: {e}")
 
         return {
             "status": "success",
