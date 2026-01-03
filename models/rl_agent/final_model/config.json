@@ -2,7 +2,7 @@
   "algorithm": "PPO",
   "learning_rate": 0.0003,
   "gamma": 0.99,
-  "total_timesteps": 50000,
+  "total_timesteps": 100000,
   "trained": true,
-  "saved_at": "2026-01-03T02:30:44.096566"
+  "saved_at": "2026-01-03T02:41:07.203442"
 }
