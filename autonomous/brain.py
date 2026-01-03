@@ -24,8 +24,42 @@ from .research import ResearchEngine
 from .learning import LearningEngine
 from .handlers import register_all_handlers
 
+from core.structured_log import jlog
+
 logger = logging.getLogger(__name__)
 ET = ZoneInfo("America/New_York")
+
+
+class Discovery:
+    """Represents an important finding that should be communicated."""
+
+    def __init__(
+        self,
+        discovery_type: str,
+        description: str,
+        source: str,
+        improvement: float = 0.0,
+        confidence: float = 0.5,
+        data: Optional[Dict[str, Any]] = None,
+    ):
+        self.discovery_type = discovery_type
+        self.description = description
+        self.source = source
+        self.improvement = improvement
+        self.confidence = confidence
+        self.data = data or {}
+        self.timestamp = datetime.now(ET)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "type": self.discovery_type,
+            "description": self.description,
+            "source": self.source,
+            "improvement": self.improvement,
+            "confidence": self.confidence,
+            "data": self.data,
+            "timestamp": self.timestamp.isoformat(),
+        }
 
 
 class AutonomousBrain:
@@ -106,6 +140,134 @@ class AutonomousBrain:
         }
         self.heartbeat_file.write_text(json.dumps(data, indent=2))
 
+    # =========================================================================
+    # DISCOVERY ALERTING - Communicate important findings immediately
+    # =========================================================================
+
+    def _alert_discovery(self, discovery: Discovery):
+        """
+        Alert user of an important discovery.
+
+        This is the CRITICAL communication path - when Kobe finds something
+        important, it MUST be communicated immediately.
+        """
+        # 1. Log with structured logging (JSON format)
+        jlog(
+            "DISCOVERY_ALERT",
+            level="INFO",
+            discovery_type=discovery.discovery_type,
+            description=discovery.description,
+            source=discovery.source,
+            improvement=discovery.improvement,
+            confidence=discovery.confidence,
+            data=discovery.data,
+        )
+
+        # 2. Log to human-readable format
+        logger.info("=" * 60)
+        logger.info("*** DISCOVERY ALERT ***")
+        logger.info(f"Type: {discovery.discovery_type}")
+        logger.info(f"Description: {discovery.description}")
+        logger.info(f"Source: {discovery.source}")
+        if discovery.improvement > 0:
+            logger.info(f"Improvement: +{discovery.improvement:.1%}")
+        logger.info(f"Confidence: {discovery.confidence:.1%}")
+        logger.info("=" * 60)
+
+        # 3. Write to discovery log file
+        discovery_log = self.state_dir / "discoveries.log"
+        with open(discovery_log, "a") as f:
+            f.write(
+                f"{discovery.timestamp.isoformat()} | "
+                f"{discovery.discovery_type} | "
+                f"{discovery.description} | "
+                f"source={discovery.source} | "
+                f"improvement={discovery.improvement:.1%} | "
+                f"confidence={discovery.confidence:.1%}\n"
+            )
+
+        # 4. Save to discoveries JSON file
+        self._save_discovery(discovery)
+
+    def _save_discovery(self, discovery: Discovery):
+        """Save discovery to persistent JSON file."""
+        discoveries_file = self.state_dir / "discoveries.json"
+
+        discoveries = []
+        if discoveries_file.exists():
+            try:
+                discoveries = json.loads(discoveries_file.read_text())
+            except Exception:
+                pass
+
+        discoveries.append(discovery.to_dict())
+
+        # Keep last 100 discoveries
+        if len(discoveries) > 100:
+            discoveries = discoveries[-100:]
+
+        discoveries_file.write_text(json.dumps(discoveries, indent=2))
+
+    def _check_for_discoveries(self) -> list:
+        """
+        Check all sources for new discoveries worth alerting.
+
+        Returns list of Discovery objects to alert.
+        """
+        discoveries = []
+
+        # Check research engine for new high-value discoveries
+        for disc in self.research.discoveries:
+            if disc.confidence > 0.6 and disc.improvement > 0.05:
+                if not getattr(disc, "_alerted", False):
+                    discovery = Discovery(
+                        discovery_type="parameter_improvement",
+                        description=disc.description,
+                        source="research_engine",
+                        improvement=disc.improvement,
+                        confidence=disc.confidence,
+                        data={"experiment_id": disc.experiment_id},
+                    )
+                    discoveries.append(discovery)
+                    disc._alerted = True
+
+        # Check for external source discoveries
+        try:
+            from autonomous.scrapers.source_manager import SourceManager
+            manager = SourceManager()
+
+            for idea in manager.ideas_queue:
+                if (
+                    idea.validated
+                    and idea.validation_result
+                    and idea.validation_result.get("success")
+                ):
+                    if not idea.validation_result.get("_alerted"):
+                        win_rate = idea.validation_result.get("win_rate", 0)
+                        profit_factor = idea.validation_result.get("profit_factor", 0)
+
+                        if win_rate > 0.55 and profit_factor > 1.3:
+                            discovery = Discovery(
+                                discovery_type="external_strategy",
+                                description=f"External idea validated: {idea.title[:50]}",
+                                source=idea.source_type,
+                                improvement=win_rate - 0.50,  # vs random 50%
+                                confidence=min(0.9, win_rate),
+                                data={
+                                    "idea_id": idea.idea_id,
+                                    "source_url": idea.source_url,
+                                    "win_rate": win_rate,
+                                    "profit_factor": profit_factor,
+                                },
+                            )
+                            discoveries.append(discovery)
+                            idea.validation_result["_alerted"] = True
+
+        except Exception as e:
+            logger.debug(f"External discovery check skipped: {e}")
+
+        return discoveries
+
     def _get_uptime_hours(self) -> float:
         """Get uptime in hours."""
         if self.started_at is None:
@@ -154,6 +316,14 @@ class AutonomousBrain:
             background_result = self._do_background_work(context)
             result["background_work"] = background_result
 
+        # CHECK FOR DISCOVERIES - Alert important findings IMMEDIATELY
+        discoveries = self._check_for_discoveries()
+        if discoveries:
+            result["discoveries"] = []
+            for discovery in discoveries:
+                self._alert_discovery(discovery)
+                result["discoveries"].append(discovery.to_dict())
+
         self.cycles_completed += 1
         self.update_heartbeat()
 
@@ -193,6 +363,12 @@ class AutonomousBrain:
         research_summary = self.research.get_research_summary()
         learning_summary = self.learning.get_learning_summary()
 
+        # Get recent discoveries
+        recent_discoveries = self._get_recent_discoveries(limit=5)
+
+        # Get external research stats
+        external_stats = self._get_external_research_stats()
+
         return {
             "version": self.VERSION,
             "running": self.running,
@@ -215,9 +391,39 @@ class AutonomousBrain:
 
             "research": research_summary,
             "learning": learning_summary,
+            "external_research": external_stats,
+            "recent_discoveries": recent_discoveries,
 
             "recommended_actions": context.recommended_actions,
         }
+
+    def _get_recent_discoveries(self, limit: int = 5) -> list:
+        """Get recent discoveries."""
+        discoveries_file = self.state_dir / "discoveries.json"
+        if discoveries_file.exists():
+            try:
+                discoveries = json.loads(discoveries_file.read_text())
+                return discoveries[-limit:]
+            except Exception:
+                pass
+        return []
+
+    def _get_external_research_stats(self) -> Dict[str, Any]:
+        """Get external research statistics."""
+        try:
+            from autonomous.scrapers.source_manager import SourceManager
+            from autonomous.source_tracker import SourceTracker
+
+            manager = SourceManager()
+            tracker = SourceTracker()
+
+            return {
+                "ideas_queue": len(manager.ideas_queue),
+                "ideas_processed": len(manager.processed_ids),
+                "source_stats": tracker.get_statistics(),
+            }
+        except Exception as e:
+            return {"status": "unavailable", "reason": str(e)}
 
     def run_forever(self, cycle_seconds: int = 60):
         """

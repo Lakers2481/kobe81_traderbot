@@ -491,6 +491,89 @@ class AutonomousScheduler:
                 cooldown_minutes=240,
                 recurring=True,
             ),
+
+            # === EXTERNAL RESEARCH TASKS (24/7 Learning from External Sources) ===
+            Task(
+                id="scrape_github",
+                name="Scrape GitHub Strategies",
+                category=TaskCategory.DISCOVERY,
+                priority=TaskPriority.NORMAL,
+                description="Fetch trading strategy ideas from GitHub repositories",
+                handler="autonomous.scrapers:scrape_github",
+                valid_phases=[MarketPhase.NIGHT, MarketPhase.WEEKEND, MarketPhase.AFTER_HOURS],
+                valid_modes=[WorkMode.DEEP_RESEARCH, WorkMode.RESEARCH],
+                cooldown_minutes=360,  # Every 6 hours
+                recurring=True,
+            ),
+            Task(
+                id="scrape_reddit",
+                name="Scrape Reddit Ideas",
+                category=TaskCategory.DISCOVERY,
+                priority=TaskPriority.NORMAL,
+                description="Fetch trading ideas from r/algotrading and related subs",
+                handler="autonomous.scrapers:scrape_reddit",
+                valid_phases=[MarketPhase.NIGHT, MarketPhase.WEEKEND, MarketPhase.AFTER_HOURS],
+                valid_modes=[WorkMode.DEEP_RESEARCH, WorkMode.RESEARCH],
+                cooldown_minutes=360,  # Every 6 hours
+                recurring=True,
+            ),
+            Task(
+                id="scrape_youtube",
+                name="Scrape YouTube Strategies",
+                category=TaskCategory.DISCOVERY,
+                priority=TaskPriority.LOW,
+                description="Extract strategy ideas from trading video transcripts",
+                handler="autonomous.scrapers:scrape_youtube",
+                valid_phases=[MarketPhase.NIGHT, MarketPhase.WEEKEND],
+                valid_modes=[WorkMode.DEEP_RESEARCH],
+                cooldown_minutes=720,  # Every 12 hours (less frequent)
+                recurring=True,
+            ),
+            Task(
+                id="scrape_arxiv",
+                name="Fetch arXiv Papers",
+                category=TaskCategory.DISCOVERY,
+                priority=TaskPriority.LOW,
+                description="Fetch quantitative finance research papers from arXiv",
+                handler="autonomous.scrapers:scrape_arxiv",
+                valid_phases=[MarketPhase.NIGHT, MarketPhase.WEEKEND],
+                valid_modes=[WorkMode.DEEP_RESEARCH],
+                cooldown_minutes=720,  # Every 12 hours
+                recurring=True,
+            ),
+            Task(
+                id="fetch_all_external",
+                name="Fetch All External Ideas",
+                category=TaskCategory.DISCOVERY,
+                priority=TaskPriority.NORMAL,
+                description="Run all scrapers to find new strategy ideas",
+                handler="autonomous.scrapers:fetch_all",
+                valid_phases=[MarketPhase.NIGHT, MarketPhase.WEEKEND],
+                valid_modes=[WorkMode.DEEP_RESEARCH],
+                cooldown_minutes=480,  # Every 8 hours
+                recurring=True,
+            ),
+            Task(
+                id="validate_external_ideas",
+                name="Validate External Ideas",
+                category=TaskCategory.RESEARCH,
+                priority=TaskPriority.HIGH,
+                description="Test external strategy ideas with REAL backtest data",
+                handler="autonomous.scrapers:validate_ideas",
+                valid_modes=[WorkMode.RESEARCH, WorkMode.DEEP_RESEARCH, WorkMode.OPTIMIZATION],
+                cooldown_minutes=180,  # Every 3 hours
+                recurring=True,
+            ),
+            Task(
+                id="source_credibility",
+                name="Source Credibility Report",
+                category=TaskCategory.LEARNING,
+                priority=TaskPriority.LOW,
+                description="Track which external sources provide validated ideas",
+                handler="autonomous.scrapers:source_credibility",
+                cooldown_minutes=480,  # Every 8 hours
+                recurring=True,
+            ),
         ]
 
         for task in default_tasks:

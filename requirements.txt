@@ -127,3 +127,11 @@ alphalens-reloaded>=0.4.3  # Factor validation (Quantopian fork)
 # Based on comprehensive resource analysis
 # =============================================================================
 shap>=0.44.0  # SHAP for feature importance (TreeExplainer for XGBoost/LightGBM)
+
+# =============================================================================
+# 24/7 AUTONOMOUS LEARNING BRAIN (2026-01-03)
+# External research scraping for continuous strategy discovery
+# =============================================================================
+youtube-transcript-api>=0.6.2  # YouTube video transcripts (FREE, no API key)
+feedparser>=6.0.11  # RSS/Atom feed parsing for arXiv papers
+# praw>=7.7.0  # Reddit API (optional - JSON API works without auth)
