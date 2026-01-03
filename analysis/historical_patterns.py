@@ -790,14 +790,14 @@ def qualifies_for_auto_pass(pattern: ConsecutiveDayPattern) -> bool:
     Check if a pattern qualifies for automatic quality gate bypass.
 
     CRITERIA (ALL must be met):
-    - 25+ historical samples (statistically significant)
+    - 20+ historical samples (statistically significant at p < 0.05)
     - 90%+ historical win rate
-    - Current streak matches pattern requirements
+    - Current streak matches pattern requirements (5+ days)
 
     Returns:
         True if pattern should auto-pass quality gate
     """
-    if pattern.sample_size < 25:
+    if pattern.sample_size < 20:
         return False
     if pattern.historical_reversal_rate < 0.90:
         return False

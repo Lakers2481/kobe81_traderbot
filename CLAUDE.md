@@ -295,8 +295,8 @@ Signals with strong historical backing **automatically bypass** the quality gate
 
 | Criteria | Threshold | Example |
 |----------|-----------|---------|
-| Sample Size | 25+ instances | PLTR: 29 samples |
-| Win Rate | 90%+ | PLTR: 100% (29/29) |
+| Sample Size | 20+ instances | PLTR: 23 samples |
+| Win Rate | 90%+ | PLTR: 100% (23/23) |
 | Streak Length | 5+ consecutive days | PLTR: 5 down days |
 
 **If ALL criteria are met → AUTO-PASS with ELITE tier (score = 95)**

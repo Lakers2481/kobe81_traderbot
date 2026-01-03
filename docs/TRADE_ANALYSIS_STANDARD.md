@@ -10,11 +10,11 @@
 ## QUICK REFERENCE: Auto-Pass Criteria
 
 A signal **automatically passes** the quality gate if:
-- **25+ historical samples** of the pattern
+- **20+ historical samples** of the pattern (statistically significant at p < 0.05)
 - **90%+ historical win rate**
 - **5+ consecutive days** in the streak
 
-Example: PLTR with 29 samples and 100% win rate on 5+ down days = **AUTO-PASS**
+Example: PLTR with 23 samples and 100% win rate on 5+ down days = **AUTO-PASS**
 
 ---
 

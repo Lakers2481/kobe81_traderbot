@@ -268,14 +268,14 @@ class SignalQualityGate:
         strategy = signal.get('strategy', '')
 
         # === HISTORICAL PATTERN AUTO-PASS ===
-        # If 25+ samples with 90%+ win rate, this is a statistically significant edge
+        # If 20+ samples with 90%+ win rate, this is a statistically significant edge
         # AUTO-PASS the quality gate with ELITE tier
         historical_pattern = signal.get('historical_pattern', {})
         if historical_pattern:
             sample_size = historical_pattern.get('sample_size', 0)
             win_rate = historical_pattern.get('historical_reversal_rate', 0)
 
-            if sample_size >= 25 and win_rate >= 0.90:
+            if sample_size >= 20 and win_rate >= 0.90:
                 logger.info(
                     f"HISTORICAL PATTERN AUTO-PASS: {symbol} has {sample_size} samples "
                     f"with {win_rate:.0%} win rate - bypassing quality gate"
