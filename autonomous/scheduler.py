@@ -335,6 +335,17 @@ class AutonomousScheduler:
 
             # === OPTIMIZATION TASKS ===
             Task(
+                id="optimize_pf",
+                name="Profit Factor Optimization",
+                category=TaskCategory.OPTIMIZATION,
+                priority=TaskPriority.NORMAL,
+                description="Focus on improving Profit Factor via exits and filters",
+                handler="autonomous.research:optimize_pf",
+                valid_modes=[WorkMode.OPTIMIZATION, WorkMode.RESEARCH, WorkMode.DEEP_RESEARCH],
+                cooldown_minutes=30,  # Run frequently during optimization mode
+                recurring=True,
+            ),
+            Task(
                 id="walk_forward",
                 name="Walk-Forward Optimization",
                 category=TaskCategory.OPTIMIZATION,

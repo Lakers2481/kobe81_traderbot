@@ -114,6 +114,14 @@ def analyze_features(**kwargs) -> Dict[str, Any]:
     return engine.analyze_features()
 
 
+def optimize_pf(**kwargs) -> Dict[str, Any]:
+    """Run PF-focused optimization - ALWAYS works."""
+    logger.info("Running PF optimization...")
+    from autonomous.research import ResearchEngine
+    engine = ResearchEngine()
+    return engine.optimize_profit_factor()
+
+
 def discover_strategies(**kwargs) -> Dict[str, Any]:
     """Discover new trading patterns - ALWAYS works."""
     logger.info("Discovering strategies...")
@@ -367,6 +375,7 @@ HANDLERS = {
     "autonomous.research:discover_strategies": discover_strategies,
     "autonomous.research:check_goals": check_goals,
     "autonomous.research:check_data_quality": check_data_quality_research,
+    "autonomous.research:optimize_pf": optimize_pf,
 
     # Learning
     "autonomous.learning:analyze_trades": analyze_trades,
