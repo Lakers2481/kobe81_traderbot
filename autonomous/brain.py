@@ -22,6 +22,7 @@ from .awareness import ContextBuilder, MarketContext, WorkMode, MarketPhase
 from .scheduler import AutonomousScheduler, Task, TaskPriority, TaskCategory
 from .research import ResearchEngine
 from .learning import LearningEngine
+from .handlers import register_all_handlers
 
 logger = logging.getLogger(__name__)
 ET = ZoneInfo("America/New_York")
@@ -52,6 +53,9 @@ class AutonomousBrain:
         self.scheduler = AutonomousScheduler(state_dir)
         self.research = ResearchEngine(state_dir / "research")
         self.learning = LearningEngine(state_dir / "learning")
+
+        # Register all task handlers
+        register_all_handlers(self.scheduler)
 
         # State
         self.running = False

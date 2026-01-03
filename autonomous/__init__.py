@@ -11,6 +11,7 @@ This module provides always-on, self-improving capabilities:
 from .awareness import TimeAwareness, MarketCalendarAwareness, SeasonalAwareness
 from .scheduler import AutonomousScheduler, Task, TaskPriority
 from .brain import AutonomousBrain
+from .handlers import register_all_handlers, HANDLERS
 
 __all__ = [
     'TimeAwareness',
@@ -20,4 +21,6 @@ __all__ = [
     'Task',
     'TaskPriority',
     'AutonomousBrain',
+    'register_all_handlers',
+    'HANDLERS',
 ]
