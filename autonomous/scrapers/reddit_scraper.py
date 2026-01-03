@@ -45,25 +45,41 @@ class RedditScraper:
     Rate limited to respect Reddit's guidelines.
     """
 
-    # Subreddits to scrape
+    # Subreddits to scrape - QUANT FOCUSED
     SUBREDDITS = [
-        "algotrading",
-        "quant",
-        "quantfinance",
-        "investing",
-        "stocks",
-        "options",
+        "algotrading",           # Primary algo trading
+        "quant",                 # Quant finance
+        "quantfinance",          # Quant discussions
+        "RealDayTrading",        # Serious day trading
+        "FuturesTrading",        # Futures strategies
+        "Daytrading",            # Day trading strategies
     ]
 
-    # Keywords to filter posts (must contain at least one)
+    # Keywords to filter posts - QUANT LEVEL ONLY
     STRATEGY_KEYWORDS = [
-        "strategy", "algorithm", "backtest", "trading system",
-        "entry", "exit", "signal", "indicator", "mean reversion",
-        "momentum", "breakout", "profitable", "win rate"
+        # ICT / Smart Money
+        "ICT", "inner circle trader", "smart money",
+        "order block", "fair value gap", "FVG",
+        "liquidity sweep", "market structure",
+        "breaker block", "mitigation block",
+
+        # Quant Terms
+        "backtest", "win rate", "profit factor",
+        "sharpe ratio", "drawdown", "expectancy",
+        "statistical edge", "alpha", "beta",
+
+        # Strategy Types
+        "mean reversion", "momentum", "trend following",
+        "pairs trading", "statistical arbitrage",
+        "breakout strategy", "range trading",
+
+        # Technical
+        "entry criteria", "exit rules", "stop loss",
+        "take profit", "risk reward", "position sizing",
     ]
 
-    # Minimum score to consider (filters low-quality posts)
-    MIN_SCORE = 10
+    # Minimum score - HIGHER for quality
+    MIN_SCORE = 50
 
     # Rate limiting
     REQUEST_INTERVAL = 2.0  # seconds between requests

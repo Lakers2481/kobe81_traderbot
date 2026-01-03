@@ -50,17 +50,44 @@ class ArxivScraper:
         "q-fin.PM",   # Portfolio Management
         "q-fin.ST",   # Statistical Finance
         "q-fin.CP",   # Computational Finance
+        "q-fin.RM",   # Risk Management
+        "stat.ML",    # Machine Learning (for trading applications)
     ]
 
-    # Search terms for trading strategies
+    # Search terms for QUANT-LEVEL trading strategies
     SEARCH_TERMS = [
-        "algorithmic trading",
-        "mean reversion",
-        "momentum strategy",
-        "trading signal",
-        "technical analysis",
-        "stock prediction",
-        "backtesting"
+        # Core Quant Strategies
+        "statistical arbitrage",
+        "pairs trading cointegration",
+        "mean reversion trading",
+        "momentum factor",
+        "cross-sectional momentum",
+        "trend following",
+
+        # Market Microstructure
+        "order flow imbalance",
+        "market making strategy",
+        "liquidity provision",
+        "price impact model",
+
+        # ML/AI Trading
+        "reinforcement learning trading",
+        "deep learning stock prediction",
+        "lstm financial forecasting",
+        "transformer trading",
+
+        # Risk & Portfolio
+        "regime detection",
+        "hidden markov model finance",
+        "volatility forecasting",
+        "portfolio optimization",
+        "risk parity",
+
+        # Alpha Research
+        "alpha factor",
+        "return predictability",
+        "market anomaly",
+        "trading signal backtest",
     ]
 
     # arXiv API endpoint

@@ -45,20 +45,51 @@ class GitHubScraper:
     Rate limited to 10 requests per minute to be respectful.
     """
 
-    # Search queries for trading strategies
+    # Search queries for QUANT-LEVEL trading strategies
     SEARCH_QUERIES = [
-        "algorithmic trading python",
-        "trading strategy python",
-        "quantitative trading",
-        "mean reversion strategy",
-        "momentum trading python",
-        "backtest trading",
-        "stock trading algorithm",
-        "technical analysis trading",
+        # ICT / Smart Money Concepts
+        "ICT trading strategy python",
+        "smart money concepts trading",
+        "order block indicator python",
+        "fair value gap detector",
+        "liquidity sweep trading",
+        "market structure break",
+        "breaker block trading",
+
+        # Quantitative / Statistical Arb
+        "quantitative trading backtest",
+        "statistical arbitrage python",
+        "pairs trading cointegration",
+        "mean reversion backtest python",
+        "momentum factor model",
+        "alpha factor research",
+        "cross sectional momentum",
+
+        # ML/AI Trading (Quant Grade)
+        "machine learning trading backtest",
+        "reinforcement learning trading",
+        "lstm price prediction python",
+        "transformer stock prediction",
+        "xgboost trading strategy",
+
+        # Classic Quant Strategies
+        "turtle trading system python",
+        "donchian channel breakout",
+        "bollinger band mean reversion",
+        "rsi divergence backtest",
+        "dual momentum strategy",
+        "trend following backtest",
+
+        # Advanced Quant
+        "volatility trading strategy",
+        "options delta hedging python",
+        "regime detection hmm trading",
+        "kalman filter trading",
+        "risk parity portfolio python",
     ]
 
-    # Minimum stars to consider (filters out low-quality repos)
-    MIN_STARS = 10
+    # Minimum stars - HIGHER for quality (filters out amateur repos)
+    MIN_STARS = 50
 
     # Rate limiting
     REQUEST_INTERVAL = 6.0  # seconds between requests (10/min)
