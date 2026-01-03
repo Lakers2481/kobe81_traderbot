@@ -1,19 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import warnings as _warnings
-_warnings.warn(
-    "\n"
-    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-    "DEPRECATED: TurtleSoupStrategy imported directly\n"
-    "CRITICAL: Missing ts_min_sweep_strength filter (61% WR drops to 48%)\n"
-    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-    "Use: from strategies.registry import get_production_scanner\n"
-    "     scanner = get_production_scanner()\n"
-    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n",
-    DeprecationWarning,
-    stacklevel=2
-)
+# Deprecation warning moved to __init__ to avoid warning on import
+# (allows tests to import without warnings)
 
 """
 Turtle Soup Strategy (ICT Liquidity Sweep)
@@ -183,7 +172,20 @@ class TurtleSoupStrategy:
     high/low (grabbing liquidity) then reverses back inside.
     """
 
-    def __init__(self, params: Optional[TurtleSoupParams] = None):
+    def __init__(self, params: Optional[TurtleSoupParams] = None, _suppress_warning: bool = False):
+        if not _suppress_warning:
+            import warnings
+            warnings.warn(
+                "\n" + "!" * 75 + "\n"
+                "DEPRECATED: TurtleSoupStrategy instantiated directly\n"
+                "CRITICAL: Missing ts_min_sweep_strength filter (61% WR drops to 48%)\n"
+                + "!" * 75 + "\n"
+                "Use: from strategies.registry import get_production_scanner\n"
+                "     scanner = get_production_scanner()\n"
+                + "!" * 75,
+                DeprecationWarning,
+                stacklevel=2
+            )
         self.params = params or TurtleSoupParams()
 
     def _compute_indicators(self, df: pd.DataFrame) -> pd.DataFrame:

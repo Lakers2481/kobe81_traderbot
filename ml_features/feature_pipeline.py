@@ -524,6 +524,9 @@ class FeaturePipeline:
         # ============================================================
         # True range relative to price as spread proxy
 
+        # Defragment DataFrame before adding more columns (prevents PerformanceWarning)
+        df = df.copy()
+
         if 'high' in df.columns and 'low' in df.columns:
             true_range = df['high'] - df['low']
             df['relative_spread'] = true_range / df['close']
@@ -553,6 +556,9 @@ class FeaturePipeline:
 
         # Composite liquidity score (equal weighted)
         df['liquidity_score'] = (amihud_score + vol_score + spread_score) / 3
+
+        # Defragment DataFrame after adding many columns
+        df = df.copy()
 
         jlog("microstructure_features_added", level="DEBUG",
              features_added=[
