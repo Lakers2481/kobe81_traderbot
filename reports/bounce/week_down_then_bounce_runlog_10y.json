@@ -1,0 +1,71 @@
+{
+  "start_time": "2026-01-03T14:24:05.788436",
+  "years": 10,
+  "window": 7,
+  "max_streak": 7,
+  "max_workers": 4,
+  "validate_sample": 25,
+  "universe_size": 900,
+  "data_health": {
+    "tickers_attempted": 900,
+    "tickers_loaded": "898",
+    "tickers_failed": "2",
+    "polygon_only": "898",
+    "fallback_used": "0",
+    "mixed_sources": "0",
+    "validated_sample": "25",
+    "mismatch_flagged": 0,
+    "rejected_bad_data": 0,
+    "coverage_years_min": 0.0,
+    "coverage_years_median": 10.051587301587302,
+    "coverage_years_max": 10.051587301587302,
+    "earliest_date": "2015-12-07",
+    "latest_date": "2026-01-02"
+  },
+  "events_count": 1026056,
+  "validation": {
+    "timestamp": "2026-01-03T14:39:45.220841",
+    "lookahead_bias_checks": {
+      "passed": true,
+      "violations": [],
+      "edge_cases_count": "0",
+      "total_events": 1026056,
+      "valid_events": "1026056",
+      "details": "PASSED: 1,026,056 valid events, 0 edge cases properly flagged"
+    },
+    "unit_test_lookahead": {
+      "test_name": "lookahead_bias_unit_test",
+      "event_date": "2020-03-16 00:00:00",
+      "event_idx": "4",
+      "event_close": 301.6739019547591,
+      "forward_window": "2020-03-17 00:00:00 to 2020-03-25 00:00:00",
+      "metrics_calculated": {
+        "recovered_7d_close": true,
+        "recovered_7d_high": true,
+        "days_to_recover_close": 3,
+        "days_to_recover_high": 1,
+        "best_close_return_pct": 5.856422075559631,
+        "max_high_return_pct": 7.9735505170708265,
+        "max_drawdown_pct": -3.3719381019671646,
+        "forward_days_available": 7,
+        "edge_case_flag": null
+      },
+      "passed": true,
+      "details": [
+        "Best return CORRECT: 5.86%",
+        "Drawdown CORRECT: -3.37%",
+        "Forward days CORRECT: 7"
+      ]
+    },
+    "data_quality": {
+      "total_tickers": 900,
+      "good": "898",
+      "flagged": "0",
+      "rejected": "0",
+      "insufficient": "2"
+    },
+    "all_passed": true
+  },
+  "elapsed_seconds": 940.3149242401123,
+  "end_time": "2026-01-03T14:39:46.103360"
+}
