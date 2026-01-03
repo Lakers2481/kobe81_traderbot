@@ -520,6 +520,84 @@ def consolidate_learnings(**kwargs) -> Dict[str, Any]:
 
 
 # =============================================================================
+# PATTERN RHYMES HANDLERS (History Rhymes)
+# =============================================================================
+
+def analyze_seasonality(**kwargs) -> Dict[str, Any]:
+    """Analyze seasonal patterns across all stocks."""
+    logger.info("Analyzing seasonal patterns...")
+    try:
+        from autonomous.pattern_rhymes import get_rhymes_engine
+        engine = get_rhymes_engine()
+
+        # Analyze a few key stocks for seasonality
+        results = {}
+        for symbol in ["SPY", "QQQ", "AAPL", "MSFT", "NVDA"][:3]:
+            analysis = engine.analyze_seasonality(symbol)
+            if "error" not in analysis:
+                results[symbol] = {
+                    "best_month": analysis["best_month"],
+                    "worst_month": analysis["worst_month"],
+                }
+
+        return {
+            "status": "success",
+            "analysis": results,
+            "insight": "Use seasonality for trade timing"
+        }
+    except Exception as e:
+        logger.error(f"Seasonality analysis error: {e}")
+        return {"status": "error", "error": str(e)}
+
+
+def mean_reversion_timing(**kwargs) -> Dict[str, Any]:
+    """Analyze how long extreme moves take to revert."""
+    logger.info("Analyzing mean reversion timing...")
+    try:
+        from autonomous.pattern_rhymes import get_rhymes_engine
+        engine = get_rhymes_engine()
+        analysis = engine.analyze_mean_reversion_timing()
+
+        if "error" in analysis:
+            return {"status": "skipped", "reason": analysis["error"]}
+
+        return {
+            "status": "success",
+            "observations": analysis["total_observations"],
+            "mean_days": analysis["mean_days_to_revert"],
+            "median_days": analysis["median_days_to_revert"],
+            "reverted_3days": analysis["reverted_in_3_days"],
+            "insight": f"Mean reversion takes {analysis['mean_days_to_revert']} days on average"
+        }
+    except Exception as e:
+        logger.error(f"Mean reversion timing error: {e}")
+        return {"status": "error", "error": str(e)}
+
+
+def sector_correlations(**kwargs) -> Dict[str, Any]:
+    """Analyze sector correlations for diversification."""
+    logger.info("Analyzing sector correlations...")
+    try:
+        from autonomous.pattern_rhymes import get_rhymes_engine
+        engine = get_rhymes_engine()
+        analysis = engine.find_sector_correlations()
+
+        if "error" in analysis:
+            return {"status": "skipped", "reason": analysis["error"]}
+
+        return {
+            "status": "success",
+            "stocks_analyzed": analysis["stocks_analyzed"],
+            "avg_correlation": analysis["avg_correlation"],
+            "high_corr_pairs": len(analysis["high_correlation_pairs"]),
+            "insight": f"Avg correlation: {analysis['avg_correlation']:.2f}"
+        }
+    except Exception as e:
+        logger.error(f"Sector correlation error: {e}")
+        return {"status": "error", "error": str(e)}
+
+
+# =============================================================================
 # HANDLER REGISTRY
 # =============================================================================
 
@@ -571,6 +649,11 @@ HANDLERS = {
     "autonomous.scrapers:fetch_all": fetch_all_external_ideas,
     "autonomous.scrapers:validate_ideas": validate_external_ideas,
     "autonomous.scrapers:source_credibility": get_source_credibility,
+
+    # Pattern Rhymes (History doesn't repeat but it rhymes)
+    "autonomous.patterns:analyze_seasonality": analyze_seasonality,
+    "autonomous.patterns:mean_reversion_timing": mean_reversion_timing,
+    "autonomous.patterns:sector_correlations": sector_correlations,
 }
 
 

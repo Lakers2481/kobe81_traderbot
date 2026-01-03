@@ -574,6 +574,44 @@ class AutonomousScheduler:
                 cooldown_minutes=480,  # Every 8 hours
                 recurring=True,
             ),
+
+            # Pattern Rhymes Tasks (History Rhymes)
+            Task(
+                id="analyze_seasonality",
+                name="Analyze Seasonality Patterns",
+                category=TaskCategory.RESEARCH,
+                priority=TaskPriority.LOW,
+                description="Analyze monthly/quarterly patterns in historical data",
+                handler="autonomous.patterns:analyze_seasonality",
+                valid_phases=[MarketPhase.NIGHT, MarketPhase.WEEKEND],
+                valid_modes=[WorkMode.DEEP_RESEARCH],
+                cooldown_minutes=720,  # Every 12 hours
+                recurring=True,
+            ),
+            Task(
+                id="mean_reversion_timing",
+                name="Mean Reversion Timing Analysis",
+                category=TaskCategory.RESEARCH,
+                priority=TaskPriority.NORMAL,
+                description="Analyze how long extreme moves take to revert",
+                handler="autonomous.patterns:mean_reversion_timing",
+                valid_phases=[MarketPhase.NIGHT, MarketPhase.WEEKEND],
+                valid_modes=[WorkMode.DEEP_RESEARCH, WorkMode.RESEARCH],
+                cooldown_minutes=480,  # Every 8 hours
+                recurring=True,
+            ),
+            Task(
+                id="sector_correlations",
+                name="Sector Correlation Analysis",
+                category=TaskCategory.RESEARCH,
+                priority=TaskPriority.LOW,
+                description="Find highly correlated stocks for diversification",
+                handler="autonomous.patterns:sector_correlations",
+                valid_phases=[MarketPhase.NIGHT, MarketPhase.WEEKEND],
+                valid_modes=[WorkMode.DEEP_RESEARCH],
+                cooldown_minutes=720,  # Every 12 hours
+                recurring=True,
+            ),
         ]
 
         for task in default_tasks:
