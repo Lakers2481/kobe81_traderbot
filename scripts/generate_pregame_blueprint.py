@@ -547,7 +547,30 @@ def _generate_markdown(blueprint: Dict) -> str:
                 lines.append(f"- Streak: {pattern.get('current_streak', 0)} days")
                 lines.append(f"- Reversal Rate: {pattern.get('historical_reversal_rate', 0):.0%}")
                 lines.append(f"- Sample Size: {pattern.get('sample_size', 0)} instances")
-                lines.append(f"- Confidence: {pattern.get('confidence', 'N/A')}")
+                lines.append(f"- Confidence: **{pattern.get('confidence', 'N/A')}**")
+                lines.append("")
+
+                # NEW: Bounce metrics
+                lines.append("**Expected Bounce (from historical data):**")
+                lines.append(f"- Day 1 Bounce: **{pattern.get('day1_bounce_avg', 0):+.2%}** (min: {pattern.get('day1_bounce_min', 0):+.2%}, max: {pattern.get('day1_bounce_max', 0):+.2%})")
+                lines.append(f"- Avg Hold Time: **{pattern.get('avg_bounce_days', 1):.1f} days**")
+                lines.append(f"- Total Bounce: **{pattern.get('total_bounce_avg', 0):+.2%}**")
+                lines.append("")
+
+                # NEW: Historical instances table
+                instances = pattern.get('historical_instances', [])
+                if instances:
+                    lines.append("**Historical Instances (Verify on Yahoo Finance):**")
+                    lines.append("| # | Date | Streak | Day 1 | Days | Total | Drop |")
+                    lines.append("|---|------|--------|-------|------|-------|------|")
+                    for idx, inst in enumerate(instances, 1):
+                        lines.append(
+                            f"| {idx} | {inst.get('end_date', 'N/A')} | {inst.get('streak_length', 0)} | "
+                            f"{inst.get('day1_return', 0):+.2%} | {inst.get('bounce_days', 0)} | "
+                            f"{inst.get('total_bounce', 0):+.2%} | {inst.get('drop_pct', 0):+.1%} |"
+                        )
+                    lines.append("")
+
                 lines.append(f"- Evidence: {pattern.get('evidence', '')}")
                 lines.append("")
 
@@ -559,6 +582,54 @@ def _generate_markdown(blueprint: Dict) -> str:
                 lines.append(f"- Current: ${em.get('current_price', 0):.2f}")
                 lines.append(f"- Move from Open: {em.get('move_from_week_open_pct', 0):+.1%}")
                 lines.append(f"- Remaining Room: {em.get('remaining_room_direction', 'N/A')} ({em.get('remaining_room_up_pct', 0):.1%} up)")
+                lines.append("")
+
+            # NEW: R:R Gate Analysis
+            if pattern and em:
+                current_price = em.get('current_price', 0)
+                day1_bounce = pattern.get('day1_bounce_avg', 0.02)
+                total_bounce = pattern.get('total_bounce_avg', 0.05)
+
+                # Find nearest support for stop
+                support_levels = [l for l in data.get("support_resistance", []) if l.get('level_type') == 'support']
+                if support_levels:
+                    nearest_support = min(support_levels, key=lambda x: abs(x.get('distance_pct', 100)))
+                    stop_price = nearest_support.get('price', current_price * 0.97)
+                else:
+                    stop_price = current_price * 0.97  # 3% default stop
+
+                # Calculate R:R for Day 1 target and Total bounce target
+                risk = current_price - stop_price
+                day1_target = current_price * (1 + day1_bounce)
+                total_target = current_price * (1 + total_bounce)
+                day1_reward = day1_target - current_price
+                total_reward = total_target - current_price
+
+                day1_rr = day1_reward / risk if risk > 0 else 0
+                total_rr = total_reward / risk if risk > 0 else 0
+
+                # Required target for 2.25:1 R:R
+                required_reward = risk * 2.25
+                required_target = current_price + required_reward
+                required_bounce_pct = required_reward / current_price
+
+                lines.append("**Risk:Reward Analysis (2.25:1 minimum required):**")
+                lines.append(f"- Entry: ${current_price:.2f}")
+                lines.append(f"- Stop: ${stop_price:.2f} (nearest support)")
+                lines.append(f"- Risk: ${risk:.2f} ({risk/current_price:.1%})")
+                lines.append("")
+                lines.append(f"- Day 1 Target: ${day1_target:.2f} ({day1_bounce:+.2%})")
+                lines.append(f"  - R:R: {day1_rr:.2f}:1 {'**GO**' if day1_rr >= 2.25 else '**NO-GO** (< 2.25)'}")
+                lines.append("")
+                lines.append(f"- Total Bounce Target: ${total_target:.2f} ({total_bounce:+.2%})")
+                lines.append(f"  - R:R: {total_rr:.2f}:1 {'**GO**' if total_rr >= 2.25 else '**NO-GO** (< 2.25)'}")
+                lines.append("")
+                lines.append(f"- Required for 2.25:1: ${required_target:.2f} ({required_bounce_pct:+.1%})")
+                avg_days = pattern.get('avg_bounce_days', 2)
+                if total_bounce >= required_bounce_pct:
+                    lines.append(f"- Achievable? **YES** (hold {avg_days:.0f} days)")
+                else:
+                    lines.append("- Achievable? **NO** - consider wider stop or lower entry")
                 lines.append("")
 
             sr = data.get("sector_relative_strength", {})

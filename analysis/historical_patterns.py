@@ -46,6 +46,22 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 @dataclass
+class HistoricalInstance:
+    """A single historical instance of a pattern occurrence."""
+    end_date: str  # Date when streak ended (YYYY-MM-DD)
+    streak_length: int  # How many consecutive days
+    day1_return: float  # Return on day after streak ended
+    bounce_days: int  # How many consecutive up days after
+    total_bounce: float  # Total return over bounce period
+    start_price: float  # Price at start of streak
+    end_price: float  # Price at end of streak
+    drop_pct: float  # Total drop during streak
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
 class ConsecutiveDayPattern:
     """Historical pattern for consecutive down/up days."""
     symbol: str
@@ -57,12 +73,23 @@ class ConsecutiveDayPattern:
     median_reversal_magnitude: float  # Median % move on reversal day
     max_reversal_magnitude: float  # Best case reversal
     min_reversal_magnitude: float  # Worst case (continuation)
-    confidence: str  # "HIGH" | "MEDIUM" | "LOW"
+    confidence: str  # "HIGH" | "MEDIUM-HIGH" | "MEDIUM" | "LOW-MEDIUM" | "LOW"
     evidence: str  # Human-readable explanation
     lookback_years: int = 5
+    # NEW: Detailed metrics
+    day1_bounce_avg: float = 0.0
+    day1_bounce_min: float = 0.0
+    day1_bounce_max: float = 0.0
+    avg_bounce_days: float = 0.0
+    total_bounce_avg: float = 0.0
+    historical_instances: List[HistoricalInstance] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        d = asdict(self)
+        # Convert HistoricalInstance objects to dicts
+        d['historical_instances'] = [inst if isinstance(inst, dict) else asdict(inst)
+                                      for inst in self.historical_instances]
+        return d
 
 
 @dataclass
@@ -254,12 +281,16 @@ class HistoricalPatternAnalyzer:
 
         # Calculate historical reversal rates for this streak length
         historical_reversals = []
+        historical_instances = []  # NEW: Track all instances with dates
 
         if pattern_type == "consecutive_down" and current_streak >= 2:
             # Find all historical instances of N consecutive down days
             consecutive_count = 0
+            streak_start_idx = 0
             for i in range(1, len(df)):
                 if df.iloc[i]['is_down']:
+                    if consecutive_count == 0:
+                        streak_start_idx = i
                     consecutive_count += 1
                 else:
                     if consecutive_count >= current_streak:
@@ -267,19 +298,74 @@ class HistoricalPatternAnalyzer:
                         next_return = df.iloc[i]['return']
                         if not np.isnan(next_return):
                             historical_reversals.append(next_return)
+
+                            # Calculate bounce days and total bounce
+                            bounce_days = 0
+                            total_bounce = 0.0
+                            for j in range(i, min(i + 10, len(df))):
+                                if df.iloc[j]['return'] > 0:
+                                    bounce_days += 1
+                                    total_bounce += df.iloc[j]['return']
+                                else:
+                                    break
+
+                            # Get prices for drop calculation
+                            start_price = df.iloc[streak_start_idx - 1]['close'] if streak_start_idx > 0 else df.iloc[streak_start_idx]['open']
+                            end_price = df.iloc[i - 1]['close']
+                            drop_pct = (end_price - start_price) / start_price
+
+                            # Get date - handle both index types
+                            try:
+                                if hasattr(df.index, 'strftime'):
+                                    end_date = df.index[i - 1].strftime('%Y-%m-%d')
+                                elif 'timestamp' in df.columns:
+                                    ts = df.iloc[i - 1]['timestamp']
+                                    if hasattr(ts, 'strftime'):
+                                        end_date = ts.strftime('%Y-%m-%d')
+                                    else:
+                                        end_date = str(ts)[:10]
+                                else:
+                                    end_date = str(df.index[i - 1])[:10]
+                            except Exception:
+                                end_date = "unknown"
+
+                            historical_instances.append(HistoricalInstance(
+                                end_date=end_date,
+                                streak_length=consecutive_count,
+                                day1_return=next_return,
+                                bounce_days=bounce_days,
+                                total_bounce=total_bounce,
+                                start_price=round(start_price, 2),
+                                end_price=round(end_price, 2),
+                                drop_pct=round(drop_pct, 4),
+                            ))
                     consecutive_count = 0
 
         elif pattern_type == "consecutive_up" and current_streak >= 2:
             # Find all historical instances of N consecutive up days
             consecutive_count = 0
+            streak_start_idx = 0
             for i in range(1, len(df)):
                 if df.iloc[i]['is_up']:
+                    if consecutive_count == 0:
+                        streak_start_idx = i
                     consecutive_count += 1
                 else:
                     if consecutive_count >= current_streak:
                         next_return = df.iloc[i]['return']
                         if not np.isnan(next_return):
                             historical_reversals.append(next_return)
+                            # Similar tracking for up streaks (pullback instead of bounce)
+                            historical_instances.append(HistoricalInstance(
+                                end_date="",
+                                streak_length=consecutive_count,
+                                day1_return=next_return,
+                                bounce_days=0,
+                                total_bounce=0.0,
+                                start_price=0.0,
+                                end_price=0.0,
+                                drop_pct=0.0,
+                            ))
                     consecutive_count = 0
 
         # Calculate statistics
@@ -303,15 +389,37 @@ class HistoricalPatternAnalyzer:
 
             sample_size = len(historical_reversals)
 
-            # Determine confidence based on sample size
-            if sample_size >= 30:
+            # NEW: Calculate detailed bounce metrics
+            if historical_instances:
+                day1_bounces = [inst.day1_return for inst in historical_instances]
+                bounce_days_list = [inst.bounce_days for inst in historical_instances]
+                total_bounces = [inst.total_bounce for inst in historical_instances]
+
+                day1_bounce_avg = np.mean(day1_bounces)
+                day1_bounce_min = np.min(day1_bounces)
+                day1_bounce_max = np.max(day1_bounces)
+                avg_bounce_days = np.mean(bounce_days_list)
+                total_bounce_avg = np.mean(total_bounces)
+            else:
+                day1_bounce_avg = avg_magnitude
+                day1_bounce_min = min_magnitude
+                day1_bounce_max = max_magnitude
+                avg_bounce_days = 1.0
+                total_bounce_avg = avg_magnitude
+
+            # NEW: Improved confidence calculation - weights BOTH sample size AND reversal rate
+            if sample_size >= 20 and reversal_rate >= 0.95:
                 confidence = "HIGH"
-            elif sample_size >= 15:
+            elif sample_size >= 15 and reversal_rate >= 0.90:
+                confidence = "MEDIUM-HIGH"
+            elif sample_size >= 10 and reversal_rate >= 0.80:
                 confidence = "MEDIUM"
+            elif sample_size >= 5 and reversal_rate >= 0.70:
+                confidence = "LOW-MEDIUM"
             else:
                 confidence = "LOW"
 
-            # Build evidence string
+            # Build evidence string with more detail
             direction = "down" if pattern_type == "consecutive_down" else "up"
             reversal_word = "bounced" if pattern_type == "consecutive_down" else "pulled back"
 
@@ -319,7 +427,8 @@ class HistoricalPatternAnalyzer:
                 f"Based on {sample_size} instances since {datetime.now().year - self.lookback_years}, "
                 f"when {symbol} was {direction} {current_streak}+ consecutive days, "
                 f"day {current_streak + 1} {reversal_word} {reversal_rate:.0%} of the time "
-                f"with an average move of {avg_magnitude:+.1%}."
+                f"with an average move of {avg_magnitude:+.1%}. "
+                f"Avg hold: {avg_bounce_days:.1f} days, total bounce: {total_bounce_avg:+.1%}."
             )
 
         else:
@@ -331,6 +440,11 @@ class HistoricalPatternAnalyzer:
             sample_size = 0
             confidence = "LOW"
             evidence = f"No historical instances of {current_streak}+ consecutive days found."
+            day1_bounce_avg = 0.0
+            day1_bounce_min = 0.0
+            day1_bounce_max = 0.0
+            avg_bounce_days = 0.0
+            total_bounce_avg = 0.0
 
         return ConsecutiveDayPattern(
             symbol=symbol,
@@ -345,6 +459,13 @@ class HistoricalPatternAnalyzer:
             confidence=confidence,
             evidence=evidence,
             lookback_years=self.lookback_years,
+            # NEW: Detailed metrics
+            day1_bounce_avg=round(day1_bounce_avg, 4),
+            day1_bounce_min=round(day1_bounce_min, 4),
+            day1_bounce_max=round(day1_bounce_max, 4),
+            avg_bounce_days=round(avg_bounce_days, 1),
+            total_bounce_avg=round(total_bounce_avg, 4),
+            historical_instances=historical_instances,
         )
 
     def analyze_support_resistance(
