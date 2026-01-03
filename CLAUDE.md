@@ -320,6 +320,14 @@ See `docs/STATUS.md` Section 16 for detailed explanation.
 | `/restart` | Restart cleanly |
 | `/runner` | Control 24/7 scheduler |
 
+### Autonomous Brain (4 skills)
+| Skill | Purpose |
+|-------|---------|
+| `/brain` | Start/stop/status of autonomous brain |
+| `/awareness` | Show current time/day/season awareness |
+| `/research` | View research experiments and discoveries |
+| `/learning` | View learning progress and daily reflections |
+
 ### Core Operations (6 skills)
 | Skill | Purpose |
 |-------|---------|
@@ -565,6 +573,53 @@ Brain-inspired decision system with self-awareness. **83 unit tests passing.**
 **Configuration:** `config/base.yaml` (cognitive section)
 **Tests:** `tests/cognitive/`
 **State:** `state/cognitive/`
+
+### Autonomous Brain (`autonomous/`) - 24/7 Self-Improving System
+
+The autonomous brain runs continuously, always aware of time/day/season, and never stops working.
+
+| Module | Purpose |
+|--------|---------|
+| `awareness.py` | Time/day/season awareness (market phases, holidays, FOMC, OpEx) |
+| `scheduler.py` | Task queue with priority and context-based execution |
+| `brain.py` | Main orchestrator - decides what to work on 24/7 |
+| `research.py` | Self-improvement: random parameter experiments, strategy discovery |
+| `learning.py` | Trade analysis, episodic memory updates, daily reflections |
+| `maintenance.py` | Data quality, cleanup, health checks |
+| `monitor.py` | Heartbeat monitoring, alerts, status dashboard |
+
+**Start Autonomous Brain:**
+```bash
+python scripts/run_autonomous.py              # Run forever (60s cycles)
+python scripts/run_autonomous.py --status     # Show status
+python scripts/run_autonomous.py --awareness  # Show current awareness
+python scripts/run_autonomous.py --once       # Single cycle (testing)
+```
+
+**Work Modes by Time:**
+| Time (ET) | Phase | Work Mode | Activities |
+|-----------|-------|-----------|------------|
+| 4:00-7:00 AM | Pre-market Early | Research | Backtests, experiments |
+| 7:00-9:30 AM | Pre-market Active | Monitoring | Watchlist prep, gap check |
+| 9:30-10:00 AM | Market Opening | Monitoring | Observe only, NO trades |
+| 10:00-11:30 AM | Market Morning | Active Trading | Scan, trade, monitor |
+| 11:30-14:00 PM | Market Lunch | Research | Choppy - run experiments |
+| 14:00-15:30 PM | Market Afternoon | Active Trading | Power hour trading |
+| 15:30-16:00 PM | Market Close | Monitoring | Manage positions |
+| 16:00-20:00 PM | After Hours | Learning | Analyze trades, reflect |
+| 20:00-4:00 AM | Night | Optimization | Walk-forward, retrain models |
+| Weekends | Weekend | Deep Research | Extended backtests, discovery |
+
+**Auto-Scheduled Tasks:**
+- Scan for signals (every 30 min during trading hours)
+- Check positions P&L (every 5 min)
+- Reconcile broker (hourly)
+- Run random parameter experiments (every 2 hours during research)
+- Daily reflection (after market close)
+- Retrain ML models (nightly)
+- Data quality checks (every 3 hours)
+
+**State:** `state/autonomous/`
 
 ### Strategy Interface
 ```python
