@@ -1,27 +1,27 @@
 {
-  "created_at": "2026-01-02T19:33:07.292124",
+  "created_at": "2026-01-02T20:47:11.466248",
   "n_states": 3,
   "state_labels": {
-    "0": "BEARISH",
-    "2": "NEUTRAL",
-    "1": "BULLISH"
+    "1": "BEARISH",
+    "0": "NEUTRAL",
+    "2": "BULLISH"
   },
   "training_stats": {
     "n_samples": 455,
     "n_states": 3,
-    "log_likelihood": -305.5066273909742,
+    "log_likelihood": -1785.805162194202,
     "n_iterations": 100,
     "feature_means": {
-      "returns": 0.6867908751634709,
-      "volatility": 14.425264752040272,
-      "vix": 14.388551761798917,
-      "breadth": 1.7016437308333814
+      "returns": 0.975225995483791,
+      "volatility": 12.076029208835038,
+      "vix": 15.828571415995503,
+      "breadth": 2.2978650699187337
     },
     "feature_stds": {
-      "returns": 2.754341721339582,
-      "volatility": 8.985144071856094,
-      "vix": 9.054000870712745,
-      "breadth": 3.1720620534223745
+      "returns": 2.3806209978959587,
+      "volatility": 3.112019325842026,
+      "vix": 3.176007228761835,
+      "breadth": 2.584274479196374
     }
   },
   "feature_names": [

@@ -249,6 +249,10 @@ def extract_features_at_entry(
     X_flat_rows = []
     valid_indices = []
 
+    # Track expected feature count for consistency
+    expected_n_features = None
+    expected_feature_cols = None
+
     symbols_loaded = {}  # Cache loaded symbols
 
     for idx, trade in trades.iterrows():
@@ -295,11 +299,27 @@ def extract_features_at_entry(
             if not feature_cols:
                 continue
 
+            # Ensure consistent feature count across all samples
+            if expected_n_features is None:
+                expected_n_features = len(feature_cols)
+                expected_feature_cols = feature_cols
+                logger.info(f"First sample: {expected_n_features} features")
+            elif len(feature_cols) != expected_n_features:
+                # Use intersection of features
+                feature_cols = [c for c in feature_cols if c in expected_feature_cols]
+                if len(feature_cols) != expected_n_features:
+                    # Skip samples with mismatched features
+                    continue
+
             # LSTM sequence: last lookback rows
-            sequence = features_df[feature_cols].iloc[-lookback:].values
+            sequence = features_df[expected_feature_cols].iloc[-lookback:].values
+
+            # Verify shape
+            if sequence.shape != (lookback, expected_n_features):
+                continue
 
             # Flat features: last row only (for tree models)
-            flat_row = features_df[feature_cols].iloc[-1].to_dict()
+            flat_row = features_df[expected_feature_cols].iloc[-1].to_dict()
             flat_row['symbol'] = symbol
             flat_row['entry_timestamp'] = entry_ts
 

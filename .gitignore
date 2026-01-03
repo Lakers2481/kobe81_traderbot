@@ -119,3 +119,6 @@ docs/history/
 # AI prompts (session artifacts)
 docs/prompts/
 CLAUDE_PROMPT_*.md
+# Large training data files (regenerate with scripts/generate_training_data.py)
+data/training/X_lstm.npy
+data/training/features.parquet

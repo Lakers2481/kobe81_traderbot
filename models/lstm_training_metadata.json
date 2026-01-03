@@ -1,20 +1,20 @@
 {
-  "created_at": "2026-01-02T19:37:11.516789",
+  "created_at": "2026-01-02T20:54:11.643166",
   "model_type": "lstm_confidence",
   "data_shape": [
-    64233,
-    1,
-    16
+    9108,
+    20,
+    84
   ],
-  "epochs_trained": 47,
-  "final_loss": 0.017063939943909645,
-  "final_val_loss": 0.017089463770389557,
+  "epochs_trained": 23,
+  "final_loss": 0.47619059681892395,
+  "final_val_loss": 0.4912509322166443,
   "metrics": {
-    "loss": 0.02030797116458416,
-    "compile_metrics": 0.029784152284264565,
-    "direction_output_loss": 9.780192340258509e-05,
-    "magnitude_output_loss": 0.02910192310810089,
-    "success_output_loss": 0.9990637302398682
+    "loss": 0.46663910150527954,
+    "compile_metrics": 0.665290892124176,
+    "direction_output_loss": 0.0005989675410091877,
+    "magnitude_output_loss": 0.6699358224868774,
+    "success_output_loss": 0.6021248698234558
   },
   "config": {
     "lstm_units": [
