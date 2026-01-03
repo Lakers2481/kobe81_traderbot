@@ -20,6 +20,8 @@ import numpy as np
 import pandas as pd
 from zoneinfo import ZoneInfo
 
+from autonomous.integrity import validate_before_use, get_guardian
+
 logger = logging.getLogger(__name__)
 ET = ZoneInfo("America/New_York")
 
@@ -249,6 +251,26 @@ class ResearchEngine:
                 self.save_state()
                 return result
 
+            # REPRODUCIBILITY CHECK - Run experiment TWICE to verify
+            # This catches non-deterministic bugs, race conditions, data issues
+            result2 = self._run_real_backtest_with_metrics(experiment.parameter_changes)
+            if result2.get("status") == "success":
+                guardian = get_guardian()
+                reproducible, diffs = guardian.verify_reproducibility(result, result2)
+                if not reproducible:
+                    logger.error(f"REPRODUCIBILITY FAILED: {diffs}")
+                    experiment.status = "rejected"
+                    experiment.result = {
+                        "status": "rejected",
+                        "reason": "Non-reproducible results - possible data issue or bug",
+                        "run1": result,
+                        "run2": result2,
+                        "differences": diffs
+                    }
+                    self.save_state()
+                    return experiment.result
+                logger.info("REPRODUCIBILITY VERIFIED: Two runs match")
+
             # Get baseline for comparison (current v2.6 params)
             baseline_pf = 1.49  # From verified backtest
             new_pf = result.get("profit_factor", 1.0)
@@ -279,6 +301,19 @@ class ResearchEngine:
                     f"SUSPICIOUS: WR={new_wr:.1%} - flagged for review"
                 )
                 result["suspicious"] = "HIGH"
+
+            # INTEGRITY GUARDIAN - Comprehensive validation
+            # This catches EVERYTHING: bounds, consistency, data integrity
+            if not validate_before_use(result, context=f"experiment:{experiment.id}"):
+                logger.error(f"INTEGRITY FAILED: Result rejected by IntegrityGuardian")
+                experiment.status = "rejected"
+                experiment.result = {
+                    "status": "rejected",
+                    "reason": "Failed IntegrityGuardian validation",
+                    "original_result": result
+                }
+                self.save_state()
+                return experiment.result
 
             experiment.status = "completed"
             experiment.result = result
@@ -328,6 +363,21 @@ class ResearchEngine:
             cache_files = sorted(cache_dir.glob("*.csv"))  # Full 900 stocks
             if not cache_files:
                 return {"status": "error", "error": "No cache files found"}
+
+            # DATA SOURCE VERIFICATION - Ensure we have REAL data
+            guardian = get_guardian()
+            verified_files = 0
+            for cf in cache_files[:10]:  # Spot-check first 10 files
+                valid, file_hash = guardian.verify_data_file(cf)
+                if valid:
+                    verified_files += 1
+
+            if verified_files < 5:
+                return {
+                    "status": "error",
+                    "error": f"Data verification failed: Only {verified_files}/10 files valid"
+                }
+            logger.info(f"DATA VERIFIED: {verified_files}/10 files checked, {len(cache_files)} total")
 
             # Create scanner with modified params
             params = DualStrategyParams()
@@ -419,7 +469,25 @@ class ResearchEngine:
             gross_loss = abs(sum(losses)) if losses else 0.001
             profit_factor = gross_profit / gross_loss
 
-            return {
+            # INTEGRITY CHECK - Minimum sample size
+            if len(all_trades) < 30:
+                logger.warning(f"INSUFFICIENT DATA: Only {len(all_trades)} trades (need 30+)")
+                return {
+                    "status": "error",
+                    "error": f"Insufficient trades: {len(all_trades)} < 30 minimum",
+                    "trades": len(all_trades)
+                }
+
+            # INTEGRITY CHECK - Win rate sanity
+            if win_rate > 0.90:
+                logger.error(f"INTEGRITY FAIL: WR={win_rate:.1%} is IMPOSSIBLE at raw backtest level")
+                return {
+                    "status": "error",
+                    "error": f"Win rate {win_rate:.1%} indicates bug/lookahead",
+                    "win_rate": win_rate
+                }
+
+            result = {
                 "status": "success",
                 "trades": len(all_trades),
                 "wins": len(wins),
@@ -433,6 +501,17 @@ class ResearchEngine:
                 "data_source": "CACHED_900_STOCKS",
                 "timestamp": datetime.now(ET).isoformat(),
             }
+
+            # FINAL INTEGRITY GUARDIAN CHECK at raw level
+            guardian = get_guardian()
+            report = guardian.validate_result(result, context="raw_backtest")
+            if not report.passed:
+                logger.error(f"RAW BACKTEST INTEGRITY FAILED: {report.failures}")
+                result["integrity_warnings"] = report.warnings
+                result["integrity_failures"] = report.failures
+                # Don't reject here, let upstream decide - but log the failures
+
+            return result
 
         except Exception as e:
             logger.error(f"Real backtest failed: {e}")
@@ -637,6 +716,24 @@ class ResearchEngine:
             elif new_wr > 0.70:
                 logger.warning(f"PF SUSPICIOUS: WR={new_wr:.1%}")
                 suspicious_flag = "HIGH"
+
+            # INTEGRITY GUARDIAN - Double-check ALL PF experiments
+            integrity_result = {
+                "win_rate": new_wr,
+                "profit_factor": new_pf,
+                "trades": backtest_result.get("trades", 0),
+                "data_source": "POLYGON_CACHE",
+                "timestamp": datetime.now(ET).isoformat(),
+            }
+            if not validate_before_use(integrity_result, context=f"pf_experiment:{exp.id}"):
+                logger.error(f"PF INTEGRITY FAILED: Result rejected by IntegrityGuardian")
+                exp.status = "rejected"
+                exp.result = {
+                    "status": "rejected",
+                    "reason": "Failed IntegrityGuardian validation",
+                    "original_result": backtest_result
+                }
+                return exp.result
 
             pf_improvement = ((new_pf - base_pf) / base_pf) * 100
 
