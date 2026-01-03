@@ -29,10 +29,9 @@ python scripts/scan.py --cap 900 --deterministic --top3
 python scripts/scan.py --cap 900 --deterministic --no-quality-gate
 ```
 
-**Quality Gate Settings (2025-12-31):**
-- Threshold: 55 (lowered from 70 because ML ensemble models not trained)
+**Quality Gate Settings (2026-01-02):**
+- Threshold: 70 (ML models now trained: HMM, LSTM, XGBoost, LightGBM, RL)
 - Max signals per day: 3 (default)
-- When ML models are trained, raise threshold back to 70
 
 **There is ONLY ONE scanner: `scan.py`. All other scan scripts have been deleted.**
 
