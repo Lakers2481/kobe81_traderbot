@@ -267,6 +267,37 @@ class SignalQualityGate:
         symbol = signal.get('symbol', '')
         strategy = signal.get('strategy', '')
 
+        # === HISTORICAL PATTERN AUTO-PASS ===
+        # If 25+ samples with 90%+ win rate, this is a statistically significant edge
+        # AUTO-PASS the quality gate with ELITE tier
+        historical_pattern = signal.get('historical_pattern', {})
+        if historical_pattern:
+            sample_size = historical_pattern.get('sample_size', 0)
+            win_rate = historical_pattern.get('historical_reversal_rate', 0)
+
+            if sample_size >= 25 and win_rate >= 0.90:
+                logger.info(
+                    f"HISTORICAL PATTERN AUTO-PASS: {symbol} has {sample_size} samples "
+                    f"with {win_rate:.0%} win rate - bypassing quality gate"
+                )
+                return QualityScore(
+                    raw_score=95.0,  # ELITE tier
+                    normalized_score=0.95,
+                    tier=QualityTier.ELITE,
+                    conviction_component=30.0,  # Max conviction
+                    ml_confidence_component=25.0,  # Max ML
+                    strategy_component=15.0,
+                    regime_component=15.0,
+                    liquidity_component=10.0,
+                    correlation_penalty=0.0,
+                    timing_penalty=0.0,
+                    volatility_penalty=0.0,
+                    passes_gate=True,
+                    rejection_reasons=[],
+                    symbol=symbol,
+                    strategy=strategy,
+                )
+
         # === HARD GATES (Binary) ===
 
         # 1. Liquidity hard gate

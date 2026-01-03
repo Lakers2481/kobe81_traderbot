@@ -783,3 +783,80 @@ class HistoricalPatternAnalyzer:
 def get_historical_pattern_analyzer(lookback_years: int = 5) -> HistoricalPatternAnalyzer:
     """Factory function to get analyzer instance."""
     return HistoricalPatternAnalyzer(lookback_years)
+
+
+def qualifies_for_auto_pass(pattern: ConsecutiveDayPattern) -> bool:
+    """
+    Check if a pattern qualifies for automatic quality gate bypass.
+
+    CRITERIA (ALL must be met):
+    - 25+ historical samples (statistically significant)
+    - 90%+ historical win rate
+    - Current streak matches pattern requirements
+
+    Returns:
+        True if pattern should auto-pass quality gate
+    """
+    if pattern.sample_size < 25:
+        return False
+    if pattern.historical_reversal_rate < 0.90:
+        return False
+    if pattern.current_streak < 5:  # Need meaningful streak
+        return False
+    return True
+
+
+def enrich_signal_with_historical_pattern(
+    signal: Dict[str, Any],
+    analyzer: Optional[HistoricalPatternAnalyzer] = None,
+) -> Dict[str, Any]:
+    """
+    Enrich a signal dict with historical pattern data for quality gate.
+
+    This should be called BEFORE passing signals to the quality gate
+    so that signals with strong historical patterns can auto-pass.
+
+    Args:
+        signal: Signal dict with 'symbol' key
+        analyzer: Optional analyzer instance (creates one if not provided)
+
+    Returns:
+        Enriched signal dict with 'historical_pattern' key added
+    """
+    if analyzer is None:
+        analyzer = get_historical_pattern_analyzer(lookback_years=5)
+
+    symbol = signal.get('symbol', '')
+    if not symbol:
+        return signal
+
+    try:
+        pattern = analyzer.analyze_consecutive_days(symbol=symbol)
+
+        # Add pattern to signal for quality gate evaluation
+        signal['historical_pattern'] = {
+            'pattern_type': pattern.pattern_type,
+            'current_streak': pattern.current_streak,
+            'historical_reversal_rate': pattern.historical_reversal_rate,
+            'sample_size': pattern.sample_size,
+            'avg_reversal_magnitude': pattern.avg_reversal_magnitude,
+            'confidence': pattern.confidence,
+            'evidence': pattern.evidence,
+            'day1_bounce_avg': pattern.day1_bounce_avg,
+            'total_bounce_avg': pattern.total_bounce_avg,
+            'avg_bounce_days': pattern.avg_bounce_days,
+            'qualifies_for_auto_pass': qualifies_for_auto_pass(pattern),
+        }
+
+        if qualifies_for_auto_pass(pattern):
+            logger.info(
+                f"PATTERN AUTO-PASS ELIGIBLE: {symbol} - "
+                f"{pattern.sample_size} samples, {pattern.historical_reversal_rate:.0%} win rate, "
+                f"{pattern.current_streak} days down"
+            )
+
+    except Exception as e:
+        logger.warning(f"Could not analyze pattern for {symbol}: {e}")
+        signal['historical_pattern'] = {}
+
+    return signal

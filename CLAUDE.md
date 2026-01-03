@@ -281,6 +281,84 @@ Generates comprehensive evidence-backed analysis for every trade:
 - `explainability/trade_thesis_builder.py` - Full trade thesis
 - `scripts/generate_pregame_blueprint.py` - Main entry point
 
+---
+
+## CRITICAL: Trade Analysis Standard (2026-01-02)
+
+> **FULL DOCUMENTATION: `docs/TRADE_ANALYSIS_STANDARD.md`**
+>
+> **THE TOP 2 TRADES EACH DAY MUST HAVE COMPREHENSIVE ANALYSIS. NO SHORTCUTS.**
+
+### Historical Pattern Auto-Pass
+
+Signals with strong historical backing **automatically bypass** the quality gate:
+
+| Criteria | Threshold | Example |
+|----------|-----------|---------|
+| Sample Size | 25+ instances | PLTR: 29 samples |
+| Win Rate | 90%+ | PLTR: 100% (29/29) |
+| Streak Length | 5+ consecutive days | PLTR: 5 down days |
+
+**If ALL criteria are met → AUTO-PASS with ELITE tier (score = 95)**
+
+```python
+# This pattern auto-passes quality gate
+from analysis.historical_patterns import enrich_signal_with_historical_pattern
+
+signal = enrich_signal_with_historical_pattern({'symbol': 'PLTR'})
+# If 25+ samples with 90%+ win rate → signal['historical_pattern']['qualifies_for_auto_pass'] = True
+```
+
+### Mandatory Analysis Components (Top 2 Trades)
+
+Every trade in the Top 2 **MUST** have:
+
+| Component | Required Data | Source |
+|-----------|---------------|--------|
+| Price Action | Current price, week open, % move | Polygon EOD |
+| Consecutive Pattern | Streak, samples, win rate, bounce stats | `historical_patterns.py` |
+| Expected Move | Weekly EM, remaining room up/down | `options_expected_move.py` |
+| Support/Resistance | Pivot points, psychological levels | `historical_patterns.py` |
+| **News & Headlines** | Last 7 days, sentiment scores | Polygon/Finnhub |
+| **Political Activity** | Congressional trades, insider activity | Quiver Quant |
+| Sector Context | Relative strength, beta vs sector | Calculated |
+| Volume Analysis | ADV, relative volume, trend | Polygon |
+| Entry/Stop/Target | Prices with full justification | Calculated |
+| R:R Analysis | All scenarios with ratios | Calculated |
+| Bull/Bear Cases | Narratives for both directions | AI-generated |
+| What Could Go Wrong | Top 5 risk factors | AI-generated |
+| AI Confidence | Full breakdown by factor | `signal_quality_gate.py` |
+
+### Position Sizing Formula
+
+```python
+# Dual-cap position sizing (MANDATORY)
+account_equity = 50000
+max_risk_pct = 0.02  # 2%
+max_notional_pct = 0.20  # 20%
+
+risk_per_trade = account_equity * max_risk_pct  # $1,000
+max_notional = account_equity * max_notional_pct  # $10,000
+
+shares_by_risk = risk_per_trade / (entry - stop)
+shares_by_notional = max_notional / entry
+
+final_shares = min(shares_by_risk, shares_by_notional)  # ALWAYS use the smaller
+```
+
+### This Is How We Analyze EVERY Trade
+
+1. **Historical Evidence First**: Always check for consecutive day patterns with 25+ samples
+2. **No Fake Data**: All statistics come from Polygon EOD - verifiable on Yahoo Finance
+3. **Full Reasoning**: Every entry, stop, and target has written justification
+4. **Risk-First**: Calculate R:R before considering the trade
+5. **Multiple Scenarios**: Day 1 target, total bounce target, max historical case
+6. **What Could Go Wrong**: Never trade without identifying risks
+
+**Claude must generate this full analysis for the Top 2 trades. No exceptions.**
+
+---
+
 ## Weekend-Safe Scanning
 
 The scanner automatically handles weekends and holidays using NYSE calendar:
