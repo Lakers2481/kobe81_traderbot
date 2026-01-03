@@ -109,7 +109,7 @@ def main():
             print(f'VETO {sym}: {reason}')
             continue
         # Position limit check
-        pos_ok, pos_reason = position_gate.check(sym, 'long')
+        pos_ok, pos_reason = position_gate.check(sym, 'long', limit_px, qty)
         if not pos_ok:
             jlog('position_limit_veto', symbol=sym, reason=pos_reason)
             print(f'VETO {sym}: {pos_reason}')

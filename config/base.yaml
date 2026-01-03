@@ -46,7 +46,7 @@ backtest:
   slippage_pct: 0.001  # 0.1% slippage estimate
   # Commission model (config-gated)
   commissions:
-    enabled: false  # Set true to apply commission model
+    enabled: true  # Set true to apply commission model
     per_share: 0.0  # $ per share (e.g., 0.005 for IBKR Pro)
     min_per_order: 0.0  # Minimum $ per order
     bps: 0.0  # Basis points of notional (alternative to per_share)

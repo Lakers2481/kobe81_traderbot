@@ -4,12 +4,16 @@ from contextlib import redirect_stdout, redirect_stderr
 from datetime import datetime, timedelta
 from io import StringIO
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any, Tuple
 import re
 import warnings
 import logging
 import os
 import sys
+import time
+import random
+import json
+import threading
 
 import pandas as pd
 
@@ -17,6 +21,163 @@ from .polygon_eod import fetch_daily_bars_polygon
 
 # Suppress noisy yfinance warnings about "possibly delisted" for market-closed dates
 logging.getLogger('yfinance').setLevel(logging.ERROR)
+logger = logging.getLogger(__name__)
+
+# =============================================================================
+# Phase 6: Data Provider Resilience (Codex #7)
+# TTL Cache + Jittered Backoff + Provider Health Tracking
+# =============================================================================
+
+# Global provider health stats (thread-safe via lock)
+_provider_stats_lock = threading.Lock()
+_provider_stats: Dict[str, Dict[str, Any]] = {
+    "polygon": {"success": 0, "failure": 0, "last_success": None, "last_failure": None},
+    "yfinance": {"success": 0, "failure": 0, "last_success": None, "last_failure": None},
+    "stooq": {"success": 0, "failure": 0, "last_success": None, "last_failure": None},
+}
+
+# In-memory TTL cache for fetched data
+_ttl_cache_lock = threading.Lock()
+_ttl_cache: Dict[str, Tuple[pd.DataFrame, float]] = {}  # {cache_key: (data, expiry_timestamp)}
+
+# Default retry configuration
+DEFAULT_RETRY_CONFIG = {
+    "max_retries": 3,
+    "base_delay_sec": 1.0,
+    "max_delay_sec": 30.0,
+    "jitter_factor": 0.3,  # ±30% randomization
+    "ttl_seconds": 3600,   # 1 hour cache TTL
+}
+
+
+def _calculate_backoff_with_jitter(attempt: int, config: Dict[str, Any] = None) -> float:
+    """
+    Calculate exponential backoff delay with jitter.
+
+    Args:
+        attempt: Current attempt number (0-indexed)
+        config: Retry configuration dict
+
+    Returns:
+        Delay in seconds with jitter applied
+    """
+    if config is None:
+        config = DEFAULT_RETRY_CONFIG
+
+    base_delay = config.get("base_delay_sec", 1.0)
+    max_delay = config.get("max_delay_sec", 30.0)
+    jitter_factor = config.get("jitter_factor", 0.3)
+
+    # Exponential backoff: base * 2^attempt
+    delay = min(base_delay * (2 ** attempt), max_delay)
+
+    # Apply jitter: delay * (1 ± jitter_factor)
+    jitter_range = delay * jitter_factor
+    jitter = random.uniform(-jitter_range, jitter_range)
+
+    return max(0.1, delay + jitter)
+
+
+def _get_cache_key(symbol: str, start: str, end: str) -> str:
+    """Generate a cache key for the data request."""
+    return f"{symbol}_{start}_{end}"
+
+
+def _check_ttl_cache(symbol: str, start: str, end: str) -> Optional[pd.DataFrame]:
+    """
+    Check TTL cache for valid data.
+
+    Returns:
+        Cached DataFrame if valid and not expired, None otherwise
+    """
+    cache_key = _get_cache_key(symbol, start, end)
+
+    with _ttl_cache_lock:
+        if cache_key in _ttl_cache:
+            data, expiry = _ttl_cache[cache_key]
+            if time.time() < expiry:
+                logger.debug(f"TTL cache hit for {symbol}")
+                return data.copy()
+            else:
+                # Expired - remove from cache
+                del _ttl_cache[cache_key]
+                logger.debug(f"TTL cache expired for {symbol}")
+
+    return None
+
+
+def _store_ttl_cache(symbol: str, start: str, end: str, data: pd.DataFrame, ttl_seconds: int = 3600) -> None:
+    """Store data in TTL cache."""
+    if data is None or data.empty:
+        return
+
+    cache_key = _get_cache_key(symbol, start, end)
+    expiry = time.time() + ttl_seconds
+
+    with _ttl_cache_lock:
+        _ttl_cache[cache_key] = (data.copy(), expiry)
+
+    logger.debug(f"Cached {len(data)} bars for {symbol} (TTL: {ttl_seconds}s)")
+
+
+def _record_provider_result(provider: str, success: bool) -> None:
+    """Record success/failure for a provider."""
+    with _provider_stats_lock:
+        if provider in _provider_stats:
+            now = datetime.now().isoformat()
+            if success:
+                _provider_stats[provider]["success"] += 1
+                _provider_stats[provider]["last_success"] = now
+            else:
+                _provider_stats[provider]["failure"] += 1
+                _provider_stats[provider]["last_failure"] = now
+
+
+def get_provider_stats() -> Dict[str, Dict[str, Any]]:
+    """
+    Get provider health statistics.
+
+    Returns:
+        Dict with success/failure counts and success rate per provider
+    """
+    with _provider_stats_lock:
+        stats = {}
+        for provider, data in _provider_stats.items():
+            total = data["success"] + data["failure"]
+            success_rate = data["success"] / total if total > 0 else 0.0
+            stats[provider] = {
+                "success": data["success"],
+                "failure": data["failure"],
+                "success_rate": round(success_rate, 4),
+                "last_success": data["last_success"],
+                "last_failure": data["last_failure"],
+            }
+        return stats
+
+
+def reset_provider_stats() -> None:
+    """Reset provider statistics (for testing)."""
+    with _provider_stats_lock:
+        for provider in _provider_stats:
+            _provider_stats[provider] = {
+                "success": 0,
+                "failure": 0,
+                "last_success": None,
+                "last_failure": None,
+            }
+
+
+def clear_ttl_cache() -> int:
+    """
+    Clear all TTL cache entries.
+
+    Returns:
+        Number of entries cleared
+    """
+    with _ttl_cache_lock:
+        count = len(_ttl_cache)
+        _ttl_cache.clear()
+        return count
 
 
 class _SuppressOutput:
@@ -226,3 +387,145 @@ def fetch_daily_bars_multi(symbol: str, start: str, end: str, cache_dir: Optiona
     e = pd.to_datetime(end).date()
     merged = merged[(merged['timestamp'].dt.date >= s) & (merged['timestamp'].dt.date <= e)]
     return merged
+
+
+def fetch_daily_bars_resilient(
+    symbol: str,
+    start: str,
+    end: str,
+    cache_dir: Optional[Path] = None,
+    provider_order: list = None,
+    retry_config: Dict[str, Any] = None,
+    use_ttl_cache: bool = True,
+) -> pd.DataFrame:
+    """
+    Resilient data fetcher with TTL cache, jittered backoff, and provider fallback.
+
+    Phase 6 Implementation (Codex #7):
+    - Checks TTL cache first (configurable TTL)
+    - Tries each provider with exponential backoff + jitter
+    - Tracks provider success/failure rates
+    - Falls back to next provider on failure
+
+    Args:
+        symbol: Stock symbol
+        start: Start date (YYYY-MM-DD)
+        end: End date (YYYY-MM-DD)
+        cache_dir: Optional cache directory for file-based caching
+        provider_order: List of providers to try ["polygon", "yfinance", "stooq"]
+        retry_config: Retry configuration dict
+        use_ttl_cache: Whether to use in-memory TTL cache
+
+    Returns:
+        DataFrame with OHLCV data
+
+    Raises:
+        DataFetchError: If all providers fail
+    """
+    if provider_order is None:
+        provider_order = ["polygon", "yfinance", "stooq"]
+    if retry_config is None:
+        retry_config = DEFAULT_RETRY_CONFIG
+
+    # Check TTL cache first
+    if use_ttl_cache:
+        cached = _check_ttl_cache(symbol, start, end)
+        if cached is not None and not cached.empty:
+            return cached
+
+    max_retries = retry_config.get("max_retries", 3)
+    ttl_seconds = retry_config.get("ttl_seconds", 3600)
+
+    # Provider function mapping
+    provider_funcs = {
+        "polygon": lambda: fetch_daily_bars_polygon(symbol, start, end, cache_dir=cache_dir),
+        "yfinance": lambda: fetch_daily_bars_yfinance(symbol, start, end, cache_dir=cache_dir),
+        "stooq": lambda: fetch_daily_bars_stooq(symbol, start, end, cache_dir=cache_dir),
+    }
+
+    last_error = None
+    fallback_count = 0
+
+    for provider in provider_order:
+        if provider not in provider_funcs:
+            logger.warning(f"Unknown provider: {provider}")
+            continue
+
+        fetch_func = provider_funcs[provider]
+
+        for attempt in range(max_retries):
+            try:
+                logger.debug(f"Fetching {symbol} from {provider} (attempt {attempt + 1}/{max_retries})")
+                data = fetch_func()
+
+                if data is not None and not data.empty:
+                    _record_provider_result(provider, success=True)
+
+                    # Store in TTL cache
+                    if use_ttl_cache:
+                        _store_ttl_cache(symbol, start, end, data, ttl_seconds)
+
+                    # Log fallback usage
+                    if fallback_count > 0:
+                        logger.info(f"Fetched {symbol} from {provider} after {fallback_count} fallback(s)")
+
+                    return data
+
+                # Empty data - treat as failure
+                _record_provider_result(provider, success=False)
+                logger.debug(f"Empty data from {provider} for {symbol}")
+
+            except Exception as e:
+                _record_provider_result(provider, success=False)
+                last_error = e
+                logger.debug(f"Provider {provider} failed for {symbol}: {e}")
+
+                # Apply backoff before retry (except on last attempt)
+                if attempt < max_retries - 1:
+                    delay = _calculate_backoff_with_jitter(attempt, retry_config)
+                    logger.debug(f"Retry in {delay:.2f}s...")
+                    time.sleep(delay)
+
+        # Provider exhausted, move to next
+        fallback_count += 1
+        logger.debug(f"Provider {provider} exhausted for {symbol}, trying next...")
+
+    # All providers failed
+    logger.warning(f"All providers failed for {symbol}: {last_error}")
+    return pd.DataFrame(columns=['timestamp', 'symbol', 'open', 'high', 'low', 'close', 'volume'])
+
+
+class DataFetchError(Exception):
+    """Raised when all data providers fail."""
+    pass
+
+
+def fetch_daily_bars_resilient_strict(
+    symbol: str,
+    start: str,
+    end: str,
+    cache_dir: Optional[Path] = None,
+    provider_order: list = None,
+    retry_config: Dict[str, Any] = None,
+    use_ttl_cache: bool = True,
+) -> pd.DataFrame:
+    """
+    Strict version of resilient fetcher that raises on complete failure.
+
+    Same as fetch_daily_bars_resilient but raises DataFetchError instead
+    of returning empty DataFrame when all providers fail.
+    """
+    result = fetch_daily_bars_resilient(
+        symbol=symbol,
+        start=start,
+        end=end,
+        cache_dir=cache_dir,
+        provider_order=provider_order,
+        retry_config=retry_config,
+        use_ttl_cache=use_ttl_cache,
+    )
+
+    if result is None or result.empty:
+        raise DataFetchError(f"All providers failed for {symbol} ({start} to {end})")
+
+    return result

@@ -145,36 +145,26 @@ def run_daily_scan(
     """
     all_signals: List[pd.DataFrame] = []
 
-    # Initialize strategies
-    ibs_rsi = IbsRsiStrategy(IbsRsiParams(min_price=5.0))
-    turtle_soup = TurtleSoupStrategy(TurtleSoupParams(min_price=10.0))
+    # Initialize production scanner (CORRECT WAY)
+    scanner = get_production_scanner()
 
     for symbol, df in bars_dict.items():
         # Filter bars up to scan_date (no lookahead)
-        # Normalize timestamps to date for comparison (avoid time component issues)
-        df = df.copy()
-        df['_date'] = pd.to_datetime(df['timestamp']).dt.strftime('%Y-%m-%d')
-        df = df[df['_date'] <= scan_date].drop(columns=['_date'])
-        if df.empty or len(df) < 220:
+        df_filtered = df.copy()
+        df_filtered['_date'] = pd.to_datetime(df_filtered['timestamp']).dt.strftime('%Y-%m-%d')
+        df_filtered = df_filtered[df_filtered['_date'] <= scan_date].drop(columns=['_date'])
+        
+        if df_filtered.empty or len(df_filtered) < 220:
             continue
 
-        # Run IBS_RSI - use scan_signals_over_time for historical signals
         try:
-            ir_sigs = ibs_rsi.scan_signals_over_time(df)
-            if not don_sigs.empty:
-                ir_sigs['strategy'] = 'ibs_rsi'
-                all_signals.append(don_sigs)
-        except Exception:
-            pass
-
-        # Run ICT Turtle Soup - use scan_signals_over_time for historical signals
-        try:
-            ict_sigs = turtle_soup.scan_signals_over_time(df)
-            if not ict_sigs.empty:
-                ict_sigs['strategy'] = 'turtle_soup'
-                all_signals.append(ict_sigs)
-        except Exception:
-            pass
+            # The scanner will run both strategies
+            sigs = scanner.scan_signals_over_time(df_filtered)
+            if not sigs.empty:
+                all_signals.append(sigs)
+        except Exception as e:
+            if verbose:
+                print(f"  [WARN] Scan failed for {symbol}: {e}", file=sys.stderr)
 
     if all_signals:
         combined = pd.concat(all_signals, ignore_index=True)
@@ -582,74 +572,84 @@ def run_backtest(
     # Get trading days
     trading_days = get_trading_days(start, end)
     print(f"Trading days: {len(trading_days)}")
-
     if not trading_days:
-        print("Error: No trading days in range")
         return [], {}
 
-    # Prefetch all data up to end date
+    # --- Step 1: Fetch all data for the entire period ---
     print("\nFetching data (this may take a while)...")
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    bars_dict = fetch_bars_for_date(
-        symbols, end, lookback_days=LOOKBACK_DAYS + 30,
-        cache_dir=CACHE_DIR, verbose=verbose
-    )
-    print(f"Loaded data for {len(bars_dict)} symbols")
+    all_bars_list = []
+    for i, symbol in enumerate(symbols):
+        try:
+            df = fetch_daily_bars_multi(symbol, start, end, cache_dir=CACHE_DIR)
+            if not df.empty and len(df) >= 220:
+                df['symbol'] = symbol
+                all_bars_list.append(df)
+            if verbose and (i + 1) % 100 == 0:
+                print(f"  Fetched {i + 1}/{len(symbols)} symbols...")
+        except Exception as e:
+            if verbose: print(f"  [WARN] {symbol}: {e}", file=sys.stderr)
+    
+    if not all_bars_list:
+        print("Error: No data loaded for any symbols.")
+        return [], {}
+        
+    combined_bars = pd.concat(all_bars_list, ignore_index=True)
+    bars_dict = {sym: df for sym, df in combined_bars.groupby('symbol')}
+    print(f"Loaded data for {len(bars_dict)} symbols, {len(combined_bars)} total bars.")
 
-    # Fetch SPY for regime filter
-    spy_bars = fetch_spy_data(end, cache_dir=CACHE_DIR)
-    if spy_bars is not None:
-        print(f"Loaded SPY data: {len(spy_bars)} bars")
+    # --- Step 2: Generate ALL signals for the entire period ---
+    print("\nGenerating all signals for the period...")
+    scanner = get_production_scanner()
+    all_signals = scanner.scan_signals_over_time(combined_bars.copy())
+    all_signals['date'] = pd.to_datetime(all_signals['timestamp']).dt.strftime('%Y-%m-%d')
+    print(f"Generated {len(all_signals)} total signals.")
 
-    # Run daily simulation
+    # --- Step 3: Loop day-by-day to select TOTD and simulate ---
     trades: List[Dict] = []
     totd_count = 0
     skip_count = 0
+    
+    spy_bars = fetch_spy_data(end, cache_dir=CACHE_DIR)
+    if spy_bars is not None:
+        print(f"Loaded SPY data for filters: {len(spy_bars)} bars")
 
     print("\nRunning daily simulation...")
     for i, day in enumerate(trading_days):
         if verbose or (i + 1) % 20 == 0:
             print(f"  Day {i + 1}/{len(trading_days)}: {day}")
 
-        # Run scanner
-        signals = run_daily_scan(bars_dict, day, verbose=verbose)
-
-        if signals.empty:
+        # Get signals for the current day
+        signals_today = all_signals[all_signals['date'] == day].copy()
+        if signals_today.empty:
             skip_count += 1
             continue
 
         # Apply filters
-        signals = apply_filters(
-            signals, bars_dict, spy_bars, day,
-            min_adv_usd=min_adv_usd,
-            use_filters=use_filters,
-            verbose=verbose
+        filtered_signals = apply_filters(
+            signals_today, bars_dict, spy_bars, day,
+            min_adv_usd=min_adv_usd, use_filters=use_filters, verbose=verbose
         )
-
-        if signals.empty:
+        if filtered_signals.empty:
             skip_count += 1
             continue
-
+            
         # Compute confidence
-        signals = compute_confidence(signals, bars_dict, day, verbose=verbose)
-
-        # Select Top-3
-        top3 = select_top3(signals, ensure_top3=ensure_top3)
-
+        confident_signals = compute_confidence(filtered_signals, bars_dict, day, verbose=verbose)
+        
+        # Select Top-3 and TOTD
+        top3 = select_top3(confident_signals, ensure_top3=ensure_top3)
         if top3.empty:
             skip_count += 1
             continue
-
-        # Select TOTD
+        
         totd = select_totd(top3, min_conf=min_conf)
-
         if totd is None:
             skip_count += 1
             continue
-
+        
         # Simulate trade
         trade = simulate_trade(totd, bars_dict, day, time_stop_bars=5)
-
         if trade is not None:
             trades.append(trade)
             totd_count += 1

@@ -156,7 +156,16 @@ def get_selection_config() -> Dict[str, Any]:
     """Get signal selection configuration."""
     return {
         "enabled": bool(get_setting("selection.enabled", False)),
-        "top_n": int(get_setting("selection.top_n", 10)),
+        "mode": str(get_setting("selection.mode", "totd")),
+        # Top-N selection settings (Phase 5 hardening)
+        "top_n": {
+            "enabled": bool(get_setting("selection.top_n.enabled", False)),
+            "n": int(get_setting("selection.top_n.n", 3)),
+            "max_correlation": float(get_setting("selection.top_n.max_correlation", 0.70)),
+            "max_sector_pct": float(get_setting("selection.top_n.max_sector_pct", 0.40)),
+            "max_single_name_pct": float(get_setting("selection.top_n.max_single_name_pct", 0.25)),
+        },
+        # Legacy score weights (backward compatible)
         "score_weights": {
             "rsi2": float(get_setting("selection.score_weights.rsi2", 0.6)),
             "ibs": float(get_setting("selection.score_weights.ibs", 0.4)),

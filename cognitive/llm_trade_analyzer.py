@@ -32,6 +32,51 @@ logger = logging.getLogger(__name__)
 # Token Budget Management (Phase 2 AI Reliability)
 # =============================================================================
 
+# =============================================================================
+# LLM Pricing (Phase 4: USD Cost Tracking)
+# =============================================================================
+
+# Anthropic pricing per 1K tokens (as of 2024/2025)
+LLM_PRICING = {
+    # Claude 3 Haiku (cheapest, fastest)
+    "claude-3-haiku-20240307": {"input": 0.00025, "output": 0.00125},
+    # Claude 3.5 Haiku
+    "claude-3-5-haiku-20241022": {"input": 0.00025, "output": 0.00125},
+    # Claude 3 Sonnet
+    "claude-3-sonnet-20240229": {"input": 0.003, "output": 0.015},
+    # Claude 3.5 Sonnet
+    "claude-3-5-sonnet-20241022": {"input": 0.003, "output": 0.015},
+    # Claude Sonnet 4 (latest)
+    "claude-sonnet-4-20250514": {"input": 0.003, "output": 0.015},
+    # Claude 3 Opus (most expensive)
+    "claude-3-opus-20240229": {"input": 0.015, "output": 0.075},
+}
+
+# Default pricing for unknown models
+DEFAULT_PRICING = {"input": 0.003, "output": 0.015}
+
+
+def calculate_cost_usd(
+    model: str,
+    input_tokens: int,
+    output_tokens: int,
+) -> float:
+    """
+    Calculate USD cost for an LLM API call.
+
+    Args:
+        model: Model name (e.g., "claude-sonnet-4-20250514")
+        input_tokens: Number of input tokens
+        output_tokens: Number of output tokens
+
+    Returns:
+        Cost in USD
+    """
+    pricing = LLM_PRICING.get(model, DEFAULT_PRICING)
+    cost = (input_tokens / 1000 * pricing["input"]) + (output_tokens / 1000 * pricing["output"])
+    return round(cost, 6)
+
+
 @dataclass
 class TokenBudget:
     """
@@ -39,11 +84,21 @@ class TokenBudget:
 
     Prevents runaway API costs by enforcing a daily token limit.
     State persists across sessions via JSON file.
+
+    Phase 4 Enhancement: Includes USD cost tracking with alerts.
     """
     daily_limit: int = 100_000
     used_today: int = 0
     last_reset: str = ""  # ISO date string
     state_file: str = "state/llm_token_usage.json"
+    # Phase 4: USD cost tracking
+    max_daily_usd: float = 50.0  # Hard limit in USD
+    alert_threshold_usd: float = 25.0  # Alert at this level
+    cost_usd_today: float = 0.0
+    input_tokens_today: int = 0
+    output_tokens_today: int = 0
+    calls_today: int = 0
+    _alert_sent: bool = False
 
     def __post_init__(self):
         self._load_state()
@@ -58,6 +113,11 @@ class TokenBudget:
                     data = json.load(f)
                 self.used_today = data.get('used_today', 0)
                 self.last_reset = data.get('last_reset', '')
+                # Phase 4: Load USD tracking
+                self.cost_usd_today = data.get('cost_usd_today', 0.0)
+                self.input_tokens_today = data.get('input_tokens_today', 0)
+                self.output_tokens_today = data.get('output_tokens_today', 0)
+                self.calls_today = data.get('calls_today', 0)
             except Exception as e:
                 logger.warning(f"Failed to load token budget state: {e}")
 
@@ -71,6 +131,13 @@ class TokenBudget:
                     'used_today': self.used_today,
                     'last_reset': self.last_reset,
                     'daily_limit': self.daily_limit,
+                    # Phase 4: Save USD tracking
+                    'cost_usd_today': self.cost_usd_today,
+                    'input_tokens_today': self.input_tokens_today,
+                    'output_tokens_today': self.output_tokens_today,
+                    'calls_today': self.calls_today,
+                    'max_daily_usd': self.max_daily_usd,
+                    'alert_threshold_usd': self.alert_threshold_usd,
                 }, f, indent=2)
         except Exception as e:
             logger.warning(f"Failed to save token budget state: {e}")
@@ -80,6 +147,11 @@ class TokenBudget:
         today = date.today().isoformat()
         if self.last_reset != today:
             self.used_today = 0
+            self.cost_usd_today = 0.0
+            self.input_tokens_today = 0
+            self.output_tokens_today = 0
+            self.calls_today = 0
+            self._alert_sent = False
             self.last_reset = today
             self._save_state()
             logger.info(f"Token budget reset for new day: {today}")
@@ -87,14 +159,60 @@ class TokenBudget:
     def can_use(self, estimated_tokens: int = 2000) -> bool:
         """Check if we can use estimated tokens without exceeding budget."""
         self._check_reset()
-        return self.used_today + estimated_tokens <= self.daily_limit
+        # Check both token limit and USD limit
+        if self.used_today + estimated_tokens > self.daily_limit:
+            return False
+        if self.cost_usd_today >= self.max_daily_usd:
+            logger.warning(f"Daily USD limit reached: ${self.cost_usd_today:.2f} >= ${self.max_daily_usd:.2f}")
+            return False
+        return True
 
-    def record_usage(self, tokens: int) -> None:
-        """Record token usage and persist."""
+    def record_usage(
+        self,
+        tokens: int,
+        model: str = "claude-sonnet-4-20250514",
+        input_tokens: int = 0,
+        output_tokens: int = 0,
+    ) -> None:
+        """
+        Record token usage and persist.
+
+        Args:
+            tokens: Total tokens (for backward compatibility)
+            model: Model name for pricing lookup
+            input_tokens: Input tokens (for accurate cost calculation)
+            output_tokens: Output tokens (for accurate cost calculation)
+        """
         self._check_reset()
         self.used_today += tokens
+        self.calls_today += 1
+
+        # Calculate cost
+        if input_tokens > 0 or output_tokens > 0:
+            self.input_tokens_today += input_tokens
+            self.output_tokens_today += output_tokens
+            cost = calculate_cost_usd(model, input_tokens, output_tokens)
+        else:
+            # Estimate based on total tokens (assume 30% input, 70% output)
+            est_input = int(tokens * 0.3)
+            est_output = tokens - est_input
+            cost = calculate_cost_usd(model, est_input, est_output)
+
+        self.cost_usd_today += cost
+
+        # Check alert threshold
+        if not self._alert_sent and self.cost_usd_today >= self.alert_threshold_usd:
+            logger.warning(
+                f"LLM COST ALERT: Daily spend ${self.cost_usd_today:.2f} "
+                f"exceeds threshold ${self.alert_threshold_usd:.2f}"
+            )
+            self._alert_sent = True
+
         self._save_state()
-        logger.debug(f"Token usage recorded: {tokens} (total: {self.used_today}/{self.daily_limit})")
+        logger.debug(
+            f"Token usage recorded: {tokens} tokens, ${cost:.4f} "
+            f"(daily total: {self.used_today} tokens, ${self.cost_usd_today:.2f})"
+        )
 
     @property
     def remaining(self) -> int:
@@ -106,6 +224,43 @@ class TokenBudget:
     def usage_pct(self) -> float:
         """Get usage as percentage."""
         return self.used_today / self.daily_limit * 100 if self.daily_limit > 0 else 0
+
+    @property
+    def cost_remaining_usd(self) -> float:
+        """Get remaining USD budget for today."""
+        self._check_reset()
+        return max(0.0, self.max_daily_usd - self.cost_usd_today)
+
+    @property
+    def cost_usage_pct(self) -> float:
+        """Get USD cost usage as percentage."""
+        return (self.cost_usd_today / self.max_daily_usd * 100) if self.max_daily_usd > 0 else 0
+
+    def get_full_stats(self) -> Dict[str, Any]:
+        """Get comprehensive usage statistics including USD costs."""
+        self._check_reset()
+        return {
+            'tokens': {
+                'used_today': self.used_today,
+                'daily_limit': self.daily_limit,
+                'remaining': self.remaining,
+                'usage_pct': self.usage_pct,
+            },
+            'cost_usd': {
+                'cost_today': round(self.cost_usd_today, 4),
+                'max_daily': self.max_daily_usd,
+                'alert_threshold': self.alert_threshold_usd,
+                'remaining': round(self.cost_remaining_usd, 4),
+                'usage_pct': round(self.cost_usage_pct, 2),
+            },
+            'breakdown': {
+                'input_tokens': self.input_tokens_today,
+                'output_tokens': self.output_tokens_today,
+                'calls': self.calls_today,
+                'avg_cost_per_call': round(self.cost_usd_today / self.calls_today, 4) if self.calls_today > 0 else 0,
+            },
+            'last_reset': self.last_reset,
+        }
 
 
 def should_use_llm(
@@ -2220,3 +2375,58 @@ def reset_trade_analyzer():
     """Reset the singleton (for testing)."""
     global _trade_analyzer
     _trade_analyzer = None
+
+
+# =============================================================================
+# Health Endpoint Integration (Phase 4)
+# =============================================================================
+
+def sync_llm_metrics_to_health() -> None:
+    """
+    Sync LLM usage metrics to the health endpoints.
+
+    Call this periodically or after each LLM call to update the
+    /metrics endpoint with current LLM usage statistics.
+    """
+    try:
+        from monitor.health_endpoints import update_llm_metrics
+
+        analyzer = get_trade_analyzer()
+
+        if analyzer._token_budget:
+            stats = analyzer._token_budget.get_full_stats()
+            update_llm_metrics(
+                tokens_used=stats['tokens']['used_today'],
+                budget_remaining=stats['tokens']['remaining'],
+                usage_pct=stats['tokens']['usage_pct'],
+                calls_saved=analyzer._llm_calls_saved,
+                selective_mode=analyzer.selective_mode,
+            )
+    except ImportError:
+        pass  # Health endpoints not available
+    except Exception as e:
+        logger.debug(f"Failed to sync LLM metrics: {e}")
+
+
+def get_llm_cost_stats() -> Dict[str, Any]:
+    """
+    Get comprehensive LLM cost statistics.
+
+    Returns:
+        Dict with token usage, USD costs, and efficiency metrics
+    """
+    analyzer = get_trade_analyzer()
+
+    result = {
+        'enabled': analyzer.api_available,
+        'model': analyzer.model,
+        'selective_mode': analyzer.selective_mode,
+        'calls_saved_by_selective': analyzer._llm_calls_saved,
+    }
+
+    if analyzer._token_budget:
+        result['budget'] = analyzer._token_budget.get_full_stats()
+    else:
+        result['budget'] = {'enabled': False}
+
+    return result

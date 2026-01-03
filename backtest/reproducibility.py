@@ -585,6 +585,159 @@ class ExperimentTracker:
         raise FileNotFoundError(f"Artifact {artifact_name} not found")
 
 
+# =============================================================================
+# Phase 7: Global Seed Management (Codex #5)
+# =============================================================================
+
+# Track if seeds have been set
+_seeds_set = False
+_seed_value: Optional[int] = None
+
+
+def set_global_seeds(seed: int = 42) -> None:
+    """
+    Ensure deterministic behavior across all random sources.
+
+    Sets seeds for:
+    - Python random module
+    - NumPy random
+    - PyTorch (if available)
+    - TensorFlow/Keras (if available)
+    - Python hash seed (via environment variable)
+
+    Args:
+        seed: Integer seed value for reproducibility (default: 42)
+
+    Note:
+        Call this at the START of any backtest or training script,
+        BEFORE importing any ML libraries that initialize random state.
+    """
+    global _seeds_set, _seed_value
+
+    import random
+
+    # Python built-in random
+    random.seed(seed)
+    logger.debug(f"Set Python random seed: {seed}")
+
+    # Python hash seed (for dict ordering in Python 3.7+)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    logger.debug(f"Set PYTHONHASHSEED: {seed}")
+
+    # NumPy
+    try:
+        import numpy as np
+        np.random.seed(seed)
+        logger.debug(f"Set NumPy random seed: {seed}")
+    except ImportError:
+        pass
+
+    # PyTorch
+    try:
+        import torch
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed(seed)
+            torch.cuda.manual_seed_all(seed)
+            # For full determinism (may impact performance)
+            torch.backends.cudnn.deterministic = True
+            torch.backends.cudnn.benchmark = False
+        logger.debug(f"Set PyTorch seeds: {seed}")
+    except ImportError:
+        pass
+
+    # TensorFlow/Keras
+    try:
+        import tensorflow as tf
+        tf.random.set_seed(seed)
+        logger.debug(f"Set TensorFlow seed: {seed}")
+    except ImportError:
+        pass
+
+    _seeds_set = True
+    _seed_value = seed
+    logger.info(f"Global reproducibility seeds set to: {seed}")
+
+
+def get_seed() -> Optional[int]:
+    """Get the current global seed value (if set)."""
+    return _seed_value
+
+
+def seeds_are_set() -> bool:
+    """Check if global seeds have been set."""
+    return _seeds_set
+
+
+def get_reproducibility_info() -> Dict[str, Any]:
+    """
+    Get information about the current reproducibility state.
+
+    Useful for logging and debugging reproducibility issues.
+
+    Returns:
+        Dict with seed status, Python version, platform, and package versions
+    """
+    info = {
+        "seeds_set": _seeds_set,
+        "seed_value": _seed_value,
+        "python_version": sys.version,
+        "platform": platform.platform(),
+        "python_hash_seed": os.environ.get('PYTHONHASHSEED', 'NOT_SET'),
+        "timestamp": datetime.now().isoformat(),
+        "packages": {},
+    }
+
+    # Get versions of key packages
+    packages_to_check = [
+        "numpy",
+        "pandas",
+        "torch",
+        "tensorflow",
+        "scikit-learn",
+        "xgboost",
+        "lightgbm",
+        "hmmlearn",
+    ]
+
+    for pkg in packages_to_check:
+        try:
+            mod = __import__(pkg)
+            info["packages"][pkg] = getattr(mod, "__version__", "unknown")
+        except ImportError:
+            info["packages"][pkg] = "not_installed"
+
+    return info
+
+
+class ReproducibleContext:
+    """
+    Context manager for reproducible code blocks.
+
+    Usage:
+        with ReproducibleContext(seed=42):
+            # Code here will be reproducible
+            model.fit(X, y)
+    """
+
+    def __init__(self, seed: int = 42, verbose: bool = False):
+        self.seed = seed
+        self.verbose = verbose
+        self._previous_seed = _seed_value
+
+    def __enter__(self):
+        set_global_seeds(self.seed)
+        if self.verbose:
+            info = get_reproducibility_info()
+            logger.info(f"Reproducible context started with seed={self.seed}")
+        return self
+
+    def __exit__(self, *args):
+        # Optionally restore previous seed state
+        if self._previous_seed is not None:
+            set_global_seeds(self._previous_seed)
+
+
 def create_reproducibility_report(experiment_id: str) -> str:
     """Generate a reproducibility report for an experiment."""
     tracker = ExperimentTracker()

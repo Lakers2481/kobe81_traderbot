@@ -238,6 +238,75 @@ class ExecutionGuard:
                 return False, f"Error checking trading status: {e}"
             return True, f"Trading status check failed, proceeding: {e}"
 
+    def check_luld_bands(
+        self,
+        symbol: str,
+        proposed_price: float,
+        reference_price: Optional[float] = None,
+        is_large_cap: bool = True,
+    ) -> Tuple[bool, str]:
+        """
+        Check if proposed price is within LULD (Limit Up/Limit Down) bands.
+
+        LULD bands are price limits designed to prevent extreme price moves.
+        - Large caps (S&P 500, Russell 1000): ±5% bands
+        - Small caps: ±10% bands
+        - First 15 min / last 25 min of trading: ±10% for all
+
+        Args:
+            symbol: Stock symbol
+            proposed_price: The limit price we want to use
+            reference_price: Reference price (typically previous close or opening price)
+            is_large_cap: If True, use ±5% bands; if False, use ±10% bands
+
+        Returns:
+            (passed, reason)
+        """
+        if reference_price is None:
+            # Try to get reference price from quote
+            try:
+                from execution.broker_alpaca import get_best_bid, get_best_ask
+                bid = get_best_bid(symbol)
+                ask = get_best_ask(symbol)
+                if bid and ask:
+                    reference_price = (bid + ask) / 2
+                elif bid:
+                    reference_price = bid
+                elif ask:
+                    reference_price = ask
+            except ImportError:
+                pass
+
+        if reference_price is None or reference_price <= 0:
+            if self.stand_down_on_uncertainty:
+                return False, "Cannot determine LULD bands - no reference price"
+            return True, "LULD check skipped - no reference price"
+
+        # Determine band percentage
+        band_pct = 0.05 if is_large_cap else 0.10
+
+        # Calculate bands
+        lower_band = reference_price * (1 - band_pct)
+        upper_band = reference_price * (1 + band_pct)
+
+        # Check proposed price
+        if proposed_price < lower_band:
+            return False, (
+                f"Price ${proposed_price:.2f} below LULD lower band ${lower_band:.2f} "
+                f"({band_pct*100:.0f}% below ref ${reference_price:.2f})"
+            )
+
+        if proposed_price > upper_band:
+            return False, (
+                f"Price ${proposed_price:.2f} above LULD upper band ${upper_band:.2f} "
+                f"({band_pct*100:.0f}% above ref ${reference_price:.2f})"
+            )
+
+        return True, (
+            f"Price ${proposed_price:.2f} within LULD bands "
+            f"[${lower_band:.2f} - ${upper_band:.2f}]"
+        )
+
     def check_size_limits(
         self,
         qty: int,

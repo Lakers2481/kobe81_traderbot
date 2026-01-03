@@ -60,6 +60,17 @@ _metrics: Dict[str, Any] = {
         "llm_calls_saved": 0,
         "cache_hit_rate": None,
         "selective_mode_enabled": False,
+        # Phase 4: USD Cost Tracking (Codex #2)
+        "cost_usd_today": 0.0,
+        "cost_budget_usd": None,
+        "cost_remaining_usd": None,
+        "cost_usage_pct": None,
+        "input_tokens_today": 0,
+        "output_tokens_today": 0,
+        "calls_today": 0,
+        "avg_latency_ms": None,
+        "model": None,
+        "last_updated": None,
     },
     "uncertainty": {
         "avg_uncertainty_score": None,
@@ -220,9 +231,19 @@ def update_llm_metrics(
     calls_saved: Optional[int] = None,
     cache_hit_rate: Optional[float] = None,
     selective_mode: Optional[bool] = None,
+    # Phase 4: USD cost tracking fields
+    cost_usd_today: Optional[float] = None,
+    cost_budget_usd: Optional[float] = None,
+    cost_remaining_usd: Optional[float] = None,
+    cost_usage_pct: Optional[float] = None,
+    input_tokens_today: Optional[int] = None,
+    output_tokens_today: Optional[int] = None,
+    calls_today: Optional[int] = None,
+    avg_latency_ms: Optional[float] = None,
+    model: Optional[str] = None,
 ) -> None:
     """
-    Update LLM usage metrics.
+    Update LLM usage metrics including USD cost tracking.
 
     Args:
         tokens_used: Tokens used today
@@ -231,6 +252,15 @@ def update_llm_metrics(
         calls_saved: Number of LLM calls saved by selective mode
         cache_hit_rate: Cache hit rate percentage
         selective_mode: Whether selective mode is enabled
+        cost_usd_today: USD spent today
+        cost_budget_usd: Daily USD budget limit
+        cost_remaining_usd: Remaining USD budget
+        cost_usage_pct: USD budget usage percentage
+        input_tokens_today: Input tokens used today
+        output_tokens_today: Output tokens used today
+        calls_today: Number of LLM calls today
+        avg_latency_ms: Average response latency in ms
+        model: Current model being used
     """
     if tokens_used is not None:
         _metrics["llm"]["tokens_used_today"] = tokens_used
@@ -244,6 +274,26 @@ def update_llm_metrics(
         _metrics["llm"]["cache_hit_rate"] = cache_hit_rate
     if selective_mode is not None:
         _metrics["llm"]["selective_mode_enabled"] = selective_mode
+    # Phase 4: USD cost tracking
+    if cost_usd_today is not None:
+        _metrics["llm"]["cost_usd_today"] = cost_usd_today
+    if cost_budget_usd is not None:
+        _metrics["llm"]["cost_budget_usd"] = cost_budget_usd
+    if cost_remaining_usd is not None:
+        _metrics["llm"]["cost_remaining_usd"] = cost_remaining_usd
+    if cost_usage_pct is not None:
+        _metrics["llm"]["cost_usage_pct"] = cost_usage_pct
+    if input_tokens_today is not None:
+        _metrics["llm"]["input_tokens_today"] = input_tokens_today
+    if output_tokens_today is not None:
+        _metrics["llm"]["output_tokens_today"] = output_tokens_today
+    if calls_today is not None:
+        _metrics["llm"]["calls_today"] = calls_today
+    if avg_latency_ms is not None:
+        _metrics["llm"]["avg_latency_ms"] = avg_latency_ms
+    if model is not None:
+        _metrics["llm"]["model"] = model
+    _metrics["llm"]["last_updated"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
 
 def update_uncertainty_metrics(
@@ -329,6 +379,34 @@ def sync_bandit_metrics_from_instance() -> None:
         )
     except Exception:
         pass  # Bandit not available or not initialized
+
+
+def sync_llm_metrics_from_analyzer() -> None:
+    """
+    Sync LLM usage metrics from the LLMTradeAnalyzer/TokenBudget.
+    Call this periodically or after LLM calls.
+    """
+    try:
+        from cognitive.llm_trade_analyzer import get_llm_cost_stats
+        stats = get_llm_cost_stats()
+        update_llm_metrics(
+            tokens_used=stats.get("tokens_used_today"),
+            budget_remaining=stats.get("token_budget_remaining"),
+            usage_pct=stats.get("token_usage_pct"),
+            calls_saved=stats.get("calls_saved"),
+            cost_usd_today=stats.get("cost_usd_today"),
+            cost_budget_usd=stats.get("cost_budget_usd"),
+            cost_remaining_usd=stats.get("cost_remaining_usd"),
+            cost_usage_pct=stats.get("cost_usage_pct"),
+            input_tokens_today=stats.get("input_tokens_today"),
+            output_tokens_today=stats.get("output_tokens_today"),
+            calls_today=stats.get("calls_today"),
+            model=stats.get("model"),
+        )
+    except ImportError:
+        pass  # LLM analyzer not available
+    except Exception:
+        pass  # LLM analyzer not initialized
 
 
 # =============================================================================
@@ -598,6 +676,17 @@ def reset_metrics() -> None:
             "llm_calls_saved": 0,
             "cache_hit_rate": None,
             "selective_mode_enabled": False,
+            # Phase 4: USD Cost Tracking
+            "cost_usd_today": 0.0,
+            "cost_budget_usd": None,
+            "cost_remaining_usd": None,
+            "cost_usage_pct": None,
+            "input_tokens_today": 0,
+            "output_tokens_today": 0,
+            "calls_today": 0,
+            "avg_latency_ms": None,
+            "model": None,
+            "last_updated": None,
         },
         "uncertainty": {
             "avg_uncertainty_score": None,
