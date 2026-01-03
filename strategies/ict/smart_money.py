@@ -40,8 +40,16 @@ from core.structured_log import jlog
 
 # Check for smartmoneyconcepts availability
 try:
-    import smartmoneyconcepts as smc
-    SMC_AVAILABLE = True
+    import io
+    import sys
+    # Suppress library's print statement (has Unicode that fails on Windows)
+    _old_stdout = sys.stdout
+    sys.stdout = io.StringIO()
+    try:
+        import smartmoneyconcepts as smc
+        SMC_AVAILABLE = True
+    finally:
+        sys.stdout = _old_stdout
 except ImportError:
     SMC_AVAILABLE = False
     jlog("smc_not_available", level="INFO",

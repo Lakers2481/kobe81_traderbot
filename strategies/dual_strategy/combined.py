@@ -33,6 +33,13 @@ from typing import Optional, List, Dict
 import numpy as np
 import pandas as pd
 
+# Import Smart Money Concepts for ICT confluence filtering
+try:
+    from strategies.ict.smart_money import SmartMoneyDetector, SMCConfig
+    SMC_AVAILABLE = True
+except ImportError:
+    SMC_AVAILABLE = False
+
 
 # ============================================================================
 # Indicator Functions
@@ -118,6 +125,11 @@ class DualStrategyParams:
     time_stop_bars: int = 7             # Legacy - use strategy-specific time stops
     min_price: float = 15.0             # Higher liquidity only
 
+    # Smart Money Concepts (SMC) Confluence Parameters
+    use_smc_confluence: bool = True     # Enable SMC pattern detection
+    smc_score_boost: float = 50.0       # Score boost when SMC confluence exists
+    require_smc_for_ts: bool = False    # If True, Turtle Soup requires SMC confluence
+
 
 # ============================================================================
 # Dual Strategy Scanner
@@ -136,6 +148,11 @@ class DualStrategyScanner:
     def __init__(self, params: Optional[DualStrategyParams] = None, preview_mode: bool = False):
         self.params = params or DualStrategyParams()
         self.preview_mode = preview_mode  # Use current bar values for weekend analysis
+
+        # Initialize SMC detector if available and enabled
+        self.smc_detector = None
+        if SMC_AVAILABLE and self.params.use_smc_confluence:
+            self.smc_detector = SmartMoneyDetector()
 
     def _compute_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
         """Compute all indicators for both strategies."""
@@ -167,6 +184,33 @@ class DualStrategyScanner:
             g['bars_since_low'] = bars_since_low
             g['sma200_sig'] = g['sma200'].shift(1)
             g['atr14_sig'] = g['atr14'].shift(1)
+
+            # Smart Money Concepts detection (Order Blocks, FVG, Liquidity Sweeps)
+            if self.smc_detector is not None:
+                try:
+                    smc_df = self.smc_detector.detect_all(g)
+                    # Add SMC columns to group
+                    g['smc_ob_bullish'] = smc_df['ob_bullish'].values
+                    g['smc_fvg_bullish'] = smc_df['fvg_bullish'].values
+                    g['smc_liq_sweep_low'] = smc_df['liq_sweep_low'].values
+                    g['smc_choch_bullish'] = smc_df['choch_bullish'].values
+                    g['smc_bullish_confluence'] = smc_df['smc_bullish_confluence'].values
+                    g['smc_high_prob_long'] = smc_df['smc_high_prob_long'].values
+                except Exception:
+                    # Fallback if SMC detection fails
+                    g['smc_ob_bullish'] = False
+                    g['smc_fvg_bullish'] = False
+                    g['smc_liq_sweep_low'] = False
+                    g['smc_choch_bullish'] = False
+                    g['smc_bullish_confluence'] = False
+                    g['smc_high_prob_long'] = False
+            else:
+                g['smc_ob_bullish'] = False
+                g['smc_fvg_bullish'] = False
+                g['smc_liq_sweep_low'] = False
+                g['smc_choch_bullish'] = False
+                g['smc_bullish_confluence'] = False
+                g['smc_high_prob_long'] = False
 
             parts.append(g)
 
@@ -238,12 +282,46 @@ class DualStrategyScanner:
         sweep_distance = prior_N_low - low
         sweep_strength = sweep_distance / atr_val if atr_val > 0 else 0
 
-        # Only accept strong sweeps (> 1.0 ATR)
+        # Only accept strong sweeps (> 0.3 ATR)
         if sweep_strength < self.params.ts_min_sweep_strength:
             return False, 0.0, ""
 
-        score = sweep_strength * 100  # Higher sweep = better
+        # Check Smart Money Concepts confluence
+        smc_confluence = bool(row.get('smc_bullish_confluence', False))
+        smc_high_prob = bool(row.get('smc_high_prob_long', False))
+        has_ob = bool(row.get('smc_ob_bullish', False))
+        has_fvg = bool(row.get('smc_fvg_bullish', False))
+        has_choch = bool(row.get('smc_choch_bullish', False))
+
+        # If require_smc_for_ts is True, must have SMC confluence
+        if self.params.require_smc_for_ts and not smc_confluence:
+            return False, 0.0, ""
+
+        # Base score from sweep strength
+        score = sweep_strength * 100
+
+        # Boost score for SMC confluence
+        smc_factors = []
+        if smc_high_prob:
+            score += self.params.smc_score_boost * 2  # Double boost for high prob
+            smc_factors.append("HP")
+        elif smc_confluence:
+            score += self.params.smc_score_boost
+            smc_factors.append("CONF")
+        if has_ob:
+            score += 20
+            smc_factors.append("OB")
+        if has_fvg:
+            score += 15
+            smc_factors.append("FVG")
+        if has_choch:
+            score += 25
+            smc_factors.append("CHoCH")
+
+        # Build reason string
         reason = f"TurtleSoup[sweep={sweep_strength:.2f}ATR]"
+        if smc_factors:
+            reason += f"+SMC[{'+'.join(smc_factors)}]"
 
         return True, score, reason
 
@@ -318,10 +396,15 @@ class DualStrategyScanner:
                         'time_stop_bars': self.params.ts_time_stop,
                         'ibs': round(float(row['ibs']), 3) if pd.notna(row.get('ibs')) else None,
                         'rsi2': round(float(row['rsi2']), 2) if pd.notna(row.get('rsi2')) else None,
+                        'smc_confluence': bool(row.get('smc_bullish_confluence', False)),
+                        'smc_ob': bool(row.get('smc_ob_bullish', False)),
+                        'smc_fvg': bool(row.get('smc_fvg_bullish', False)),
+                        'smc_choch': bool(row.get('smc_choch_bullish', False)),
                     })
 
         cols = ['timestamp', 'symbol', 'side', 'strategy', 'entry_price', 'stop_loss',
-                'take_profit', 'reason', 'score', 'atr', 'time_stop_bars', 'ibs', 'rsi2', 'oversold_tier']
+                'take_profit', 'reason', 'score', 'atr', 'time_stop_bars', 'ibs', 'rsi2', 'oversold_tier',
+                'smc_confluence', 'smc_ob', 'smc_fvg', 'smc_choch']
         result = pd.DataFrame(rows, columns=cols) if rows else pd.DataFrame(columns=cols)
 
         if not result.empty:
@@ -400,10 +483,15 @@ class DualStrategyScanner:
                     'time_stop_bars': self.params.ts_time_stop,
                     'ibs': round(float(row['ibs']), 3) if pd.notna(row.get('ibs')) else None,
                     'rsi2': round(float(row['rsi2']), 2) if pd.notna(row.get('rsi2')) else None,
+                    'smc_confluence': bool(row.get('smc_bullish_confluence', False)),
+                    'smc_ob': bool(row.get('smc_ob_bullish', False)),
+                    'smc_fvg': bool(row.get('smc_fvg_bullish', False)),
+                    'smc_choch': bool(row.get('smc_choch_bullish', False)),
                 })
 
         cols = ['timestamp', 'symbol', 'side', 'strategy', 'entry_price', 'stop_loss',
-                'take_profit', 'reason', 'score', 'atr', 'time_stop_bars', 'ibs', 'rsi2', 'oversold_tier']
+                'take_profit', 'reason', 'score', 'atr', 'time_stop_bars', 'ibs', 'rsi2', 'oversold_tier',
+                'smc_confluence', 'smc_ob', 'smc_fvg', 'smc_choch']
         result = pd.DataFrame(out, columns=cols) if out else pd.DataFrame(columns=cols)
 
         if not result.empty:

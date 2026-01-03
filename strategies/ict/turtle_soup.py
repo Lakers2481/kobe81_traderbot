@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 
 import warnings as _warnings
 _warnings.warn(
@@ -77,7 +78,6 @@ References:
 - https://www.mql5.com/en/articles/2717
 - https://oxfordstrat.com/trading-strategies/turtle-soup-plus-1/
 """
-from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Optional, List, Dict
