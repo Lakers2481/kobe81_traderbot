@@ -93,7 +93,7 @@ class RLTradingAgent:
             first_symbol = list(price_data.keys())[0]
             self.env = TradingEnv(
                 price_data=price_data[first_symbol],
-                reward_type='sharpe',
+                reward_type='sortino',  # Sortino > Sharpe for trading (penalizes downside only)
             )
 
         if self.env is None:
@@ -221,8 +221,8 @@ class RLTradingAgent:
         if test_data is None or test_data.empty:
             return {'error': 'no_test_data'}
 
-        env = TradingEnv(price_data=test_data, reward_type='sharpe')
-        obs = env.reset()
+        env = TradingEnv(price_data=test_data, reward_type='sortino')
+        obs, _ = env.reset()
 
         total_reward = 0.0
         n_trades = 0
@@ -230,10 +230,10 @@ class RLTradingAgent:
 
         while True:
             action, _ = self.predict(obs)
-            obs, reward, done, info = env.step(action)
+            obs, reward, terminated, truncated, info = env.step(action)
             total_reward += reward
 
-            if done:
+            if terminated or truncated:
                 break
 
         n_trades = len(env.trades)

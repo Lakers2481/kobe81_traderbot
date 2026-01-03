@@ -27,11 +27,24 @@ except ImportError:
         spaces = None
 
 
-class TradingEnv:
+# Create base class dynamically based on availability
+if GYM_AVAILABLE:
+    try:
+        import gymnasium as gym
+        GymEnvBase = gym.Env
+    except ImportError:
+        import gym
+        GymEnvBase = gym.Env
+else:
+    # Fallback to object if no gym available
+    GymEnvBase = object
+
+
+class TradingEnv(GymEnvBase):
     """
     Custom trading environment for RL training.
 
-    Supports standard Gym interface even without gym installed.
+    Supports standard Gym interface.
     """
 
     # Action definitions
@@ -60,6 +73,8 @@ class TradingEnv:
             reward_type: Reward function type ('r_multiple', 'sharpe', 'profit_factor')
             lookback: Number of bars for observation
         """
+        super().__init__()
+
         self.price_data = price_data.reset_index(drop=True)
         self.initial_capital = initial_capital
         self.max_position_pct = max_position_pct
@@ -83,6 +98,15 @@ class TradingEnv:
         self.n_features = self._features.shape[1] if hasattr(self, '_features') else 10
         self.observation_space_shape = (self.n_features + 3,)  # features + position info
         self.action_space_n = 4  # hold, buy, sell, close
+
+        # Define observation and action spaces for Gym
+        if GYM_AVAILABLE and spaces is not None:
+            self.observation_space = spaces.Box(
+                low=-np.inf, high=np.inf,
+                shape=self.observation_space_shape,
+                dtype=np.float32
+            )
+            self.action_space = spaces.Discrete(self.action_space_n)
 
     def _compute_features(self) -> None:
         """Compute technical features from price data."""
@@ -160,8 +184,12 @@ class TradingEnv:
 
         self._features = np.column_stack(features)
 
-    def reset(self) -> np.ndarray:
+    def reset(self, seed=None, options=None) -> Tuple[np.ndarray, Dict]:
         """Reset environment to initial state."""
+        # Handle seed for reproducibility
+        if seed is not None:
+            np.random.seed(seed)
+
         self.current_step = self.lookback
         self.position = 0
         self.position_price = 0.0
@@ -169,7 +197,11 @@ class TradingEnv:
         self.portfolio_value = self.initial_capital
         self.trades = []
         self.returns = []
-        return self._get_observation()
+
+        observation = self._get_observation()
+        info = {}
+
+        return observation, info
 
     def _get_observation(self) -> np.ndarray:
         """Get current observation."""
@@ -187,7 +219,7 @@ class TradingEnv:
 
         return np.concatenate([features, position_info]).astype(np.float32)
 
-    def step(self, action: int) -> Tuple[np.ndarray, float, bool, Dict]:
+    def step(self, action: int) -> Tuple[np.ndarray, float, bool, bool, Dict]:
         """
         Execute one step in the environment.
 
@@ -195,10 +227,10 @@ class TradingEnv:
             action: Action to take (0=hold, 1=buy, 2=sell, 3=close)
 
         Returns:
-            Tuple of (observation, reward, done, info)
+            Tuple of (observation, reward, terminated, truncated, info)
         """
         if self.current_step >= len(self.price_data) - 1:
-            return self._get_observation(), 0.0, True, {}
+            return self._get_observation(), 0.0, True, False, {}
 
         current_price = self.price_data['close'].iloc[self.current_step]
         next_price = self.price_data['close'].iloc[self.current_step + 1]
@@ -243,7 +275,8 @@ class TradingEnv:
             reward = (self.portfolio_value / self.initial_capital) - 1
 
         self.current_step += 1
-        done = self.current_step >= len(self.price_data) - 1
+        terminated = self.current_step >= len(self.price_data) - 1
+        truncated = False  # We don't use truncation
 
         info = {
             'portfolio_value': self.portfolio_value,
@@ -251,7 +284,7 @@ class TradingEnv:
             'trades': len(self.trades),
         }
 
-        return self._get_observation(), reward, done, info
+        return self._get_observation(), reward, terminated, truncated, info
 
     def _open_position(self, direction: int, price: float) -> None:
         """Open a new position."""
