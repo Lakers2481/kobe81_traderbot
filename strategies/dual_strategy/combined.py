@@ -97,9 +97,9 @@ class DualStrategyParams:
     """
     Parameters for the dual strategy system.
 
-    v2.3 PARAMETERS - Autonomous Brain validated discovery applied
-    - IBS+RSI: rsi_entry raised to 10.0 (validated +19.1% improvement)
-    - Turtle Soup: 61.0% WR, 1.37 PF (looser sweep, tight exits)
+    v2.4 PARAMETERS - Autonomous Brain validated discoveries applied
+    - IBS+RSI: rsi_entry=10.0 (validated +19.1% improvement)
+    - Turtle Soup: ts_lookback=15 (validated +32% more signals)
     """
 
     # IBS + RSI Parameters (v2.3 - VALIDATED DISCOVERY)
@@ -111,8 +111,8 @@ class DualStrategyParams:
     ibs_rsi_stop_mult: float = 2.0     # ATR multiplier for stop
     ibs_rsi_time_stop: int = 7         # Time stop in bars
 
-    # Turtle Soup Parameters (v2.2 - OPTIMIZED FOR 61% WR, 1.37 PF)
-    ts_lookback: int = 20
+    # Turtle Soup Parameters (v2.4 - OPTIMIZED FOR MORE SIGNALS)
+    ts_lookback: int = 15              # v2.4: Was 20 - validated +32% more TS signals
     ts_min_bars_since_extreme: int = 3  # Aged extremes
     ts_min_sweep_strength: float = 0.3  # Looser sweep = more quality signals
     ts_stop_buffer_mult: float = 0.2    # Tight stop for higher WR

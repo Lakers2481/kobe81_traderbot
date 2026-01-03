@@ -1,0 +1,87 @@
+{
+  "version": "v2.4",
+  "frozen_date": "2026-01-02",
+  "verified_by": "Autonomous Brain",
+  "status": "VALIDATED DISCOVERIES APPLIED",
+
+  "changelog": {
+    "v2.3": "rsi_entry: 5.0 -> 10.0 (validated +19.1% improvement)",
+    "v2.4": "ts_lookback: 20 -> 15 (validated +32% more TurtleSoup signals)"
+  },
+
+  "verification_results": {
+    "ibs_rsi": {
+      "trades": 903,
+      "win_rate": 0.599,
+      "profit_factor": 1.46,
+      "avg_win_pct": 2.34,
+      "avg_loss_pct": 2.98,
+      "criteria_passed": true
+    },
+    "turtle_soup": {
+      "trades": 98,
+      "win_rate": 0.610,
+      "profit_factor": 1.37,
+      "avg_win_pct": 1.82,
+      "avg_loss_pct": 2.42,
+      "criteria_passed": true,
+      "note": "+32% more signals vs v2.3 (74 -> 98)"
+    },
+    "combined": {
+      "trades": 1001,
+      "win_rate": 0.602,
+      "profit_factor": 1.44,
+      "avg_win_pct": 2.20,
+      "avg_loss_pct": 2.84,
+      "criteria_passed": true
+    }
+  },
+
+  "ibs_rsi_params": {
+    "description": "IBS+RSI Mean Reversion (v2.3 - Validated Discovery)",
+    "ibs_entry": 0.08,
+    "ibs_exit": 0.80,
+    "rsi_period": 2,
+    "rsi_entry": 10.0,
+    "rsi_exit": 70.0,
+    "stop_mult": 2.0,
+    "time_stop_bars": 7,
+    "sma_period": 200,
+    "atr_period": 14,
+    "min_price": 15.0
+  },
+
+  "turtle_soup_params": {
+    "description": "ICT Turtle Soup / Liquidity Sweep (v2.4 - More Signals)",
+    "lookback": 15,
+    "min_bars_since_extreme": 3,
+    "min_sweep_strength": 0.3,
+    "stop_buffer_mult": 0.2,
+    "r_multiple": 0.5,
+    "time_stop_bars": 3,
+    "sma_period": 200,
+    "atr_period": 14,
+    "min_price": 15.0,
+    "allow_shorts": false
+  },
+
+  "usage_notes": {
+    "correct_usage": "Use DualStrategyScanner from strategies/dual_strategy/combined.py",
+    "wrong_usage": "DO NOT use TurtleSoupStrategy directly from strategies/ict/turtle_soup.py",
+    "reason": "DualStrategyScanner has min_sweep_strength=0.3 filter which is ESSENTIAL for 61% WR",
+    "without_filter": "Using TurtleSoupStrategy directly yields ~48% WR, 0.85 PF (FAIL)"
+  },
+
+  "backtest_command": "python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --cap 200",
+
+  "source_files": {
+    "dual_scanner": "strategies/dual_strategy/combined.py",
+    "ibs_rsi_standalone": "strategies/ibs_rsi/strategy.py",
+    "turtle_soup_standalone": "strategies/ict/turtle_soup.py"
+  },
+
+  "backtest_evidence": {
+    "2021_2024_cap200": "reports/backtest_dual_2021_2024_cap200.txt",
+    "2015_2024_cap200": "reports/backtest_dual_latest.txt"
+  }
+}
