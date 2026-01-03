@@ -254,13 +254,43 @@ class ResearchEngine:
             new_pf = result.get("profit_factor", 1.0)
             new_wr = result.get("win_rate", 0.5)
 
+            # SUSPICIOUS RESULT DETECTOR - Flag unrealistic results
+            # Real trading strategies rarely exceed 65-70% win rate
+            if new_wr > 0.90:
+                logger.warning(
+                    f"REJECTED: WR={new_wr:.1%} is IMPOSSIBLE - likely lookahead bias or bug"
+                )
+                experiment.status = "rejected"
+                experiment.result = {
+                    "status": "rejected",
+                    "reason": "Win rate > 90% indicates lookahead bias or data error",
+                    "win_rate": new_wr
+                }
+                self.save_state()
+                return experiment.result
+            elif new_wr > 0.80:
+                logger.warning(
+                    f"VERY SUSPICIOUS: WR={new_wr:.1%} - requires multiple validations"
+                )
+                result["suspicious"] = "VERY_HIGH"
+                result["requires_revalidation"] = True
+            elif new_wr > 0.70:
+                logger.warning(
+                    f"SUSPICIOUS: WR={new_wr:.1%} - flagged for review"
+                )
+                result["suspicious"] = "HIGH"
+
             experiment.status = "completed"
             experiment.result = result
             experiment.improvement = ((new_pf - baseline_pf) / baseline_pf) * 100
 
-            # Only record discovery if REAL improvement > 5%
-            if experiment.improvement > 5:
+            # Only record discovery if REAL improvement > 5% AND not suspicious
+            if experiment.improvement > 5 and result.get("suspicious") is None:
                 self._record_discovery(experiment)
+            elif experiment.improvement > 5 and result.get("suspicious"):
+                logger.warning(
+                    f"Discovery flagged but NOT recorded due to suspicious WR={new_wr:.1%}"
+                )
 
             logger.info(
                 f"REAL Experiment complete: WR={new_wr:.1%}, PF={new_pf:.2f}, "
@@ -588,6 +618,26 @@ class ResearchEngine:
             new_pf = backtest_result.get("profit_factor", 1.0)
             new_wr = backtest_result.get("win_rate", 0.5)
 
+            # SUSPICIOUS RESULT DETECTOR - Real strategies don't exceed 70% WR
+            suspicious_flag = None
+            if new_wr > 0.90:
+                logger.warning(
+                    f"PF EXPERIMENT REJECTED: WR={new_wr:.1%} is IMPOSSIBLE"
+                )
+                exp.status = "rejected"
+                exp.result = {
+                    "status": "rejected",
+                    "reason": "Win rate > 90% indicates lookahead bias",
+                    "win_rate": new_wr
+                }
+                return exp.result
+            elif new_wr > 0.80:
+                logger.warning(f"PF VERY SUSPICIOUS: WR={new_wr:.1%}")
+                suspicious_flag = "VERY_HIGH"
+            elif new_wr > 0.70:
+                logger.warning(f"PF SUSPICIOUS: WR={new_wr:.1%}")
+                suspicious_flag = "HIGH"
+
             pf_improvement = ((new_pf - base_pf) / base_pf) * 100
 
             result = {
@@ -601,13 +651,15 @@ class ResearchEngine:
                 "data_source": "REAL_BACKTEST",
                 "timestamp": datetime.now(ET).isoformat(),
             }
+            if suspicious_flag:
+                result["suspicious"] = suspicious_flag
 
             exp.status = "completed"
             exp.result = result
             exp.improvement = result["pf_improvement"]
 
-            # Record discovery if REAL PF improved > 5%
-            if result["pf_improvement"] > 5:
+            # Record discovery if REAL PF improved > 5% AND not suspicious
+            if result["pf_improvement"] > 5 and not suspicious_flag:
                 disc = Discovery(
                     id=f"pf_disc_{datetime.now(ET).strftime('%Y%m%d_%H%M%S')}",
                     type="pf_optimization",
@@ -617,6 +669,10 @@ class ResearchEngine:
                 )
                 self.discoveries.append(disc)
                 logger.info(f"REAL PF Discovery: {disc.description}")
+            elif result["pf_improvement"] > 5 and suspicious_flag:
+                logger.warning(
+                    f"PF Discovery REJECTED - WR={new_wr:.1%} too high, likely overfitting"
+                )
 
             logger.info(f"REAL PF Experiment: {idea['name']} -> PF={new_pf:.2f} ({result['pf_improvement']:+.1f}%)")
 
