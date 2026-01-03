@@ -38,22 +38,32 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from core.structured_log import jlog
 
-# Check for smartmoneyconcepts availability
+# Check for smartmoneyconcepts availability AND required functions
+# The library API has changed - verify functions exist before using
+SMC_AVAILABLE = False
+SMC_OB_AVAILABLE = False
+SMC_FVG_AVAILABLE = False
+SMC_LIQ_AVAILABLE = False
+SMC_BOS_AVAILABLE = False
+
 try:
     import io
-    import sys
+    import sys as _sys
     # Suppress library's print statement (has Unicode that fails on Windows)
-    _old_stdout = sys.stdout
-    sys.stdout = io.StringIO()
+    _old_stdout = _sys.stdout
+    _sys.stdout = io.StringIO()
     try:
         import smartmoneyconcepts as smc
         SMC_AVAILABLE = True
+        # Check which functions actually exist
+        SMC_OB_AVAILABLE = hasattr(smc, 'ob') and callable(getattr(smc, 'ob', None))
+        SMC_FVG_AVAILABLE = hasattr(smc, 'fvg') and callable(getattr(smc, 'fvg', None))
+        SMC_LIQ_AVAILABLE = hasattr(smc, 'liquidity') and callable(getattr(smc, 'liquidity', None))
+        SMC_BOS_AVAILABLE = hasattr(smc, 'bos_choch') and callable(getattr(smc, 'bos_choch', None))
     finally:
-        sys.stdout = _old_stdout
+        _sys.stdout = _old_stdout
 except ImportError:
-    SMC_AVAILABLE = False
-    jlog("smc_not_available", level="INFO",
-         message="Install smartmoneyconcepts: pip install smartmoneyconcepts")
+    pass  # Silent - will use custom implementations
 
 
 class MarketStructure(Enum):
@@ -131,7 +141,7 @@ class OrderBlockDetector:
         df = df.copy()
         df.columns = df.columns.str.lower()
 
-        if SMC_AVAILABLE:
+        if SMC_OB_AVAILABLE:
             try:
                 # Use library implementation
                 ob_data = smc.ob(
@@ -144,10 +154,10 @@ class OrderBlockDetector:
                 df['ob_top'] = ob_data.get('Top', np.nan)
                 df['ob_bottom'] = ob_data.get('Bottom', np.nan)
                 return df
-            except Exception as e:
-                jlog("smc_ob_error", level="WARNING", error=str(e))
+            except Exception:
+                pass  # Silent fallback to custom implementation
 
-        # Fallback: Custom implementation
+        # Use custom implementation
         return self._detect_custom(df)
 
     def _detect_custom(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -230,7 +240,7 @@ class FairValueGapDetector:
         df = df.copy()
         df.columns = df.columns.str.lower()
 
-        if SMC_AVAILABLE:
+        if SMC_FVG_AVAILABLE:
             try:
                 fvg_data = smc.fvg(df)
                 df['fvg_bullish'] = fvg_data['FVG'] == 1
@@ -238,10 +248,10 @@ class FairValueGapDetector:
                 df['fvg_top'] = fvg_data.get('Top', np.nan)
                 df['fvg_bottom'] = fvg_data.get('Bottom', np.nan)
                 return df
-            except Exception as e:
-                jlog("smc_fvg_error", level="WARNING", error=str(e))
+            except Exception:
+                pass  # Silent fallback to custom implementation
 
-        # Fallback: Custom implementation
+        # Use custom implementation
         return self._detect_custom(df)
 
     def _detect_custom(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -294,17 +304,17 @@ class LiquiditySweepDetector:
         df = df.copy()
         df.columns = df.columns.str.lower()
 
-        if SMC_AVAILABLE:
+        if SMC_LIQ_AVAILABLE:
             try:
                 liq_data = smc.liquidity(df, swing_length=self.swing_length)
                 df['liq_sweep_high'] = liq_data.get('Liquidity', 0) == 1
                 df['liq_sweep_low'] = liq_data.get('Liquidity', 0) == -1
                 df['liq_level'] = liq_data.get('Level', np.nan)
                 return df
-            except Exception as e:
-                jlog("smc_liq_error", level="WARNING", error=str(e))
+            except Exception:
+                pass  # Silent fallback to custom implementation
 
-        # Fallback: Custom implementation
+        # Use custom implementation
         return self._detect_custom(df)
 
     def _detect_custom(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -358,7 +368,7 @@ class BreakOfStructureDetector:
         df = df.copy()
         df.columns = df.columns.str.lower()
 
-        if SMC_AVAILABLE:
+        if SMC_BOS_AVAILABLE:
             try:
                 bos_data = smc.bos_choch(df, swing_length=self.swing_length)
                 df['bos_bullish'] = bos_data.get('BOS', 0) == 1
@@ -366,10 +376,10 @@ class BreakOfStructureDetector:
                 df['choch_bullish'] = bos_data.get('CHOCH', 0) == 1
                 df['choch_bearish'] = bos_data.get('CHOCH', 0) == -1
                 return df
-            except Exception as e:
-                jlog("smc_bos_error", level="WARNING", error=str(e))
+            except Exception:
+                pass  # Silent fallback to custom implementation
 
-        # Fallback: Custom implementation
+        # Use custom implementation
         return self._detect_custom(df)
 
     def _detect_custom(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -525,12 +535,12 @@ class SmartMoneyDetector:
         # Add confluence signals
         df = self._add_confluence_signals(df)
 
-        jlog("smc_detection_complete", level="DEBUG",
-             ob_bullish=df['ob_bullish'].sum(),
-             ob_bearish=df['ob_bearish'].sum(),
-             fvg_bullish=df['fvg_bullish'].sum(),
-             fvg_bearish=df['fvg_bearish'].sum(),
-             sweeps=df['liq_sweep_high'].sum() + df['liq_sweep_low'].sum())
+        # Only log if high-probability signals detected (reduce noise)
+        high_prob_count = df['smc_high_prob_long'].sum() + df['smc_high_prob_short'].sum()
+        if high_prob_count > 0:
+            jlog("smc_signals_found", level="INFO",
+                 high_prob_long=int(df['smc_high_prob_long'].sum()),
+                 high_prob_short=int(df['smc_high_prob_short'].sum()))
 
         return df
 
