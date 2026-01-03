@@ -598,6 +598,344 @@ def sector_correlations(**kwargs) -> Dict[str, Any]:
 
 
 # =============================================================================
+# UNIQUE PATTERN DISCOVERY - Finds PLTR-style patterns from REAL data
+# =============================================================================
+
+def discover_unique_patterns(**kwargs) -> Dict[str, Any]:
+    """
+    Discover UNIQUE, ACTIONABLE patterns from REAL historical data.
+
+    This is what makes the brain valuable - finding insights like:
+    "AMAT: 23 times 5+ consecutive DOWN days -> 83% bounce within 5 days (+3.17%)"
+
+    NOT generic BS. REAL data. UNIQUE insights.
+    """
+    logger.info("Discovering unique patterns from REAL data...")
+
+    import pandas as pd
+    import numpy as np
+    from pathlib import Path
+    from datetime import datetime
+
+    def analyze_consecutive_pattern(df: pd.DataFrame, direction: str = 'down', min_streak: int = 3):
+        """Analyze consecutive day patterns and their reversal rates."""
+        if df is None or len(df) < 50:
+            return None
+
+        df = df.copy()
+        df['return'] = df['close'].pct_change()
+
+        if direction == 'down':
+            df['streak_day'] = (df['return'] < 0).astype(int)
+        else:
+            df['streak_day'] = (df['return'] > 0).astype(int)
+
+        streak_groups = (df['streak_day'] != df['streak_day'].shift()).cumsum()
+        df['streak_len'] = df.groupby(streak_groups)['streak_day'].cumsum()
+
+        results = {}
+        for streak_len in range(min_streak, 8):
+            mask = (df['streak_len'] == streak_len) & (df['streak_day'] == 1)
+            streak_end_indices = df[mask].index.tolist()
+
+            if len(streak_end_indices) < 10:
+                continue
+
+            reversals_5d = 0
+            avg_5d_return = []
+
+            for idx in streak_end_indices:
+                if idx + 7 >= len(df):
+                    continue
+
+                if direction == 'down':
+                    if df.loc[idx + 1:idx + 5, 'return'].sum() > 0:
+                        reversals_5d += 1
+                    avg_5d_return.append(df.loc[idx + 1:idx + 5, 'return'].sum())
+
+            valid_samples = len(avg_5d_return)
+            if valid_samples >= 10:
+                results[streak_len] = {
+                    'sample_size': valid_samples,
+                    'reversal_5d': reversals_5d / valid_samples * 100,
+                    'avg_5d_move': np.mean(avg_5d_return) * 100,
+                }
+
+        return results
+
+    try:
+        cache_dir = Path("data/polygon_cache")
+        csv_files = sorted(cache_dir.glob("*.csv"))
+        symbols = [f.stem for f in csv_files if f.stem not in ['SPY', 'VIX']]
+
+        discoveries = []
+
+        for symbol in symbols[:50]:  # Analyze top 50 for speed
+            try:
+                df = pd.read_csv(cache_dir / f"{symbol}.csv", parse_dates=['timestamp'])
+                df = df.sort_values('timestamp').reset_index(drop=True)
+
+                if len(df) < 500:
+                    continue
+
+                results = analyze_consecutive_pattern(df, direction='down', min_streak=4)
+                if results:
+                    for streak_len, stats in results.items():
+                        if stats['sample_size'] >= 15 and stats['reversal_5d'] >= 75:
+                            discoveries.append({
+                                'symbol': symbol,
+                                'pattern': f'{streak_len}+ consecutive DOWN days',
+                                'sample_size': stats['sample_size'],
+                                'reversal_rate': stats['reversal_5d'],
+                                'avg_move': stats['avg_5d_move'],
+                            })
+            except Exception:
+                continue
+
+        # Sort by reversal rate
+        discoveries.sort(key=lambda x: -x['reversal_rate'])
+
+        # Save to report
+        if discoveries:
+            report_dir = Path("reports")
+            report_dir.mkdir(exist_ok=True)
+
+            report_file = report_dir / f"unique_discoveries_{datetime.now().strftime('%Y%m%d_%H%M')}.json"
+            import json
+            with open(report_file, 'w') as f:
+                json.dump({
+                    "generated": datetime.now().isoformat(),
+                    "total_discoveries": len(discoveries),
+                    "patterns": discoveries[:20]
+                }, f, indent=2)
+
+            logger.info(f"Found {len(discoveries)} unique patterns!")
+            for d in discoveries[:5]:
+                logger.info(f"  {d['symbol']}: {d['sample_size']} times {d['pattern']} -> {d['reversal_rate']:.0f}% bounce (avg +{d['avg_move']:.2f}%)")
+
+        return {
+            "status": "success",
+            "total_discoveries": len(discoveries),
+            "top_patterns": discoveries[:10],
+            "message": f"Found {len(discoveries)} unique patterns from REAL data"
+        }
+
+    except Exception as e:
+        logger.error(f"Pattern discovery error: {e}")
+        return {"status": "error", "error": str(e)}
+
+
+# =============================================================================
+# WEEKEND MORNING REPORT - Generates full game plan at 8:30 AM Central
+# =============================================================================
+
+def weekend_morning_report(**kwargs) -> Dict[str, Any]:
+    """
+    Generate comprehensive weekend morning report.
+    Runs at 8:30 AM Central (9:30 AM ET) on Saturday and Sunday.
+    """
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    CT = ZoneInfo("America/Chicago")
+    now = datetime.now(CT)
+
+    # Check if it's weekend and close to 8:30 AM Central
+    if now.weekday() not in [5, 6]:  # 5=Saturday, 6=Sunday
+        return {"status": "skipped", "reason": "Not a weekend"}
+
+    logger.info("=" * 80)
+    logger.info("WEEKEND MORNING REPORT - GENERATING FULL GAME PLAN")
+    logger.info("=" * 80)
+
+    report = {
+        "generated_at": datetime.now(ET).isoformat(),
+        "day": "Saturday" if now.weekday() == 5 else "Sunday",
+        "sections": {}
+    }
+
+    # 1. BRAIN STATUS
+    logger.info("Section 1: Brain Status...")
+    try:
+        heartbeat_file = Path("state/autonomous/heartbeat.json")
+        if heartbeat_file.exists():
+            heartbeat = json.loads(heartbeat_file.read_text())
+            report["sections"]["brain_status"] = {
+                "alive": heartbeat.get("alive", False),
+                "phase": heartbeat.get("phase", "unknown"),
+                "work_mode": heartbeat.get("work_mode", "unknown"),
+                "cycles": heartbeat.get("cycles", 0),
+                "uptime_hours": heartbeat.get("uptime_hours", 0),
+            }
+    except Exception as e:
+        report["sections"]["brain_status"] = {"error": str(e)}
+
+    # 2. RESEARCH SUMMARY
+    logger.info("Section 2: Research Summary...")
+    try:
+        from autonomous.research import ResearchEngine
+        engine = ResearchEngine()
+        summary = engine.get_research_summary()
+        report["sections"]["research"] = {
+            "total_experiments": summary.get("total_experiments", 0),
+            "discoveries": summary.get("discoveries", 0),
+            "best_improvement": summary.get("best_improvement", 0),
+        }
+    except Exception as e:
+        report["sections"]["research"] = {"error": str(e)}
+
+    # 3. GOAL PROGRESS
+    logger.info("Section 3: Goal Progress...")
+    try:
+        goals = engine.check_goals()
+        report["sections"]["goals"] = goals
+    except Exception as e:
+        report["sections"]["goals"] = {"error": str(e)}
+
+    # 4. DATA QUALITY
+    logger.info("Section 4: Data Quality...")
+    try:
+        cache_dir = Path("data/polygon_cache")
+        if cache_dir.exists():
+            files = list(cache_dir.glob("*.csv"))
+            report["sections"]["data"] = {
+                "cached_stocks": len(files),
+                "cache_healthy": len(files) >= 100,
+            }
+    except Exception as e:
+        report["sections"]["data"] = {"error": str(e)}
+
+    # 5. MONDAY GAME PLAN
+    logger.info("Section 5: Monday Game Plan...")
+    report["sections"]["monday_plan"] = {
+        "action_items": [
+            "8:00 AM ET - Premarket check for gaps/news",
+            "9:30 AM ET - Opening range observation (NO TRADES)",
+            "10:00 AM ET - First trading window opens",
+            "10:30 AM ET - Fallback scan if watchlist fails",
+            "11:30 AM ET - Lunch chop (NO TRADES)",
+            "14:30 PM ET - Power hour window opens",
+            "15:30 PM ET - Close management only",
+        ],
+        "key_reminders": [
+            "Max 2 trades from watchlist",
+            "Max 1 trade from fallback scan",
+            "Quality Gate: Score >= 65, Confidence >= 0.60",
+            "R:R minimum: 1.5:1 for watchlist, 2.0:1 for fallback",
+        ]
+    }
+
+    # 6. OVERNIGHT DISCOVERIES
+    logger.info("Section 6: Overnight Discoveries...")
+    try:
+        state_file = Path("state/autonomous/research/research_state.json")
+        if state_file.exists():
+            research_state = json.loads(state_file.read_text())
+            experiments = research_state.get("experiments", [])
+            discoveries = research_state.get("discoveries", [])
+
+            # Find best experiment
+            best_exp = None
+            best_improvement = -100
+            for exp in experiments:
+                imp = exp.get("improvement", 0) or 0
+                if imp > best_improvement:
+                    best_improvement = imp
+                    best_exp = exp
+
+            report["sections"]["overnight"] = {
+                "experiments_run": len(experiments),
+                "discoveries_found": len(discoveries),
+                "best_experiment": best_exp.get("hypothesis") if best_exp else "None",
+                "best_improvement": f"{best_improvement:+.1f}%" if best_exp else "N/A",
+            }
+    except Exception as e:
+        report["sections"]["overnight"] = {"error": str(e)}
+
+    # Save report to file
+    report_dir = Path("reports")
+    report_dir.mkdir(exist_ok=True)
+
+    date_str = now.strftime("%Y%m%d")
+    time_str = now.strftime("%H%M")
+
+    # JSON report
+    json_file = report_dir / f"weekend_morning_{date_str}_{time_str}.json"
+    json_file.write_text(json.dumps(report, indent=2))
+
+    # Markdown report for easy reading
+    md_file = report_dir / f"weekend_morning_{date_str}_{time_str}.md"
+    md_content = f"""# WEEKEND MORNING REPORT
+## {report['day']} - {now.strftime('%Y-%m-%d %H:%M')} Central
+
+---
+
+## BRAIN STATUS
+- Alive: {report['sections'].get('brain_status', {}).get('alive', 'Unknown')}
+- Phase: {report['sections'].get('brain_status', {}).get('phase', 'Unknown')}
+- Mode: {report['sections'].get('brain_status', {}).get('work_mode', 'Unknown')}
+- Cycles: {report['sections'].get('brain_status', {}).get('cycles', 0)}
+- Uptime: {report['sections'].get('brain_status', {}).get('uptime_hours', 0):.1f} hours
+
+---
+
+## RESEARCH SUMMARY
+- Experiments Run: {report['sections'].get('research', {}).get('total_experiments', 0)}
+- Discoveries: {report['sections'].get('research', {}).get('discoveries', 0)}
+- Best Improvement: {report['sections'].get('research', {}).get('best_improvement', 0):.1f}%
+
+---
+
+## OVERNIGHT DISCOVERIES
+- Experiments Run: {report['sections'].get('overnight', {}).get('experiments_run', 0)}
+- Discoveries Found: {report['sections'].get('overnight', {}).get('discoveries_found', 0)}
+- Best Experiment: {report['sections'].get('overnight', {}).get('best_experiment', 'None')}
+- Best Improvement: {report['sections'].get('overnight', {}).get('best_improvement', 'N/A')}
+
+---
+
+## MONDAY GAME PLAN
+
+### Kill Zones (ET)
+| Time | Zone | Action |
+|------|------|--------|
+| Before 9:30 | Pre-Market | Check gaps/news |
+| 9:30-10:00 | Opening Range | OBSERVE ONLY |
+| 10:00-11:30 | PRIMARY | Trade from watchlist |
+| 11:30-14:30 | Lunch Chop | NO TRADES |
+| 14:30-15:30 | Power Hour | Secondary window |
+| 15:30-16:00 | Close | Manage only |
+
+### Quality Gates
+- Watchlist: Score >= 65, Confidence >= 60%, R:R >= 1.5:1
+- Fallback: Score >= 75, Confidence >= 70%, R:R >= 2.0:1
+- Max 2 trades from watchlist, max 1 from fallback
+
+---
+
+## DATA STATUS
+- Cached Stocks: {report['sections'].get('data', {}).get('cached_stocks', 0)}
+- Cache Healthy: {'YES' if report['sections'].get('data', {}).get('cache_healthy', False) else 'NO'}
+
+---
+
+*Report generated automatically by Kobe Brain*
+*Next report: Monday 8:00 AM ET (Premarket Check)*
+"""
+    md_file.write_text(md_content)
+
+    logger.info(f"Weekend morning report saved to {md_file}")
+    logger.info("=" * 80)
+
+    return {
+        "status": "success",
+        "report_file": str(md_file),
+        "json_file": str(json_file),
+        "summary": report["sections"],
+    }
+
+
+# =============================================================================
 # HANDLER REGISTRY
 # =============================================================================
 
@@ -654,6 +992,12 @@ HANDLERS = {
     "autonomous.patterns:analyze_seasonality": analyze_seasonality,
     "autonomous.patterns:mean_reversion_timing": mean_reversion_timing,
     "autonomous.patterns:sector_correlations": sector_correlations,
+
+    # UNIQUE Pattern Discovery (PLTR-style insights from REAL data)
+    "autonomous.patterns:discover_unique": discover_unique_patterns,
+
+    # Weekend Morning Report (8:30 AM Central game plan)
+    "autonomous.handlers:weekend_morning_report": weekend_morning_report,
 }
 
 

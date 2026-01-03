@@ -575,6 +575,20 @@ class AutonomousScheduler:
                 recurring=True,
             ),
 
+            # Weekend Morning Report (8:30 AM Central = 9:30 AM ET)
+            Task(
+                id="weekend_morning_report",
+                name="Weekend Morning Game Plan",
+                category=TaskCategory.TRADING,
+                priority=TaskPriority.HIGH,
+                description="Generate comprehensive weekend morning report at 8:30 AM Central",
+                handler="autonomous.handlers:weekend_morning_report",
+                valid_phases=[MarketPhase.WEEKEND],
+                valid_modes=[WorkMode.DEEP_RESEARCH, WorkMode.RESEARCH],
+                cooldown_minutes=60,  # Run every hour during weekend morning
+                recurring=True,
+            ),
+
             # Pattern Rhymes Tasks (History Rhymes)
             Task(
                 id="analyze_seasonality",
@@ -610,6 +624,20 @@ class AutonomousScheduler:
                 valid_phases=[MarketPhase.NIGHT, MarketPhase.WEEKEND],
                 valid_modes=[WorkMode.DEEP_RESEARCH],
                 cooldown_minutes=720,  # Every 12 hours
+                recurring=True,
+            ),
+
+            # UNIQUE Pattern Discovery - PLTR-style insights from REAL data
+            Task(
+                id="discover_unique_patterns",
+                name="Discover Unique Patterns",
+                category=TaskCategory.DISCOVERY,
+                priority=TaskPriority.HIGH,
+                description="Find UNIQUE patterns like 'AMAT: 23x 5+ down days -> 83% bounce' from REAL data",
+                handler="autonomous.patterns:discover_unique",
+                valid_phases=[MarketPhase.NIGHT, MarketPhase.WEEKEND, MarketPhase.AFTER_HOURS],
+                valid_modes=[WorkMode.DEEP_RESEARCH, WorkMode.RESEARCH, WorkMode.OPTIMIZATION],
+                cooldown_minutes=120,  # Every 2 hours - find new insights frequently
                 recurring=True,
             ),
         ]

@@ -58,10 +58,20 @@ class TradeThesis:
     volume_analysis: Dict = field(default_factory=dict)
     sector_relative_strength: Dict = field(default_factory=dict)
 
+    # NEW: Entry Timing
+    entry_timing: Dict = field(default_factory=dict)
+    is_a_plus_pattern: bool = False  # True if 20+ samples, 90%+ win rate
+    pattern_grade: str = "D"  # "A+" | "A" | "B" | "C" | "D"
+
     # News & Sentiment
     news_headlines: List[Dict] = field(default_factory=list)
     aggregated_sentiment: Dict = field(default_factory=dict)
     sentiment_interpretation: str = ""
+
+    # NEW: Alternative Data Sources
+    congressional_trades: Dict = field(default_factory=dict)
+    insider_activity: Dict = field(default_factory=dict)
+    options_flow: Dict = field(default_factory=dict)
 
     # Options Data
     expected_move: Dict = field(default_factory=dict)
@@ -114,6 +124,9 @@ class TradeThesisBuilder:
         self._pattern_analyzer = None
         self._em_calculator = None
         self._news_processor = None
+        self._congressional_client = None
+        self._insider_client = None
+        self._options_flow_client = None
 
     @property
     def pattern_analyzer(self):
@@ -144,6 +157,39 @@ class TradeThesisBuilder:
             except Exception as e:
                 logger.warning(f"Could not load news processor: {e}")
         return self._news_processor
+
+    @property
+    def congressional_client(self):
+        """Lazy load congressional trades client."""
+        if self._congressional_client is None:
+            try:
+                from altdata.congressional_trades import get_congressional_client
+                self._congressional_client = get_congressional_client()
+            except Exception as e:
+                logger.warning(f"Could not load congressional client: {e}")
+        return self._congressional_client
+
+    @property
+    def insider_client(self):
+        """Lazy load insider activity client."""
+        if self._insider_client is None:
+            try:
+                from altdata.insider_activity import get_insider_client
+                self._insider_client = get_insider_client()
+            except Exception as e:
+                logger.warning(f"Could not load insider client: {e}")
+        return self._insider_client
+
+    @property
+    def options_flow_client(self):
+        """Lazy load options flow client."""
+        if self._options_flow_client is None:
+            try:
+                from altdata.options_flow import get_options_flow_client
+                self._options_flow_client = get_options_flow_client()
+            except Exception as e:
+                logger.warning(f"Could not load options flow client: {e}")
+        return self._options_flow_client
 
     def build_thesis(
         self,
@@ -190,8 +236,11 @@ class TradeThesisBuilder:
         self._gather_historical_evidence(thesis)
         self._gather_news_evidence(thesis)
         self._gather_options_evidence(thesis)
+        self._gather_congressional_evidence(thesis)
+        self._gather_insider_evidence(thesis)
+        self._gather_options_flow_evidence(thesis)
 
-        # Calculate AI confidence
+        # Calculate AI confidence (boosted for A+ patterns)
         self._calculate_ai_confidence(thesis)
 
         # Generate narratives
@@ -213,6 +262,23 @@ class TradeThesisBuilder:
             # Consecutive day pattern
             pattern = self.pattern_analyzer.analyze_consecutive_days(symbol=thesis.symbol)
             thesis.consecutive_pattern = pattern.to_dict()
+
+            # Entry timing recommendation
+            entry_timing = self.pattern_analyzer.get_entry_timing_recommendation(
+                thesis.symbol, pattern=pattern
+            )
+            thesis.entry_timing = entry_timing.to_dict()
+
+            # Determine pattern grade (A+, A, B, C, D)
+            from analysis.historical_patterns import get_pattern_grade, qualifies_for_auto_pass
+            thesis.pattern_grade = get_pattern_grade(pattern)
+            thesis.is_a_plus_pattern = qualifies_for_auto_pass(pattern)
+
+            if thesis.is_a_plus_pattern:
+                logger.info(
+                    f"A+ PATTERN: {thesis.symbol} - {pattern.sample_size} samples, "
+                    f"{pattern.historical_reversal_rate:.0%} win rate"
+                )
 
             # Support/resistance
             levels = self.pattern_analyzer.analyze_support_resistance(symbol=thesis.symbol)
@@ -295,8 +361,97 @@ class TradeThesisBuilder:
         except Exception as e:
             logger.warning(f"Error gathering options evidence for {thesis.symbol}: {e}")
 
+    def _gather_congressional_evidence(self, thesis: TradeThesis) -> None:
+        """Gather congressional trading data."""
+        if not self.congressional_client:
+            return
+
+        try:
+            summary = self.congressional_client.get_trade_summary(thesis.symbol, days_back=90)
+            thesis.congressional_trades = {
+                'total_trades': summary.total_trades,
+                'buy_count': summary.buy_count,
+                'sell_count': summary.sell_count,
+                'net_activity': summary.net_activity,
+                'total_buy_value': summary.total_buy_value,
+                'total_sell_value': summary.total_sell_value,
+                'unique_representatives': summary.unique_representatives,
+                'notable_officials': summary.notable_officials,
+                'party_breakdown': summary.party_breakdown,
+                'recent_trades': [t.to_dict() for t in summary.recent_trades[:5]],
+                'data_source': summary.data_source,
+            }
+
+            if summary.net_activity == 'NET_BUY':
+                logger.info(f"Congressional NET_BUY for {thesis.symbol}: {summary.buy_count} buys, ${summary.total_buy_value:,.0f}")
+
+        except Exception as e:
+            logger.warning(f"Error gathering congressional evidence for {thesis.symbol}: {e}")
+
+    def _gather_insider_evidence(self, thesis: TradeThesis) -> None:
+        """Gather insider trading data."""
+        if not self.insider_client:
+            return
+
+        try:
+            summary = self.insider_client.get_activity_summary(thesis.symbol, days_back=30)
+            thesis.insider_activity = {
+                'total_filings': summary.total_filings,
+                'buy_count': summary.buy_count,
+                'sell_count': summary.sell_count,
+                'net_activity': summary.net_activity,
+                'total_buy_value': summary.total_buy_value,
+                'total_sell_value': summary.total_sell_value,
+                'total_buy_shares': summary.total_buy_shares,
+                'total_sell_shares': summary.total_sell_shares,
+                'unique_insiders': summary.unique_insiders,
+                'notable_insiders': summary.notable_insiders,
+                'recent_trades': [t.to_dict() for t in summary.recent_trades[:5]],
+                'data_source': summary.data_source,
+            }
+
+            if summary.net_activity == 'NET_BUY':
+                logger.info(f"Insider NET_BUY for {thesis.symbol}: {summary.buy_count} buys, ${summary.total_buy_value:,.0f}")
+
+        except Exception as e:
+            logger.warning(f"Error gathering insider evidence for {thesis.symbol}: {e}")
+
+    def _gather_options_flow_evidence(self, thesis: TradeThesis) -> None:
+        """Gather options flow and unusual activity data."""
+        if not self.options_flow_client:
+            return
+
+        try:
+            flow = self.options_flow_client.get_flow_summary(thesis.symbol, days_back=7)
+            thesis.options_flow = {
+                'total_call_volume': flow.total_call_volume,
+                'total_put_volume': flow.total_put_volume,
+                'put_call_ratio': flow.put_call_ratio,
+                'pcr_signal': flow.pcr_signal,
+                'current_iv': flow.current_iv,
+                'iv_percentile': flow.iv_percentile,
+                'iv_rank': flow.iv_rank,
+                'iv_signal': flow.iv_signal,
+                'unusual_activity_count': flow.unusual_activity_count,
+                'unusual_activities': [a.to_dict() for a in flow.unusual_activities[:3]],
+                'bullish_flow_count': flow.bullish_flow_count,
+                'bearish_flow_count': flow.bearish_flow_count,
+                'net_flow_bias': flow.net_flow_bias,
+                'data_source': flow.data_source,
+            }
+
+            if flow.unusual_activity_count > 0:
+                logger.info(f"Options flow for {thesis.symbol}: {flow.unusual_activity_count} unusual, bias={flow.net_flow_bias}")
+
+        except Exception as e:
+            logger.warning(f"Error gathering options flow evidence for {thesis.symbol}: {e}")
+
     def _calculate_ai_confidence(self, thesis: TradeThesis) -> None:
-        """Calculate AI confidence score with breakdown."""
+        """Calculate AI confidence score with breakdown.
+
+        For A+ patterns (20+ samples, 90%+ win rate), historical weight
+        is boosted to 40% (from 20%) and score is maxed at 100%.
+        """
         scores = {}
 
         # Technical score (R:R and setup quality)
@@ -309,10 +464,20 @@ class TradeThesisBuilder:
         else:
             scores['technical'] = 40
 
-        # Historical pattern score
+        # Historical pattern score - BOOSTED for A+ patterns
         pattern = thesis.consecutive_pattern
-        if pattern.get('confidence') == 'HIGH':
+        if thesis.is_a_plus_pattern:
+            # A+ pattern: 20+ samples, 90%+ win rate = MAX score
+            scores['historical'] = 100
+            logger.info(f"A+ PATTERN BOOST: {thesis.symbol} historical score = 100")
+        elif thesis.pattern_grade == 'A':
+            scores['historical'] = 95
+        elif thesis.pattern_grade == 'B':
+            scores['historical'] = 85
+        elif pattern.get('confidence') == 'HIGH':
             scores['historical'] = 90
+        elif pattern.get('confidence') == 'MEDIUM-HIGH':
+            scores['historical'] = 80
         elif pattern.get('confidence') == 'MEDIUM':
             scores['historical'] = 75
         elif pattern.get('historical_reversal_rate', 0) > 0.6:
@@ -373,15 +538,66 @@ class TradeThesisBuilder:
         else:
             scores['volume'] = 60
 
+        # Alt-data scores (NEW)
+        # Congressional trades
+        cong = thesis.congressional_trades
+        if cong.get('net_activity') == 'NET_BUY' and thesis.side == 'long':
+            scores['congressional'] = 85
+        elif cong.get('net_activity') == 'NET_SELL' and thesis.side == 'short':
+            scores['congressional'] = 85
+        elif cong.get('total_trades', 0) > 0:
+            scores['congressional'] = 60
+        else:
+            scores['congressional'] = 50
+
+        # Insider activity
+        insider = thesis.insider_activity
+        if insider.get('net_activity') == 'NET_BUY' and thesis.side == 'long':
+            scores['insider'] = 85
+        elif insider.get('net_activity') == 'NET_SELL' and thesis.side == 'short':
+            scores['insider'] = 85
+        elif insider.get('total_filings', 0) > 0:
+            scores['insider'] = 60
+        else:
+            scores['insider'] = 50
+
+        # Options flow
+        flow = thesis.options_flow
+        if flow.get('net_flow_bias') == 'BULLISH' and thesis.side == 'long':
+            scores['options_flow'] = 85
+        elif flow.get('net_flow_bias') == 'BEARISH' and thesis.side == 'short':
+            scores['options_flow'] = 85
+        elif flow.get('unusual_activity_count', 0) > 0:
+            scores['options_flow'] = 70
+        else:
+            scores['options_flow'] = 50
+
         # Calculate weighted average
-        weights = {
-            'technical': 0.25,
-            'historical': 0.20,
-            'sentiment': 0.15,
-            'options': 0.15,
-            'sector': 0.10,
-            'volume': 0.15,
-        }
+        # For A+ patterns, boost historical weight to 40% (from 20%)
+        if thesis.is_a_plus_pattern:
+            weights = {
+                'technical': 0.15,
+                'historical': 0.40,  # BOOSTED for A+ patterns
+                'sentiment': 0.10,
+                'options': 0.10,
+                'sector': 0.05,
+                'volume': 0.05,
+                'congressional': 0.05,
+                'insider': 0.05,
+                'options_flow': 0.05,
+            }
+        else:
+            weights = {
+                'technical': 0.20,
+                'historical': 0.20,
+                'sentiment': 0.12,
+                'options': 0.12,
+                'sector': 0.08,
+                'volume': 0.08,
+                'congressional': 0.07,
+                'insider': 0.07,
+                'options_flow': 0.06,
+            }
 
         total_score = sum(
             scores.get(k, 50) * v for k, v in weights.items()
@@ -557,10 +773,22 @@ class TradeThesisBuilder:
         thesis.executive_summary = " ".join(parts)
 
     def _determine_grade_and_recommendation(self, thesis: TradeThesis) -> None:
-        """Determine trade grade and recommendation."""
+        """Determine trade grade and recommendation.
+
+        A+ patterns (20+ samples, 90%+ win rate) automatically get A+ grade
+        and EXECUTE recommendation, overriding confidence score.
+        """
         confidence = thesis.ai_confidence
 
-        if confidence >= 80:
+        # A+ PATTERN OVERRIDE: If pattern qualifies, auto-pass to A+ grade
+        if thesis.is_a_plus_pattern:
+            thesis.trade_grade = "A+"
+            thesis.recommendation = "EXECUTE"
+            logger.info(
+                f"A+ PATTERN AUTO-PASS: {thesis.symbol} -> Grade=A+, Recommendation=EXECUTE "
+                f"(pattern: {thesis.pattern_grade}, confidence: {confidence:.1f}%)"
+            )
+        elif confidence >= 80:
             thesis.trade_grade = "A+"
             thesis.recommendation = "EXECUTE"
         elif confidence >= 70:
@@ -573,16 +801,17 @@ class TradeThesisBuilder:
             thesis.trade_grade = "C"
             thesis.recommendation = "SKIP"
 
-        # Override based on R:R
-        if thesis.risk_reward_ratio < 1.0:
+        # Override based on R:R (but NOT for A+ patterns)
+        if thesis.risk_reward_ratio < 1.0 and not thesis.is_a_plus_pattern:
             thesis.recommendation = "SKIP"
             thesis.trade_grade = min(thesis.trade_grade, "C")
 
-        # Override based on sentiment if extreme
+        # Override based on sentiment if extreme (but NOT for A+ patterns)
         if thesis.side == 'long' and thesis.aggregated_sentiment.get('compound', 0) < -0.3:
-            thesis.recommendation = "WATCHLIST"
-            if thesis.trade_grade > "B":
-                thesis.trade_grade = "B"
+            if not thesis.is_a_plus_pattern:
+                thesis.recommendation = "WATCHLIST"
+                if thesis.trade_grade > "B":
+                    thesis.trade_grade = "B"
 
 
 def get_trade_thesis_builder(dotenv_path: str = "./.env") -> TradeThesisBuilder:

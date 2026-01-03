@@ -240,10 +240,18 @@ def generate_pregame_blueprint(
         "filter_reasoning": _generate_filter_reasoning(theses, top_n, 3, execute_n),
     }
 
-    # Add theses
+    # Add theses for ALL Top N candidates (not just Top 2)
+    # User studies ALL to make informed selection of final 2
     blueprint["trade_theses"] = [
-        {"rank": i + 1, "symbol": t.symbol, "thesis": t.to_dict()}
-        for i, t in enumerate(top_2_theses)
+        {
+            "rank": i + 1,
+            "symbol": t.symbol,
+            "for_execution": i < execute_n,  # True for top 2, False for 3-5
+            "is_a_plus_pattern": t.is_a_plus_pattern,
+            "pattern_grade": t.pattern_grade,
+            "thesis": t.to_dict(),
+        }
+        for i, t in enumerate(theses)  # ALL theses, not just top 2
     ]
 
     blueprint["rejected_candidates"] = rejected
@@ -695,10 +703,23 @@ def _generate_markdown(blueprint: Dict) -> str:
 
     for trade in blueprint.get("trade_theses", []):
         thesis = trade.get("thesis", {})
-        lines.append(f"### #{trade.get('rank')}: {trade.get('symbol')}")
+        is_a_plus = trade.get("is_a_plus_pattern", False)
+        pattern_grade = trade.get("pattern_grade", "D")
+        for_execution = trade.get("for_execution", False)
+
+        status_badge = "[EXECUTE]" if for_execution else "[STUDY]"
+        a_plus_badge = " **[A+ PATTERN]**" if is_a_plus else ""
+
+        lines.append(f"### #{trade.get('rank')}: {trade.get('symbol')} {status_badge}{a_plus_badge}")
         lines.append("")
-        lines.append(f"**Grade:** {thesis.get('trade_grade')} | **Confidence:** {thesis.get('ai_confidence'):.0f}% | **Recommendation:** {thesis.get('recommendation')}")
+        lines.append(f"**Grade:** {thesis.get('trade_grade')} | **Pattern Grade:** {pattern_grade} | **Confidence:** {thesis.get('ai_confidence'):.0f}% | **Recommendation:** {thesis.get('recommendation')}")
         lines.append("")
+
+        # A+ Pattern highlight
+        if is_a_plus:
+            lines.append("> **A+ PATTERN AUTO-PASS**: This pattern has 20+ samples and 90%+ historical win rate.")
+            lines.append("> This is a statistically significant edge that auto-passes the quality gate.")
+            lines.append("")
 
         lines.append("**Trade Parameters:**")
         lines.append(f"- Entry: ${thesis.get('entry_price'):.2f}")
@@ -706,6 +727,17 @@ def _generate_markdown(blueprint: Dict) -> str:
         lines.append(f"- Target: ${thesis.get('take_profit'):.2f}")
         lines.append(f"- R:R: {thesis.get('risk_reward_ratio'):.2f}:1")
         lines.append("")
+
+        # Entry Timing
+        entry_timing = thesis.get("entry_timing", {})
+        if entry_timing:
+            lines.append("**Entry Timing:**")
+            lines.append(f"- Timing: **{entry_timing.get('timing_recommendation', 'N/A')}**")
+            lines.append(f"- Optimal Entry Day: {entry_timing.get('optimal_entry_day', 5)}")
+            lines.append(f"- Current Streak: {entry_timing.get('current_streak', 0)} days")
+            lines.append(f"- Avg Days to Bounce: {entry_timing.get('avg_days_to_bounce', 1):.1f}")
+            lines.append(f"- {entry_timing.get('justification', '')}")
+            lines.append("")
 
         lines.append("**Executive Summary:**")
         lines.append(thesis.get("executive_summary", ""))
@@ -736,6 +768,55 @@ def _generate_markdown(blueprint: Dict) -> str:
             lines.append("**What Could Go Wrong:**")
             for risk in risks:
                 lines.append(f"- {risk}")
+            lines.append("")
+
+        # Congressional Trades
+        cong = thesis.get("congressional_trades", {})
+        if cong and cong.get("total_trades", 0) > 0:
+            lines.append("**Congressional Trades (Last 90 Days):**")
+            lines.append(f"- Net Activity: **{cong.get('net_activity', 'N/A')}**")
+            lines.append(f"- Buy Count: {cong.get('buy_count', 0)} | Sell Count: {cong.get('sell_count', 0)}")
+            lines.append(f"- Buy Value: ${cong.get('total_buy_value', 0):,.0f} | Sell Value: ${cong.get('total_sell_value', 0):,.0f}")
+            lines.append(f"- Unique Representatives: {cong.get('unique_representatives', 0)}")
+            notable = cong.get("notable_officials", [])
+            if notable:
+                lines.append(f"- Notable Officials: {', '.join(notable[:3])}")
+            party = cong.get("party_breakdown", {})
+            if party:
+                lines.append(f"- Party Breakdown: R={party.get('R', 0)}, D={party.get('D', 0)}, I={party.get('I', 0)}")
+            lines.append(f"- Data Source: {cong.get('data_source', 'N/A')}")
+            lines.append("")
+
+        # Insider Activity
+        insider = thesis.get("insider_activity", {})
+        if insider and insider.get("total_filings", 0) > 0:
+            lines.append("**Insider Activity (Last 30 Days):**")
+            lines.append(f"- Net Activity: **{insider.get('net_activity', 'N/A')}**")
+            lines.append(f"- Buy Count: {insider.get('buy_count', 0)} | Sell Count: {insider.get('sell_count', 0)}")
+            lines.append(f"- Buy Value: ${insider.get('total_buy_value', 0):,.0f} | Sell Value: ${insider.get('total_sell_value', 0):,.0f}")
+            lines.append(f"- Buy Shares: {insider.get('total_buy_shares', 0):,.0f} | Sell Shares: {insider.get('total_sell_shares', 0):,.0f}")
+            notable = insider.get("notable_insiders", [])
+            if notable:
+                lines.append(f"- Notable Insiders: {', '.join(notable[:3])}")
+            lines.append(f"- Data Source: {insider.get('data_source', 'N/A')}")
+            lines.append("")
+
+        # Options Flow
+        flow = thesis.get("options_flow", {})
+        if flow:
+            lines.append("**Options Flow:**")
+            lines.append(f"- Net Flow Bias: **{flow.get('net_flow_bias', 'N/A')}**")
+            lines.append(f"- Put/Call Ratio: {flow.get('put_call_ratio', 0):.2f} ({flow.get('pcr_signal', 'N/A')})")
+            lines.append(f"- Call Volume: {flow.get('total_call_volume', 0):,} | Put Volume: {flow.get('total_put_volume', 0):,}")
+            lines.append(f"- IV Percentile: {flow.get('iv_percentile', 0):.0f}% | IV Rank: {flow.get('iv_rank', 0):.0f}%")
+            lines.append(f"- IV Signal: {flow.get('iv_signal', 'N/A')}")
+            lines.append(f"- Unusual Activity Count: {flow.get('unusual_activity_count', 0)}")
+            unusual = flow.get("unusual_activities", [])
+            if unusual:
+                lines.append("- Unusual Activities:")
+                for u in unusual[:2]:
+                    lines.append(f"  - {u.get('option_type', 'call').upper()} ${u.get('strike', 0)} exp {u.get('expiration', 'N/A')}: Vol {u.get('volume', 0):,} ({u.get('unusual_reason', '')})")
+            lines.append(f"- Data Source: {flow.get('data_source', 'N/A')}")
             lines.append("")
 
         breakdown = thesis.get("ai_confidence_breakdown", {})

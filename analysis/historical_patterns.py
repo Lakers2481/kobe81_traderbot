@@ -62,6 +62,23 @@ class HistoricalInstance:
 
 
 @dataclass
+class EntryTimingRecommendation:
+    """Entry timing recommendation based on historical pattern analysis."""
+    symbol: str
+    optimal_entry_day: int  # e.g., 5 = enter on day 5 of streak
+    current_streak: int  # Current streak length
+    should_enter_now: bool  # True if current streak >= optimal entry day
+    timing_recommendation: str  # e.g., "ENTER_NOW", "WAIT", "TOO_EARLY"
+    justification: str  # Human-readable explanation
+    avg_days_to_bounce: float  # Average days from streak end to bounce
+    bounce_day_distribution: Dict[int, float] = field(default_factory=dict)  # {day: win_rate}
+    confidence: str = "MEDIUM"  # Confidence in timing
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
 class ConsecutiveDayPattern:
     """Historical pattern for consecutive down/up days."""
     symbol: str
@@ -83,6 +100,9 @@ class ConsecutiveDayPattern:
     avg_bounce_days: float = 0.0
     total_bounce_avg: float = 0.0
     historical_instances: List[HistoricalInstance] = field(default_factory=list)
+    # NEW: Entry timing fields
+    optimal_entry_day: int = 5  # Default: enter on day 5
+    entry_timing: Optional[EntryTimingRecommendation] = None
 
     def to_dict(self) -> Dict[str, Any]:
         d = asdict(self)
@@ -756,6 +776,231 @@ class HistoricalPatternAnalyzer:
             interpretation=interpretation,
         )
 
+    def get_entry_timing_recommendation(
+        self,
+        symbol: str,
+        df: Optional[pd.DataFrame] = None,
+        pattern: Optional[ConsecutiveDayPattern] = None,
+    ) -> EntryTimingRecommendation:
+        """
+        Get entry timing recommendation based on BACKTESTED historical data.
+
+        Philosophy: Analyze each stock's actual historical bounce patterns to find
+        the optimal streak length for entry. Don't use hardcoded values - let the
+        data for THIS SPECIFIC STOCK determine when to enter.
+
+        The optimal entry day is the streak length where:
+        1. Win rate is highest (bounce probability)
+        2. Sample size is sufficient for statistical confidence
+        3. Risk/reward is favorable
+
+        Args:
+            symbol: Stock symbol
+            df: OHLCV DataFrame (optional)
+            pattern: Pre-computed pattern (optional, will compute if not provided)
+
+        Returns:
+            EntryTimingRecommendation with data-driven optimal entry day
+        """
+        if pattern is None:
+            pattern = self.analyze_consecutive_days(df, symbol)
+
+        # Default values for no/insufficient data
+        if pattern.sample_size < 5:
+            return EntryTimingRecommendation(
+                symbol=symbol,
+                optimal_entry_day=5,  # Conservative default when no data
+                current_streak=pattern.current_streak,
+                should_enter_now=False,
+                timing_recommendation="INSUFFICIENT_DATA",
+                justification="Not enough historical samples to determine optimal entry",
+                avg_days_to_bounce=1.0,
+                bounce_day_distribution={},
+                confidence="LOW",
+            )
+
+        # ============================================================
+        # BACKTEST-DRIVEN OPTIMAL ENTRY CALCULATION
+        # ============================================================
+        # Group historical instances by streak length and calculate metrics
+        streak_stats: Dict[int, Dict[str, Any]] = {}
+
+        for inst in pattern.historical_instances:
+            streak_len = inst.streak_length
+            if streak_len not in streak_stats:
+                streak_stats[streak_len] = {
+                    'instances': [],
+                    'wins': 0,
+                    'total': 0,
+                    'day1_returns': [],
+                    'total_returns': [],
+                    'bounce_days': [],
+                }
+
+            stats = streak_stats[streak_len]
+            stats['instances'].append(inst)
+            stats['total'] += 1
+
+            # Win = positive return on day 1 OR positive bounce within 5 days
+            is_win = inst.day1_return > 0 or inst.bounce_days > 0
+            if is_win:
+                stats['wins'] += 1
+                stats['day1_returns'].append(inst.day1_return)
+                stats['total_returns'].append(inst.total_bounce)
+                stats['bounce_days'].append(inst.bounce_days if inst.bounce_days > 0 else 1)
+
+        # Calculate win rate and expected return for each streak length
+        win_rate_by_streak: Dict[int, float] = {}
+        expected_return_by_streak: Dict[int, float] = {}
+        sample_size_by_streak: Dict[int, int] = {}
+
+        for streak_len, stats in streak_stats.items():
+            win_rate = stats['wins'] / stats['total'] if stats['total'] > 0 else 0
+            win_rate_by_streak[streak_len] = win_rate
+            sample_size_by_streak[streak_len] = stats['total']
+
+            # Expected return = win_rate * avg_win_return - (1-win_rate) * avg_loss
+            if stats['day1_returns']:
+                expected_return_by_streak[streak_len] = np.mean(stats['day1_returns'])
+            else:
+                expected_return_by_streak[streak_len] = 0
+
+        # ============================================================
+        # FIND OPTIMAL ENTRY DAY FROM BACKTEST DATA
+        # ============================================================
+        # Score each streak length: balance win rate, sample size, and expected return
+        optimal_entry_day = None
+        best_score = -float('inf')
+        min_sample_for_confidence = 5  # Need at least 5 samples
+
+        for streak_len in sorted(streak_stats.keys()):
+            win_rate = win_rate_by_streak.get(streak_len, 0)
+            sample_size = sample_size_by_streak.get(streak_len, 0)
+            expected_ret = expected_return_by_streak.get(streak_len, 0)
+
+            # Skip if insufficient samples
+            if sample_size < min_sample_for_confidence:
+                continue
+
+            # Score formula: prioritize high win rate, then expected return
+            # Penalty for very long streaks (may be missing the move)
+            score = (
+                win_rate * 100  # Win rate (max 100)
+                + expected_ret * 500  # Expected return boost (e.g., 2% = 10 points)
+                + np.log1p(sample_size) * 5  # Sample size confidence bonus
+                - max(0, streak_len - 7) * 3  # Penalty for waiting too long
+            )
+
+            logger.debug(
+                f"{symbol} streak={streak_len}: WR={win_rate:.0%}, "
+                f"N={sample_size}, E[R]={expected_ret:+.1%}, score={score:.1f}"
+            )
+
+            if score > best_score:
+                best_score = score
+                optimal_entry_day = streak_len
+
+        # Fallback if no good streak found
+        if optimal_entry_day is None:
+            # Use the streak length with highest sample size as fallback
+            if sample_size_by_streak:
+                optimal_entry_day = max(sample_size_by_streak, key=sample_size_by_streak.get)
+            else:
+                optimal_entry_day = 5  # Ultimate fallback
+
+        logger.info(
+            f"BACKTEST RESULT: {symbol} optimal_entry_day={optimal_entry_day} "
+            f"(WR={win_rate_by_streak.get(optimal_entry_day, 0):.0%}, "
+            f"N={sample_size_by_streak.get(optimal_entry_day, 0)})"
+        )
+
+        # Calculate average days to bounce from all historical instances
+        all_bounce_times = []
+        for inst in pattern.historical_instances:
+            if inst.day1_return > 0:
+                all_bounce_times.append(1)
+            elif inst.bounce_days > 0:
+                all_bounce_times.append(inst.bounce_days)
+        avg_days_to_bounce = np.mean(all_bounce_times) if all_bounce_times else 1.0
+
+        # Get stats for optimal entry day
+        opt_win_rate = win_rate_by_streak.get(optimal_entry_day, 0)
+        opt_sample_size = sample_size_by_streak.get(optimal_entry_day, 0)
+        opt_expected_ret = expected_return_by_streak.get(optimal_entry_day, 0)
+
+        # Determine recommendation based on current streak vs BACKTESTED optimal
+        current_streak = pattern.current_streak
+
+        if current_streak >= optimal_entry_day:
+            should_enter_now = True
+            timing_recommendation = "ENTER_NOW"
+            if current_streak == optimal_entry_day:
+                justification = (
+                    f"Day {current_streak} = OPTIMAL ENTRY (backtested). "
+                    f"Backtest shows {opt_win_rate:.0%} win rate at this streak length "
+                    f"({opt_sample_size} samples, avg return +{opt_expected_ret:.1%}). "
+                    f"This is the sweet spot for {symbol}."
+                )
+            else:
+                # Get win rate for current streak if available
+                curr_win_rate = win_rate_by_streak.get(current_streak, opt_win_rate)
+                justification = (
+                    f"Day {current_streak} exceeds optimal (day {optimal_entry_day}). "
+                    f"Backtest shows {curr_win_rate:.0%} win rate at day {current_streak}. "
+                    f"Still valid but may have missed some upside. "
+                    f"Optimal was day {optimal_entry_day} with {opt_win_rate:.0%} WR."
+                )
+        elif current_streak == optimal_entry_day - 1:
+            should_enter_now = False
+            timing_recommendation = "ALMOST_READY"
+            justification = (
+                f"Day {current_streak}. Backtest optimal = day {optimal_entry_day}. "
+                f"One more down day triggers entry. "
+                f"Expected: {opt_win_rate:.0%} WR, +{opt_expected_ret:.1%} avg return."
+            )
+        elif current_streak >= optimal_entry_day - 2:
+            should_enter_now = False
+            timing_recommendation = "WAIT"
+            days_to_wait = optimal_entry_day - current_streak
+            justification = (
+                f"Day {current_streak}. Backtest optimal = day {optimal_entry_day}. "
+                f"Wait {days_to_wait} more down days. "
+                f"Early entry at day {current_streak} has lower historical edge."
+            )
+        else:
+            should_enter_now = False
+            timing_recommendation = "TOO_EARLY"
+            days_to_wait = optimal_entry_day - current_streak
+            justification = (
+                f"Day {current_streak}. Backtest optimal = day {optimal_entry_day}. "
+                f"Need {days_to_wait} more down days. "
+                f"Pattern not mature enough - premature entry reduces edge significantly."
+            )
+
+        # Confidence based on BACKTESTED sample size and win rate at optimal day
+        if opt_sample_size >= 20 and opt_win_rate >= 0.90:
+            confidence = "HIGH"
+        elif opt_sample_size >= 15 and opt_win_rate >= 0.80:
+            confidence = "MEDIUM-HIGH"
+        elif opt_sample_size >= 10 and opt_win_rate >= 0.70:
+            confidence = "MEDIUM"
+        elif opt_sample_size >= 5:
+            confidence = "LOW-MEDIUM"
+        else:
+            confidence = "LOW"
+
+        return EntryTimingRecommendation(
+            symbol=symbol,
+            optimal_entry_day=optimal_entry_day,
+            current_streak=current_streak,
+            should_enter_now=should_enter_now,
+            timing_recommendation=timing_recommendation,
+            justification=justification,
+            avg_days_to_bounce=round(avg_days_to_bounce, 1),
+            bounce_day_distribution=win_rate_by_streak,
+            confidence=confidence,
+        )
+
     def get_full_analysis(
         self,
         symbol: str,
@@ -769,9 +1014,16 @@ class HistoricalPatternAnalyzer:
         if df is None:
             df = self._get_historical_data(symbol, self.lookback_years)
 
+        # Get consecutive pattern first
+        pattern = self.analyze_consecutive_days(df, symbol)
+
+        # Get entry timing based on pattern
+        entry_timing = self.get_entry_timing_recommendation(symbol, df, pattern)
+
         return {
             'symbol': symbol,
-            'consecutive_pattern': self.analyze_consecutive_days(df, symbol).to_dict(),
+            'consecutive_pattern': pattern.to_dict(),
+            'entry_timing': entry_timing.to_dict(),
             'support_resistance': [sr.to_dict() for sr in self.analyze_support_resistance(df, symbol)],
             'volume_profile': self.analyze_volume_profile(df, symbol).to_dict(),
             'sector_relative_strength': self.get_sector_relative_strength(symbol).to_dict(),
@@ -821,7 +1073,7 @@ def enrich_signal_with_historical_pattern(
         analyzer: Optional analyzer instance (creates one if not provided)
 
     Returns:
-        Enriched signal dict with 'historical_pattern' key added
+        Enriched signal dict with 'historical_pattern' and 'entry_timing' keys added
     """
     if analyzer is None:
         analyzer = get_historical_pattern_analyzer(lookback_years=5)
@@ -832,6 +1084,7 @@ def enrich_signal_with_historical_pattern(
 
     try:
         pattern = analyzer.analyze_consecutive_days(symbol=symbol)
+        entry_timing = analyzer.get_entry_timing_recommendation(symbol, pattern=pattern)
 
         # Add pattern to signal for quality gate evaluation
         signal['historical_pattern'] = {
@@ -848,6 +1101,17 @@ def enrich_signal_with_historical_pattern(
             'qualifies_for_auto_pass': qualifies_for_auto_pass(pattern),
         }
 
+        # Add entry timing recommendation
+        signal['entry_timing'] = {
+            'optimal_entry_day': entry_timing.optimal_entry_day,
+            'current_streak': entry_timing.current_streak,
+            'should_enter_now': entry_timing.should_enter_now,
+            'timing_recommendation': entry_timing.timing_recommendation,
+            'justification': entry_timing.justification,
+            'avg_days_to_bounce': entry_timing.avg_days_to_bounce,
+            'confidence': entry_timing.confidence,
+        }
+
         if qualifies_for_auto_pass(pattern):
             logger.info(
                 f"PATTERN AUTO-PASS ELIGIBLE: {symbol} - "
@@ -855,8 +1119,41 @@ def enrich_signal_with_historical_pattern(
                 f"{pattern.current_streak} days down"
             )
 
+        if entry_timing.should_enter_now:
+            logger.info(
+                f"ENTRY TIMING: {symbol} - {entry_timing.timing_recommendation} "
+                f"(Day {entry_timing.current_streak} of streak, optimal={entry_timing.optimal_entry_day})"
+            )
+
     except Exception as e:
         logger.warning(f"Could not analyze pattern for {symbol}: {e}")
         signal['historical_pattern'] = {}
+        signal['entry_timing'] = {}
 
     return signal
+
+
+def get_pattern_grade(pattern: ConsecutiveDayPattern) -> str:
+    """
+    Get letter grade for a pattern based on sample size and win rate.
+
+    Grading:
+    - A+: 20+ samples, 90%+ win rate (AUTO-PASS)
+    - A:  15+ samples, 85%+ win rate
+    - B:  10+ samples, 75%+ win rate
+    - C:  5+ samples, 65%+ win rate
+    - D:  < 5 samples or < 65% win rate
+
+    Returns:
+        Grade string: "A+", "A", "B", "C", or "D"
+    """
+    if pattern.sample_size >= 20 and pattern.historical_reversal_rate >= 0.90:
+        return "A+"
+    elif pattern.sample_size >= 15 and pattern.historical_reversal_rate >= 0.85:
+        return "A"
+    elif pattern.sample_size >= 10 and pattern.historical_reversal_rate >= 0.75:
+        return "B"
+    elif pattern.sample_size >= 5 and pattern.historical_reversal_rate >= 0.65:
+        return "C"
+    else:
+        return "D"

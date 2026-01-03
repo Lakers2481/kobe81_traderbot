@@ -124,3 +124,41 @@ CLAUDE_PROMPT_*.md
 # Large training data files (regenerate with scripts/generate_training_data.py)
 data/training/X_lstm.npy
 data/training/features.parquet
+
+# Bounce analysis outputs (regenerate with tools/build_bounce_db.py)
+reports/bounce/profiles_10y/
+reports/bounce/profiles_5y/
+reports/bounce/*.parquet
+reports/bounce/*.csv
+reports/bounce/today_bounce_watchlist_*.csv
+
+# Generated analysis reports
+reports/quant_pattern_analysis_*.json
+reports/unique_discoveries_*.json
+reports/unique_patterns_discovery.md
+reports/QUANT_PATTERN_ANALYSIS.md
+reports/weekend_morning_*.json
+reports/weekend_morning_*.md
+reports/week_down_then_bounce_*.csv
+reports/week_down_then_bounce_*.parquet
+reports/week_down_then_bounce_*.json
+reports/week_down_then_bounce_*.md
+
+# Audit reports (session artifacts)
+AUDIT_*.json
+AUDIT_*.md
+COMPREHENSIVE_AUDIT_REPORT.json
+
+# Work prompts (session artifacts)
+CLAUDE_WORK_PROMPT.md
+
+# ML models (large binaries - regenerate with training scripts)
+models/*.pkl
+models/*.h5
+models/*.joblib
+models/ensemble_v1/
+models/*_metadata.json
+
+# Autonomous state (runtime)
+state/autonomous/
+state/integrity/
