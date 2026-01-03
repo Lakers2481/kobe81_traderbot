@@ -97,16 +97,16 @@ class DualStrategyParams:
     """
     Parameters for the dual strategy system.
 
-    v2.2 PARAMETERS - Both strategies pass 55%+ WR, 1.3+ PF
-    - IBS+RSI: 59.9% WR, 1.46 PF (tightened entry, wider stops)
+    v2.3 PARAMETERS - Autonomous Brain validated discovery applied
+    - IBS+RSI: rsi_entry raised to 10.0 (validated +19.1% improvement)
     - Turtle Soup: 61.0% WR, 1.37 PF (looser sweep, tight exits)
     """
 
-    # IBS + RSI Parameters (v2.2 - TIGHTENED ENTRY)
+    # IBS + RSI Parameters (v2.3 - VALIDATED DISCOVERY)
     ibs_entry: float = 0.08            # Was 0.15 - 47% tighter
     ibs_exit: float = 0.80
     rsi_period: int = 2
-    rsi_entry: float = 5.0             # Was 10.0 - 50% tighter
+    rsi_entry: float = 10.0            # v2.3: Was 5.0 - validated +19.1% improvement
     rsi_exit: float = 70.0
     ibs_rsi_stop_mult: float = 2.0     # ATR multiplier for stop
     ibs_rsi_time_stop: int = 7         # Time stop in bars

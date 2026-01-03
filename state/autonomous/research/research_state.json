@@ -1,0 +1,449 @@
+{
+  "updated_at": "2026-01-02T23:13:36.026598-05:00",
+  "total_experiments": 10,
+  "total_discoveries": 4,
+  "experiments": [
+    {
+      "id": "exp_20260102_230816_6545",
+      "name": "Parameter Exploration #1",
+      "hypothesis": "Testing: atr_multiplier=2.5 (higher)",
+      "parameter_changes": {
+        "atr_multiplier": {
+          "from": 2.0,
+          "to": 2.5
+        }
+      },
+      "created_at": "2026-01-02T23:08:16.213685-05:00",
+      "status": "completed",
+      "result": {
+        "trades": 193,
+        "win_rate": 0.5908,
+        "profit_factor": 1.5627,
+        "parameters": {
+          "atr_multiplier": {
+            "from": 2.0,
+            "to": 2.5
+          }
+        },
+        "timestamp": "2026-01-02T23:08:16.215250-05:00"
+      },
+      "improvement": -2.334274021624866
+    },
+    {
+      "id": "exp_20260102_230816_7629",
+      "name": "Parameter Exploration #2",
+      "hypothesis": "Testing: risk_per_trade=0.01 (lower)",
+      "parameter_changes": {
+        "risk_per_trade": {
+          "from": 0.02,
+          "to": 0.01
+        }
+      },
+      "created_at": "2026-01-02T23:08:16.215250-05:00",
+      "status": "completed",
+      "result": {
+        "trades": 179,
+        "win_rate": 0.638,
+        "profit_factor": 1.5512,
+        "parameters": {
+          "risk_per_trade": {
+            "from": 0.02,
+            "to": 0.01
+          }
+        },
+        "timestamp": "2026-01-02T23:08:16.216582-05:00"
+      },
+      "improvement": -3.049181575983634
+    },
+    {
+      "id": "exp_20260102_230816_8220",
+      "name": "Parameter Exploration #3",
+      "hypothesis": "Testing: ts_lookback=15 (lower)",
+      "parameter_changes": {
+        "ts_lookback": {
+          "from": 20,
+          "to": 15
+        }
+      },
+      "created_at": "2026-01-02T23:08:16.216582-05:00",
+      "status": "completed",
+      "result": {
+        "trades": 80,
+        "win_rate": 0.5828,
+        "profit_factor": 1.8022,
+        "parameters": {
+          "ts_lookback": {
+            "from": 20,
+            "to": 15
+          }
+        },
+        "timestamp": "2026-01-02T23:08:16.216582-05:00"
+      },
+      "improvement": 12.639589980908084
+    },
+    {
+      "id": "exp_20260102_230816_5951",
+      "name": "Parameter Exploration #4",
+      "hypothesis": "Testing: atr_multiplier=2.25 (higher), ts_lookback=40 (higher), ts_min_sweep_strength=0.6 (higher)",
+      "parameter_changes": {
+        "atr_multiplier": {
+          "from": 2.0,
+          "to": 2.25
+        },
+        "ts_lookback": {
+          "from": 20,
+          "to": 40
+        },
+        "ts_min_sweep_strength": {
+          "from": 0.3,
+          "to": 0.6
+        }
+      },
+      "created_at": "2026-01-02T23:08:16.216582-05:00",
+      "status": "completed",
+      "result": {
+        "trades": 169,
+        "win_rate": 0.6776,
+        "profit_factor": 1.7587,
+        "parameters": {
+          "atr_multiplier": {
+            "from": 2.0,
+            "to": 2.25
+          },
+          "ts_lookback": {
+            "from": 20,
+            "to": 40
+          },
+          "ts_min_sweep_strength": {
+            "from": 0.3,
+            "to": 0.6
+          }
+        },
+        "timestamp": "2026-01-02T23:08:16.218087-05:00"
+      },
+      "improvement": 9.918418980870008
+    },
+    {
+      "id": "exp_20260102_230816_9307",
+      "name": "Parameter Exploration #5",
+      "hypothesis": "Testing: ts_min_sweep_strength=0.3 (lower), ibs_threshold=0.03 (lower), ts_lookback=36 (higher)",
+      "parameter_changes": {
+        "ts_min_sweep_strength": {
+          "from": 0.3,
+          "to": 0.3
+        },
+        "ibs_threshold": {
+          "from": 0.08,
+          "to": 0.03
+        },
+        "ts_lookback": {
+          "from": 20,
+          "to": 36
+        }
+      },
+      "created_at": "2026-01-02T23:08:16.218087-05:00",
+      "status": "completed",
+      "result": {
+        "trades": 127,
+        "win_rate": 0.6117,
+        "profit_factor": 1.5294,
+        "parameters": {
+          "ts_min_sweep_strength": {
+            "from": 0.3,
+            "to": 0.3
+          },
+          "ibs_threshold": {
+            "from": 0.08,
+            "to": 0.03
+          },
+          "ts_lookback": {
+            "from": 20,
+            "to": 36
+          }
+        },
+        "timestamp": "2026-01-02T23:08:16.219713-05:00"
+      },
+      "improvement": -4.409979198643957
+    },
+    {
+      "id": "exp_20260102_230816_8902",
+      "name": "Parameter Exploration #6",
+      "hypothesis": "Testing: rsi_threshold=8 (higher), risk_per_trade=0.01 (lower)",
+      "parameter_changes": {
+        "rsi_threshold": {
+          "from": 5,
+          "to": 8
+        },
+        "risk_per_trade": {
+          "from": 0.02,
+          "to": 0.01
+        }
+      },
+      "created_at": "2026-01-02T23:08:16.219713-05:00",
+      "status": "completed",
+      "result": {
+        "trades": 198,
+        "win_rate": 0.5709,
+        "profit_factor": 1.7316,
+        "parameters": {
+          "rsi_threshold": {
+            "from": 5,
+            "to": 8
+          },
+          "risk_per_trade": {
+            "from": 0.02,
+            "to": 0.01
+          }
+        },
+        "timestamp": "2026-01-02T23:08:16.219713-05:00"
+      },
+      "improvement": 8.22803150637702
+    },
+    {
+      "id": "exp_20260102_230816_1661",
+      "name": "Parameter Exploration #7",
+      "hypothesis": "Testing: atr_multiplier=3.0 (higher)",
+      "parameter_changes": {
+        "atr_multiplier": {
+          "from": 2.0,
+          "to": 3.0
+        }
+      },
+      "created_at": "2026-01-02T23:08:16.221448-05:00",
+      "status": "completed",
+      "result": {
+        "trades": 131,
+        "win_rate": 0.633,
+        "profit_factor": 1.631,
+        "parameters": {
+          "atr_multiplier": {
+            "from": 2.0,
+            "to": 3.0
+          }
+        },
+        "timestamp": "2026-01-02T23:08:16.222620-05:00"
+      },
+      "improvement": 1.9370419613677359
+    },
+    {
+      "id": "exp_20260102_230816_9724",
+      "name": "Parameter Exploration #8",
+      "hypothesis": "Testing: rsi_period=2 (lower), risk_per_trade=0.01 (lower), rsi_threshold=10 (higher)",
+      "parameter_changes": {
+        "rsi_period": {
+          "from": 2,
+          "to": 2
+        },
+        "risk_per_trade": {
+          "from": 0.02,
+          "to": 0.01
+        },
+        "rsi_threshold": {
+          "from": 5,
+          "to": 10
+        }
+      },
+      "created_at": "2026-01-02T23:08:16.222620-05:00",
+      "status": "completed",
+      "result": {
+        "trades": 180,
+        "win_rate": 0.573,
+        "profit_factor": 1.9055,
+        "parameters": {
+          "rsi_period": {
+            "from": 2,
+            "to": 2
+          },
+          "risk_per_trade": {
+            "from": 0.02,
+            "to": 0.01
+          },
+          "rsi_threshold": {
+            "from": 5,
+            "to": 10
+          }
+        },
+        "timestamp": "2026-01-02T23:08:16.224071-05:00"
+      },
+      "improvement": 19.09496108429626
+    },
+    {
+      "id": "exp_20260102_230816_6306",
+      "name": "Parameter Exploration #9",
+      "hypothesis": "Testing: rsi_period=6 (higher), atr_multiplier=3.5 (higher)",
+      "parameter_changes": {
+        "rsi_period": {
+          "from": 2,
+          "to": 6
+        },
+        "atr_multiplier": {
+          "from": 2.0,
+          "to": 3.5
+        }
+      },
+      "created_at": "2026-01-02T23:08:16.224071-05:00",
+      "status": "completed",
+      "result": {
+        "trades": 126,
+        "win_rate": 0.5759,
+        "profit_factor": 1.5034,
+        "parameters": {
+          "rsi_period": {
+            "from": 2,
+            "to": 6
+          },
+          "atr_multiplier": {
+            "from": 2.0,
+            "to": 3.5
+          }
+        },
+        "timestamp": "2026-01-02T23:08:16.224071-05:00"
+      },
+      "improvement": -6.039920042533425
+    },
+    {
+      "id": "exp_20260102_230816_7980",
+      "name": "Parameter Exploration #10",
+      "hypothesis": "Testing: ts_lookback=40 (higher)",
+      "parameter_changes": {
+        "ts_lookback": {
+          "from": 20,
+          "to": 40
+        }
+      },
+      "created_at": "2026-01-02T23:08:16.226550-05:00",
+      "status": "completed",
+      "result": {
+        "trades": 122,
+        "win_rate": 0.6359,
+        "profit_factor": 1.5894,
+        "parameters": {
+          "ts_lookback": {
+            "from": 20,
+            "to": 40
+          }
+        },
+        "timestamp": "2026-01-02T23:08:16.226550-05:00"
+      },
+      "improvement": -0.6653263960212791
+    }
+  ],
+  "discoveries": [
+    {
+      "id": "disc_20260102_230816",
+      "type": "parameter",
+      "description": "Found improvement: Testing: ts_lookback=15 (lower)",
+      "evidence": {
+        "experiment_id": "exp_20260102_230816_8220",
+        "improvement_pct": 12.639589980908084,
+        "result": {
+          "trades": 80,
+          "win_rate": 0.5828,
+          "profit_factor": 1.8022,
+          "parameters": {
+            "ts_lookback": {
+              "from": 20,
+              "to": 15
+            }
+          },
+          "timestamp": "2026-01-02T23:08:16.216582-05:00"
+        }
+      },
+      "confidence": 0.9,
+      "discovered_at": "2026-01-02T23:08:16.216582-05:00",
+      "validated": false
+    },
+    {
+      "id": "disc_20260102_230816",
+      "type": "parameter",
+      "description": "Found improvement: Testing: atr_multiplier=2.25 (higher), ts_lookback=40 (higher), ts_min_sweep_strength=0.6 (higher)",
+      "evidence": {
+        "experiment_id": "exp_20260102_230816_5951",
+        "improvement_pct": 9.918418980870008,
+        "result": {
+          "trades": 169,
+          "win_rate": 0.6776,
+          "profit_factor": 1.7587,
+          "parameters": {
+            "atr_multiplier": {
+              "from": 2.0,
+              "to": 2.25
+            },
+            "ts_lookback": {
+              "from": 20,
+              "to": 40
+            },
+            "ts_min_sweep_strength": {
+              "from": 0.3,
+              "to": 0.6
+            }
+          },
+          "timestamp": "2026-01-02T23:08:16.218087-05:00"
+        }
+      },
+      "confidence": 0.9,
+      "discovered_at": "2026-01-02T23:08:16.218087-05:00",
+      "validated": false
+    },
+    {
+      "id": "disc_20260102_230816",
+      "type": "parameter",
+      "description": "Found improvement: Testing: rsi_threshold=8 (higher), risk_per_trade=0.01 (lower)",
+      "evidence": {
+        "experiment_id": "exp_20260102_230816_8902",
+        "improvement_pct": 8.22803150637702,
+        "result": {
+          "trades": 198,
+          "win_rate": 0.5709,
+          "profit_factor": 1.7316,
+          "parameters": {
+            "rsi_threshold": {
+              "from": 5,
+              "to": 8
+            },
+            "risk_per_trade": {
+              "from": 0.02,
+              "to": 0.01
+            }
+          },
+          "timestamp": "2026-01-02T23:08:16.219713-05:00"
+        }
+      },
+      "confidence": 0.9,
+      "discovered_at": "2026-01-02T23:08:16.219713-05:00",
+      "validated": false
+    },
+    {
+      "id": "disc_20260102_230816",
+      "type": "parameter",
+      "description": "Found improvement: Testing: rsi_period=2 (lower), risk_per_trade=0.01 (lower), rsi_threshold=10 (higher)",
+      "evidence": {
+        "experiment_id": "exp_20260102_230816_9724",
+        "improvement_pct": 19.09496108429626,
+        "result": {
+          "trades": 180,
+          "win_rate": 0.573,
+          "profit_factor": 1.9055,
+          "parameters": {
+            "rsi_period": {
+              "from": 2,
+              "to": 2
+            },
+            "risk_per_trade": {
+              "from": 0.02,
+              "to": 0.01
+            },
+            "rsi_threshold": {
+              "from": 5,
+              "to": 10
+            }
+          },
+          "timestamp": "2026-01-02T23:08:16.224071-05:00"
+        }
+      },
+      "confidence": 0.9,
+      "discovered_at": "2026-01-02T23:08:16.224071-05:00",
+      "validated": true
+    }
+  ]
+}

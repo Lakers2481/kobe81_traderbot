@@ -1,8 +1,8 @@
 {
-  "version": "v2.2",
-  "frozen_date": "2025-12-30",
-  "verified_by": "Claude Code",
-  "status": "QUANT INTERVIEW READY",
+  "version": "v2.3",
+  "frozen_date": "2026-01-02",
+  "verified_by": "Autonomous Brain",
+  "status": "VALIDATED DISCOVERY APPLIED",
 
   "verification_results": {
     "ibs_rsi": {
@@ -32,11 +32,11 @@
   },
 
   "ibs_rsi_params": {
-    "description": "IBS+RSI Mean Reversion (High Frequency)",
+    "description": "IBS+RSI Mean Reversion (v2.3 - Validated Discovery)",
     "ibs_entry": 0.08,
     "ibs_exit": 0.80,
     "rsi_period": 2,
-    "rsi_entry": 5.0,
+    "rsi_entry": 10.0,
     "rsi_exit": 70.0,
     "stop_mult": 2.0,
     "time_stop_bars": 7,
