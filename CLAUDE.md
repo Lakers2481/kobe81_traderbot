@@ -2,6 +2,34 @@
 
 > Alignment Banner (v2.3): docs/STATUS.md is the canonical, single source of truth for active strategies, parameters, and performance metrics (QUANT INTERVIEW READY). Always consult docs/STATUS.md first, then follow its Replication Checklist.
 
+---
+
+## MANDATORY READING ORDER
+
+**New to this codebase? Read these documents in order:**
+
+| Order | File | Time | Purpose |
+|-------|------|------|---------|
+| 1 | `CLAUDE.md` (this file) | 5 min | Rules and commands |
+| 2 | `docs/STATUS.md` | 3 min | Single Source of Truth |
+| 3 | `docs/START_HERE.md` | 3 min | Onboarding guide |
+| 4 | `docs/READINESS.md` | 3 min | Production status |
+| 5 | `docs/ARCHITECTURE.md` | 10 min | Pipeline wiring |
+
+**Quick Reference:**
+- `docs/REPO_MAP.md` - Directory structure
+- `docs/ENTRYPOINTS.md` - All 180+ runnable scripts
+- `docs/ROBOT_MANUAL.md` - Complete system guide
+- `docs/KNOWN_GAPS.md` - Missing components
+- `docs/RISK_REGISTER.md` - Risk assessment
+
+**Verification:**
+```bash
+python tools/verify_repo.py --verbose
+```
+
+---
+
 ## CRITICAL: Strategy Verification (READ FIRST)
 
 **Use `backtest_dual_strategy.py` for ALL strategy verification.** This is the canonical test.
