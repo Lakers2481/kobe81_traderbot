@@ -319,6 +319,27 @@ class ResearchEngine:
             experiment.result = result
             experiment.improvement = ((new_pf - baseline_pf) / baseline_pf) * 100
 
+            # AUTO-VERIFICATION: If improvement > 2%, run FULL verification automatically
+            # This catches false positives from small samples
+            if experiment.improvement > 2.0:
+                logger.info(f"PROMISING RESULT ({experiment.improvement:+.1f}%) - Running FULL verification...")
+                full_result = self._run_full_verification(experiment.parameter_changes)
+
+                if full_result and full_result.get("status") == "success":
+                    full_pf = full_result.get("profit_factor", 1.0)
+                    full_improvement = ((full_pf - baseline_pf) / baseline_pf) * 100
+
+                    logger.info(f"FULL VERIFICATION: PF={full_pf:.2f}, Improvement={full_improvement:+.1f}%")
+
+                    # Update experiment with full results
+                    experiment.result["full_verification"] = full_result
+                    experiment.result["full_improvement"] = full_improvement
+                    experiment.improvement = full_improvement  # Use full verification result
+
+                    if full_improvement < 2.0:
+                        logger.warning(f"FULL VERIFICATION FAILED: Initial {experiment.improvement:+.1f}% -> Actual {full_improvement:+.1f}%")
+                        experiment.result["verification_failed"] = True
+
             # Only record discovery if REAL improvement > 5% AND not suspicious
             if experiment.improvement > 5 and result.get("suspicious") is None:
                 self._record_discovery(experiment)
@@ -515,6 +536,111 @@ class ResearchEngine:
 
         except Exception as e:
             logger.error(f"Real backtest failed: {e}")
+            return {"status": "error", "error": str(e)}
+
+    def _run_full_verification(self, param_changes: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Run FULL verification on ALL cached stocks (not just sample).
+        This catches false positives from small samples.
+        Called automatically when initial experiment shows > 2% improvement.
+        """
+        try:
+            from strategies.dual_strategy import DualStrategyScanner, DualStrategyParams
+
+            cache_dir = Path("data/polygon_cache")
+            if not cache_dir.exists():
+                cache_dir = Path("cache")
+            if not cache_dir.exists():
+                return {"status": "error", "error": "No cached data found"}
+
+            # Use ALL cached stocks (not just sample)
+            cache_files = sorted(cache_dir.glob("*.csv"))
+            logger.info(f"FULL VERIFICATION: Testing on ALL {len(cache_files)} stocks...")
+
+            # Create scanner with modified params
+            params = DualStrategyParams()
+            for key, change in param_changes.items():
+                if hasattr(params, key):
+                    new_val = change.get("to", change) if isinstance(change, dict) else change
+                    setattr(params, key, new_val)
+
+            scanner = DualStrategyScanner(params)
+            all_trades = []
+            symbols_processed = 0
+
+            for cache_file in cache_files:
+                try:
+                    symbol = cache_file.stem.upper()
+                    df = pd.read_csv(cache_file, parse_dates=['timestamp'])
+
+                    if len(df) < 100:
+                        continue
+
+                    # Add symbol column if missing
+                    if 'symbol' not in df.columns:
+                        df['symbol'] = symbol
+
+                    symbols_processed += 1
+                    signals = scanner.scan_signals_over_time(df)
+
+                    if signals is None or len(signals) == 0:
+                        continue
+
+                    for _, sig in signals.iterrows():
+                        entry = sig.get('entry_price', 0)
+                        stop = sig.get('stop_loss', 0)
+                        tp = sig.get('take_profit', 0)
+
+                        if entry <= 0:
+                            continue
+
+                        sig_ts = pd.to_datetime(sig.get('timestamp'))
+                        future = df[df['timestamp'] > sig_ts].head(10)
+
+                        if len(future) == 0:
+                            continue
+
+                        pnl_pct = 0
+                        for _, bar in future.iterrows():
+                            if bar['low'] <= stop:
+                                pnl_pct = (stop - entry) / entry * 100
+                                break
+                            elif bar['high'] >= tp:
+                                pnl_pct = (tp - entry) / entry * 100
+                                break
+                        else:
+                            exit_price = future.iloc[-1]['close']
+                            pnl_pct = (exit_price - entry) / entry * 100
+
+                        all_trades.append(pnl_pct)
+
+                except Exception:
+                    continue
+
+            if not all_trades or len(all_trades) < 100:
+                return {"status": "error", "error": f"Insufficient trades for verification: {len(all_trades)}"}
+
+            wins = [t for t in all_trades if t > 0]
+            losses = [t for t in all_trades if t <= 0]
+            win_rate = len(wins) / len(all_trades)
+            gross_profit = sum(wins) if wins else 0
+            gross_loss = abs(sum(losses)) if losses else 0.001
+            profit_factor = gross_profit / gross_loss
+
+            logger.info(f"FULL VERIFICATION complete: {len(all_trades)} trades, WR={win_rate:.1%}, PF={profit_factor:.2f}")
+
+            return {
+                "status": "success",
+                "trades": len(all_trades),
+                "win_rate": round(win_rate, 4),
+                "profit_factor": round(profit_factor, 2),
+                "symbols_tested": symbols_processed,
+                "verification_type": "FULL",
+                "timestamp": datetime.now(ET).isoformat(),
+            }
+
+        except Exception as e:
+            logger.error(f"Full verification failed: {e}")
             return {"status": "error", "error": str(e)}
 
     def _record_discovery(self, experiment: Experiment):
