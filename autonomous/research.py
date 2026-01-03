@@ -294,8 +294,8 @@ class ResearchEngine:
             if not cache_dir.exists():
                 return {"status": "error", "error": "No cached data found"}
 
-            # Get cached CSV files (sample 100 for speed, full 900 available)
-            cache_files = sorted(cache_dir.glob("*.csv"))[:100]
+            # Use ALL 900 cached stocks for accurate results
+            cache_files = sorted(cache_dir.glob("*.csv"))  # Full 900 stocks
             if not cache_files:
                 return {"status": "error", "error": "No cache files found"}
 
