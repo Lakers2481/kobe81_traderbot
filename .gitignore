@@ -1,5 +1,7 @@
 # Cache
+cache/
 data/cache/
+data/polygon_cache/
 __pycache__/
 *.pyc
 
