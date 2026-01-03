@@ -31,6 +31,7 @@ import sys
 from pathlib import Path
 from typing import Optional, List, Dict, Union, Tuple, Any
 from dataclasses import dataclass, field
+from datetime import datetime
 import warnings
 
 import numpy as np
@@ -444,6 +445,138 @@ class TFTForecaster:
             # Model would need to be recreated with training dataset
             jlog("tft_loaded", level="INFO", path=str(path))
         return self
+
+    def visualize_attention(
+        self,
+        df: pd.DataFrame,
+        output_dir: Union[str, Path] = "reports/tft_attention",
+        symbol: Optional[str] = None,
+        save_format: str = "png"
+    ) -> Optional[Path]:
+        """
+        Visualize TFT attention weights as heatmap.
+
+        Shows which time steps and features the model focuses on when making
+        predictions. Essential for interpretability and understanding model behavior.
+
+        Args:
+            df: DataFrame with features (will use last sample)
+            output_dir: Directory to save attention plots
+            symbol: Optional symbol name for filename
+            save_format: Image format ('png' or 'html')
+
+        Returns:
+            Path to saved visualization or None if failed
+        """
+        if not TFT_AVAILABLE or not self._is_fitted:
+            jlog("tft_viz_skipped", level="WARNING",
+                 message="TFT not fitted or pytorch-forecasting not available")
+            return None
+
+        try:
+            import matplotlib.pyplot as plt
+            import matplotlib
+
+            # Use non-interactive backend for server/headless environments
+            matplotlib.use('Agg')
+
+            # Get predictions with attention
+            predictions = self.predict(df, return_attention=True)
+
+            if 'attention' not in predictions:
+                jlog("tft_viz_no_attention", level="WARNING")
+                return None
+
+            attention = predictions['attention']
+
+            # Create output directory
+            output_path = Path(output_dir)
+            output_path.mkdir(parents=True, exist_ok=True)
+
+            # Generate filename
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            symbol_str = f"_{symbol}" if symbol else ""
+            filename = f"tft_attention{symbol_str}_{timestamp}.{save_format}"
+            filepath = output_path / filename
+
+            # Create attention heatmap
+            fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+            fig.suptitle(f'TFT Attention Analysis{" - " + symbol if symbol else ""}',
+                        fontsize=14, fontweight='bold')
+
+            # Plot 1: Encoder variable importance
+            if 'encoder_variables' in attention:
+                ax = axes[0, 0]
+                enc_vars = attention['encoder_variables']
+                if hasattr(enc_vars, 'mean'):
+                    enc_importance = {k: float(v.mean()) for k, v in enc_vars.items()}
+                    sorted_vars = sorted(enc_importance.items(), key=lambda x: x[1], reverse=True)
+                    names = [x[0] for x in sorted_vars[:10]]
+                    values = [x[1] for x in sorted_vars[:10]]
+                    ax.barh(names, values, color='steelblue')
+                    ax.set_xlabel('Importance')
+                    ax.set_title('Encoder Variable Importance (Top 10)')
+                    ax.invert_yaxis()
+
+            # Plot 2: Decoder variable importance
+            if 'decoder_variables' in attention:
+                ax = axes[0, 1]
+                dec_vars = attention['decoder_variables']
+                if hasattr(dec_vars, 'mean'):
+                    dec_importance = {k: float(v.mean()) for k, v in dec_vars.items()}
+                    sorted_vars = sorted(dec_importance.items(), key=lambda x: x[1], reverse=True)
+                    names = [x[0] for x in sorted_vars[:10]]
+                    values = [x[1] for x in sorted_vars[:10]]
+                    ax.barh(names, values, color='darkorange')
+                    ax.set_xlabel('Importance')
+                    ax.set_title('Decoder Variable Importance (Top 10)')
+                    ax.invert_yaxis()
+
+            # Plot 3: Static variable importance
+            if 'static_variables' in attention:
+                ax = axes[1, 0]
+                static_vars = attention['static_variables']
+                if hasattr(static_vars, 'mean'):
+                    static_importance = {k: float(v.mean()) for k, v in static_vars.items()}
+                    sorted_vars = sorted(static_importance.items(), key=lambda x: x[1], reverse=True)
+                    names = [x[0] for x in sorted_vars[:5]]
+                    values = [x[1] for x in sorted_vars[:5]]
+                    ax.barh(names, values, color='forestgreen')
+                    ax.set_xlabel('Importance')
+                    ax.set_title('Static Variable Importance')
+                    ax.invert_yaxis()
+            else:
+                axes[1, 0].text(0.5, 0.5, 'No static variables',
+                               ha='center', va='center', fontsize=12)
+                axes[1, 0].set_title('Static Variable Importance')
+
+            # Plot 4: Attention over time
+            if 'attention' in attention:
+                ax = axes[1, 1]
+                attn_weights = attention['attention']
+                if hasattr(attn_weights, 'numpy'):
+                    attn_matrix = attn_weights.mean(dim=0).numpy() if len(attn_weights.shape) > 2 else attn_weights.numpy()
+                    if len(attn_matrix.shape) == 2:
+                        im = ax.imshow(attn_matrix, aspect='auto', cmap='viridis')
+                        ax.set_xlabel('Query Position')
+                        ax.set_ylabel('Key Position')
+                        ax.set_title('Temporal Attention Pattern')
+                        plt.colorbar(im, ax=ax, label='Attention Weight')
+            else:
+                axes[1, 1].text(0.5, 0.5, 'Temporal attention not available',
+                               ha='center', va='center', fontsize=12)
+                axes[1, 1].set_title('Temporal Attention Pattern')
+
+            plt.tight_layout()
+            plt.savefig(filepath, dpi=150, bbox_inches='tight')
+            plt.close(fig)
+
+            jlog("tft_attention_saved", level="INFO", path=str(filepath))
+            return filepath
+
+        except Exception as e:
+            jlog("tft_viz_error", level="WARNING", error=str(e))
+            return None
 
 
 class TFTSignalGenerator:

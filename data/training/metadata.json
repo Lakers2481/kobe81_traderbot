@@ -1,0 +1,27 @@
+{
+  "n_samples": 64233,
+  "n_features": 16,
+  "n_wins": 31674,
+  "n_losses": 32559,
+  "win_rate": 0.49311101770118165,
+  "feature_names": [
+    "rsi_2",
+    "rsi_14",
+    "ibs",
+    "atr_pct",
+    "bb_percentile",
+    "sma_20_200_ratio",
+    "volume_ratio",
+    "adv_60",
+    "sweep_strength",
+    "don_position",
+    "near_20d_low",
+    "down_streak",
+    "vix",
+    "spy_ret_5d",
+    "regime_bull",
+    "regime_bear"
+  ],
+  "created": "2026-01-02T07:45:15.287250",
+  "data_source": "synthetic_from_wf_statistics"
+}

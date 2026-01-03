@@ -121,3 +121,9 @@ alphalens-reloaded>=0.4.3  # Factor validation (Quantopian fork)
 # Temporal Fusion Transformer (advanced ML forecasting)
 # pytorch-forecasting>=1.0.0  # TFT implementation
 # pytorch-lightning>=2.0.0  # Training framework
+
+# =============================================================================
+# ML INTERPRETABILITY (2026-01-02)
+# Based on comprehensive resource analysis
+# =============================================================================
+shap>=0.44.0  # SHAP for feature importance (TreeExplainer for XGBoost/LightGBM)

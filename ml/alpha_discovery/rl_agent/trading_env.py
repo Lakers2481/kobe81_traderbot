@@ -46,7 +46,7 @@ class TradingEnv:
         initial_capital: float = 100000.0,
         max_position_pct: float = 0.10,
         transaction_cost_bps: float = 5.0,
-        reward_type: str = 'r_multiple',
+        reward_type: str = 'sortino',  # Changed from 'r_multiple' to 'sortino' for better risk adjustment
         lookback: int = 50,
     ):
         """
@@ -233,7 +233,9 @@ class TradingEnv:
         self.returns.append(ret)
 
         # Calculate reward based on type
-        if self.reward_type == 'r_multiple' and position_before != 0:
+        if self.reward_type == 'sortino' and len(self.returns) > 10:
+            reward = self._calculate_sortino_reward()
+        elif self.reward_type == 'r_multiple' and position_before != 0:
             reward = self._calculate_r_multiple_reward(position_before, current_price, next_price)
         elif self.reward_type == 'sharpe' and len(self.returns) > 10:
             reward = self._calculate_sharpe_reward()
@@ -312,6 +314,38 @@ class TradingEnv:
             return 0.0
 
         return float(np.mean(recent) / np.std(recent))
+
+    def _calculate_sortino_reward(self) -> float:
+        """
+        Calculate Sortino-based reward from recent returns.
+
+        Sortino ratio uses only downside volatility, making it superior to Sharpe
+        for trading because it doesn't penalize upside volatility.
+
+        Research finding: Sortino-based RL produces more stable equity curves
+        with reduced drawdowns compared to Sharpe-based rewards.
+        """
+        if len(self.returns) < 10:
+            return 0.0
+
+        recent = np.array(self.returns[-20:])
+        mean_return = np.mean(recent)
+
+        # Calculate downside deviation (volatility of negative returns only)
+        downside_returns = recent[recent < 0]
+        if len(downside_returns) < 2:
+            # No or minimal downside - excellent performance
+            downside_vol = 1e-8
+        else:
+            downside_vol = np.std(downside_returns)
+
+        if downside_vol < 1e-10:
+            downside_vol = 1e-8
+
+        sortino = mean_return / downside_vol
+
+        # Clip to reasonable range to prevent extreme rewards
+        return float(np.clip(sortino, -10.0, 10.0))
 
     def render(self, mode: str = 'human') -> None:
         """Render environment state."""
