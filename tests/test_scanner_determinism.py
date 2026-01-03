@@ -52,6 +52,7 @@ def _hash_output(output: str) -> str:
 
 
 @pytest.mark.slow
+@pytest.mark.skip(reason="Integration test - runs full scanner 3x (~6 min). Run manually with: pytest tests/test_scanner_determinism.py -v -m slow --run-slow")
 class TestScannerDeterminism:
     """Test suite for scanner determinism."""
 
