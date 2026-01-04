@@ -80,9 +80,43 @@ This is not just code - it's the pursuit of perfection in algorithmic trading.
 
 > **THIS IS THE ONLY WAY TO TRADE. NO EXCEPTIONS.**
 
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    KOBE STANDARD PIPELINE                               │
+│                         900 → 5 → 2                                     │
+└─────────────────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  STEP 1: SCAN 900 STOCKS (Full Universe)                                │
+│  ├── Scan ALL 900 stocks in optionable_liquid_900.csv                   │
+│  ├── Apply Dual Strategy (IBS+RSI + Turtle Soup)                        │
+│  ├── Apply Quality Gate (Score >= 70, Confidence >= 0.60)               │
+│  └── Apply Markov Boost (+5-10% for agreeing signals)                   │
+└─────────────────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  STEP 2: TOP 5 TO STUDY (logs/daily_top5.csv)                           │
+│  ├── HIGHEST confidence signals from Step 1                             │
+│  ├── PURPOSE: Follow, analyze, test, understand the algo                │
+│  ├── Watch these stocks closely all day                                 │
+│  └── Learn from how they move vs predictions                            │
+└─────────────────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  STEP 3: TOP 2 TO TRADE (logs/tradeable.csv)                            │
+│  ├── BEST 2 stocks from the Top 5                                       │
+│  ├── PURPOSE: Execute ONLY these 2 trades                               │
+│  ├── Meet ALL criteria (highest conf_score after all boosts)            │
+│  └── These are the trades that actually get placed                      │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
 | Step | Description | Output File | Purpose |
 |------|-------------|-------------|---------|
-| **900** | Scan entire universe | - | Full market scan |
+| **900** | Scan entire universe | - | Full market scan with all filters |
 | **→ 5** | Filter to Top 5 | `logs/daily_top5.csv` | **STUDY** - Follow, analyze, test, understand |
 | **→ 2** | Trade Top 2 | `logs/tradeable.csv` | **TRADE** - Execute only these 2 |
 
@@ -91,23 +125,27 @@ This is not just code - it's the pursuit of perfection in algorithmic trading.
 python scripts/scan.py --cap 900 --deterministic --top5
 ```
 
-**Output Files:**
-- `logs/daily_top5.csv` - **Top 5 to STUDY** (follow the algo, analyze patterns, test ideas)
-- `logs/tradeable.csv` - **Top 2 to TRADE** (what we actually execute - best 2 of the 5)
-- `logs/signals.jsonl` - All signals (append-only)
-
-**With Markov Pre-filter (optional):**
+**WITH MARKOV INTEGRATION (Recommended):**
 ```bash
 python scripts/scan.py --cap 900 --deterministic --top5 --markov --markov-prefilter 100
 ```
 
-**Raw Signals (no quality gate):**
-```bash
-python scripts/scan.py --cap 900 --deterministic --no-quality-gate
-```
+**What Markov Does:**
+- `--markov`: Adds Markov chain scoring to signals (+5-10% conf boost when Markov agrees)
+- `--markov-prefilter 100`: Pre-ranks stocks by stationary pi(Up) before scanning
 
-**Quality Gate Settings (2026-01-02):**
-- Threshold: 70 (ML models now trained: HMM, LSTM, XGBoost, LightGBM, RL)
+**Output Files:**
+| File | Purpose |
+|------|---------|
+| `logs/daily_top5.csv` | **Top 5 to STUDY** - Watch these, analyze patterns, follow the algo |
+| `logs/tradeable.csv` | **Top 2 to TRADE** - Execute ONLY these (best of the 5) |
+| `logs/signals.jsonl` | All raw signals (append-only log) |
+
+**Quality Gate Settings:**
+- Min Score: 70
+- Min Confidence: 0.60
+- Min R:R Ratio: 1.5:1
+- Markov Boost: +5% base, +10% for strong signals
 
 **There is ONLY ONE scanner: `scan.py`. All other scan scripts have been deleted.**
 

@@ -1563,8 +1563,8 @@ Examples:
                         if args.verbose:
                             print(f"[MARKOV BOOST] Failed: {e}")
 
-                # === KOBE STANDARD: 900 -> 5 -> 3 -> 2 PIPELINE ===
-                # Step 1: Filter to Top-5 candidates BEFORE top-3 selection
+                # === KOBE STANDARD: 900 -> 5 -> 2 PIPELINE ===
+                # Step 1: Filter to Top-5 candidates for STUDY (follow, analyze, test)
                 top5_df = None
                 if args.top5 and not df.empty:
                     # Sort by conf_score and take top 5
