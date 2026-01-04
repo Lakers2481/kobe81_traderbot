@@ -1,0 +1,239 @@
+KOBE TRADING SYSTEM - COMPONENT TREE
+=====================================
+
+kobe81_traderbot/
+├── autonomous/                    # 24/7 BRAIN & SCHEDULER
+│   ├── __init__.py
+│   ├── __main__.py               # Entry for python -m autonomous.run
+│   ├── run.py                    # Unified CLI entrypoint (NEW)
+│   ├── brain.py                  # Main orchestrator (542 lines)
+│   │   └── AutonomousBrain
+│   │       ├── think()           # Main loop - called every 60s
+│   │       ├── run_forever()     # 24/7 operation
+│   │       └── run_weekend_research()
+│   ├── scheduler.py              # Task queue (746 lines)
+│   │   └── TaskScheduler
+│   │       ├── 43 registered tasks
+│   │       ├── get_eligible_tasks()
+│   │       └── execute_task()
+│   ├── awareness.py              # Market context (559 lines)
+│   │   └── MarketAwareness
+│   │       ├── 9 phases (pre_market, opening, morning, lunch...)
+│   │       ├── 8 seasons (normal, earnings, fomc, opex...)
+│   │       └── 7 work modes (active_trading, research, learning...)
+│   ├── handlers.py               # Task handlers (700+ lines)
+│   │   └── 35+ handlers for all operations
+│   ├── research.py               # Experiments & discoveries
+│   │   └── ResearchEngine
+│   │       ├── run_experiment()
+│   │       ├── discover_patterns()
+│   │       └── optimize_pf()
+│   ├── learning.py               # Trade analysis & reflection
+│   │   └── LearningEngine
+│   │       ├── analyze_trade()
+│   │       ├── daily_reflection()
+│   │       └── update_memory()
+│   └── scrapers/                 # External idea sources
+│       ├── github_scraper.py
+│       ├── reddit_scraper.py
+│       ├── youtube_scraper.py
+│       └── arxiv_scraper.py
+│
+├── agents/                        # MULTI-AGENT REACT SYSTEM
+│   ├── __init__.py
+│   ├── base_agent.py             # Base class (436 lines)
+│   │   └── ReActAgent
+│   │       ├── PAPER_ONLY enforcement
+│   │       ├── think()
+│   │       └── act()
+│   ├── scout_agent.py            # IdeaCard discovery
+│   ├── auditor_agent.py          # Bias detection
+│   ├── risk_agent.py             # 5-gate validation
+│   ├── reporter_agent.py         # Report generation
+│   ├── orchestrator.py           # Pipeline coordination
+│   │   └── Stages: DISCOVERY → AUDIT → RISK → APPROVAL → PROMOTION
+│   └── tools/                    # Agent tools
+│       ├── backtest_tool.py
+│       ├── data_tool.py
+│       └── search_tool.py
+│
+├── pipelines/                     # PIPELINE ARCHITECTURE (NEW)
+│   ├── __init__.py               # Registry + run_full_sequence()
+│   ├── base.py                   # Pipeline base class
+│   ├── universe_pipeline.py      # Validate 900-stock universe
+│   ├── data_audit_pipeline.py    # Daily data quality check
+│   ├── snapshot_pipeline.py      # Create data snapshots
+│   ├── discovery_pipeline.py     # Scout for ideas
+│   ├── spec_pipeline.py          # Convert to StrategySpec
+│   ├── implementation_pipeline.py # Generate code
+│   ├── backtest_pipeline.py      # Run backtests
+│   ├── gates_pipeline.py         # Quant gates validation
+│   ├── promotion_pipeline.py     # Track promotions
+│   ├── reporting_pipeline.py     # Generate reports
+│   └── quant_rd_pipeline.py      # Legacy R&D pipeline
+│
+├── quant_gates/                   # 5-GATE VALIDATION
+│   ├── __init__.py
+│   ├── pipeline.py               # Orchestrator (393 lines)
+│   ├── gate_0_sanity.py          # Lookahead/leakage detection
+│   ├── gate_1_baseline.py        # Min 50% WR, 1.0 PF
+│   ├── gate_2_robustness.py      # Train/test correlation
+│   ├── gate_3_risk.py            # Max 25% DD, 100+ trades
+│   └── gate_4_multiple_testing.py # FDR correction
+│
+├── strategies/                    # TRADING STRATEGIES
+│   ├── __init__.py
+│   ├── registry.py               # get_production_scanner()
+│   ├── dual_strategy/
+│   │   └── combined.py           # DualStrategyScanner
+│   │       ├── IBS+RSI: 59.9% WR, 1.46 PF
+│   │       └── Turtle Soup: 61.0% WR, 1.37 PF
+│   ├── ibs_rsi/
+│   │   ├── strategy.py           # IBS < 0.08, RSI(2) < 5
+│   │   └── params.py
+│   ├── ict/
+│   │   ├── turtle_soup.py        # 0.3 ATR sweep filter
+│   │   └── params.py
+│   └── generated/                # Auto-generated strategies (NEW)
+│
+├── backtest/                      # BACKTESTING ENGINE
+│   ├── __init__.py
+│   ├── engine.py                 # Main engine
+│   │   └── BacktestEngine
+│   │       ├── equity curve tracking
+│   │       ├── ATR/time stops
+│   │       └── FIFO P&L
+│   ├── walk_forward.py           # WF validation
+│   │   └── 252-day train, 63-day test splits
+│   └── metrics.py                # Performance metrics
+│
+├── risk/                          # RISK MANAGEMENT
+│   ├── __init__.py
+│   ├── policy_gate.py            # Budget enforcement
+│   │   └── PolicyGate.check()
+│   │       ├── $75 per order
+│   │       └── $1000 daily
+│   ├── equity_sizer.py           # Position sizing
+│   │   └── 2% risk cap + 20% notional cap
+│   ├── kill_zone_gate.py         # Time-based blocking
+│   │   └── NO trades 9:30-10:00, 11:30-14:30
+│   ├── weekly_exposure_gate.py   # 20% daily, 40% weekly caps
+│   ├── dynamic_position_sizer.py # Adaptive sizing
+│   └── advanced/
+│       ├── monte_carlo_var.py    # VaR with stress testing
+│       ├── kelly_position_sizer.py # Kelly criterion
+│       └── correlation_limits.py # Sector exposure
+│
+├── execution/                     # ORDER EXECUTION
+│   ├── __init__.py
+│   └── broker_alpaca.py          # Alpaca integration
+│       ├── place_ioc_limit()
+│       ├── get_best_ask()
+│       └── idempotency checking
+│
+├── data/                          # DATA LAYER
+│   ├── providers/
+│   │   ├── polygon_eod.py        # Polygon.io EOD
+│   │   ├── stooq_eod.py          # Free backup (Stooq)
+│   │   ├── yfinance_eod.py       # Free backup (Yahoo)
+│   │   └── binance_klines.py     # Crypto
+│   ├── universe/
+│   │   ├── loader.py             # Universe loading
+│   │   └── optionable_liquid_900.csv
+│   ├── cache/                    # EOD cache
+│   ├── lake/                     # Frozen snapshots
+│   └── snapshots/                # Point-in-time snapshots
+│
+├── ml_advanced/                   # ML/AI COMPONENTS
+│   ├── hmm_regime_detector.py    # 3-state HMM
+│   ├── lstm_confidence/          # Signal confidence
+│   │   └── model.py
+│   ├── ensemble/                 # XGBoost + LightGBM
+│   │   └── ensemble_predictor.py
+│   └── online_learning.py        # Concept drift detection
+│
+├── cognitive/                     # COGNITIVE ARCHITECTURE
+│   ├── cognitive_brain.py        # Main orchestrator
+│   ├── metacognitive_governor.py # System 1/2 routing
+│   ├── reflection_engine.py      # Learning from outcomes
+│   ├── self_model.py             # Capability tracking
+│   ├── episodic_memory.py        # Experience storage
+│   ├── semantic_memory.py        # Generalized rules
+│   ├── knowledge_boundary.py     # Uncertainty detection
+│   └── curiosity_engine.py       # Hypothesis generation
+│
+├── safety/                        # SAFETY MODULE (NEW)
+│   ├── __init__.py
+│   └── mode.py                   # PAPER_ONLY enforcement
+│       ├── PAPER_ONLY = True
+│       ├── assert_paper_only()
+│       └── get_trading_mode()
+│
+├── core/                          # CORE UTILITIES
+│   ├── hash_chain.py             # Audit chain (SHA256)
+│   ├── structured_log.py         # JSON logging
+│   └── config.py                 # Config loading
+│
+├── config/                        # CONFIGURATION
+│   ├── base.yaml                 # Main config (696 lines)
+│   ├── autonomous.yaml           # Brain config (NEW)
+│   └── frozen_strategy_params_v2.2.json
+│
+├── state/                         # STATE PERSISTENCE
+│   ├── KILL_SWITCH               # Emergency halt (if present)
+│   ├── autonomous/
+│   │   ├── heartbeat.json        # Brain heartbeat
+│   │   ├── brain_state.json      # Cycle count, errors
+│   │   ├── task_queue.json       # Task definitions
+│   │   └── research/             # Research state
+│   ├── cognitive/                # Cognitive state
+│   ├── discovery/                # Discovered ideas
+│   ├── specs/                    # Strategy specs
+│   └── promotions/               # Promotion tracking
+│
+├── logs/                          # LOG FILES
+│   ├── events.jsonl              # Structured events
+│   ├── daily_picks.csv           # Daily picks
+│   └── signals.jsonl             # All signals
+│
+├── reports/                       # GENERATED REPORTS
+│   ├── weekend_morning_*.md      # Weekend reports
+│   ├── daily_*.md                # Daily summaries
+│   └── quant_pattern_analysis_*.json
+│
+├── experiments/                   # EXPERIMENT TRACKING
+│   └── registry.py               # SHA256 hashing
+│
+├── tests/                         # TEST SUITE
+│   ├── 942 tests passing
+│   ├── cognitive/                # Cognitive tests
+│   ├── strategies/               # Strategy tests
+│   └── integration/              # Integration tests
+│
+├── scripts/                       # RUNNABLE SCRIPTS
+│   ├── preflight.py              # Pre-trade checks
+│   ├── scan.py                   # Daily scanner
+│   ├── run_paper_trade.py        # Paper trading
+│   ├── run_wf_polygon.py         # Walk-forward
+│   ├── overnight_watchlist.py    # Build watchlist
+│   ├── premarket_validator.py    # Validate gaps
+│   └── ...                       # 50+ scripts
+│
+├── docs/                          # DOCUMENTATION
+│   ├── STATUS.md                 # Single source of truth
+│   ├── ARCHITECTURE.md           # System architecture
+│   ├── INTERVIEW_QA.md           # Interview Q&A (NEW)
+│   ├── RUNBOOK.md                # Operations guide (NEW)
+│   └── ...                       # 61 files
+│
+└── CLAUDE.md                      # AI Assistant Guidance
+    ├── Ultimate Goal
+    ├── Commands
+    ├── Architecture
+    ├── Skills (70)
+    └── Professional Execution Flow
+
+=====================================
+TOTAL: 100+ Python modules, 942 tests
+LINES: ~50,000 LOC
+=====================================

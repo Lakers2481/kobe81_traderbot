@@ -1,0 +1,425 @@
+# =============================================================================
+# KOBE AUTONOMOUS BRAIN - CENTRAL CONFIGURATION
+# =============================================================================
+# This configuration file controls the 24/7 autonomous operation of Kobe.
+# It defines schedules, thresholds, modes, and safety parameters.
+#
+# Author: Kobe Trading System
+# Version: 1.0.0
+# Last Updated: 2026-01-03
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# BRAIN SETTINGS
+# -----------------------------------------------------------------------------
+brain:
+  # Main cycle interval (seconds between think() calls)
+  cycle_interval: 60
+
+  # Heartbeat settings
+  heartbeat:
+    enabled: true
+    file: "state/autonomous/heartbeat.json"
+    max_age_minutes: 5
+
+  # State persistence
+  state:
+    dir: "state/autonomous"
+    brain_state: "brain_state.json"
+    task_queue: "task_queue.json"
+    research_state: "research/research_state.json"
+
+  # Graceful shutdown
+  shutdown:
+    timeout_seconds: 30
+    save_state: true
+
+# -----------------------------------------------------------------------------
+# SCHEDULER SETTINGS
+# -----------------------------------------------------------------------------
+scheduler:
+  # Maximum concurrent tasks (should be 1 for safety)
+  max_concurrent: 1
+
+  # Task execution timeout (seconds)
+  default_timeout: 300
+
+  # Retry policy for failed tasks
+  retry:
+    max_attempts: 3
+    backoff_seconds: [60, 300, 900]  # 1min, 5min, 15min
+
+  # Priority levels (lower = higher priority)
+  priority_levels:
+    critical: 0
+    high: 1
+    normal: 2
+    low: 3
+    background: 4
+
+# -----------------------------------------------------------------------------
+# TIME AWARENESS SETTINGS
+# -----------------------------------------------------------------------------
+awareness:
+  # Timezone for market operations
+  timezone: "America/New_York"
+
+  # Market phases (times in ET)
+  phases:
+    pre_market_early:
+      start: "04:00"
+      end: "07:00"
+      work_mode: "research"
+    pre_market_active:
+      start: "07:00"
+      end: "09:30"
+      work_mode: "monitoring"
+    market_opening:
+      start: "09:30"
+      end: "10:00"
+      work_mode: "monitoring"  # OBSERVE ONLY - NO TRADES
+    market_morning:
+      start: "10:00"
+      end: "11:30"
+      work_mode: "active_trading"
+    market_lunch:
+      start: "11:30"
+      end: "14:00"
+      work_mode: "research"  # Choppy - don't trade
+    market_afternoon:
+      start: "14:00"
+      end: "15:30"
+      work_mode: "active_trading"
+    market_close:
+      start: "15:30"
+      end: "16:00"
+      work_mode: "monitoring"
+    after_hours:
+      start: "16:00"
+      end: "20:00"
+      work_mode: "learning"
+    night:
+      start: "20:00"
+      end: "04:00"
+      work_mode: "optimization"
+
+  # Weekend mode (Saturday/Sunday)
+  weekend:
+    enabled: true
+    work_mode: "deep_research"
+    # Extended task timeouts on weekend
+    task_timeout_multiplier: 3.0
+    # Tasks to prioritize on weekends
+    priority_tasks:
+      - "extended_backtest"
+      - "ml_retrain"
+      - "strategy_discovery"
+      - "correlation_study"
+      - "knowledge_consolidation"
+
+  # Special seasons (affect task selection)
+  seasons:
+    earnings:
+      description: "Earnings season - higher volatility"
+      months: [1, 4, 7, 10]
+      weeks: [2, 3]
+    fomc:
+      description: "FOMC meeting days - avoid trading"
+      # Dates loaded dynamically from calendar
+    opex:
+      description: "Options expiration - higher volume"
+      week_of_month: 3
+      day: "Friday"
+    tax_loss:
+      description: "Tax loss selling season"
+      start_date: "12-15"
+      end_date: "12-31"
+    january_effect:
+      description: "January effect - small cap strength"
+      month: 1
+    santa_rally:
+      description: "End of year rally tendency"
+      start_date: "12-20"
+      end_date: "12-31"
+
+# -----------------------------------------------------------------------------
+# PIPELINE SETTINGS
+# -----------------------------------------------------------------------------
+pipelines:
+  # Universe validation
+  universe:
+    schedule: "weekly"
+    day: "Sunday"
+    time: "18:00"
+    min_coverage: 0.95
+    min_history_years: 10
+
+  # Data quality audit
+  data_audit:
+    schedule: "daily"
+    time: "05:00"
+    sample_size: 50
+    max_gap_pct: 0.05
+    stale_days_threshold: 3
+
+  # Snapshot creation
+  snapshot:
+    schedule: "nightly"
+    time: "22:00"
+    retention_days: 30
+    compress: true
+
+  # Strategy discovery
+  discovery:
+    schedule: "hourly"
+    cooldown_minutes: 120
+    sources:
+      - "internal_patterns"
+      - "parameter_sweep"
+      - "external_ideas"
+    max_ideas_per_cycle: 5
+
+  # Backtesting
+  backtest:
+    schedule: "on_demand"
+    default_universe_cap: 150
+    train_days: 252
+    test_days: 63
+    min_trades: 100
+    verify_reproducibility: true
+
+  # Quant gates
+  gates:
+    schedule: "on_demand"
+    gate_sequence: [0, 1, 2, 3, 4]
+    fail_fast: true
+    thresholds:
+      gate_0_sanity:
+        max_lookahead_score: 0.1
+      gate_1_baseline:
+        min_win_rate: 0.50
+        min_profit_factor: 1.0
+      gate_2_robustness:
+        min_train_test_correlation: 0.5
+        max_parameter_sensitivity: 0.3
+      gate_3_risk:
+        max_drawdown: 0.25
+        min_trades: 100
+        min_symbols: 30
+      gate_4_multiple_testing:
+        fdr_threshold: 0.10
+
+# -----------------------------------------------------------------------------
+# RESEARCH SETTINGS
+# -----------------------------------------------------------------------------
+research:
+  # Experiment tracking
+  experiments:
+    registry_file: "experiments/registry.jsonl"
+    append_only: true
+    verify_reproducibility: true
+    hash_algorithm: "sha256"
+
+  # Parameter sweep
+  parameter_sweep:
+    enabled: true
+    max_experiments_per_cycle: 5
+    parameters:
+      ibs_threshold: [0.05, 0.08, 0.10, 0.15]
+      rsi_threshold: [3, 5, 7, 10]
+      rsi_period: [2, 3, 5]
+      atr_stop_mult: [1.5, 2.0, 2.5, 3.0]
+      ts_sweep_strength: [0.2, 0.3, 0.4, 0.5]
+
+  # Pattern discovery
+  pattern_discovery:
+    enabled: true
+    min_occurrences: 20
+    min_bounce_rate: 0.65
+    lookback_years: 5
+
+  # External ideas
+  external_ideas:
+    enabled: true
+    sources:
+      github:
+        enabled: true
+        max_repos_per_scrape: 10
+      reddit:
+        enabled: true
+        subreddits: ["algotrading", "quantfinance"]
+        max_posts: 20
+      arxiv:
+        enabled: true
+        categories: ["q-fin.TR", "q-fin.PM"]
+        max_papers: 5
+      youtube:
+        enabled: true
+        channels: ["ICT", "TheTradingChannel"]
+        max_videos: 5
+
+# -----------------------------------------------------------------------------
+# LEARNING SETTINGS
+# -----------------------------------------------------------------------------
+learning:
+  # Trade analysis
+  trade_analysis:
+    enabled: true
+    schedule: "after_market_close"
+    metrics:
+      - "win_rate"
+      - "profit_factor"
+      - "avg_r_multiple"
+      - "max_drawdown"
+
+  # Episodic memory
+  episodic_memory:
+    enabled: true
+    max_episodes: 10000
+    retention_days: 365
+
+  # Daily reflection
+  daily_reflection:
+    enabled: true
+    schedule: "17:00"
+    topics:
+      - "what_worked"
+      - "what_failed"
+      - "lessons_learned"
+      - "tomorrow_focus"
+
+  # Model retraining
+  model_retrain:
+    schedule: "weekly"
+    day: "Saturday"
+    time: "10:00"
+    models:
+      - "hmm_regime"
+      - "lstm_confidence"
+      - "xgboost_ensemble"
+      - "lightgbm_ensemble"
+
+# -----------------------------------------------------------------------------
+# REPORTING SETTINGS
+# -----------------------------------------------------------------------------
+reporting:
+  # Report output directory
+  output_dir: "reports"
+
+  # Scheduled reports
+  scheduled:
+    daily_summary:
+      time: "17:30"
+      format: "markdown"
+      include:
+        - "positions"
+        - "pnl"
+        - "signals"
+        - "errors"
+
+    weekly_review:
+      day: "Friday"
+      time: "17:00"
+      format: "markdown"
+      include:
+        - "performance_metrics"
+        - "risk_summary"
+        - "experiments"
+        - "discoveries"
+
+    weekend_morning:
+      day: "Saturday"
+      time: "09:00"
+      format: "markdown"
+      include:
+        - "brain_status"
+        - "research_summary"
+        - "monday_gameplan"
+
+    weekend_deepverify:
+      day: "Sunday"
+      time: "18:00"
+      format: "markdown"
+      include:
+        - "full_system_audit"
+        - "goal_progress"
+        - "strategy_health"
+        - "week_ahead"
+
+# -----------------------------------------------------------------------------
+# SAFETY SETTINGS
+# -----------------------------------------------------------------------------
+safety:
+  # Paper-only mode (NEVER change programmatically)
+  paper_only: true
+
+  # Kill switch
+  kill_switch:
+    file: "state/KILL_SWITCH"
+    check_interval: 10
+
+  # Risk limits (enforced by risk/policy_gate.py)
+  limits:
+    max_order_value: 75
+    max_daily_budget: 1000
+    max_position_pct: 0.10
+    max_daily_exposure: 0.20
+    max_weekly_exposure: 0.40
+    max_risk_per_trade: 0.02
+
+  # Broker watchdog
+  broker_watchdog:
+    enabled: true
+    check_interval: 300
+    reconnect_attempts: 3
+    alert_on_disconnect: true
+
+# -----------------------------------------------------------------------------
+# ALERTING SETTINGS
+# -----------------------------------------------------------------------------
+alerting:
+  # Telegram (if configured)
+  telegram:
+    enabled: false
+    bot_token_env: "TELEGRAM_BOT_TOKEN"
+    chat_id_env: "TELEGRAM_CHAT_ID"
+
+  # Alert levels
+  levels:
+    critical:
+      - "kill_switch_activated"
+      - "broker_disconnect"
+      - "order_rejected"
+    warning:
+      - "position_limit_near"
+      - "data_quality_issue"
+      - "model_drift_detected"
+    info:
+      - "trade_executed"
+      - "experiment_completed"
+      - "report_generated"
+
+# -----------------------------------------------------------------------------
+# DEMO MODE SETTINGS
+# -----------------------------------------------------------------------------
+demo:
+  # Quick demo for interviews
+  duration_minutes: 5
+
+  # What to demonstrate
+  sequence:
+    - name: "status_check"
+      description: "Show system health"
+      command: "python -m autonomous.run --status"
+    - name: "awareness"
+      description: "Show time/market awareness"
+      command: "python -m autonomous.run --awareness"
+    - name: "scan"
+      description: "Run stock scanner"
+      command: "python scripts/scan.py --cap 50 --deterministic"
+    - name: "research"
+      description: "Show research status"
+      command: "python -m autonomous.run --research"
+    - name: "patterns"
+      description: "Show discovered patterns"
+      command: "python scripts/show_patterns.py --top 10"

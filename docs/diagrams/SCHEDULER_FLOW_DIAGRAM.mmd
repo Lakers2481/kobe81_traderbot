@@ -1,0 +1,75 @@
+%%{init: {'theme': 'dark'}}%%
+flowchart TD
+    subgraph Brain["AUTONOMOUS BRAIN"]
+        THINK["think()<br/>Every 60 seconds"]
+    end
+
+    subgraph Awareness["MARKET AWARENESS"]
+        PHASE["Get Phase<br/>9 phases"]
+        MODE["Get Work Mode<br/>7 modes"]
+        SEASON["Check Season<br/>8 seasons"]
+    end
+
+    subgraph Scheduler["TASK SCHEDULER"]
+        ELIGIBLE["Get Eligible Tasks<br/>Phase + Mode + Cooldown"]
+        PRIORITY["Sort by Priority<br/>0=Critical → 4=Background"]
+        EXECUTE["Execute Task<br/>With timeout"]
+    end
+
+    subgraph Tasks["43 REGISTERED TASKS"]
+        SCAN["Scan Signals<br/>Every 30min (trading)"]
+        RESEARCH["Run Experiments<br/>Every 2hr (research)"]
+        LEARN["Trade Analysis<br/>After close"]
+        MAINTAIN["Cleanup/Health<br/>Every 3hr"]
+        REPORT["Generate Reports<br/>On schedule"]
+    end
+
+    subgraph State["STATE MANAGEMENT"]
+        HEARTBEAT[("heartbeat.json<br/>Alive + Uptime")]
+        BRAIN_STATE[("brain_state.json<br/>Cycles + Errors")]
+        TASK_QUEUE[("task_queue.json<br/>43 tasks")]
+    end
+
+    %% Main flow
+    THINK --> PHASE
+    PHASE --> MODE
+    MODE --> SEASON
+
+    SEASON --> ELIGIBLE
+    ELIGIBLE --> PRIORITY
+    PRIORITY --> EXECUTE
+
+    EXECUTE --> SCAN
+    EXECUTE --> RESEARCH
+    EXECUTE --> LEARN
+    EXECUTE --> MAINTAIN
+    EXECUTE --> REPORT
+
+    %% State updates
+    THINK --> HEARTBEAT
+    EXECUTE --> BRAIN_STATE
+    ELIGIBLE --> TASK_QUEUE
+
+    %% Phases detail
+    subgraph Phases["PHASES (ET)"]
+        P1["4-7 AM: Pre-market Early<br/>Mode: Research"]
+        P2["9:30-10 AM: Opening<br/>Mode: Monitoring"]
+        P3["10-11:30 AM: Morning<br/>Mode: Active Trading"]
+        P4["11:30-14 PM: Lunch<br/>Mode: Research"]
+        P5["14-15:30 PM: Afternoon<br/>Mode: Active Trading"]
+        P6["Weekend<br/>Mode: Deep Research"]
+    end
+
+    classDef brain fill:#1e3799,stroke:#4a69bd,color:#dcdde1
+    classDef awareness fill:#0c2461,stroke:#1e3799,color:#dcdde1
+    classDef scheduler fill:#6a0572,stroke:#ab4e8e,color:#dcdde1
+    classDef task fill:#2d3436,stroke:#636e72,color:#b2bec3
+    classDef state fill:#00695c,stroke:#00897b,color:#e0f2f1
+    classDef phase fill:#0d47a1,stroke:#1565c0,color:#bbdefb
+
+    class THINK brain
+    class PHASE,MODE,SEASON awareness
+    class ELIGIBLE,PRIORITY,EXECUTE scheduler
+    class SCAN,RESEARCH,LEARN,MAINTAIN,REPORT task
+    class HEARTBEAT,BRAIN_STATE,TASK_QUEUE state
+    class P1,P2,P3,P4,P5,P6 phase

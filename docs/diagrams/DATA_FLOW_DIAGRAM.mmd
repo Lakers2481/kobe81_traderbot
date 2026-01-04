@@ -1,0 +1,82 @@
+%%{init: {'theme': 'dark'}}%%
+flowchart TD
+    subgraph DataSources["DATA SOURCES"]
+        POLYGON[("Polygon.io API<br/>EOD OHLCV")]
+        STOOQ[("Stooq<br/>Free Backup")]
+        ALPACA[("Alpaca API<br/>Positions/Orders")]
+    end
+
+    subgraph DataLayer["DATA LAYER"]
+        CACHE[("CSV Cache<br/>data/cache/polygon_eod/")]
+        LAKE[("Frozen Lake<br/>data/lake/")]
+        UNIVERSE[("Universe<br/>900 stocks")]
+    end
+
+    subgraph Processing["PROCESSING"]
+        SCANNER["DualStrategyScanner<br/>strategies/dual_strategy/"]
+        INDICATORS["Technical Indicators<br/>RSI, IBS, ATR, SMA"]
+        SIGNALS["Signal Generator<br/>Entry/Exit Logic"]
+    end
+
+    subgraph Validation["VALIDATION"]
+        QUALITY_GATE["Quality Gate<br/>Score >= 60"]
+        QUANT_GATES["Quant Gates 0-4<br/>Lookahead, Baseline, Risk"]
+        BACKTEST["Backtest Engine<br/>Walk-Forward"]
+    end
+
+    subgraph Execution["EXECUTION"]
+        RISK_GATE["Risk Gate<br/>2%/20%/40% caps"]
+        ORDER_SUBMIT["Order Submission<br/>IOC LIMIT"]
+        POSITION_TRACK["Position Tracking<br/>state/positions.json"]
+    end
+
+    subgraph Output["OUTPUT"]
+        REPORTS[("Reports<br/>reports/*.md")]
+        LOGS[("Event Logs<br/>logs/events.jsonl")]
+        ALERTS[("Alerts<br/>Telegram/Console")]
+    end
+
+    %% Data flow
+    POLYGON --> CACHE
+    STOOQ -.-> CACHE
+    CACHE --> UNIVERSE
+    UNIVERSE --> SCANNER
+
+    SCANNER --> INDICATORS
+    INDICATORS --> SIGNALS
+
+    SIGNALS --> QUALITY_GATE
+    QUALITY_GATE -->|Pass| RISK_GATE
+    QUALITY_GATE -->|Fail| LOGS
+
+    SIGNALS --> QUANT_GATES
+    QUANT_GATES --> BACKTEST
+
+    RISK_GATE -->|Pass| ORDER_SUBMIT
+    RISK_GATE -->|Fail| LOGS
+
+    ORDER_SUBMIT --> ALPACA
+    ALPACA --> POSITION_TRACK
+
+    POSITION_TRACK --> REPORTS
+    BACKTEST --> REPORTS
+    QUALITY_GATE --> LOGS
+    RISK_GATE --> ALERTS
+
+    %% Frozen data path
+    CACHE -.->|Freeze| LAKE
+    LAKE -.->|Reproduce| BACKTEST
+
+    classDef source fill:#1a1a2e,stroke:#16213e,color:#e94560
+    classDef cache fill:#0f3460,stroke:#16213e,color:#e94560
+    classDef process fill:#533483,stroke:#16213e,color:#e94560
+    classDef validate fill:#e94560,stroke:#16213e,color:#1a1a2e
+    classDef execute fill:#16213e,stroke:#e94560,color:#e94560
+    classDef output fill:#1a1a2e,stroke:#533483,color:#e94560
+
+    class POLYGON,STOOQ,ALPACA source
+    class CACHE,LAKE,UNIVERSE cache
+    class SCANNER,INDICATORS,SIGNALS process
+    class QUALITY_GATE,QUANT_GATES,BACKTEST validate
+    class RISK_GATE,ORDER_SUBMIT,POSITION_TRACK execute
+    class REPORTS,LOGS,ALERTS output

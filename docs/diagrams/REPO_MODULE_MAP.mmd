@@ -1,0 +1,123 @@
+%%{init: {'theme': 'dark'}}%%
+flowchart TB
+    subgraph Core["CORE MODULES"]
+        SAFETY["safety/<br/>mode.py"]
+        CONFIG["config/<br/>base.yaml<br/>autonomous.yaml"]
+        CORE_UTIL["core/<br/>hash_chain.py<br/>structured_log.py"]
+    end
+
+    subgraph Brain["AUTONOMOUS BRAIN"]
+        AUTO_BRAIN["autonomous/<br/>brain.py"]
+        SCHEDULER["autonomous/<br/>scheduler.py"]
+        AWARENESS["autonomous/<br/>awareness.py"]
+        HANDLERS["autonomous/<br/>handlers.py"]
+    end
+
+    subgraph Agents["MULTI-AGENT"]
+        BASE_AGENT["agents/<br/>base_agent.py"]
+        SCOUT["agents/<br/>scout_agent.py"]
+        AUDITOR["agents/<br/>auditor_agent.py"]
+        ORCHESTRATOR["agents/<br/>orchestrator.py"]
+    end
+
+    subgraph Strategy["STRATEGIES"]
+        DUAL["strategies/<br/>dual_strategy/"]
+        IBS_RSI["strategies/<br/>ibs_rsi/"]
+        ICT["strategies/<br/>ict/"]
+        REGISTRY["strategies/<br/>registry.py"]
+    end
+
+    subgraph Risk["RISK MANAGEMENT"]
+        POLICY["risk/<br/>policy_gate.py"]
+        SIZER["risk/<br/>equity_sizer.py"]
+        KILL_ZONE["risk/<br/>kill_zone_gate.py"]
+        EXPOSURE["risk/<br/>weekly_exposure_gate.py"]
+    end
+
+    subgraph Validation["VALIDATION"]
+        GATES["quant_gates/<br/>pipeline.py"]
+        PIPELINES["pipelines/<br/>10 modules"]
+        BACKTEST["backtest/<br/>engine.py"]
+    end
+
+    subgraph Data["DATA LAYER"]
+        POLYGON["data/providers/<br/>polygon_eod.py"]
+        UNIVERSE["data/universe/<br/>loader.py"]
+        LAKE["data/lake/<br/>manifest.py"]
+    end
+
+    subgraph ML["ML/AI"]
+        HMM["ml_advanced/<br/>hmm_regime_detector.py"]
+        LSTM["ml_advanced/<br/>lstm_confidence/"]
+        ENSEMBLE["ml_advanced/<br/>ensemble/"]
+        COGNITIVE["cognitive/<br/>cognitive_brain.py"]
+    end
+
+    subgraph Execution["EXECUTION"]
+        BROKER["execution/<br/>broker_alpaca.py"]
+        OMS["oms/<br/>order_state.py"]
+    end
+
+    %% Dependencies
+    AUTO_BRAIN --> SCHEDULER
+    AUTO_BRAIN --> AWARENESS
+    AUTO_BRAIN --> HANDLERS
+    AUTO_BRAIN --> SAFETY
+
+    SCHEDULER --> CONFIG
+    AWARENESS --> CONFIG
+
+    HANDLERS --> REGISTRY
+    HANDLERS --> GATES
+    HANDLERS --> PIPELINES
+
+    SCOUT --> BASE_AGENT
+    AUDITOR --> BASE_AGENT
+    ORCHESTRATOR --> SCOUT
+    ORCHESTRATOR --> AUDITOR
+
+    REGISTRY --> DUAL
+    DUAL --> IBS_RSI
+    DUAL --> ICT
+
+    DUAL --> POLYGON
+    POLYGON --> UNIVERSE
+
+    GATES --> BACKTEST
+    BACKTEST --> DUAL
+    BACKTEST --> POLYGON
+
+    POLICY --> SIZER
+    SIZER --> BROKER
+    KILL_ZONE --> AWARENESS
+
+    BROKER --> OMS
+    BROKER --> SAFETY
+
+    HMM --> POLYGON
+    LSTM --> POLYGON
+    ENSEMBLE --> HMM
+    ENSEMBLE --> LSTM
+
+    COGNITIVE --> ENSEMBLE
+    HANDLERS --> COGNITIVE
+
+    classDef core fill:#c0392b,stroke:#e74c3c,color:#fff
+    classDef brain fill:#2980b9,stroke:#3498db,color:#fff
+    classDef agent fill:#8e44ad,stroke:#9b59b6,color:#fff
+    classDef strategy fill:#27ae60,stroke:#2ecc71,color:#fff
+    classDef risk fill:#d35400,stroke:#e67e22,color:#fff
+    classDef validation fill:#16a085,stroke:#1abc9c,color:#fff
+    classDef data fill:#2c3e50,stroke:#34495e,color:#ecf0f1
+    classDef ml fill:#f39c12,stroke:#f1c40f,color:#2c3e50
+    classDef exec fill:#7f8c8d,stroke:#95a5a6,color:#fff
+
+    class SAFETY,CONFIG,CORE_UTIL core
+    class AUTO_BRAIN,SCHEDULER,AWARENESS,HANDLERS brain
+    class BASE_AGENT,SCOUT,AUDITOR,ORCHESTRATOR agent
+    class DUAL,IBS_RSI,ICT,REGISTRY strategy
+    class POLICY,SIZER,KILL_ZONE,EXPOSURE risk
+    class GATES,PIPELINES,BACKTEST validation
+    class POLYGON,UNIVERSE,LAKE data
+    class HMM,LSTM,ENSEMBLE,COGNITIVE ml
+    class BROKER,OMS exec

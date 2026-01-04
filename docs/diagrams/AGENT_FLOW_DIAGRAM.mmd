@@ -1,0 +1,65 @@
+%%{init: {'theme': 'dark'}}%%
+flowchart LR
+    subgraph Discovery["DISCOVERY LANE"]
+        SCOUT["Scout Agent<br/>IdeaCard Discovery"]
+        IDEAS[("Ideas Queue<br/>state/discovery/")]
+    end
+
+    subgraph Research["RESEARCH LANE"]
+        AUDITOR["Auditor Agent<br/>Bias Detection"]
+        RISK_AGENT["Risk Agent<br/>Gate Validation"]
+        VALIDATED[("Validated<br/>Experiments")]
+    end
+
+    subgraph Engineering["ENGINEERING LANE"]
+        APPROVAL["Approval Gate<br/>HUMAN REQUIRED"]
+        IMPLEMENTATION["Implementation<br/>Code Generation"]
+        PROMOTION["Promotion<br/>To Production"]
+    end
+
+    subgraph Orchestrator["ORCHESTRATOR"]
+        ORCH["Pipeline Coordinator<br/>orchestrator.py"]
+    end
+
+    %% Flow
+    SCOUT -->|IdeaCard| IDEAS
+    IDEAS --> ORCH
+
+    ORCH --> AUDITOR
+    AUDITOR -->|Lookahead Check| RISK_AGENT
+    RISK_AGENT -->|5 Gates| VALIDATED
+
+    VALIDATED --> APPROVAL
+    APPROVAL -->|"HUMAN APPROVE<br/>(Never Auto)"| IMPLEMENTATION
+    IMPLEMENTATION --> PROMOTION
+
+    %% Labels
+    ORCH -.->|"Stages:<br/>DISCOVERY→AUDIT→RISK→APPROVAL→PROMOTION"| ORCH
+
+    %% ReAct pattern
+    subgraph ReAct["ReAct Pattern"]
+        THINK["Think<br/>Observe State"]
+        ACT["Act<br/>Execute Tool"]
+        OBSERVE["Observe<br/>Check Result"]
+    end
+
+    THINK --> ACT
+    ACT --> OBSERVE
+    OBSERVE --> THINK
+
+    %% Agent inheritance
+    SCOUT -.->|inherits| ReAct
+    AUDITOR -.->|inherits| ReAct
+    RISK_AGENT -.->|inherits| ReAct
+
+    classDef discovery fill:#2d3436,stroke:#00b894,color:#00b894
+    classDef research fill:#2d3436,stroke:#0984e3,color:#0984e3
+    classDef engineering fill:#2d3436,stroke:#e17055,color:#e17055
+    classDef human fill:#d63031,stroke:#ff7675,color:#fff
+    classDef react fill:#636e72,stroke:#b2bec3,color:#dfe6e9
+
+    class SCOUT,IDEAS discovery
+    class AUDITOR,RISK_AGENT,VALIDATED research
+    class IMPLEMENTATION,PROMOTION engineering
+    class APPROVAL human
+    class THINK,ACT,OBSERVE,ORCH react
