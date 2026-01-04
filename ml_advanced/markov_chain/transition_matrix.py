@@ -454,6 +454,9 @@ class TransitionMatrix:
         """
         if state_names is None:
             state_names = {i: f"S{i}" for i in range(self.config.n_states)}
+        else:
+            # Ensure keys are integers
+            state_names = {int(k): v for k, v in state_names.items()}
 
         lines = ["Transition Matrix:"]
 
