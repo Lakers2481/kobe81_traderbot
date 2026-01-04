@@ -1,10 +1,11 @@
 """
-Analytics Module for Edge Analysis and Strategy Monitoring.
+Analytics Module for Edge Analysis, Strategy Monitoring, and High-Performance Queries.
 
 Provides tools for understanding and monitoring trading edge:
 - Edge Decomposition: Stratify performance by multiple dimensions
 - Factor Attribution: Identify which signal components drive profits
 - Auto Stand-down: Automatic position reduction on edge degradation
+- DuckDB Engine: 10-100x faster aggregations than pandas
 """
 
 from analytics.edge_decomposition import (
@@ -22,6 +23,15 @@ from analytics.auto_standdown import (
     StanddownRecommendation,
     StanddownSeverity,
 )
+from analytics.duckdb_engine import (
+    DuckDBEngine,
+    QueryResult,
+    get_engine,
+    query_trades,
+    query_performance,
+    query_positions,
+    analyze_wf_results,
+)
 
 __all__ = [
     # Edge Decomposition
@@ -36,4 +46,12 @@ __all__ = [
     "AutoStanddown",
     "StanddownRecommendation",
     "StanddownSeverity",
+    # DuckDB High-Performance Analytics
+    "DuckDBEngine",
+    "QueryResult",
+    "get_engine",
+    "query_trades",
+    "query_performance",
+    "query_positions",
+    "analyze_wf_results",
 ]

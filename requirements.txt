@@ -160,3 +160,14 @@ langfuse>=2.0  # LLM tracing and debugging
 # pyautogen>=0.2.0  # Microsoft AutoGen for agent orchestration
 # langgraph>=0.0.40  # LangChain LangGraph for stateful workflows
 # langchain>=0.1.0  # LangChain core (LangGraph dependency)
+
+# =============================================================================
+# DATA PIPELINE OPTIMIZATION (2026-01-04)
+# High-performance messaging and analytics
+# =============================================================================
+
+# Real-Time Messaging (Redis Streams Pub/Sub)
+redis>=5.0  # Redis client for real-time event propagation
+
+# High-Performance Analytics (10-100x faster than pandas)
+duckdb>=1.0  # In-process OLAP database for fast aggregations
