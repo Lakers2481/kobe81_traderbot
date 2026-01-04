@@ -1530,6 +1530,39 @@ Examples:
                     except Exception:
                         pass
 
+                # === MARKOV CHAIN CONFIDENCE BOOST (Medallion-inspired) ===
+                # Boost conf_score when Markov chain agrees with signal direction
+                if MARKOV_AVAILABLE and args.markov and 'markov_agrees' in df.columns:
+                    try:
+                        def apply_markov_boost(row: pd.Series) -> float:
+                            base = float(row.get('conf_score', 0.0))
+                            agrees = bool(row.get('markov_agrees', False))
+                            p_up = float(row.get('markov_p_up_today', 0.33))
+                            side = str(row.get('side', 'long'))
+
+                            if not agrees:
+                                return base  # No boost if Markov disagrees
+
+                            # Base boost for agreement: +5%
+                            boost = 0.05
+
+                            # Additional boost for strong Markov signal
+                            if side == 'long' and p_up >= 0.55:
+                                boost += 0.05  # +5% more for strong bullish Markov
+                            elif side == 'short' and p_up <= 0.25:
+                                boost += 0.05  # +5% more for strong bearish Markov
+
+                            return max(0.0, min(1.0, base + boost))
+
+                        df['conf_score'] = df.apply(apply_markov_boost, axis=1)
+                        if args.verbose:
+                            boosted = df[df['markov_agrees'] == True]
+                            if len(boosted) > 0:
+                                print(f"[MARKOV BOOST] Applied to {len(boosted)} signals with Markov agreement")
+                    except Exception as e:
+                        if args.verbose:
+                            print(f"[MARKOV BOOST] Failed: {e}")
+
                 # === KOBE STANDARD: 900 -> 5 -> 3 -> 2 PIPELINE ===
                 # Step 1: Filter to Top-5 candidates BEFORE top-3 selection
                 top5_df = None

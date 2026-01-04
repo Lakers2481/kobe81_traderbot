@@ -779,6 +779,32 @@ state/research_os/
 | `lstm_confidence/` | Multi-output LSTM for signal confidence (A/B/C grades) |
 | `ensemble/` | Multi-model ensemble predictor (XGBoost, LightGBM, LSTM) |
 | `online_learning.py` | Incremental learning with concept drift detection |
+| `markov_chain/` | **MEDALLION-INSPIRED** Markov chain direction prediction |
+
+### Markov Chain Module (`ml_advanced/markov_chain/`) - Medallion-Inspired
+
+Observable state transitions for next-day direction prediction. Complements HMM regime detection.
+
+| Module | Purpose |
+|--------|---------|
+| `state_classifier.py` | Discretize returns into Up/Down/Flat states |
+| `transition_matrix.py` | Build P(next_state | current_state) matrix |
+| `stationary_dist.py` | Equilibrium distribution for mean-reversion signals |
+| `higher_order.py` | 2nd/3rd order chains for multi-day patterns |
+| `predictor.py` | Generate trading signals from Markov analysis |
+| `scorer.py` | Rank 900 stocks by stationary pi(Up) probability |
+
+**How HMM + Markov Work Together:**
+| Component | What It Does | Integration |
+|-----------|--------------|-------------|
+| **HMM** | Hidden market regimes (BULL/NEUTRAL/BEAR) | Position sizing multiplier |
+| **Markov Chain** | Observable direction prediction per stock | Signal confidence boost |
+
+**Usage:**
+```bash
+# With Markov pre-filter and confidence boost
+python scripts/scan.py --cap 900 --deterministic --top5 --markov --markov-prefilter 100
+```
 
 ### ML Features (`ml_features/`)
 | Module | Purpose |
