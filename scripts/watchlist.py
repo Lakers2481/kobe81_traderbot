@@ -164,18 +164,7 @@ def check_watchlist_signals(name: str) -> Dict[str, Any]:
                         })
                 except Exception:
                     pass
-                # ICT Turtle Soup
-                try:
-                    s = ict_strat.scan_signals_over_time(df)
-                    if not s.empty:
-                        latest = s.iloc[-1]
-                        signals.append({
-                            "strategy": "turtle_soup",
-                            "direction": str(latest.get("side", "N/A")),
-                            "date": str(latest.get("timestamp", "N/A")),
-                        })
-                except Exception:
-                    pass
+                # Note: DualStrategyScanner already includes both IBS+RSI and Turtle Soup
 
                 results["symbols"][symbol] = {
                     "status": "checked",

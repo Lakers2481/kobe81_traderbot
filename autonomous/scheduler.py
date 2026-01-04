@@ -17,7 +17,7 @@ from typing import Optional, Dict, List, Any, Callable
 from zoneinfo import ZoneInfo
 
 from .awareness import (
-    MarketPhase, WorkMode, MarketContext, ContextBuilder, get_context
+    MarketPhase, WorkMode, MarketContext, ContextBuilder
 )
 
 logger = logging.getLogger(__name__)

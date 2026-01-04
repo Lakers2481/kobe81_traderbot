@@ -1,5 +1,4 @@
 import pytest
-import requests_mock
 import pandas as pd
 from pathlib import Path
 from datetime import datetime, timedelta

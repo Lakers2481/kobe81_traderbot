@@ -26,6 +26,7 @@ if env_path.exists():
 from data.providers.polygon_eod import fetch_daily_bars_polygon
 from data.universe.loader import load_universe
 from strategies.registry import get_production_scanner
+from strategies.ibs_rsi import IbsRsiParams
 
 
 def run_backtest(symbols: List[str], start: str, end: str, params=None, max_symbols: int = 200) -> Dict:

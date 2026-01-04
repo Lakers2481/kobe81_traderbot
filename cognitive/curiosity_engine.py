@@ -39,8 +39,11 @@ import logging
 import hashlib
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
 from enum import Enum
+
+if TYPE_CHECKING:
+    from data.ml import ScenarioParams
 import json
 from pathlib import Path
 
