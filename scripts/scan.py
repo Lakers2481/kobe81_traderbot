@@ -80,6 +80,13 @@ try:
 except ImportError:
     VIX_MONITOR_AVAILABLE = False
 
+# Markov Chain Predictor (next-day direction scoring)
+try:
+    from ml_advanced.markov_chain import MarkovAssetScorer, MarkovPredictor
+    MARKOV_AVAILABLE = True
+except ImportError:
+    MARKOV_AVAILABLE = False
+
 
 def get_last_trading_day(reference_date: datetime = None) -> tuple[str, bool, str]:
     """
@@ -819,6 +826,25 @@ Examples:
         action="store_true",
         help="Use Alpaca live data for current prices (paper trading mode). Historical data still from Polygon.",
     )
+    # === Markov Chain Integration ===
+    ap.add_argument(
+        "--markov",
+        action="store_true",
+        help="Enable Markov chain scoring for signal confidence boost",
+    )
+    ap.add_argument(
+        "--markov-prefilter",
+        type=int,
+        default=0,
+        metavar="N",
+        help="Pre-filter universe to top N stocks by Markov pi(Up) before scanning (0=disabled)",
+    )
+    ap.add_argument(
+        "--markov-min-pi-up",
+        type=float,
+        default=0.35,
+        help="Minimum stationary pi(Up) for Markov pre-filter (default: 0.35)",
+    )
     args = ap.parse_args()
 
     # Handle --no-* override flags for ML and cognitive defaults
@@ -1056,6 +1082,70 @@ Examples:
     combined = pd.concat(all_data, ignore_index=True)
     print(f"Total bars: {len(combined):,}")
 
+    # === MARKOV PRE-FILTER (optional) ===
+    # Rank stocks by stationary pi(Up) and filter to top N before detailed scan
+    markov_scores = {}  # Cache for later use in signal scoring
+    if MARKOV_AVAILABLE and args.markov_prefilter > 0:
+        try:
+            print(f"\n[MARKOV] Pre-filtering to top {args.markov_prefilter} by pi(Up)...")
+            scorer = MarkovAssetScorer(
+                n_states=3,
+                lookback_days=252,
+                classification_method="threshold",
+            )
+
+            # Build returns dict from combined data
+            returns_dict = {}
+            for sym in combined['symbol'].unique():
+                sym_data = combined[combined['symbol'] == sym].sort_values('timestamp')
+                if len(sym_data) >= 60:  # Need at least 60 days
+                    closes = sym_data['close'].values
+                    returns = pd.Series(closes).pct_change().dropna()
+                    returns_dict[sym] = returns
+
+            if returns_dict:
+                all_syms = list(returns_dict.keys())
+                scored_df = scorer.score_universe(all_syms, returns_dict)
+
+                if not scored_df.empty:
+                    # Store scores for later signal scoring
+                    for _, row in scored_df.iterrows():
+                        markov_scores[row['symbol']] = {
+                            'pi_up': row['pi_up'],
+                            'p_up_today': row['p_up_today'],
+                            'current_state': row['current_state'],
+                            'composite_score': row['composite_score'],
+                        }
+
+                    # Filter to top N
+                    top_symbols = scorer.filter_top_n(
+                        scored_df,
+                        n=args.markov_prefilter,
+                        min_score=args.markov_min_pi_up,
+                    )
+
+                    if top_symbols:
+                        pre_count = len(combined['symbol'].unique())
+                        combined = combined[combined['symbol'].isin(top_symbols)]
+                        post_count = len(combined['symbol'].unique())
+                        print(f"[MARKOV] Pre-filtered: {pre_count} -> {post_count} symbols (top pi_up >= {args.markov_min_pi_up:.2f})")
+
+                        # Show top 5 by pi(Up)
+                        if args.verbose:
+                            top5 = scored_df.head(5)
+                            for _, r in top5.iterrows():
+                                print(f"  {r['symbol']}: pi(Up)={r['pi_up']:.3f}, P(Up|now)={r['p_up_today']:.3f}")
+                    else:
+                        print("[MARKOV] No symbols passed Markov filter - using all")
+                else:
+                    print("[MARKOV] Scoring failed - using all symbols")
+            else:
+                print("[MARKOV] Insufficient data for Markov scoring - using all symbols")
+        except Exception as e:
+            print(f"[MARKOV] Pre-filter failed: {e} - using all symbols")
+    elif args.markov_prefilter > 0 and not MARKOV_AVAILABLE:
+        print("[WARN] --markov-prefilter requested but Markov module not available")
+
     # Run strategies
     print("\nRunning strategies...")
     # Load SPY for regime filter if enabled
@@ -1127,6 +1217,75 @@ Examples:
         except Exception as e:
             if args.verbose:
                 print(f"  [WARN] Signal adjudication failed: {e}", file=sys.stderr)
+
+    # === MARKOV CHAIN SCORING ===
+    # Add Markov metrics to signals for confidence adjustment
+    if MARKOV_AVAILABLE and args.markov and not signals.empty:
+        try:
+            # If we don't have cached scores, compute them now
+            if not markov_scores:
+                scorer = MarkovAssetScorer(n_states=3, lookback_days=252)
+                returns_dict = {}
+                for sym in signals['symbol'].unique():
+                    sym_data = combined[combined['symbol'] == sym].sort_values('timestamp')
+                    if len(sym_data) >= 60:
+                        closes = sym_data['close'].values
+                        returns = pd.Series(closes).pct_change().dropna()
+                        returns_dict[sym] = returns
+                if returns_dict:
+                    scored_df = scorer.score_universe(list(returns_dict.keys()), returns_dict)
+                    for _, row in scored_df.iterrows():
+                        markov_scores[row['symbol']] = {
+                            'pi_up': row['pi_up'],
+                            'p_up_today': row['p_up_today'],
+                            'current_state': row['current_state'],
+                            'composite_score': row['composite_score'],
+                        }
+
+            # Add Markov columns to signals
+            markov_pi_up = []
+            markov_p_up_today = []
+            markov_agrees = []
+
+            for _, sig in signals.iterrows():
+                sym = sig['symbol']
+                side = sig.get('side', 'long')
+
+                if sym in markov_scores:
+                    m = markov_scores[sym]
+                    markov_pi_up.append(m['pi_up'])
+                    markov_p_up_today.append(m['p_up_today'])
+                    # Markov agrees if: long signal + high P(Up), or short signal + low P(Up)
+                    if side == 'long':
+                        agrees = m['p_up_today'] >= 0.40  # Above 40% = Markov agrees with long
+                    else:
+                        agrees = m['p_up_today'] <= 0.30  # Below 30% = Markov agrees with short
+                    markov_agrees.append(agrees)
+                else:
+                    markov_pi_up.append(0.33)  # Neutral
+                    markov_p_up_today.append(0.33)
+                    markov_agrees.append(False)
+
+            signals['markov_pi_up'] = markov_pi_up
+            signals['markov_p_up_today'] = markov_p_up_today
+            signals['markov_agrees'] = markov_agrees
+
+            # Report Markov agreement
+            agree_count = sum(markov_agrees)
+            if args.verbose:
+                print(f"[MARKOV] {agree_count}/{len(signals)} signals have Markov agreement")
+                for _, sig in signals.iterrows():
+                    sym = sig['symbol']
+                    if sym in markov_scores:
+                        m = markov_scores[sym]
+                        agree_str = "YES" if sig['markov_agrees'] else "NO"
+                        print(f"  {sym}: pi(Up)={m['pi_up']:.3f}, P(Up|now)={m['p_up_today']:.3f}, agrees={agree_str}")
+
+        except Exception as e:
+            if args.verbose:
+                print(f"[MARKOV] Signal scoring failed: {e}")
+    elif args.markov and not MARKOV_AVAILABLE:
+        print("[WARN] --markov requested but Markov module not available")
 
     # Optional ML scoring
     if args.ml and not signals.empty:
