@@ -202,7 +202,7 @@ class FeatureImportanceAnalyzer:
             try:
                 corr = X[col].corr(y.astype(float))
                 correlations[col] = float(corr) if not np.isnan(corr) else 0.0
-            except:
+            except (ValueError, TypeError):
                 correlations[col] = 0.0
 
         # Rank features

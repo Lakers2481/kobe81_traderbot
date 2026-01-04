@@ -27,7 +27,7 @@ def check_correlation(symbols: str, dotenv: str) -> int:
             df = fetch_daily_bars_polygon(symbol, start.isoformat(), end.isoformat())
             if df is not None and len(df) > 20:
                 returns_dict[symbol] = df['close'].pct_change()
-        except:
+        except Exception:
             pass
 
     if len(returns_dict) < 2:

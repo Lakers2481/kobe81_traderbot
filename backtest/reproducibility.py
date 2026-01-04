@@ -259,7 +259,7 @@ class DataVersioner:
         try:
             with open(path, 'r') as f:
                 return sum(1 for _ in f) - 1  # Subtract header
-        except:
+        except (OSError, IOError):
             return 0
 
     def create_snapshot(

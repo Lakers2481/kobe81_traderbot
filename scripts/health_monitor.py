@@ -72,7 +72,7 @@ def load_health_state() -> Dict:
     if HEALTH_STATE_FILE.exists():
         try:
             return json.loads(HEALTH_STATE_FILE.read_text())
-        except:
+        except (json.JSONDecodeError, OSError):
             pass
     return {'last_alert': {}, 'consecutive_failures': {}}
 
@@ -107,7 +107,7 @@ def check_heartbeat() -> HealthStatus:
         # Parse timestamp
         try:
             last_dt = datetime.fromisoformat(last_update.replace('Z', '+00:00'))
-        except:
+        except ValueError:
             last_dt = datetime.fromisoformat(last_update)
 
         # Make timezone-aware if needed
@@ -347,7 +347,7 @@ def send_health_alert(checks: List[HealthStatus], state: Dict) -> None:
             if (datetime.now() - last_dt).total_seconds() < 300:  # 5 min cooldown
                 jlog('health_alert_rate_limited', level='DEBUG')
                 return
-        except:
+        except ValueError:
             pass
 
     # Build alert message
@@ -448,7 +448,7 @@ def main():
                     now = now_et()
                     stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
                     send_telegram(f"Kobe runner restarted by health monitor [{stamp}]")
-                except:
+                except Exception:
                     pass
             else:
                 print("Restart failed. Check logs.")

@@ -129,14 +129,14 @@ class ResearchEngine:
                     try:
                         exp["created_at"] = datetime.fromisoformat(exp["created_at"])
                         self.experiments.append(Experiment(**exp))
-                    except:
+                    except (ValueError, TypeError, KeyError):
                         pass
                 self.discoveries = []
                 for disc in data.get("discoveries", []):
                     try:
                         disc["discovered_at"] = datetime.fromisoformat(disc["discovered_at"])
                         self.discoveries.append(Discovery(**disc))
-                    except:
+                    except (ValueError, TypeError, KeyError):
                         pass
             except Exception as e:
                 logger.warning(f"Could not load research state: {e}")

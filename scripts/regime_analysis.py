@@ -50,7 +50,7 @@ def analyze_regime(dotenv: str) -> int:
             if vix is not None and len(vix) > 0:
                 vix_change = vix['close'].iloc[-1] / vix['close'].iloc[-5] - 1
                 print(f"[REGIME] VIX proxy 5d change: {vix_change:.1%}")
-        except:
+        except Exception:
             pass
 
         return 0

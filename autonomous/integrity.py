@@ -313,7 +313,7 @@ class IntegrityGuardian:
             for line in f:
                 try:
                     violations.append(json.loads(line.strip()))
-                except:
+                except (json.JSONDecodeError, ValueError):
                     pass
 
         return {

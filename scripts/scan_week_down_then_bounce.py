@@ -637,7 +637,7 @@ def generate_outputs(results: Dict):
     try:
         events_parquet_path = output_dir / "week_down_then_bounce_events.parquet"
         events_df.to_parquet(events_parquet_path, index=False)
-    except:
+    except (ImportError, OSError):
         pass  # Parquet not available
 
     # =========================================================================

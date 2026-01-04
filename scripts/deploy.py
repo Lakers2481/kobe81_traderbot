@@ -224,7 +224,7 @@ def deploy(backup_first: bool = True) -> bool:
     try:
         result = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True)
         commit_before = result.stdout.strip()[:8]
-    except:
+    except (subprocess.SubprocessError, OSError):
         commit_before = "unknown"
 
     print("\n--- Deployment Steps ---\n")

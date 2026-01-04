@@ -160,7 +160,7 @@ class DatasetManifest:
             start = datetime.fromisoformat(self.start_date)
             end = datetime.fromisoformat(self.end_date)
             years = (end - start).days / 365.25
-        except:
+        except (ValueError, TypeError):
             years = 0
 
         return {

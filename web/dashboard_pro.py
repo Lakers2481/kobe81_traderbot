@@ -205,7 +205,7 @@ class ProDashboardData:
                 if price > 0:
                     self._price_cache[symbol] = (price, now)
                 return price
-        except:
+        except Exception:
             pass
 
         # Return cached if available
@@ -357,7 +357,7 @@ class ProDashboardData:
                             try:
                                 ed = datetime.strptime(entry_date, "%Y-%m-%d")
                                 days = (datetime.now() - ed).days + 1
-                            except:
+                            except ValueError:
                                 pass
                         return {
                             "stop_loss": trade.get("stop_loss", 0),
@@ -366,7 +366,7 @@ class ProDashboardData:
                             "days_held": days,
                             "confidence": trade.get("confidence", 70),
                         }
-        except:
+        except (json.JSONDecodeError, OSError, KeyError):
             pass
         return {}
 
@@ -649,7 +649,7 @@ class ProDashboardData:
                 return 0.0
 
             return reward / risk
-        except:
+        except (TypeError, ZeroDivisionError):
             return 0.0
 
     def _load_stats(self) -> Dict:
@@ -659,7 +659,7 @@ class ProDashboardData:
             if path.exists():
                 with open(path) as f:
                     return json.load(f)
-        except:
+        except (json.JSONDecodeError, OSError):
             pass
         # Return zeros for paper session (no real trades yet)
         return {
@@ -686,7 +686,7 @@ class ProDashboardData:
                     live_gated = False
                 elif "TRADING_MODE=PAPER" in content:
                     mode = "PAPER"
-        except:
+        except OSError:
             pass
 
         return {
@@ -784,7 +784,7 @@ class ProDashboardData:
                         "decision": data.get("decision", "GREEN"),
                         "confidence": data.get("confidence", 10),
                     }
-        except:
+        except (json.JSONDecodeError, OSError, KeyError):
             pass
         return {
             "strategy": "IBS+RSI + ICT",
@@ -839,7 +839,7 @@ class ProDashboardData:
                         "t_statistic": 12.76,  # SSOT v2.1.0
                     },
                 }
-        except:
+        except OSError:
             pass
         return {
             "name": "PROVEN_900_UNIVERSE",
@@ -957,7 +957,7 @@ class ProDashboardData:
             if path.exists():
                 with open(path) as f:
                     ml_report = json.load(f)
-        except:
+        except (json.JSONDecodeError, OSError):
             pass
 
         # Generate RULE-BASED insights from scanner data (this is deterministic, not ML)

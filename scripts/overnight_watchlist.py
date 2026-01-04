@@ -66,7 +66,7 @@ def build_overnight_watchlist(
     from data.calendar import get_next_trading_day
     try:
         next_day = get_next_trading_day(now.date())
-    except:
+    except Exception:
         # Fallback: assume next weekday
         next_day = now.date() + timedelta(days=1)
         while next_day.weekday() >= 5:  # Skip weekends

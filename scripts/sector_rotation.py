@@ -41,7 +41,7 @@ def analyze_rotation(dotenv: str) -> int:
                 ret_5d = df['close'].iloc[-1] / df['close'].iloc[-5] - 1
                 ret_20d = df['close'].iloc[-1] / df['close'].iloc[0] - 1
                 sector_performance[sector] = {'5d': ret_5d, '20d': ret_20d, 'etf': etf}
-        except:
+        except Exception:
             pass
 
     if not sector_performance:

@@ -34,7 +34,7 @@ def load_trade_history(limit: int = 100, days: int = 30) -> List[Dict]:
             for line in f:
                 try:
                     trades.append(json.loads(line.strip()))
-                except:
+                except (json.JSONDecodeError, ValueError):
                     pass
 
     # Filter by date
@@ -48,7 +48,7 @@ def load_trade_history(limit: int = 100, days: int = 30) -> List[Dict]:
                     dt = datetime.fromisoformat(trade_time.replace("Z", "+00:00"))
                     if dt.replace(tzinfo=None) >= cutoff:
                         filtered.append(trade)
-            except:
+            except ValueError:
                 filtered.append(trade)  # Include if can't parse
 
     # Sort by time and limit
@@ -81,7 +81,7 @@ def analyze_win_loss_patterns(trades: List[Dict]) -> Dict:
                 hour = dt.hour
                 period = "Pre-Market" if hour < 9 else "Morning" if hour < 12 else "Afternoon" if hour < 16 else "After-Hours"
                 patterns["by_hour"][period]["wins" if is_win else "losses"] += 1
-            except:
+            except ValueError:
                 pass
 
         # By symbol

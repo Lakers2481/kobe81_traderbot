@@ -46,7 +46,7 @@ def main():
             if df is not None and not df.empty and len(df) > 200:
                 df['symbol'] = sym
                 all_data.append(df)
-        except:
+        except Exception:
             pass
 
     combined = pd.concat(all_data, ignore_index=True)

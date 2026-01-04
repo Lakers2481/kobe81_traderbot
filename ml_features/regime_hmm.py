@@ -163,7 +163,7 @@ class MarketRegimeDetector:
             ss_res = np.sum((close.values - predicted) ** 2)
             ss_tot = np.sum((close.values - close.mean()) ** 2)
             r_squared = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0
-        except:
+        except (ValueError, np.linalg.LinAlgError):
             r_squared = 0
 
         # Get VIX level if available

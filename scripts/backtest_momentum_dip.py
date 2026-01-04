@@ -39,7 +39,7 @@ def run_backtest(symbols: List[str], start: str, end: str, params: Any, max_symb
                 if 'symbol' not in df.columns:
                     df['symbol'] = sym
                 all_data.append(df)
-        except:
+        except Exception:
             pass
 
     if not all_data:

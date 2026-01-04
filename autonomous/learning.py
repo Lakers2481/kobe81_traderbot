@@ -113,7 +113,7 @@ class LearningEngine:
                 for line in f:
                     try:
                         trades.append(json.loads(line))
-                    except:
+                    except (json.JSONDecodeError, ValueError):
                         continue
 
             if not trades:
@@ -262,7 +262,7 @@ class LearningEngine:
                         t_date = datetime.fromisoformat(t.get("timestamp", "2000-01-01")).date()
                         if t_date == today:
                             trades.append(t)
-                    except:
+                    except (json.JSONDecodeError, ValueError):
                         continue
 
             if not trades:

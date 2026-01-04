@@ -196,7 +196,7 @@ def sync_positions_with_broker(state: Dict[str, Any], broker_positions: List[Dic
                 for line in f:
                     try:
                         trades.append(json.loads(line))
-                    except:
+                    except (json.JSONDecodeError, ValueError):
                         continue
 
             # Find most recent entry for each symbol
@@ -236,7 +236,7 @@ def check_time_exits(state: Dict[str, Any], execute: bool = False, dry_run: bool
 
         try:
             entry_date = datetime.fromisoformat(entry_date_str.replace('Z', '+00:00'))
-        except:
+        except ValueError:
             continue
 
         strategy = pos_info.get('strategy', 'DEFAULT')
@@ -277,7 +277,7 @@ def check_time_exits(state: Dict[str, Any], execute: bool = False, dry_run: bool
                     msg = f"TIME EXIT: {sym} closed after {bars_held} bars ({strategy}) [{stamp}]"
                     try:
                         send_telegram(msg)
-                    except:
+                    except Exception:
                         pass
         else:
             # Log position status

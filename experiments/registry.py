@@ -279,7 +279,7 @@ class ExperimentRegistry:
             ).decode().strip()
 
             return commit, branch
-        except:
+        except (subprocess.SubprocessError, OSError):
             return None, None
 
     def register(

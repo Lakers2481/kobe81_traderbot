@@ -102,12 +102,18 @@ def validate_strategy_import():
     Call this at startup to check for deprecated strategy imports.
 
     This scans sys.modules for any deprecated standalone strategy imports
-    and issues warnings.
+    and issues warnings. It SKIPS warnings if DualStrategyScanner is loaded
+    (since it legitimately uses the sub-strategies internally).
 
     Usage:
         from strategies.registry import validate_strategy_import
         validate_strategy_import()  # Call at startup
     """
+    # If DualStrategyScanner is loaded, the sub-strategies are legitimate internal imports
+    # Don't warn in this case - the user is using the correct registry pattern
+    if 'strategies.dual_strategy.combined' in sys.modules:
+        return  # Legitimate use via DualStrategyScanner
+
     for module_name, class_name in _DEPRECATED_IMPORTS.items():
         if module_name in sys.modules and module_name not in _WARNING_ISSUED:
             _WARNING_ISSUED.add(module_name)

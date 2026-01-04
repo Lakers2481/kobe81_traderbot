@@ -114,7 +114,7 @@ def load_hash_chain_entries(days: int = 1) -> List[Dict[str, Any]]:
                     entry_time = datetime.fromisoformat(ts.replace('Z', ''))
                     if entry_time >= cutoff:
                         entries.append(entry)
-            except:
+            except (json.JSONDecodeError, ValueError):
                 continue
 
     return entries

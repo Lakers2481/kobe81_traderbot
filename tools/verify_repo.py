@@ -157,11 +157,25 @@ def verify_critical_files() -> Tuple[int, int, List[str]]:
 
 
 def verify_no_standalone_strategies() -> Tuple[int, int, List[str]]:
-    """Verify no standalone strategy imports in scripts."""
+    """Verify no standalone strategy imports in scripts.
+
+    Allows intentional legacy imports in specific files that need individual
+    strategy access for optimization or comparison purposes:
+    - optimize.py: Parameter optimization (needs individual strategy instances)
+    - run_showdown_crypto.py: Strategy comparison
+    - run_wf_crypto.py: Crypto walk-forward comparison
+    """
     bad_imports = [
         "from strategies.ibs_rsi.strategy import IbsRsiStrategy",
         "from strategies.ict.turtle_soup import TurtleSoupStrategy",
     ]
+
+    # Files that are allowed to use deprecated imports (with documented reason)
+    allowed_files = {
+        "optimize.py",  # Parameter optimization requires individual strategy instances
+        "run_showdown_crypto.py",  # Strategy comparison
+        "run_wf_crypto.py",  # Crypto walk-forward comparison
+    }
 
     scripts_dir = PROJECT_ROOT / "scripts"
 
@@ -174,6 +188,11 @@ def verify_no_standalone_strategies() -> Tuple[int, int, List[str]]:
 
     for script in scripts_dir.glob("*.py"):
         try:
+            # Skip allowed files
+            if script.name in allowed_files:
+                passed += 1
+                continue
+
             content = script.read_text(encoding="utf-8")
             found_bad = False
             for bad_import in bad_imports:

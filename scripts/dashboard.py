@@ -87,7 +87,7 @@ def get_system_status() -> Dict:
             with open(runner_state) as f:
                 state = json.load(f)
                 status["runner"] = state
-        except:
+        except (json.JSONDecodeError, OSError):
             pass
 
     return status
@@ -128,7 +128,7 @@ def get_pnl_summary() -> Dict:
         try:
             with open(pnl_file) as f:
                 return json.load(f)
-        except:
+        except (json.JSONDecodeError, OSError):
             pass
 
     # Calculate from trades if available
@@ -153,7 +153,7 @@ def get_pnl_summary() -> Dict:
                 "trade_count": trade_count,
                 "win_rate": (wins / trade_count * 100) if trade_count > 0 else 0,
             }
-        except:
+        except (json.JSONDecodeError, OSError, ValueError):
             pass
 
     return {"total_pnl": 0, "trade_count": 0, "win_rate": 0}

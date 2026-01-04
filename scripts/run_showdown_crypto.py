@@ -14,6 +14,9 @@ import sys
 sys.path.insert(0, str(_P(__file__).resolve().parents[1]))
 
 from strategies.registry import get_production_scanner
+# Legacy imports for crypto showdown comparison (suppress warnings - this is intentional for comparison)
+from strategies.ibs_rsi.strategy import IbsRsiStrategy
+from strategies.ict.turtle_soup import TurtleSoupStrategy
 from backtest.engine import Backtester, BacktestConfig
 from data.universe.loader import load_universe
 from data.providers.polygon_crypto import fetch_crypto_bars

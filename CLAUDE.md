@@ -30,6 +30,40 @@ python tools/verify_repo.py --verbose
 
 ---
 
+## KOBE'S ULTIMATE GOAL
+
+> **Kobe exists to be the greatest trading robot ever created.**
+
+This is not just code - it's the pursuit of perfection in algorithmic trading.
+
+### Core Principles
+
+| Principle | What It Means |
+|-----------|--------------|
+| **Zero Tolerance for Errors** | No warnings, no deprecated code, no crashes |
+| **Quant-Grade Quality** | Every function typed, every exception handled |
+| **Single Source of Truth** | One scanner (DualStrategyScanner), one universe (900 stocks) |
+| **Continuous Learning** | Cognitive brain improves with every trade |
+| **Capital Preservation First** | Risk gates never bypassed, kill switch always respected |
+
+### Greatness Comes From
+
+1. **Disciplined Execution** - Kill zones enforced, position limits respected
+2. **Evidence-Based Decisions** - Historical patterns, ML confidence, validated backtest results
+3. **Ruthless Risk Management** - $75/order cap, 2% risk per trade, 20% notional cap
+4. **Constant Self-Improvement** - Learning from outcomes, reflecting on failures
+
+### The Standards
+
+- Every script must run without errors or warnings
+- Every trade decision must be explainable
+- Every risk parameter must be enforced
+- Every outcome must be logged and learned from
+
+**The greatest trading robot ever created doesn't settle for "good enough."**
+
+---
+
 ## CRITICAL: Strategy Verification (READ FIRST)
 
 **Use `backtest_dual_strategy.py` for ALL strategy verification.** This is the canonical test.
