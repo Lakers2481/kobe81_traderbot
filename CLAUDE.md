@@ -638,6 +638,92 @@ See `docs/STATUS.md` Section 16 for detailed explanation.
 | `/test` | Run unit tests  integration tests |
 | `/performance` | Real-time system performance monitoring |
 
+---
+
+## Research OS - DISCOVER -> RESEARCH -> ENGINEER
+
+The Research Operating System provides a unified workflow for autonomous discovery, validation, and human-gated engineering changes.
+
+### Design Philosophy
+> **"Don't reinvent. Integrate."**
+
+The Research OS is a thin orchestration layer (~750 lines) that connects existing Kobe components rather than replacing them.
+
+### Three Lanes
+
+| Lane | Purpose | Components Used |
+|------|---------|-----------------|
+| **DISCOVER** | Always-on scanning for opportunities | CuriosityEngine, ResearchEngine, External Scrapers |
+| **RESEARCH** | Scheduled experiments with validation | ExperimentRegistry, IntegrityGuardian, Backtest Engine |
+| **ENGINEER** | Human-gated production changes | ApprovalGate, Frozen Params, Strategy Registry |
+
+### Critical Safety Constraints
+
+```
+APPROVE_LIVE_ACTION = False  # NEVER change programmatically
+
+- NO AUTO-MERGE. EVER.
+- NO AUTO-LIVE-TRADING. EVER.
+- All production changes require explicit human approval via CLI
+```
+
+### CLI Commands
+
+```bash
+# View system status
+python scripts/research_os_cli.py status
+
+# View discoveries
+python scripts/research_os_cli.py discoveries --status validated
+
+# View pending approvals
+python scripts/research_os_cli.py approvals --pending
+
+# HUMAN ACTION: Approve a proposal
+python scripts/research_os_cli.py approve --id <request_id> --approver "John Doe"
+
+# HUMAN ACTION: Reject a proposal
+python scripts/research_os_cli.py reject --id <request_id> --reason "Overfitting suspected"
+
+# Run discovery cycle
+python scripts/research_os_cli.py discover --cycle
+
+# Research a knowledge card
+python scripts/research_os_cli.py research --card <card_id>
+```
+
+### Knowledge Cards
+
+Standardized format for discoveries from any source:
+- **card_id**: Unique identifier
+- **discovery_type**: parameter, pattern, strategy, external, hypothesis, edge
+- **evidence**: sample_size, win_rate, profit_factor, p_value, confidence
+- **status**: discovered → validated → proposed → approved → implemented
+
+### Research Proposals
+
+Formal workflow for engineering changes:
+1. Validated KnowledgeCard triggers proposal creation
+2. Proposal submitted to ApprovalGate
+3. Human reviews via CLI (`approvals --pending`)
+4. Human approves or rejects via CLI
+5. Approved changes require `APPROVE_LIVE_ACTION = True` to implement
+
+### State Files
+
+```
+state/research_os/
+├── knowledge_cards.json      # All discovered knowledge
+├── proposals.json            # All research proposals
+├── pending_approvals.json    # Awaiting human approval
+├── approved_changes.json     # Approved but not implemented
+├── implemented_changes.json  # Applied to production
+├── rejected.json             # Rejected proposals
+└── approval_audit.jsonl      # Audit trail
+```
+
+---
+
 ## Architecture
 
 ### Layer Structure
