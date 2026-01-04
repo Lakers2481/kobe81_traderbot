@@ -17,7 +17,7 @@ from strategies.dual_strategy.combined import DualStrategyParams
 from data.universe.loader import load_universe
 from data.providers.polygon_eod import fetch_daily_bars_polygon
 from data.providers.multi_source import fetch_daily_bars_multi
-from backtest.walk_forward import generate_splits, run_walk_forward, summarize_results
+from backtest.walk_forward import generate_splits, run_walk_forward, run_walk_forward_parallel, summarize_results
 from backtest.engine import BacktestConfig, CommissionConfig
 from config.env_loader import load_env
 from config.settings_loader import (
@@ -60,6 +60,9 @@ def main():
     ap.add_argument('--turtle-soup-r-mult', type=float, default=0.5, help='Take-profit R-multiple (default 0.5)')
     ap.add_argument('--turtle-soup-time-stop', type=int, default=3, help='Time stop bars (default 3)')
     ap.add_argument('--turtle-soup-min-sweep', type=float, default=0.3, help='Min sweep strength in ATR to accept (default 0.3)')
+    # Parallel execution
+    ap.add_argument('--parallel', action='store_true', default=False, help='Run splits in parallel (4x speedup)')
+    ap.add_argument('--workers', type=int, default=4, help='Number of parallel workers (default 4)')
     args = ap.parse_args()
 
     universe = _P(args.universe)
@@ -114,7 +117,6 @@ def main():
         ibs_entry=float(args.ibs_max),
         rsi_entry=float(args.rsi_max),
         ibs_rsi_stop_mult=float(args.ibs_atr_mult),
-        ibs_rsi_take_profit_mult=float(args.ibs_r_mult),
         ibs_rsi_time_stop=int(args.ibs_time_stop),
         # Turtle Soup params
         ts_lookback=int(args.turtle_soup_lookback),
@@ -177,15 +179,91 @@ def main():
     don_results = []
     ts_results = []
 
+    # Prepare config dict for parallel execution
+    bt_cfg = make_bt_cfg()
+    config_dict = {
+        'initial_cash': bt_cfg.initial_cash,
+        'slippage_bps': bt_cfg.slippage_bps,
+    }
+    if bt_cfg.commissions:
+        config_dict['commissions'] = {
+            'enabled': bt_cfg.commissions.enabled,
+            'per_share': bt_cfg.commissions.per_share,
+            'min_per_order': bt_cfg.commissions.min_per_order,
+            'bps': bt_cfg.commissions.bps,
+            'sec_fee_per_dollar': bt_cfg.commissions.sec_fee_per_dollar,
+            'taf_fee_per_share': bt_cfg.commissions.taf_fee_per_share,
+        }
+
+    # Strategy params dict for parallel execution
+    # Note: Only include params that DualStrategyParams accepts
+    strategy_params = {
+        '_class': 'DualStrategyParams',
+        'ibs_entry': float(args.ibs_max),
+        'rsi_entry': float(args.rsi_max),
+        'ibs_rsi_stop_mult': float(args.ibs_atr_mult),
+        'ibs_rsi_time_stop': int(args.ibs_time_stop),
+        'ts_lookback': int(args.turtle_soup_lookback),
+        'ts_min_bars_since_extreme': int(args.turtle_soup_min_bars),
+        'ts_stop_buffer_mult': float(args.turtle_soup_stop_buf),
+        'ts_r_multiple': float(args.turtle_soup_r_mult),
+        'ts_time_stop': int(args.turtle_soup_time_stop),
+        'ts_min_sweep_strength': float(args.turtle_soup_min_sweep),
+        'min_price': float(get_setting('selection.min_price', 10.0)),
+    }
+
+    # Data params for parallel execution
+    data_params_ibs = {
+        'fetch_func': 'fetch_daily_bars_multi' if args.fallback_free else 'fetch_daily_bars_polygon',
+        'cache_dir': str(cache_dir),
+        'strategy_filter': ['IBS_RSI'],
+    }
+    data_params_ts = {
+        'fetch_func': 'fetch_daily_bars_multi' if args.fallback_free else 'fetch_daily_bars_polygon',
+        'cache_dir': str(cache_dir),
+        'strategy_filter': ['Turtle_Soup', 'TurtleSoup'],
+    }
+    data_provider = 'data.providers.multi_source' if args.fallback_free else 'data.providers.polygon_eod'
+
     if run_ibs:
         print('\nRunning IBS+RSI Mean Reversion...')
-        don_results = run_walk_forward(symbols, fetcher, get_ibs, splits, outdir=str(outdir / 'ibs_rsi'), config_factory=make_bt_cfg)
+        if args.parallel:
+            print(f'  Using PARALLEL mode with {args.workers} workers')
+            don_results = run_walk_forward_parallel(
+                symbols=symbols,
+                splits=splits,
+                outdir=str(outdir / 'ibs_rsi'),
+                strategy_module='strategies.dual_strategy.combined',
+                strategy_class='DualStrategyScanner',
+                strategy_params=strategy_params,
+                data_provider=data_provider,
+                data_params=data_params_ibs,
+                config_dict=config_dict,
+                max_workers=args.workers,
+            )
+        else:
+            don_results = run_walk_forward(symbols, fetcher, get_ibs, splits, outdir=str(outdir / 'ibs_rsi'), config_factory=make_bt_cfg)
     else:
         print('\nSkipping IBS+RSI (flag not set)')
 
     if run_ts:
         print('Running ICT Turtle Soup...')
-        ts_results = run_walk_forward(symbols, fetcher, get_turtle_soup, splits, outdir=str(outdir / 'turtle_soup'), config_factory=make_bt_cfg)
+        if args.parallel:
+            print(f'  Using PARALLEL mode with {args.workers} workers')
+            ts_results = run_walk_forward_parallel(
+                symbols=symbols,
+                splits=splits,
+                outdir=str(outdir / 'turtle_soup'),
+                strategy_module='strategies.dual_strategy.combined',
+                strategy_class='DualStrategyScanner',
+                strategy_params=strategy_params,
+                data_provider=data_provider,
+                data_params=data_params_ts,
+                config_dict=config_dict,
+                max_workers=args.workers,
+            )
+        else:
+            ts_results = run_walk_forward(symbols, fetcher, get_turtle_soup, splits, outdir=str(outdir / 'turtle_soup'), config_factory=make_bt_cfg)
     else:
         print('Skipping ICT Turtle Soup (flag not set)')
 

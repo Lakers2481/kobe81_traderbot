@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import multiprocessing
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from typing import Callable, Iterable, List, Dict, Any, Optional
@@ -115,3 +117,238 @@ def summarize_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
                 logging.warning(f"Failed to compute {key}: {e}")
                 summary[key] = 0.0
     return summary
+
+
+# ============================================================================
+# PARALLEL WALK-FORWARD (ProcessPoolExecutor)
+# ============================================================================
+
+def _run_single_split_worker(args: tuple) -> Dict[str, Any]:
+    """
+    Worker function for parallel walk-forward. Must be top-level for pickling.
+
+    Args is a tuple of (split_idx, split, symbols, outdir, config_dict,
+                        strategy_module, strategy_class, strategy_params,
+                        data_provider, data_params)
+    """
+    (
+        split_idx,
+        split_dict,
+        symbols,
+        outdir,
+        config_dict,
+        strategy_module,
+        strategy_class,
+        strategy_params,
+        data_provider,
+        data_params,
+    ) = args
+
+    import importlib
+    from pathlib import Path
+
+    # Reconstruct the split
+    sp_train_start = split_dict['train_start']
+    sp_train_end = split_dict['train_end']
+    sp_test_start = split_dict['test_start']
+    sp_test_end = split_dict['test_end']
+
+    start_s = sp_train_start
+    end_s = sp_test_end
+
+    # Dynamically import and instantiate strategy
+    strat_mod = importlib.import_module(strategy_module)
+    strategy_cls = getattr(strat_mod, strategy_class)
+    if strategy_params:
+        params_cls_name = strategy_params.get('_class')
+        if params_cls_name:
+            params_cls = getattr(strat_mod, params_cls_name)
+            params_dict = {k: v for k, v in strategy_params.items() if k != '_class'}
+            params = params_cls(**params_dict)
+            scanner = strategy_cls(params)
+        else:
+            scanner = strategy_cls()
+    else:
+        scanner = strategy_cls()
+
+    # Dynamically import data fetcher
+    data_mod = importlib.import_module(data_provider)
+    fetch_func_name = data_params.get('fetch_func', 'fetch_daily_bars_multi')
+    fetch_func = getattr(data_mod, fetch_func_name)
+    cache_dir = Path(data_params.get('cache_dir', 'data/cache'))
+
+    def fetcher(sym: str) -> pd.DataFrame:
+        return fetch_func(sym, start_s, end_s, cache_dir=cache_dir)
+
+    def get_signals(df: pd.DataFrame) -> pd.DataFrame:
+        sigs = scanner.scan_signals_over_time(df)
+        # Apply strategy filter if specified
+        strategy_filter = data_params.get('strategy_filter')
+        if strategy_filter and not sigs.empty and 'strategy' in sigs.columns:
+            sigs = sigs[sigs['strategy'].isin(strategy_filter)]
+        return sigs
+
+    # Reconstruct BacktestConfig
+    from .engine import BacktestConfig, CommissionConfig
+
+    commissions = None
+    if 'commissions' in config_dict and config_dict['commissions']:
+        comm_dict = config_dict['commissions']
+        commissions = CommissionConfig(**comm_dict)
+
+    cfg = BacktestConfig(
+        initial_cash=config_dict.get('initial_cash', 100_000.0),
+        slippage_bps=config_dict.get('slippage_bps', 5.0),
+        commissions=commissions,
+    )
+
+    bt = Backtester(cfg, get_signals, fetcher)
+    split_outdir = f"{outdir}/split_{split_idx:02d}"
+    res = bt.run(symbols, outdir=split_outdir)
+    m = res.get("metrics", {})
+
+    return {
+        "split": split_idx,
+        "test_start": start_s,
+        "test_end": end_s,
+        **m,
+    }
+
+
+def run_walk_forward_parallel(
+    symbols: List[str],
+    splits: List[WFSplit],
+    outdir: str,
+    strategy_module: str,
+    strategy_class: str,
+    strategy_params: Optional[Dict[str, Any]] = None,
+    data_provider: str = "data.providers.multi_source",
+    data_params: Optional[Dict[str, Any]] = None,
+    config_dict: Optional[Dict[str, Any]] = None,
+    max_workers: int = 4,
+    verbose: bool = True,
+) -> List[Dict[str, Any]]:
+    """
+    Run walk-forward backtests in parallel using ProcessPoolExecutor.
+
+    This version uses serializable parameters instead of callbacks to enable
+    multiprocessing. Each worker imports the necessary modules dynamically.
+
+    Args:
+        symbols: List of ticker symbols
+        splits: List of WFSplit objects
+        outdir: Output directory for results
+        strategy_module: Full module path (e.g., 'strategies.dual_strategy.combined')
+        strategy_class: Class name (e.g., 'DualStrategyScanner')
+        strategy_params: Dict of params to pass to strategy (include '_class' for params class name)
+        data_provider: Module path for data fetcher
+        data_params: Dict with 'fetch_func', 'cache_dir', 'strategy_filter' keys
+        config_dict: BacktestConfig as dict (initial_cash, slippage_bps, commissions)
+        max_workers: Number of parallel processes (default 4)
+        verbose: Print progress updates
+
+    Returns:
+        List of result dicts for each split
+
+    Example:
+        results = run_walk_forward_parallel(
+            symbols=['AAPL', 'MSFT'],
+            splits=splits,
+            outdir='wf_outputs/ibs_rsi',
+            strategy_module='strategies.dual_strategy.combined',
+            strategy_class='DualStrategyScanner',
+            strategy_params={
+                '_class': 'DualStrategyParams',
+                'ibs_entry': 0.08,
+                'rsi_entry': 5.0,
+            },
+            data_provider='data.providers.multi_source',
+            data_params={
+                'fetch_func': 'fetch_daily_bars_multi',
+                'cache_dir': 'data/cache',
+                'strategy_filter': ['IBS_RSI'],
+            },
+            config_dict={
+                'initial_cash': 100_000.0,
+                'slippage_bps': 5.0,
+            },
+            max_workers=4,
+        )
+    """
+    if data_params is None:
+        data_params = {'fetch_func': 'fetch_daily_bars_multi', 'cache_dir': 'data/cache'}
+    if config_dict is None:
+        config_dict = {'initial_cash': 100_000.0, 'slippage_bps': 5.0}
+    if strategy_params is None:
+        strategy_params = {}
+
+    # Prepare worker arguments
+    worker_args = []
+    for i, sp in enumerate(splits, start=1):
+        split_dict = {
+            'train_start': sp.train_start.isoformat(),
+            'train_end': sp.train_end.isoformat(),
+            'test_start': sp.test_start.isoformat(),
+            'test_end': sp.test_end.isoformat(),
+        }
+        worker_args.append((
+            i,
+            split_dict,
+            symbols,
+            outdir,
+            config_dict,
+            strategy_module,
+            strategy_class,
+            strategy_params,
+            data_provider,
+            data_params,
+        ))
+
+    # Limit workers to number of splits
+    actual_workers = min(max_workers, len(splits))
+
+    if verbose:
+        print(f"Running {len(splits)} splits with {actual_workers} parallel workers...")
+
+    # Handle empty splits case
+    if len(splits) == 0:
+        if verbose:
+            print("  No splits to run (date range too short for train+test periods)")
+        return []
+
+    results = []
+
+    # Use spawn context for Windows compatibility
+    ctx = multiprocessing.get_context('spawn')
+
+    with ProcessPoolExecutor(max_workers=actual_workers, mp_context=ctx) as executor:
+        future_to_split = {executor.submit(_run_single_split_worker, args): args[0] for args in worker_args}
+        completed = 0
+
+        for future in as_completed(future_to_split):
+            split_idx = future_to_split[future]
+            completed += 1
+            try:
+                result = future.result()
+                results.append(result)
+                if verbose:
+                    trades = result.get('trades', 0)
+                    wr = result.get('win_rate', 0)
+                    print(f"  [{completed}/{len(splits)}] Split {split_idx}: {trades} trades, {wr:.1%} WR", flush=True)
+            except Exception as e:
+                if verbose:
+                    print(f"  [{completed}/{len(splits)}] Split {split_idx}: FAILED - {e}", flush=True)
+                results.append({
+                    "split": split_idx,
+                    "error": str(e),
+                    "trades": 0,
+                    "win_rate": 0.0,
+                    "profit_factor": 0.0,
+                    "sharpe": 0.0,
+                    "max_drawdown": 0.0,
+                })
+
+    # Sort by split number
+    results.sort(key=lambda x: x.get('split', 0))
+
+    return results
