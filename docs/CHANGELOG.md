@@ -11,6 +11,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - Comprehensive documentation system (15+ files)
 - Living documentation (WORKLOG, CONTRIBUTING)
+- **Markov Chain Module** (`ml_advanced/markov_chain/`)
+  - `StateClassifier`: Discretize returns into Up/Down/Flat states (threshold, percentile, volatility-adjusted)
+  - `TransitionMatrix`: Build P(next|current) matrices with Laplace smoothing
+  - `StationaryDistribution`: Compute equilibrium π for asset ranking (eigen, power, linear methods)
+  - `HigherOrderMarkov`: 2nd/3rd order chains for multi-day patterns (Down→Down→Up bounces)
+  - `MarkovPredictor`: Generate BUY/SELL/HOLD signals with confidence scoring
+  - `MarkovAssetScorer`: Rank 900 stocks by π(Up), deviation, persistence scores
+  - 38 unit tests (100% passing)
+  - Complements existing HMM: HMM=hidden regimes, Markov=observable direction
 
 ### Changed
 - None
