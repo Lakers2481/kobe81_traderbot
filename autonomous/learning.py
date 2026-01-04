@@ -145,6 +145,8 @@ class LearningEngine:
                 "trades_analyzed": len(recent_trades),
                 "lessons_found": len(lessons_found),
                 "lessons": lessons_found,
+                # Include raw trades data for LearningHub integration
+                "trades_data": recent_trades,
             }
 
         except Exception as e:

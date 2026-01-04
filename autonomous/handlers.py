@@ -151,11 +151,74 @@ def check_data_quality_research(**kwargs) -> Dict[str, Any]:
 # =============================================================================
 
 def analyze_trades(**kwargs) -> Dict[str, Any]:
-    """Analyze recent trades for lessons."""
-    logger.info("Analyzing trades...")
+    """
+    Analyze recent trades for lessons.
+
+    This now integrates with the LearningHub to route trade outcomes
+    through the complete learning pipeline:
+    - Episodic memory storage
+    - Online learning updates
+    - Reflection for significant trades
+    - Semantic rule extraction
+    """
+    logger.info("Analyzing trades with LearningHub integration...")
     from autonomous.learning import LearningEngine
+
     engine = LearningEngine()
-    return engine.analyze_trades()
+    base_result = engine.analyze_trades()
+
+    # Wire LearningHub integration
+    try:
+        from integration.learning_hub import get_learning_hub, TradeOutcomeEvent
+        hub = get_learning_hub()
+
+        # Process trades through LearningHub if analysis was successful
+        if base_result.get("status") == "success" and base_result.get("trades_analyzed", 0) > 0:
+            trades_data = base_result.get("trades_data", [])
+            hub_results = []
+
+            import asyncio
+            for trade_data in trades_data[-10:]:  # Process last 10 trades
+                try:
+                    # Convert to TradeOutcomeEvent
+                    event = TradeOutcomeEvent(
+                        symbol=trade_data.get("symbol", "UNKNOWN"),
+                        side=trade_data.get("side", "long"),
+                        entry_price=float(trade_data.get("entry_price", 0)),
+                        exit_price=float(trade_data.get("exit_price", 0)),
+                        shares=int(trade_data.get("shares", 0)),
+                        entry_time=datetime.fromisoformat(trade_data.get("entry_time", datetime.now(ET).isoformat())),
+                        exit_time=datetime.fromisoformat(trade_data.get("exit_time", datetime.now(ET).isoformat())),
+                        pnl=float(trade_data.get("pnl", 0)),
+                        pnl_pct=float(trade_data.get("pnl_pct", 0)),
+                        won=trade_data.get("pnl", 0) > 0,
+                        signal_score=float(trade_data.get("signal_score", 0.5)),
+                        pattern_type=trade_data.get("pattern_type", "unknown"),
+                        regime=trade_data.get("regime", "unknown"),
+                        exit_reason=trade_data.get("exit_reason", "unknown"),
+                        trade_id=trade_data.get("trade_id", "")
+                    )
+
+                    # Process through LearningHub (async)
+                    result = asyncio.get_event_loop().run_until_complete(
+                        hub.process_trade_outcome(event)
+                    )
+                    hub_results.append(result)
+                except Exception as e:
+                    logger.warning(f"LearningHub processing failed for trade: {e}")
+
+            base_result["learning_hub"] = {
+                "trades_processed": len(hub_results),
+                "hub_status": hub.get_status()
+            }
+            logger.info(f"LearningHub processed {len(hub_results)} trades")
+    except ImportError:
+        logger.debug("LearningHub not available, skipping integration")
+    except Exception as e:
+        logger.warning(f"LearningHub integration error: {e}")
+        base_result["learning_hub_error"] = str(e)
+
+    return base_result
 
 
 def update_memory(**kwargs) -> Dict[str, Any]:

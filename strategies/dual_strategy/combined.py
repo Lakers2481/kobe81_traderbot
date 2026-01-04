@@ -150,14 +150,20 @@ class DualStrategyScanner:
     - Turtle Soup: 61.7% WR, 1.63 PF
     - Combined: 64.5% WR, 1.68 PF
     - VIX Filter: Blocks trades when VIX > 25 (+10.1% PF)
+
+    Neural Integration (v2.7):
+    - Semantic memory rule application
+    - Confidence boost/penalty based on learned rules
     """
 
     def __init__(self, params: Optional[DualStrategyParams] = None, preview_mode: bool = False,
-                 vix_data: Optional[pd.DataFrame] = None):
+                 vix_data: Optional[pd.DataFrame] = None, use_semantic_memory: bool = True):
         self.params = params or DualStrategyParams()
         self.preview_mode = preview_mode  # Use current bar values for weekend analysis
         self.vix_data = vix_data  # Optional VIX data for filtering (columns: timestamp, close)
         self._vix_cache: Dict[str, float] = {}  # Cache VIX values by date string
+        self.use_semantic_memory = use_semantic_memory
+        self._semantic_memory = None  # Lazy-loaded
 
         # Pre-process VIX data if provided
         if self.vix_data is not None and len(self.vix_data) > 0:
@@ -167,6 +173,85 @@ class DualStrategyScanner:
         self.smc_detector = None
         if SMC_AVAILABLE and self.params.use_smc_confluence:
             self.smc_detector = SmartMoneyDetector()
+
+    @property
+    def semantic_memory(self):
+        """Lazy-load semantic memory to avoid circular imports."""
+        if self._semantic_memory is None and self.use_semantic_memory:
+            try:
+                from cognitive.semantic_memory import get_semantic_memory
+                self._semantic_memory = get_semantic_memory()
+            except ImportError:
+                pass  # Semantic memory not available
+        return self._semantic_memory
+
+    def _apply_semantic_rules(self, signal: Dict, symbol: str, strategy: str) -> Dict:
+        """
+        Apply learned semantic rules to adjust signal confidence.
+
+        Queries semantic memory for applicable rules and adjusts the signal score
+        based on past experience with similar patterns.
+        """
+        if not self.semantic_memory:
+            return signal
+
+        try:
+            # Build context for rule matching
+            context = {
+                'symbol': symbol,
+                'strategy': strategy,
+                'pattern_type': signal.get('strategy', '').lower(),
+            }
+
+            # Query for applicable rules
+            rules = self.semantic_memory.get_applicable_rules(context)
+
+            if not rules:
+                return signal
+
+            # Apply rules
+            score_adjustment = 0.0
+            rules_applied = []
+
+            for rule in rules:
+                if not rule.is_active:
+                    continue
+
+                action = rule.action.lower()
+
+                # Confidence adjustments
+                if action == 'increase_confidence':
+                    adjustment = rule.parameters.get('multiplier', 0.1) * rule.confidence
+                    score_adjustment += adjustment
+                    rules_applied.append(f"+{adjustment:.2f} ({rule.rule_id})")
+                    # Record application
+                    self.semantic_memory.record_rule_application(rule.rule_id)
+
+                elif action == 'decrease_confidence':
+                    adjustment = -rule.parameters.get('multiplier', 0.1) * rule.confidence
+                    score_adjustment += adjustment
+                    rules_applied.append(f"{adjustment:.2f} ({rule.rule_id})")
+                    self.semantic_memory.record_rule_application(rule.rule_id)
+
+                elif action == 'skip_trade':
+                    # Strong negative signal - mark to skip
+                    signal['semantic_skip'] = True
+                    rules_applied.append(f"SKIP ({rule.rule_id})")
+                    self.semantic_memory.record_rule_application(rule.rule_id)
+
+            # Apply score adjustment (cap at +/- 0.3)
+            score_adjustment = max(-0.3, min(0.3, score_adjustment))
+            original_score = signal.get('score', 0.5)
+            signal['score'] = round(original_score + score_adjustment, 2)
+            signal['semantic_adjustment'] = round(score_adjustment, 2)
+            signal['semantic_rules'] = rules_applied
+
+        except Exception as e:
+            # Log but don't fail - semantic memory is optional
+            import logging
+            logging.getLogger(__name__).debug(f"Semantic rule application error: {e}")
+
+        return signal
 
     def _build_vix_cache(self):
         """Build VIX lookup cache by date."""
@@ -498,7 +583,7 @@ class DualStrategyScanner:
                 else:
                     oversold_tier = 'MODERATE'
 
-                out.append({
+                signal = {
                     'timestamp': row['timestamp'],
                     'symbol': sym,
                     'side': 'long',
@@ -513,7 +598,11 @@ class DualStrategyScanner:
                     'ibs': round(float(row['ibs']), 3),
                     'rsi2': round(rsi_val, 2),
                     'oversold_tier': oversold_tier,
-                })
+                }
+                # Apply learned semantic rules (v2.7)
+                signal = self._apply_semantic_rules(signal, sym, 'IBS_RSI')
+                if not signal.get('semantic_skip'):
+                    out.append(signal)
 
             # Check Turtle Soup
             is_ts, score, reason = self._check_turtle_soup_entry(row)
@@ -524,7 +613,7 @@ class DualStrategyScanner:
                 risk = entry - stop
                 take_profit = entry + self.params.ts_r_multiple * risk if risk > 0 else None
 
-                out.append({
+                signal = {
                     'timestamp': row['timestamp'],
                     'symbol': sym,
                     'side': 'long',
@@ -542,11 +631,15 @@ class DualStrategyScanner:
                     'smc_ob': bool(row.get('smc_ob_bullish', False)),
                     'smc_fvg': bool(row.get('smc_fvg_bullish', False)),
                     'smc_choch': bool(row.get('smc_choch_bullish', False)),
-                })
+                }
+                # Apply learned semantic rules (v2.7)
+                signal = self._apply_semantic_rules(signal, sym, 'TurtleSoup')
+                if not signal.get('semantic_skip'):
+                    out.append(signal)
 
         cols = ['timestamp', 'symbol', 'side', 'strategy', 'entry_price', 'stop_loss',
                 'take_profit', 'reason', 'score', 'atr', 'time_stop_bars', 'ibs', 'rsi2', 'oversold_tier',
-                'smc_confluence', 'smc_ob', 'smc_fvg', 'smc_choch']
+                'smc_confluence', 'smc_ob', 'smc_fvg', 'smc_choch', 'semantic_adjustment', 'semantic_rules']
         result = pd.DataFrame(out, columns=cols) if out else pd.DataFrame(columns=cols)
 
         if not result.empty:

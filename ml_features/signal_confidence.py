@@ -79,11 +79,28 @@ class SignalConfidence:
 
     Analyzes trading signals and assigns confidence scores based on
     technical indicators, market conditions, and pattern analysis.
+
+    Neural Integration (v2.7):
+    - Episodic memory lookup for historical pattern performance
+    - Confidence boost based on past similar trade outcomes
     """
 
-    def __init__(self, config: Optional[ConfidenceConfig] = None):
+    def __init__(self, config: Optional[ConfidenceConfig] = None, use_episodic_memory: bool = True):
         self.config = config or ConfidenceConfig()
+        self.use_episodic_memory = use_episodic_memory
+        self._episodic_memory = None  # Lazy-loaded
         self._validate_weights()
+
+    @property
+    def episodic_memory(self):
+        """Lazy-load episodic memory to avoid circular imports."""
+        if self._episodic_memory is None and self.use_episodic_memory:
+            try:
+                from cognitive.episodic_memory import get_episodic_memory
+                self._episodic_memory = get_episodic_memory()
+            except ImportError:
+                pass
+        return self._episodic_memory
 
     def _validate_weights(self) -> None:
         """Ensure weights sum to 1.0."""
@@ -157,6 +174,15 @@ class SignalConfidence:
             factors['anomaly'] * self.config.anomaly_weight +
             factors['pattern'] * self.config.pattern_weight
         )
+
+        # Apply historical confidence boost from episodic memory (v2.7)
+        historical_boost, historical_reason = self._get_historical_boost(signal_row, side)
+        if historical_boost != 0.0:
+            score += historical_boost
+            factors['historical'] = 0.5 + historical_boost  # Normalize to 0-1 range
+            details['historical_boost'] = historical_boost
+            if historical_reason:
+                reasons.append(historical_reason)
 
         # Clip to bounds
         score = np.clip(score, self.config.min_confidence, self.config.max_confidence)
@@ -390,6 +416,67 @@ class SignalConfidence:
                 score += 0.1  # Gap up = reversal opportunity
 
         return np.clip(score, 0.0, 1.0)
+
+    def _get_historical_boost(self, signal_row: pd.Series, side: str) -> Tuple[float, Optional[str]]:
+        """
+        Get confidence boost based on historical performance of similar trades.
+
+        Uses episodic memory to find past trades with similar context and
+        adjusts confidence based on their win rate.
+
+        Returns:
+            Tuple of (boost_value, reason_string)
+            - boost_value: -0.2 to +0.2 adjustment
+            - reason_string: Human-readable explanation or None
+        """
+        if not self.episodic_memory:
+            return 0.0, None
+
+        try:
+            # Build context for similarity search
+            symbol = signal_row.get('symbol', '')
+            pattern_type = str(signal_row.get('strategy', '')).lower()
+
+            if not symbol:
+                return 0.0, None
+
+            # Query episodic memory for similar past trades
+            context = {
+                'symbol': symbol,
+                'side': side,
+                'pattern_type': pattern_type,
+            }
+
+            # Find similar episodes
+            similar_episodes = self.episodic_memory.find_similar(context, top_k=20)
+
+            if not similar_episodes or len(similar_episodes) < 5:
+                return 0.0, None  # Not enough history
+
+            # Calculate historical win rate
+            wins = sum(1 for ep in similar_episodes if ep.outcome and ep.outcome.get('won', False))
+            total = len(similar_episodes)
+            win_rate = wins / total
+
+            # Calculate boost based on historical win rate
+            # Neutral at 50%, boost for higher, penalty for lower
+            boost = (win_rate - 0.5) * 0.4  # Max +/-0.2
+
+            # Build reason string
+            if boost > 0.05:
+                reason = f"Historical: {win_rate:.0%} win rate on {total} similar trades (+{boost:.2f})"
+            elif boost < -0.05:
+                reason = f"Historical: {win_rate:.0%} win rate on {total} similar trades ({boost:.2f})"
+            else:
+                reason = None  # Near neutral, no reason needed
+
+            return round(boost, 3), reason
+
+        except Exception as e:
+            # Log but don't fail - historical boost is optional
+            import logging
+            logging.getLogger(__name__).debug(f"Historical boost calculation error: {e}")
+            return 0.0, None
 
     def _score_to_level(self, score: float) -> ConfidenceLevel:
         """Convert numeric score to categorical level."""
