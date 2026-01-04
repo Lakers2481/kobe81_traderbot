@@ -18,6 +18,7 @@ import argparse
 import json
 import os
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -1015,20 +1016,35 @@ Examples:
     # Ensure cache directory exists
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-    for i, symbol in enumerate(symbols, 1):
-        if args.verbose:
-            print(f"  [{i}/{len(symbols)}] Fetching {symbol}...", end=" ")
+    # Parallel fetching for 5-10x speedup (respects Polygon rate limits)
+    max_workers = min(10, len(symbols))  # Max 10 concurrent requests
 
+    def fetch_wrapper(symbol: str) -> tuple:
+        """Wrapper to return (symbol, dataframe) tuple."""
         df = fetch_symbol_data(symbol, start_date, end_date, CACHE_DIR)
-        if not df.empty and len(df) > 0:
-            all_data.append(df)
-            success_count += 1
-            if args.verbose:
-                print(f"{len(df)} bars")
-        else:
-            fail_count += 1
-            if args.verbose:
-                print("SKIP (no data)")
+        return (symbol, df)
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {executor.submit(fetch_wrapper, sym): sym for sym in symbols}
+        completed = 0
+
+        for future in as_completed(futures):
+            completed += 1
+            symbol, df = future.result()
+
+            if not df.empty and len(df) > 0:
+                all_data.append(df)
+                success_count += 1
+                if args.verbose:
+                    print(f"  [{completed}/{len(symbols)}] {symbol}: {len(df)} bars", flush=True)
+            else:
+                fail_count += 1
+                if args.verbose:
+                    print(f"  [{completed}/{len(symbols)}] {symbol}: SKIP (no data)", flush=True)
+
+            # Progress update every 50 symbols (non-verbose mode)
+            if not args.verbose and completed % 50 == 0:
+                print(f"  Progress: {completed}/{len(symbols)} symbols...", flush=True)
 
     print(f"\nFetched: {success_count} symbols, skipped: {fail_count}")
 
