@@ -40,7 +40,7 @@ from monitor.heartbeat import HeartbeatWriter, update_global_heartbeat
 from ops.locks import FileLock, LockError, is_another_instance_running
 from market_calendar import is_market_closed, get_market_hours
 from core.alerts import send_telegram
-from core.kill_switch import is_kill_switch_active, get_kill_switch_info
+from core.kill_switch import is_kill_switch_active, get_kill_switch_info, activate_kill_switch
 from config.env_loader import load_env
 
 # Drift detection imports
@@ -76,6 +76,11 @@ _shutdown_requested = False
 # Global lock and heartbeat instances
 _lock: FileLock | None = None
 _heartbeat: HeartbeatWriter | None = None
+
+# Drift → Kill-Switch Escalation (Codex/Gemini 2026-01-04)
+# After N consecutive CRITICAL drift detections, escalate to kill-switch
+DRIFT_ESCALATION_THRESHOLD = 3  # Consecutive critical drifts before kill-switch
+_consecutive_critical_drift_count = 0
 
 
 STATE_FILE = ROOT / 'state' / 'runner_last.json'
@@ -558,10 +563,38 @@ def main():
 
                     # Critical drift should halt trading
                     if drift_result.get('severity') == 'CRITICAL':
+                        global _consecutive_critical_drift_count
+                        _consecutive_critical_drift_count += 1
                         jlog('runner_critical_drift_halt', level='CRITICAL',
-                             message='Critical drift detected, halting new trades')
-                        # Don't create kill switch, just skip this cycle
-                        # Operator should investigate
+                             message='Critical drift detected',
+                             consecutive_count=_consecutive_critical_drift_count,
+                             threshold=DRIFT_ESCALATION_THRESHOLD)
+
+                        # Escalate to kill-switch after N consecutive critical drifts
+                        if _consecutive_critical_drift_count >= DRIFT_ESCALATION_THRESHOLD:
+                            reason = (
+                                f"AUTO-ESCALATION: {_consecutive_critical_drift_count} consecutive CRITICAL drift detections. "
+                                f"Message: {drift_result.get('message', 'Unknown')}"
+                            )
+                            jlog('runner_drift_kill_switch_activated', level='CRITICAL',
+                                 reason=reason, consecutive_count=_consecutive_critical_drift_count)
+                            try:
+                                now2 = now_et(); stamp2 = f"{fmt_ct(now2)} | {now2.strftime('%I:%M %p').lstrip('0')} ET"
+                                send_telegram(
+                                    f"KILL SWITCH ACTIVATED - DRIFT ESCALATION\n"
+                                    f"{_consecutive_critical_drift_count} consecutive critical drifts detected\n"
+                                    f"{drift_result.get('message', 'Unknown')}\n"
+                                    f"[{stamp2}]"
+                                )
+                            except Exception:
+                                pass
+                            activate_kill_switch(reason)
+                    else:
+                        # Reset counter on non-critical drift
+                        _consecutive_critical_drift_count = 0
+                else:
+                    # No drift detected - reset counter
+                    _consecutive_critical_drift_count = 0
 
             last_reconcile_date = now.date()
 

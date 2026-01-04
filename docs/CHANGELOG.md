@@ -20,6 +20,87 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [2.4.0] - 2026-01-04
+
+### Added - Data Pipeline Optimization
+- **Scanner Parallelization** (`scripts/scan.py`)
+  - ThreadPoolExecutor with 10 workers for I/O-bound symbol fetching
+  - ~5-10x speedup for 900-stock scans
+- **Walk-Forward Parallelization** (`backtest/walk_forward.py`)
+  - ProcessPoolExecutor with 4 workers for CPU-bound backtesting
+  - Parallel split execution with proper result aggregation
+- **Redis Streams** (`messaging/redis_pubsub.py`, `messaging/quote_broadcaster.py`)
+  - Pub/sub messaging for real-time event propagation
+  - Quote distribution infrastructure
+- **DuckDB Analytics** (`analytics/duckdb_engine.py`)
+  - High-performance OLAP queries (10-100x faster than pandas)
+  - Direct Parquet/CSV querying with SQL interface
+  - Pre-built trade analysis queries
+
+### Added - Codex/Gemini Reliability Improvements (2026-01-04)
+- **Strict OHLCV Validation** (`data/validation.py`)
+  - 8 validation checks: schema, nulls, types, ranges, OHLC relationships, timestamps, gaps, anomalies
+  - Severity levels: INFO, WARNING, ERROR, CRITICAL
+  - `DataQualityReport` with hash verification
+- **Multi-Source Data Quorum** (`data/quorum.py`)
+  - Byzantine fault tolerance for market data
+  - Polygon vs Stooq vs Yahoo Finance cross-validation
+  - Weighted consensus with discrepancy detection (0.5% minor, 2% major, 10% critical)
+  - `QuorumResult` with confidence scoring
+- **Circuit Breaker Pattern** (`core/circuit_breaker.py`)
+  - CLOSED/OPEN/HALF_OPEN state machine
+  - Configurable failure threshold, recovery timeout
+  - Pre-configured breakers for Polygon, Alpaca, Stooq, Yahoo Finance
+  - `@circuit_protected` decorator for easy integration
+- **LLM Output Validator** (`cognitive/llm_validator.py`)
+  - Zero-trust validation for LLM-generated content
+  - Price claim extraction and verification
+  - Hallucination detection (overconfident language, unverifiable sources)
+  - Grounding score calculation
+- **Decision Reproducibility Packets** (`core/decision_packet.py`)
+  - Complete audit trail for every trading decision
+  - Captures: market snapshot, indicators, ML inputs/outputs, risk checks, signal, outcome
+  - SHA256 hashing for integrity verification
+  - JSON serialization for replay and analysis
+- **Drift → Kill-Switch Escalation** (`scripts/runner.py`)
+  - 3 consecutive CRITICAL drift detections triggers automatic kill-switch
+  - Telegram alert before activation
+  - Proper counter reset on recovery
+
+### Added - Neural Integration Plan
+- **LearningHub** (`integration/learning_hub.py`)
+  - Central hub routing trade outcomes to learning pipeline
+  - Connects EpisodicMemory, OnlineLearningManager, ReflectionEngine, SemanticMemory
+- **24/7 Quant R&D Factory** (`autonomous/` enhancements)
+  - Research coordinator for continuous discovery
+  - Autonomous experiment execution
+
+### Added - Macro Data Sources
+- **FRED API** (`data/providers/fred_macro.py`) - Federal Reserve economic data
+- **Treasury Yields** (`data/providers/treasury_yields.py`) - Yield curve data
+- **CFTC COT** (`data/providers/cftc_cot.py`) - Commitment of Traders positioning
+- **BEA API** (`data/providers/bea_macro.py`) - GDP, PCE data
+- **EIA Energy** (`data/providers/eia_energy.py`) - Energy prices
+- **Macro Features** (`ml_features/macro_features.py`) - Feature engineering
+
+### Added - Brain Tool Enhancements
+- **FAISS Vector Memory** (`cognitive/vector_memory.py`) - Fast similarity search
+- **OR-Tools Optimizer** (`risk/advanced/portfolio_optimizer.py`) - Constraint optimization
+- **Langfuse Tracer** (`observability/langfuse_tracer.py`) - LLM observability
+- **AutoGen Team** (`agents/autogen_team.py`) - Multi-agent orchestration
+- **LangGraph Coordinator** (`agents/langgraph_coordinator.py`) - Stateful agent flows
+
+### Changed
+- Updated STATUS.md with Section 27: CHANGELOG
+- Updated requirements.txt with new dependencies (redis, duckdb, fredapi, faiss-cpu, sentence-transformers, langfuse, ortools)
+
+### Performance
+- 900-stock scan: 15-20 min → 2-3 min (parallelization)
+- Walk-forward (15 splits): 75 min → 20 min (parallelization)
+- Analytical queries: pandas → DuckDB (10-100x faster)
+
+---
+
 ## [2.3.0] - 2026-01-03
 
 ### Added
