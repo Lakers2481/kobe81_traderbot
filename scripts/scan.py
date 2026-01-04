@@ -654,12 +654,29 @@ def main() -> int:
         description="Kobe Daily Stock Scanner",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
+KOBE STANDARD PIPELINE: 900 -> 5 -> 3 -> 2
+==========================================
+This is the ONLY way to trade. No exceptions.
+
+  Step 1: Scan 900 stocks (full universe)
+  Step 2: Filter to Top 5 candidates (--top5)
+  Step 3: Select Top 3 picks (--top3)
+  Step 4: Trade only Top 2 (--trade-top-n 2)
+
+CANONICAL COMMAND:
+  python scripts/scan.py --cap 900 --deterministic --top5 --top3 --trade-top-n 2
+
+OUTPUT FILES:
+  logs/daily_top5.csv   - Top 5 candidates
+  logs/daily_picks.csv  - Top 3 picks
+  logs/tradeable.csv    - Top 2 for execution (WHAT WE TRADE)
+  logs/trade_of_day.csv - Single TOTD
+
 Examples:
-  python scripts/scan.py                        # Scan all strategies
-  python scripts/scan.py --strategy ibs_rsi     # Only IBS+RSI signals
-  python scripts/scan.py --strategy turtle_soup # Only ICT signals
-  python scripts/scan.py --cap 50               # Scan first 50 symbols
-  python scripts/scan.py --json                 # Output as JSON
+  python scripts/scan.py --cap 900 --deterministic --top5 --top3  # Full pipeline
+  python scripts/scan.py --strategy ibs_rsi                        # Only IBS+RSI signals
+  python scripts/scan.py --markov --markov-prefilter 100           # With Markov pre-filter
+  python scripts/scan.py --json                                    # Output as JSON
         """,
     )
     ap.add_argument(
@@ -694,6 +711,30 @@ Examples:
         choices=["ict2_ibs1", "pure"],
         default="ict2_ibs1",
         help="Top-3 selection rule: ict2_ibs1 (default) enforces 2x ICT + 1x IBS; pure takes the highest 3 by confidence",
+    )
+    # === 900 -> 5 -> 3 -> 2 PIPELINE (Kobe Standard Flow) ===
+    ap.add_argument(
+        "--top5",
+        action="store_true",
+        help="Filter to Top-5 candidates before Top-3 selection (enforces 900->5->3->2 pipeline)",
+    )
+    ap.add_argument(
+        "--trade-top-n",
+        type=int,
+        default=2,
+        help="How many of the Top-3 to actually trade (default: 2 = KOBE STANDARD)",
+    )
+    ap.add_argument(
+        "--out-top5",
+        type=str,
+        default=str(ROOT / 'logs' / 'daily_top5.csv'),
+        help="Output CSV for Top-5 candidates",
+    )
+    ap.add_argument(
+        "--out-tradeable",
+        type=str,
+        default=str(ROOT / 'logs' / 'tradeable.csv'),
+        help="Output CSV for the signals to actually trade (top N of Top-3)",
     )
     ap.add_argument("--min-price", type=float, default=None, help="Override min price for selection")
     ap.add_argument("--no-filters", action="store_true", help="Disable regime/earnings filters")
@@ -765,7 +806,7 @@ Examples:
     ap.add_argument(
         "--deterministic",
         action="store_true",
-        help="Enforce 100% deterministic output order (stable sorts, seeded RNG)",
+        help="Enforce 100%% deterministic output order (stable sorts, seeded RNG)",
     )
     ap.add_argument(
         "--narrative",
@@ -1492,6 +1533,26 @@ Examples:
                     except Exception:
                         pass
 
+                # === KOBE STANDARD: 900 -> 5 -> 3 -> 2 PIPELINE ===
+                # Step 1: Filter to Top-5 candidates BEFORE top-3 selection
+                top5_df = None
+                if args.top5 and not df.empty:
+                    # Sort by conf_score and take top 5
+                    df = df.sort_values(['conf_score', 'timestamp', 'symbol'], ascending=[False, True, True], kind='mergesort')
+                    top5_df = df.head(5).copy()
+
+                    # Write Top-5 to file
+                    top5_path = Path(args.out_top5)
+                    top5_path.parent.mkdir(parents=True, exist_ok=True)
+                    top5_df.to_csv(top5_path, index=False)
+
+                    if args.verbose:
+                        print(f"\n[KOBE PIPELINE] 900 -> 5: Filtered to top {len(top5_df)} candidates")
+                        print(f"  Wrote: {top5_path}")
+
+                    # Continue with only the top 5 for further selection
+                    df = top5_df.copy()
+
                 # Selection: enforce mix or pure top-3
                 if args.top3_mix == 'ict2_ibs1':
                     ict_df = df[df['strategy'].astype(str).str.lower().isin(['turtle_soup'])].copy()
@@ -1597,6 +1658,20 @@ Examples:
                 picks_path.parent.mkdir(parents=True, exist_ok=True)
                 out.to_csv(picks_path, index=False)
 
+                # === KOBE STANDARD: 900 -> 5 -> 3 -> 2 PIPELINE ===
+                # Step 3: Select top N (default 2) to actually trade
+                trade_n = min(args.trade_top_n, len(out))
+                tradeable = out.sort_values(['conf_score', 'timestamp', 'symbol'], ascending=[False, True, True], kind='mergesort').head(trade_n)
+
+                # Write tradeable signals to file
+                tradeable_path = Path(args.out_tradeable)
+                tradeable_path.parent.mkdir(parents=True, exist_ok=True)
+                tradeable.to_csv(tradeable_path, index=False)
+
+                if args.verbose:
+                    print(f"\n[KOBE PIPELINE] 3 -> {trade_n}: Selected top {len(tradeable)} for trading")
+                    print(f"  Wrote: {tradeable_path}")
+
                 # Choose Trade of the Day (highest confidence)
                 # DETERMINISM FIX: Use stable sort with tie-breakers
                 totd = out.sort_values(['conf_score', 'timestamp', 'symbol'], ascending=[False, True, True], kind='mergesort').head(1)
@@ -1615,18 +1690,40 @@ Examples:
 
                 # Show signal date prominently to prevent stale signal confusion
                 signal_date = end_date  # The date these signals are generated for
+
+                # === KOBE STANDARD PIPELINE OUTPUT ===
                 print(f"\n{'='*60}")
-                print(f"TOP 3 PICKS - SIGNAL DATE: {signal_date}")
+                print(f"KOBE PIPELINE: 900 -> 5 -> 3 -> 2 | DATE: {signal_date}")
                 print(f"{'='*60}")
                 print("  NOTE: These signals are valid for the NEXT trading day")
+
+                # Show Top-5 if generated
+                if args.top5 and top5_df is not None and not top5_df.empty:
+                    print(f"\n[STEP 1] TOP 5 CANDIDATES ({len(top5_df)} signals)")
+                    print("-" * 60)
+                    cols = ['strategy','symbol','side','entry_price','conf_score']
+                    avail_cols = [c for c in cols if c in top5_df.columns]
+                    print(top5_df[avail_cols].to_string(index=False))
+                    print(f"  Wrote: {args.out_top5}")
+
+                # Show Top-3 picks
+                print(f"\n[STEP 2] TOP 3 PICKS ({len(out)} signals)")
                 print("-" * 60)
                 print(out[['strategy','symbol','side','entry_price','stop_loss','take_profit','conf_score']].to_string(index=False))
-                print(f"\nWrote: {picks_path}")
-                print("\nTRADE OF THE DAY")
+                print(f"  Wrote: {picks_path}")
+
+                # Show Top-2 tradeable (what we actually trade)
+                print(f"\n[STEP 3] TRADEABLE - TOP {trade_n} ({len(tradeable)} signals)")
+                print("-" * 60)
+                print(tradeable[['strategy','symbol','side','entry_price','stop_loss','take_profit','conf_score']].to_string(index=False))
+                print(f"  Wrote: {tradeable_path}")
+
+                # Show TOTD (legacy - the single best)
+                print("\n[TOTD] TRADE OF THE DAY")
                 print("-" * 60)
                 if approve_totd and not totd.empty:
                     print(totd[['strategy','symbol','side','entry_price','stop_loss','take_profit','conf_score']].to_string(index=False))
-                    print(f"\nWrote: {totd_path}")
+                    print(f"  Wrote: {totd_path}")
                 else:
                     print("No TOTD due to low confidence or no picks.")
 

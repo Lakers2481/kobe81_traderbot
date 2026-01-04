@@ -74,17 +74,36 @@ This is not just code - it's the pursuit of perfection in algorithmic trading.
 | `run_wf_polygon.py` | Walk-forward | `DualStrategyScanner` | YES (0.3 ATR) |
 | `scan.py` | **Daily Scan** | `DualStrategyScanner` | YES (0.3 ATR) |
 
-## ONE Scanner System (Updated 2025-12-31)
+## ONE Scanner System (Updated 2026-01-04)
 
-**THE ONLY SCANNER COMMAND:**
+### KOBE STANDARD PIPELINE: 900 → 5 → 3 → 2
+
+> **THIS IS THE ONLY WAY TO TRADE. NO EXCEPTIONS.**
+
+| Step | Description | Output File |
+|------|-------------|-------------|
+| **900** | Scan entire universe | - |
+| **→ 5** | Filter to Top 5 candidates | `logs/daily_top5.csv` |
+| **→ 3** | Select Top 3 picks | `logs/daily_picks.csv` |
+| **→ 2** | Trade only Top 2 | `logs/tradeable.csv` |
+| (TOTD) | Single highest-confidence | `logs/trade_of_day.csv` |
+
+**THE CANONICAL SCANNER COMMAND:**
 ```bash
-python scripts/scan.py --cap 900 --deterministic --top3
+python scripts/scan.py --cap 900 --deterministic --top5 --top3 --trade-top-n 2
 ```
 
 **Output Files:**
+- `logs/daily_top5.csv` - Top 5 candidates (first filter)
 - `logs/daily_picks.csv` - Top 3 picks (quality gate filtered)
+- `logs/tradeable.csv` - Top 2 for execution (WHAT WE TRADE)
 - `logs/trade_of_day.csv` - Single highest-confidence TOTD
 - `logs/signals.jsonl` - All signals (append-only)
+
+**With Markov Pre-filter (optional):**
+```bash
+python scripts/scan.py --cap 900 --deterministic --top5 --top3 --trade-top-n 2 --markov --markov-prefilter 100
+```
 
 **Raw Signals (no quality gate):**
 ```bash
