@@ -34,7 +34,7 @@ def load_totd_signal(signal_date: date) -> dict:
     paths_to_check = [
         project_root / f"reports/totd/totd_{signal_date.isoformat()}.json",
         project_root / f"outputs/daily/totd_{signal_date.isoformat()}.json",
-        project_root / f"logs/daily_picks.csv",
+        project_root / "logs/daily_picks.csv",
     ]
 
     for path in paths_to_check:

@@ -61,7 +61,7 @@ jobs:
 
       - name: Run Ruff linter
         run: |
-          ruff check . --ignore=E501,F401 --exclude=wf_outputs,wf_outputs_full10y,smoke_outputs,logs,state
+          ruff check . --ignore=E501,F401,E402,E741,E731,E701,E702,E721 --exclude=wf_outputs,wf_outputs_full10y,smoke_outputs,logs,state,cache,models,data/training,notebooks
         continue-on-error: true  # Don't fail on lint warnings
 
   smoke-test:

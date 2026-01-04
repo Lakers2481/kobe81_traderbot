@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import sys, os
+import sys
+import os
 from pathlib import Path as _P
 sys.path.insert(0, str(_P(__file__).resolve().parents[1]))
 

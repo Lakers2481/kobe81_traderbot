@@ -165,7 +165,7 @@ def cmd_start(args):
 
     if args.foreground:
         # Run in foreground
-        print(f"Running in foreground (Ctrl+C to stop)...")
+        print("Running in foreground (Ctrl+C to stop)...")
         print(f"Command: {' '.join(cmd)}")
         subprocess.run(cmd, cwd=str(ROOT))
     else:

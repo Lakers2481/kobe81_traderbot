@@ -152,7 +152,7 @@ def run_data_tests() -> Tuple[bool, List[str]]:
             lines = len(f.readlines()) - 1  # Minus header
         results.append(f"[OK] Universe: {lines} symbols")
     else:
-        results.append(f"[WARN] Universe file not found")
+        results.append("[WARN] Universe file not found")
 
     # Check cache directory
     cache_dir = Path("data/cache")
@@ -160,7 +160,7 @@ def run_data_tests() -> Tuple[bool, List[str]]:
         parquet_files = list(cache_dir.glob("*.parquet"))
         results.append(f"[OK] Cache: {len(parquet_files)} parquet files")
     else:
-        results.append(f"[INFO] Cache directory not found")
+        results.append("[INFO] Cache directory not found")
 
     return True, results
 

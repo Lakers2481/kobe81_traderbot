@@ -5,7 +5,7 @@ import pandas as pd
 
 
 def _atr(df: pd.DataFrame, n: int = 14) -> pd.Series:
-    o, h, l, c = df['open'], df['high'], df['low'], df['close']
+    _o, h, l, c = df['open'], df['high'], df['low'], df['close']
     prev_c = c.shift(1)
     tr = pd.concat([(h - l), (h - prev_c).abs(), (l - prev_c).abs()], axis=1).max(axis=1)
     return tr.rolling(n, min_periods=n).mean()

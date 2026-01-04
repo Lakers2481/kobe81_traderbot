@@ -244,7 +244,6 @@ def verify_env_template() -> Tuple[int, int, List[str]]:
 
 def run_verification(verbose: bool = False) -> Dict:
     """Run all verification checks."""
-    results = {}
 
     checks = [
         ("Documentation", verify_documentation),

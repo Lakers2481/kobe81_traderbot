@@ -85,7 +85,7 @@ class TestRiskCheckWorkflow:
             qty=order["qty"]
         )
 
-        assert allowed == True
+        assert allowed
         assert reason == "ok"
 
     def test_order_blocked_when_exceeds_budget(self):
@@ -103,7 +103,7 @@ class TestRiskCheckWorkflow:
             qty=1  # $100 > $75 limit
         )
 
-        assert allowed == False
+        assert not allowed
         assert "per_order" in reason
 
 

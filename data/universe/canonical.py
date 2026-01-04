@@ -70,7 +70,7 @@ def validate_universe() -> bool:
     try:
         symbols = load_canonical_universe()
         print(f"✓ Universe valid: {len(symbols)} stocks")
-        print(f"✓ Magnificent 7 all present")
+        print("✓ Magnificent 7 all present")
         print(f"✓ Top 5: {', '.join(symbols[:5])}")
         return True
     except ValueError as e:

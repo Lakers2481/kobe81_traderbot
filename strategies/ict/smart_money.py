@@ -401,8 +401,8 @@ class BreakOfStructureDetector:
             close = df['close'].iloc[i]
 
             # Update swing levels
-            period_high = df['high'].iloc[max(0, i-self.swing_length):i].max()
-            period_low = df['low'].iloc[max(0, i-self.swing_length):i].min()
+            df['high'].iloc[max(0, i-self.swing_length):i].max()
+            df['low'].iloc[max(0, i-self.swing_length):i].min()
 
             # Bullish BOS: break above swing high in uptrend
             if close > last_swing_high:

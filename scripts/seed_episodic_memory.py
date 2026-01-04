@@ -87,7 +87,7 @@ def create_episode_dict(
         'portfolio_context': {},
 
         # Reasoning (minimal for historical)
-        'reasoning_trace': [f"Historical trade seeded from backtest data"],
+        'reasoning_trace': ["Historical trade seeded from backtest data"],
         'confidence_levels': {'initial': 0.6},
         'alternatives_considered': [],
         'concerns_noted': [],
@@ -189,13 +189,13 @@ def main():
             json.dump(episode, f, indent=2, default=str)
         created += 1
 
-    print(f"\nResults:")
+    print("\nResults:")
     print(f"  Created: {created} episodes")
     print(f"  Skipped: {skipped} (already exist)")
     print(f"  Total in memory: {len(list(episodes_dir.glob('*.json')))}")
 
     # Show context distribution
-    print(f"\nContext signatures seeded:")
+    print("\nContext signatures seeded:")
     contexts = {}
     for ep_file in episodes_dir.glob("*.json"):
         with open(ep_file) as f:

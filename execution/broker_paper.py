@@ -421,12 +421,11 @@ class PaperBroker(BrokerBase):
         """Get P&L summary."""
         self._update_equity()
 
-        realized_pnl = 0.0
         for order in self._orders.values():
             if order.get("status") == "filled":
                 side = order.get("side")
-                fill_price = order.get("fill_price", 0)
-                qty = order.get("qty", 0)
+                order.get("fill_price", 0)
+                order.get("qty", 0)
 
                 if side == "sell" and order.get("symbol") not in self._positions:
                     # This was a closing trade

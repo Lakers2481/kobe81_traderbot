@@ -61,10 +61,10 @@ class TestLiquidityGateIntegration:
     def test_enable_disable_liquidity_gate(self):
         """Should toggle liquidity gate on/off."""
         enable_liquidity_gate(False)
-        assert is_liquidity_gate_enabled() == False
+        assert not is_liquidity_gate_enabled()
 
         enable_liquidity_gate(True)
-        assert is_liquidity_gate_enabled() == True
+        assert is_liquidity_gate_enabled()
 
 
 class TestCheckLiquidityForOrder:

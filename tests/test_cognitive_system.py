@@ -115,7 +115,7 @@ class TestMetacognitiveGovernor:
         # With policy integration, SLOW mode is also valid for high confidence
         # The key is that it should NOT stand down
         assert routing.mode in [ProcessingMode.FAST, ProcessingMode.HYBRID, ProcessingMode.SLOW]
-        assert routing.should_stand_down == False
+        assert not routing.should_stand_down
 
     def test_routing_stand_down(self):
         from cognitive.metacognitive_governor import MetacognitiveGovernor, ProcessingMode
@@ -130,7 +130,7 @@ class TestMetacognitiveGovernor:
         )
 
         assert routing.mode == ProcessingMode.STAND_DOWN
-        assert routing.should_stand_down == True
+        assert routing.should_stand_down
 
 
 class TestEpisodicMemory:
@@ -223,7 +223,7 @@ class TestKnowledgeBoundary:
             context={},  # Missing most data
         )
 
-        assert assessment.is_uncertain == True
+        assert assessment.is_uncertain
         assert len(assessment.missing_information) > 0
 
     def test_what_would_change_mind(self):
@@ -339,7 +339,7 @@ class TestCognitiveBrain:
 
         status = brain.get_status()
 
-        assert status['initialized'] == True
+        assert status['initialized']
         assert status['decision_count'] >= 1
         assert 'components' in status
 
@@ -463,7 +463,7 @@ class TestSignalProcessor:
 
         assert 'processor_active' in status
         assert 'brain_status' in status
-        assert status['processor_active'] == True
+        assert status['processor_active']
 
 
 if __name__ == '__main__':

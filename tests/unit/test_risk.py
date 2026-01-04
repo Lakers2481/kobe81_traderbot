@@ -28,7 +28,7 @@ class TestPolicyGate:
         assert limits.max_daily_notional == 1000.0
         assert limits.min_price == 3.0
         assert limits.max_price == 1000.0
-        assert limits.allow_shorts == False
+        assert not limits.allow_shorts
 
     def test_policy_gate_initialization(self):
         """Test PolicyGate initialization."""
@@ -47,7 +47,7 @@ class TestPolicyGate:
         # Order value of $50 should pass (price=10, qty=5)
         allowed, reason = gate.check(symbol="AAPL", side="long", price=10, qty=5)
 
-        assert allowed == True
+        assert allowed
         assert reason == "ok"
 
     def test_order_exceeds_per_order_budget_fails(self):
@@ -59,7 +59,7 @@ class TestPolicyGate:
         # Order value of $100 should fail (price=50, qty=2)
         allowed, reason = gate.check(symbol="AAPL", side="long", price=50, qty=2)
 
-        assert allowed == False
+        assert not allowed
         assert "per_order" in reason
 
     def test_daily_loss_limit(self):
@@ -70,15 +70,15 @@ class TestPolicyGate:
 
         # First order: $70 notional - should pass
         allowed1, _ = gate.check(symbol="AAPL", side="long", price=70, qty=1)
-        assert allowed1 == True
+        assert allowed1
 
         # Second order: $70 notional - should pass (total $140)
         allowed2, _ = gate.check(symbol="MSFT", side="long", price=70, qty=1)
-        assert allowed2 == True
+        assert allowed2
 
         # Third order: $70 notional - should fail (total would be $210)
         allowed3, reason = gate.check(symbol="GOOGL", side="long", price=70, qty=1)
-        assert allowed3 == False
+        assert not allowed3
         assert "daily" in reason
 
     def test_reset_daily(self):
@@ -92,14 +92,14 @@ class TestPolicyGate:
 
         # Should fail now
         allowed, _ = gate.check(symbol="MSFT", side="long", price=75, qty=1)
-        assert allowed == False
+        assert not allowed
 
         # Reset daily
         gate.reset_daily()
 
         # Should pass again
         allowed2, _ = gate.check(symbol="MSFT", side="long", price=75, qty=1)
-        assert allowed2 == True
+        assert allowed2
 
     def test_price_bounds(self):
         """Test price bounds enforcement."""
@@ -109,12 +109,12 @@ class TestPolicyGate:
 
         # Price too low
         allowed1, reason1 = gate.check(symbol="PENNY", side="long", price=2, qty=1)
-        assert allowed1 == False
+        assert not allowed1
         assert "bounds" in reason1
 
         # Price too high
         allowed2, reason2 = gate.check(symbol="BRK.A", side="long", price=1500, qty=1)
-        assert allowed2 == False
+        assert not allowed2
         assert "bounds" in reason2
 
     def test_shorts_disabled_by_default(self):
@@ -124,7 +124,7 @@ class TestPolicyGate:
         gate = PolicyGate(limits)
 
         allowed, reason = gate.check(symbol="AAPL", side="short", price=50, qty=1)
-        assert allowed == False
+        assert not allowed
         assert "short" in reason
 
 

@@ -24,6 +24,20 @@ from zoneinfo import ZoneInfo
 
 logger = logging.getLogger(__name__)
 
+
+def atomic_json_write(path: Path, data: Any) -> None:
+    """Atomically write JSON to a file (write to temp, then rename)."""
+    import tempfile
+    temp_path = path.with_suffix('.tmp')
+    with open(temp_path, 'w') as f:
+        json.dump(data, f, indent=2, default=str)
+    temp_path.replace(path)
+
+
+def get_data_loader(root: Path):
+    """Stub for data loader (not yet implemented)."""
+    return None
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse
 import uvicorn
@@ -134,6 +148,11 @@ except ImportError:
 
 REPORT_LOADER_AVAILABLE = False
 EDGE_SERVICE_AVAILABLE = False
+
+# Stub for EdgeMasterService (not yet implemented)
+class EdgeMasterService:
+    """Placeholder for future EdgeMasterService implementation."""
+    pass
 
 app = FastAPI(title="Kobe Pro Dashboard", version="3.0.0")
 
@@ -1001,7 +1020,7 @@ class ProDashboardData:
         total_signals = scanner_data.get("total_signals", 0)
         total_scanned = scanner_data.get("total_scanned", 0)
         long_count = scanner_data.get("long_count", 0)
-        short_count = scanner_data.get("short_count", 0)
+        scanner_data.get("short_count", 0)
         top_3 = scanner_data.get("top_3", [])
 
         # Signal quality insights
@@ -1541,7 +1560,6 @@ async def trigger_scan():
         RSI_PERIOD = 5
         RSI_THRESHOLD = 3.0  # CRITICAL: RSI < 3 is the edge
         TREND_SMA_PERIOD = 200
-        DEFAULT_R_MULTIPLE = 2.0
 
         for symbol in scan_symbols:
             try:
@@ -1566,9 +1584,9 @@ async def trigger_scan():
 
                 # Convert to arrays for calculation
                 closes = np.array([r['c'] for r in results])
-                highs = np.array([r['h'] for r in results])
-                lows = np.array([r['l'] for r in results])
-                volumes = np.array([r['v'] for r in results])
+                np.array([r['h'] for r in results])
+                np.array([r['l'] for r in results])
+                np.array([r['v'] for r in results])
 
                 if len(closes) == 0 or closes[-1] <= 0:
                     continue

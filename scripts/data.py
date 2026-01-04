@@ -354,7 +354,7 @@ Examples:
             stale = (freshness_df["status"] == "STALE").sum()
             ok = (freshness_df["status"] == "OK").sum()
 
-            print(f"\nSummary:")
+            print("\nSummary:")
             print(f"  OK:      {ok:4d} ({100*ok/total:.1f}%)")
             print(f"  STALE:   {stale:4d} ({100*stale/total:.1f}%)")
             print(f"  MISSING: {missing:4d} ({100*missing/total:.1f}%)")
@@ -369,7 +369,7 @@ Examples:
             else:
                 # Show first 20 by default
                 df_show = freshness_df.head(20)
-                print(f"\nFirst 20 Symbols (use --show-all for complete list):")
+                print("\nFirst 20 Symbols (use --show-all for complete list):")
 
             if not df_show.empty:
                 headers = ["Symbol", "Status", "Latest Date", "Days Behind", "File Age"]

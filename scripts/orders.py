@@ -367,7 +367,7 @@ def show_orders(
         orders = orders[:tail]
 
     print(f"\n{'#'*80}")
-    print(f"#  KOBE TRADING SYSTEM - ORDER HISTORY")
+    print("#  KOBE TRADING SYSTEM - ORDER HISTORY")
     print(f"#  Source: {source}")
     print(f"#  Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     if status:

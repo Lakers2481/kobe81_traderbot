@@ -73,7 +73,7 @@ class LearningEngine:
         state_file = self.state_dir / "learning_state.json"
         if state_file.exists():
             try:
-                data = json.loads(state_file.read_text())
+                json.loads(state_file.read_text())
                 # Lessons and reflections would be restored here
             except Exception as e:
                 logger.warning(f"Could not load learning state: {e}")
@@ -168,7 +168,7 @@ class LearningEngine:
             exit_reason = trade.get("exit_reason", "unknown")
 
             if outcome == "win":
-                what_worked.append(f"Entry signal was correct")
+                what_worked.append("Entry signal was correct")
                 if "target" in exit_reason.lower():
                     what_worked.append("Take profit level was appropriate")
                 lesson = f"Profitable trade on {symbol} - signal quality was good"
@@ -410,7 +410,7 @@ if __name__ == "__main__":
     print("=" * 50)
 
     result = engine.daily_reflection()
-    print(f"\nDaily Reflection:")
+    print("\nDaily Reflection:")
     print(f"  Trades: {result.get('trades', 0)}")
     print(f"  Mood: {result.get('mood', 'unknown')}")
     print(f"  Lessons: {result.get('lessons', [])}")

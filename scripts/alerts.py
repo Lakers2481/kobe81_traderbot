@@ -321,7 +321,7 @@ def check_thresholds(config: Dict[str, Any], metrics: Dict[str, float]) -> List[
             triggered.append({
                 "type": threshold_key,
                 "severity": "critical",
-                "message": f"CRITICAL: " + msg_template.format(value=metric_value, threshold=threshold_value),
+                "message": "CRITICAL: " + msg_template.format(value=metric_value, threshold=threshold_value),
                 "value": metric_value,
                 "threshold": threshold_value
             })
@@ -329,7 +329,7 @@ def check_thresholds(config: Dict[str, Any], metrics: Dict[str, float]) -> List[
             triggered.append({
                 "type": threshold_key,
                 "severity": "warning",
-                "message": f"WARNING: " + msg_template.format(value=metric_value, threshold=threshold_value),
+                "message": "WARNING: " + msg_template.format(value=metric_value, threshold=threshold_value),
                 "value": metric_value,
                 "threshold": threshold_value
             })
@@ -627,7 +627,7 @@ Examples:
         # Default: show status summary
         print("Kobe Alert System")
         print("=" * 40)
-        config = load_config()
+        load_config()
         alerts = load_active_alerts()
 
         print(f"Active alerts: {len(alerts)}")

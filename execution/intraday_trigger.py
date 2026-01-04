@@ -240,7 +240,7 @@ class IntradayTrigger:
             )
 
         if vwap_ok and fh_ok:
-            return True, f"TRIGGERED: VWAP + First Hour confirmed"
+            return True, "TRIGGERED: VWAP + First Hour confirmed"
         elif vwap_ok and not fh_ok:
             return False, f"VWAP OK, but {fh_reason}"
         elif not vwap_ok and fh_ok:

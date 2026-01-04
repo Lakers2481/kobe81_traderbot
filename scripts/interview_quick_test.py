@@ -111,7 +111,7 @@ def main():
     print("Done. Artifacts:")
     print(f"- {summary['report_html']}")
     print(f"- {args.outdir}/wf_summary_compare.csv")
-    print(f"- INTERVIEW_SUMMARY.json")
+    print("- INTERVIEW_SUMMARY.json")
 
 
 if __name__ == "__main__":

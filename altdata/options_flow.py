@@ -495,7 +495,7 @@ class OptionsFlowClient:
 
             # For now, use simulated IV history since we don't have live data
             # In production, you'd fetch historical IV from Polygon or CBOE
-            calc = IVPercentileCalculator()
+            IVPercentileCalculator()
 
             # Simulate current IV and history
             simulated_ivs = {

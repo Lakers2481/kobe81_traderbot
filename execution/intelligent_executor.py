@@ -359,7 +359,7 @@ class IntelligentExecutor:
                     strategy_used=strategy,
                 )
                 # The OrderManager handles the actual submission and status updates
-                execution_id = self.order_manager.submit_order(order_record)
+                self.order_manager.submit_order(order_record)
                 
                 # After submit_order, the order_record object is updated by OrderManager
                 final_order_status = order_record.status

@@ -495,11 +495,11 @@ class SyntheticOptionsBacktester:
         # Calculate P&L
         if position.direction == PositionDirection.LONG:
             # Long: profit if premium increased
-            pnl = (premium - position.entry_premium) * position.contracts * 100 - tx_cost
+            (premium - position.entry_premium) * position.contracts * 100 - tx_cost
             self.equity += position.contracts * premium * 100 - tx_cost
         else:
             # Short: profit if premium decreased
-            pnl = (position.entry_premium - premium) * position.contracts * 100 - tx_cost
+            (position.entry_premium - premium) * position.contracts * 100 - tx_cost
             # Return collateral for short puts
             if position.option_type == OptionType.PUT:
                 collateral = position.contracts * position.strike * 100
@@ -619,7 +619,6 @@ class SyntheticOptionsBacktester:
         dates = df['timestamp'].dt.date.unique() if hasattr(df['timestamp'].iloc[0], 'date') else pd.to_datetime(df['timestamp']).dt.date.unique()
 
         prev_equity = self.initial_equity
-        trade_pnls = []
 
         for date in dates:
             timestamp = pd.Timestamp(date)
@@ -712,7 +711,7 @@ class SyntheticOptionsBacktester:
 
         for entry in entry_trades:
             # Find matching exit
-            position_key = f"{entry.symbol}_{entry.option_type.value}_{entry.strike}_{entry.expiry_date.strftime('%Y%m%d')}"
+            f"{entry.symbol}_{entry.option_type.value}_{entry.strike}_{entry.expiry_date.strftime('%Y%m%d')}"
 
             exit_trade = None
             for exit_t in exit_trades:

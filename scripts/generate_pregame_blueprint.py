@@ -110,7 +110,7 @@ def generate_pregame_blueprint(
     logger.info(f"Generating Pre-Game Blueprint for {today}")
     divider = "=" * 60
     print(f"\n{divider}")
-    print(f"PRE-GAME BLUEPRINT GENERATOR")
+    print("PRE-GAME BLUEPRINT GENERATOR")
     print(f"Date: {today}")
     print(f"{divider}\n")
 
@@ -316,7 +316,7 @@ def _get_scanner_signals(
                             "quality_score": float(row.get("quality_score", 50)),
                             "reason": row.get("reason", ""),
                         })
-            except Exception as e:
+            except Exception:
                 continue
 
         # Sort by quality score and return top N
@@ -931,7 +931,7 @@ def main():
     args = parser.parse_args()
 
     try:
-        blueprint = generate_pregame_blueprint(
+        generate_pregame_blueprint(
             universe_path=args.universe,
             cap=args.cap,
             top_n=args.top,

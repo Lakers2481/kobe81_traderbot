@@ -118,7 +118,7 @@ def get_lstm_confidence_status() -> MLComponentStatus:
     try:
         # Try to import and check LSTM model
         from ml_advanced.lstm_confidence.model import LSTMConfidenceModel
-        model = LSTMConfidenceModel()
+        LSTMConfidenceModel()
 
         # Check if model weights are loaded
         model_path = Path(__file__).resolve().parents[1] / 'ml_advanced' / 'lstm_confidence' / 'weights'
@@ -267,8 +267,8 @@ def get_ml_confidence_dashboard() -> MLConfidenceDashboard:
     # Note: Some components have expected "degraded" or "not_loaded" states:
     # - Online Learning: degraded with empty buffer is expected (needs 100 trades to populate)
     # - LSTM Confidence: not_loaded is OK (TensorFlow optional, disabled on Windows)
-    active_count = sum(1 for c in components if c.status == 'active')
-    error_count = sum(1 for c in components if c.status == 'error')
+    sum(1 for c in components if c.status == 'active')
+    sum(1 for c in components if c.status == 'error')
 
     # Only count critical issues - actual errors that indicate system problems
     # Exclude Online Learning degraded (expected) and not_loaded components (optional)

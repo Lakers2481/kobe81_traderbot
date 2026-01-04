@@ -305,7 +305,7 @@ def main():
         print(f"  Signals/Day >= 1:   {'PASS' if spd_pass else 'FAIL'} ({spd:.1f})")
 
         if wr_pass and pf_pass and spd_pass:
-            print(f"  >>> ALL CRITERIA PASSED <<<")
+            print("  >>> ALL CRITERIA PASSED <<<")
 
     combined = results.get('Combined', {})
     if combined.get('trades', 0) > 0:

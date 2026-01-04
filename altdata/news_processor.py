@@ -425,23 +425,18 @@ class NewsProcessor:
         if compound > 0.3:
             tone = "predominantly positive"
             impact = "supportive of bullish positioning"
-            emoji = "positive"
         elif compound > 0.1:
             tone = "mildly positive"
             impact = "slightly supportive of risk-on trades"
-            emoji = "neutral-positive"
         elif compound < -0.3:
             tone = "predominantly negative"
             impact = "suggesting caution and defensive positioning"
-            emoji = "negative"
         elif compound < -0.1:
             tone = "mildly negative"
             impact = "warranting some caution on new longs"
-            emoji = "neutral-negative"
         else:
             tone = "neutral to mixed"
             impact = "unlikely to significantly drive market direction"
-            emoji = "neutral"
 
         # Extract key headlines
         key_headlines = []

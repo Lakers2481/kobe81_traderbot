@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Analyze current market regime - continuous monitoring."""
 from __future__ import annotations
-import argparse, sys
+import argparse
+import sys
 from pathlib import Path
 from datetime import timedelta
 

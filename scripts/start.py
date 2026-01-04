@@ -197,8 +197,8 @@ def start_runner(
     if once:
         cmd.append("--once")
         # Run synchronously for --once
-        print(f"Running single scan...")
-        result = subprocess.run(cmd, capture_output=False)
+        print("Running single scan...")
+        subprocess.run(cmd, capture_output=False)
         return None
 
     # Start as background process
@@ -405,8 +405,8 @@ Examples:
             print(f"Health server: http://localhost:{args.health_port} (PID: {health_pid})")
         if runner_pid:
             print(f"Runner PID: {runner_pid}")
-        print(f"\nUse 'python scripts/stop.py' to stop the system")
-        print(f"Use 'python scripts/kill.py' for emergency halt")
+        print("\nUse 'python scripts/stop.py' to stop the system")
+        print("Use 'python scripts/kill.py' for emergency halt")
 
     jlog("system_started", mode=args.mode, health_pid=health_pid, runner_pid=runner_pid)
 

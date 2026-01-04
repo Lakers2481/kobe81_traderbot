@@ -128,7 +128,6 @@ def cleanup_cache(
     print("Expired files:")
     for path, age, size in sorted(expired_files, key=lambda x: -x[1]):
         rel_path = path.relative_to(PROJECT_ROOT) if path.is_relative_to(PROJECT_ROOT) else path
-        action = "Would remove" if dry_run else "Removing"
         print(f"  [{format_size(size):>10}] [{age:>6.1f}h] {rel_path}")
 
         if not dry_run:

@@ -145,7 +145,7 @@ class RegimeDetector:
         self.spy_data = fetch_polygon_bars('SPY', start_date, end_date, self.api_key)
 
         # VIX is available as VIXY (VIX ETF) or we estimate from SPY volatility
-        print(f"Fetching VIX proxy data...")
+        print("Fetching VIX proxy data...")
         self.vix_data = fetch_polygon_bars('VIXY', start_date, end_date, self.api_key)
 
         if self.spy_data.empty:
@@ -402,8 +402,8 @@ class RegimeDetector:
 
             # Calculate signals at this point
             subset_close = close.iloc[:idx+1]
-            subset_high = high.iloc[:idx+1]
-            subset_low = low.iloc[:idx+1]
+            high.iloc[:idx+1]
+            low.iloc[:idx+1]
 
             sma_20 = calculate_sma(subset_close, 20).iloc[-1]
             sma_50 = calculate_sma(subset_close, 50).iloc[-1]

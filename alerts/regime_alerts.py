@@ -190,7 +190,7 @@ if __name__ == '__main__':
     result = check_regime_transition(send_alert=False, verbose=True)
 
     if result:
-        print(f"\n[!] TRANSITION DETECTED:")
+        print("\n[!] TRANSITION DETECTED:")
         print(f"   {result['from_regime']} -> {result['to_regime']}")
         print(f"   Confidence: {result['confidence']:.2%}")
     else:

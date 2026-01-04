@@ -261,7 +261,7 @@ class SignalConfidence:
 
         # Multiple SMA alignment
         sma_50 = last_row.get('sma_50', np.nan)
-        sma_20 = last_row.get('sma_20', np.nan)
+        last_row.get('sma_20', np.nan)
 
         if pd.notna(sma_50) and pd.notna(sma_200):
             if side == "long" and sma_50 > sma_200:
@@ -416,7 +416,7 @@ class SignalConfidence:
         if factors.get('trend', 0.5) > 0.7:
             reasons.append(f"Trend supports {side} position")
         elif factors.get('trend', 0.5) < 0.3:
-            reasons.append(f"Trading against prevailing trend")
+            reasons.append("Trading against prevailing trend")
 
         if factors.get('volatility', 0.5) < 0.3:
             reasons.append("Volatility conditions unfavorable")

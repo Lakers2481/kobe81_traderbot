@@ -9,7 +9,8 @@ from typing import Dict, Any, List
 
 import pandas as pd
 
-import sys, os
+import sys
+import os
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from data.providers.polygon_eod import fetch_daily_bars_polygon, has_options_polygon
@@ -78,7 +79,7 @@ def main():
         print('No symbols qualified.')
         return
     # Filter by years and options availability
-    df = df[(df['years'] >= args.min_years) & (df['has_options'] == True)]
+    df = df[(df['years'] >= args.min_years) & (df['has_options'])]
     if df.empty:
         print('No symbols met min-years and options filters.')
         return

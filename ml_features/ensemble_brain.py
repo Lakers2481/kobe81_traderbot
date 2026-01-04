@@ -561,7 +561,7 @@ class QuickEnsemble:
         """Learn optimal thresholds from data."""
         for col in X.columns:
             best_acc = 0.5
-            best_thresh = X[col].median()
+            X[col].median()
 
             for pct in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:
                 thresh = X[col].quantile(pct)
@@ -576,12 +576,10 @@ class QuickEnsemble:
 
                 if acc > best_acc:
                     best_acc = acc
-                    best_thresh = thresh
                     self.thresholds[col] = (thresh, 1, acc)
 
                 if acc_inv > best_acc:
                     best_acc = acc_inv
-                    best_thresh = thresh
                     self.thresholds[col] = (thresh, -1, acc_inv)
 
         self.fitted = True

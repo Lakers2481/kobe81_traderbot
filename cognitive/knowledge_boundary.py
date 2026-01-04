@@ -246,9 +246,10 @@ class KnowledgeBoundary:
                 uncertainty_score += 0.2
 
         # === CHECK 5: EXTREME MARKET CONDITIONS (VOLATILITY) ===
-        if (vix := context.get('vix', 20)) > 40:
+        vix = context.get('vix', 20)
+        if vix > 40:
             uncertainty_sources.append(UncertaintySource.UNUSUAL_VOLATILITY)
-            recommendations.append("Reduce position size due to extreme volatility.")
+            recommendations.append(f"Reduce position size due to extreme volatility (VIX={vix:.1f}).")
             uncertainty_score += 0.15
 
         # === CHECK 6: EXTREME SENTIMENT ===

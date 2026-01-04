@@ -292,7 +292,7 @@ def generate_coverage_report(
     # Group by status
     details = coverage.get("details", [])
     if details:
-        ok_symbols = [d for d in details if d.get("status") == "OK"]
+        [d for d in details if d.get("status") == "OK"]
         insufficient = [d for d in details if d.get("status") == "INSUFFICIENT"]
         no_data = [d for d in details if d.get("status") == "NO_DATA"]
         errors = [d for d in details if d.get("status") == "ERROR"]
@@ -516,7 +516,7 @@ Examples:
                 report_path = Path(args.report)
                 if not report_path.is_absolute():
                     report_path = ROOT / report_path
-                report = generate_coverage_report(coverage, report_path)
+                generate_coverage_report(coverage, report_path)
                 print(f"\nReport written to: {report_path}")
 
     # 4. Compare Cache vs Fresh

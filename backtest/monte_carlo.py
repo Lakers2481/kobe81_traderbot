@@ -185,7 +185,7 @@ class MonteCarloSimulator:
             self.returns = trades['pnl_pct'].dropna().values
         elif 'pnl' in trades.columns:
             # Assume PnL is already in dollar terms, normalize
-            total_pnl = trades['pnl'].sum()
+            trades['pnl'].sum()
             self.returns = (trades['pnl'] / self.config.initial_capital).dropna().values
         else:
             raise ValueError("Trades DataFrame must have 'pnl' column")

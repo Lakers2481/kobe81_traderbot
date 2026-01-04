@@ -94,8 +94,8 @@ def _fetch_from_polygon(
     multiplier, timespan = _parse_timeframe(timeframe)
 
     # Convert dates to timestamps
-    start_ts = datetime.strptime(start, "%Y-%m-%d")
-    end_ts = datetime.strptime(end, "%Y-%m-%d")
+    datetime.strptime(start, "%Y-%m-%d")
+    datetime.strptime(end, "%Y-%m-%d")
 
     url = (
         f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/"

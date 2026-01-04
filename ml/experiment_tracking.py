@@ -150,7 +150,7 @@ def log_trade_decision(
             for k, v in params.items():
                 if isinstance(v, (int, float)):
                     mlflow.log_metric(k, v)
-    except Exception as e:
+    except Exception:
         # Silently fail for individual trade logging
         pass
 

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Check data quality for stocks - continuous validation."""
 from __future__ import annotations
-import argparse, sys
+import argparse
+import sys
 from pathlib import Path
 from datetime import datetime, timedelta
 
@@ -41,7 +42,7 @@ def check_quality(symbols: str, dotenv: str) -> int:
             issues.append(f"{symbol}: error - {e}")
 
     if issues:
-        print(f"[DATA_QUALITY] Issues found:")
+        print("[DATA_QUALITY] Issues found:")
         for issue in issues:
             print(f"  - {issue}")
         return 1

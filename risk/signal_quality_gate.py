@@ -451,7 +451,7 @@ class SignalQualityGate:
         result_df = pd.DataFrame(quality_results)
 
         # Filter to only passing signals
-        passing = result_df[result_df['passes_gate'] == True].copy()
+        passing = result_df[result_df['passes_gate']].copy()
 
         # Sort by quality score and take top N
         if not passing.empty:

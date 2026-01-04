@@ -231,7 +231,7 @@ class PatternRhymesEngine:
                         )
                         all_matches.append(match)
 
-            except Exception as e:
+            except Exception:
                 continue
 
         # Sort by similarity

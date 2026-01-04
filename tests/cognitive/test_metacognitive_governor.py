@@ -60,8 +60,8 @@ class TestRoutingDecisions:
 
         # High confidence should use fast path
         assert routing.mode in [ProcessingMode.FAST, ProcessingMode.HYBRID]
-        assert routing.use_fast_path == True
-        assert routing.should_stand_down == False
+        assert routing.use_fast_path
+        assert not routing.should_stand_down
 
     def test_low_confidence_triggers_stand_down(self):
         """Test that very low confidence triggers stand-down."""
@@ -78,7 +78,7 @@ class TestRoutingDecisions:
         )
 
         assert routing.mode == ProcessingMode.STAND_DOWN
-        assert routing.should_stand_down == True
+        assert routing.should_stand_down
         assert routing.stand_down_reason == StandDownReason.HIGH_UNCERTAINTY
 
     def test_medium_confidence_triggers_hybrid_path(self):
@@ -100,8 +100,8 @@ class TestRoutingDecisions:
         # With new policy integration, medium confidence may trigger HYBRID or SLOW
         # depending on active policies. The key is that it's not FAST and not STAND_DOWN.
         assert routing.mode in [ProcessingMode.HYBRID, ProcessingMode.SLOW]
-        assert routing.use_slow_path == True
-        assert routing.should_stand_down == False
+        assert routing.use_slow_path
+        assert not routing.should_stand_down
 
     def test_conflicting_signals_escalates_to_slow(self):
         """Test that conflicting signals trigger slow path."""
@@ -238,7 +238,7 @@ class TestRoutingStatistics:
 
         assert record is not None
         assert record.outcome == 'success'
-        assert record.was_correct == True
+        assert record.was_correct
         assert record.actual_compute_ms == 50
 
 
@@ -257,7 +257,7 @@ class TestNovelSituationDetection:
         )
 
         # Should be novel since no history exists
-        assert is_novel == True or is_novel == False  # Depends on self_model state
+        assert is_novel or not is_novel  # Depends on self_model state
 
 
 class TestIntrospection:
@@ -327,7 +327,7 @@ class TestRoutingDecisionDataclass:
 
         assert d['decision_id'] == 'test-123'
         assert d['mode'] == 'hybrid'
-        assert d['use_fast_path'] == True
+        assert d['use_fast_path']
         assert d['escalation_reasons'] == ['low_confidence']
         assert d['stand_down_reason'] is None
 
@@ -360,10 +360,10 @@ class TestDecisionRecord:
             actual_compute_ms=50,
         )
 
-        assert record.was_efficient == True  # 50ms < 100ms budget
+        assert record.was_efficient  # 50ms < 100ms budget
 
         record.actual_compute_ms = 150
-        assert record.was_efficient == False  # 150ms > 100ms budget
+        assert not record.was_efficient  # 150ms > 100ms budget
 
 
 class TestProcessingModeEnum:

@@ -113,7 +113,7 @@ def train_xgboost(X_train, y_train, X_val, y_val) -> tuple:
         'best_iteration': booster.best_iteration,
     }
 
-    print(f"\nXGBoost Results:")
+    print("\nXGBoost Results:")
     print(f"  Accuracy: {metrics['accuracy']:.4f}")
     print(f"  AUC: {metrics['auc']:.4f}")
     print(f"  Brier: {metrics['brier']:.4f}")
@@ -171,7 +171,7 @@ def train_lightgbm(X_train, y_train, X_val, y_val) -> tuple:
         'best_iteration': booster.best_iteration,
     }
 
-    print(f"\nLightGBM Results:")
+    print("\nLightGBM Results:")
     print(f"  Accuracy: {metrics['accuracy']:.4f}")
     print(f"  AUC: {metrics['auc']:.4f}")
     print(f"  Brier: {metrics['brier']:.4f}")
@@ -247,7 +247,7 @@ def main():
         X_trainval, y_trainval, test_size=0.25, shuffle=False
     )
 
-    print(f"\nData splits:")
+    print("\nData splits:")
     print(f"  Train: {len(X_train)} samples ({100*np.mean(y_train):.1f}% win rate)")
     print(f"  Val:   {len(X_val)} samples ({100*np.mean(y_val):.1f}% win rate)")
     print(f"  Test:  {len(X_test)} samples ({100*np.mean(y_test):.1f}% win rate)")

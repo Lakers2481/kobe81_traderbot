@@ -718,9 +718,9 @@ class TradeThesisBuilder:
         # What could go wrong
         thesis.what_could_go_wrong = [
             f"Broader market sell-off could extend the decline beyond ${thesis.stop_loss:.2f}",
-            f"Unexpected news (earnings, analyst action) could gap the stock significantly",
-            f"Sector rotation could override individual stock patterns",
-            f"VIX spike could increase volatility and trigger stop prematurely",
+            "Unexpected news (earnings, analyst action) could gap the stock significantly",
+            "Sector rotation could override individual stock patterns",
+            "VIX spike could increase volatility and trigger stop prematurely",
         ]
 
     def _generate_executive_summary(self, thesis: TradeThesis) -> None:

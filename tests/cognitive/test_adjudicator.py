@@ -129,7 +129,6 @@ class TestHeuristicFunction:
 
     def test_handles_invalid_prices(self):
         from cognitive.adjudicator import heuristic
-        import pytest
 
         signal = {
             'entry_price': 'invalid',
@@ -259,7 +258,6 @@ class TestEdgeCases:
 
     def test_none_values(self):
         from cognitive.adjudicator import heuristic
-        import pytest
 
         signal = {
             'entry_price': None,

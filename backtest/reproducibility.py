@@ -26,6 +26,7 @@ Usage:
 from __future__ import annotations
 
 import hashlib
+import pandas as pd
 import json
 import logging
 import os
@@ -728,7 +729,7 @@ class ReproducibleContext:
     def __enter__(self):
         set_global_seeds(self.seed)
         if self.verbose:
-            info = get_reproducibility_info()
+            get_reproducibility_info()
             logger.info(f"Reproducible context started with seed={self.seed}")
         return self
 

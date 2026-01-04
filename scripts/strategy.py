@@ -245,7 +245,7 @@ def compare_strategies():
     ibs_params = get_strategy_params("ibs")
 
     print(f"\n{'#'*80}")
-    print(f"#  STRATEGY COMPARISON: RSI-2 vs IBS")
+    print("#  STRATEGY COMPARISON: RSI-2 vs IBS")
     print(f"{'#'*80}")
     print()
 
@@ -314,7 +314,7 @@ def show_stats():
         return
 
     print(f"\n{'#'*80}")
-    print(f"#  STRATEGY PERFORMANCE STATISTICS")
+    print("#  STRATEGY PERFORMANCE STATISTICS")
     now = now_et()
     print(f"#  Generated: {now.strftime('%Y-%m-%d')} {fmt_ct(now)}")
     print(f"{'#'*80}")

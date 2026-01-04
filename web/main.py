@@ -41,7 +41,7 @@ from execution.tca.transaction_cost_analyzer import get_tca_analyzer
 try:
     from web.api.webhooks import router as webhooks_router
     WEBHOOKS_AVAILABLE = True
-except ImportError as e:
+except ImportError:
     WEBHOOKS_AVAILABLE = False
     webhooks_router = None
 
@@ -99,7 +99,6 @@ async def get_bot_status() -> Dict[str, Any]:
     """
     try:
         signal_processor = get_signal_processor()
-        executor = signal_processor.brain # Assuming brain has executor status or expose via processor
         # This will be refined as more components are exposed
         status = {
             "timestamp": datetime.now().isoformat(),

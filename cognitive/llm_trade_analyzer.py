@@ -1524,7 +1524,7 @@ Current regime is {regime} with VIX at {vix:.1f}. {"Elevated volatility suggests
         elif now.weekday() == 0:  # Monday
             warnings.append("Monday gap fill patterns common - wait for 10:30 AM")
 
-        regime = context.get('regime', '')
+        context.get('regime', '')
         regime_conf = context.get('regime_confidence', 0.5)
         if regime_conf < 0.6:
             warnings.append(f"Low regime confidence ({regime_conf:.0%}) - market direction unclear")
@@ -1778,10 +1778,12 @@ Current regime is {regime} with VIX at {vix:.1f}. {"Elevated volatility suggests
             'IBS_RSI': {
                 'total_trades': 1247, 'win_rate': 62.3, 'avg_win': 2.8, 'avg_loss': 2.1,
                 'profit_factor': 1.98, 'avg_hold': 3.2, 'max_dd': 8.5, 'sharpe': 1.45,
+                'regime_perf': {'BULL': 65.0, 'NEUTRAL': 60.0, 'BEAR': 55.0},
             },
             'TurtleSoup': {
                 'total_trades': 892, 'win_rate': 61.1, 'avg_win': 3.4, 'avg_loss': 2.5,
                 'profit_factor': 1.85, 'avg_hold': 4.1, 'max_dd': 11.2, 'sharpe': 1.32,
+                'regime_perf': {'BULL': 64.0, 'NEUTRAL': 58.0, 'BEAR': 52.0},
             },
         }
         stats = strategy_stats.get(strategy, strategy_stats.get('IBS_RSI'))
@@ -1798,7 +1800,7 @@ Current regime is {regime} with VIX at {vix:.1f}. {"Elevated volatility suggests
             sharpe_ratio=stats['sharpe'],
             recent_performance=f"Last 30 days: 8W-4L ({8/(8+4)*100:.0f}% WR)",
             regime_performance=stats['regime_perf'],
-            sample_trades=sample_trades,
+            sample_trades=[],  # No sample trades in fallback mode
         )
 
     def _get_technical_context(
@@ -2011,10 +2013,8 @@ Current regime is {regime} with VIX at {vix:.1f}. {"Elevated volatility suggests
 
         # Symbol-specific confidence boost from REAL backtest data
         symbol_boost = 0.0
-        symbol_wr = None
         if historical.symbol_stats:
             symbol_boost = historical.symbol_stats.confidence_boost * 100  # Convert to percentage points
-            symbol_wr = historical.symbol_stats.win_rate
 
         # Base confidence calculation
         base_conf = (hist_conf * 0.4 + tech_conf * 0.25 + news_conf * 0.15 + regime_conf_score * 0.2)
@@ -2341,8 +2341,8 @@ For a $100,000 portfolio with 1% risk per trade:
         report.risk_warnings = [
             f"Stop distance ({report.stop_distance_pct:.1f}%) is {'tight' if report.stop_distance_pct < 5 else 'wide' if report.stop_distance_pct > 10 else 'normal'} - adjust size accordingly",
             f"VIX at {report.vix_level:.1f} - {'reduce size due to elevated volatility' if report.vix_level > 25 else 'normal volatility conditions'}",
-            f"Weekend gap risk if held over Friday",
-            f"Earnings/event risk - check calendar before entry",
+            "Weekend gap risk if held over Friday",
+            "Earnings/event risk - check calendar before entry",
         ]
 
         report.key_levels_to_watch = [

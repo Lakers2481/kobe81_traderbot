@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Study volatility patterns - continuous research."""
 from __future__ import annotations
-import argparse, sys
+import argparse
+import sys
 from pathlib import Path
 from datetime import timedelta
 
@@ -30,14 +31,14 @@ def study_volatility(symbol: str, dotenv: str) -> int:
         # Various volatility measures
         vol_20 = returns.tail(20).std() * np.sqrt(252)
         vol_60 = returns.tail(60).std() * np.sqrt(252)
-        vol_252 = returns.std() * np.sqrt(252)
+        returns.std() * np.sqrt(252)
 
         # Volatility ratio (short vs long)
         vol_ratio = vol_20 / vol_60 if vol_60 > 0 else 1
 
         # Parkinson volatility (uses high-low)
         log_hl = np.log(df['high'] / df['low'])
-        parkinson = np.sqrt((log_hl ** 2).tail(20).mean() / (4 * np.log(2))) * np.sqrt(252)
+        np.sqrt((log_hl ** 2).tail(20).mean() / (4 * np.log(2))) * np.sqrt(252)
 
         # ATR-based volatility
         atr = ((df['high'] - df['low']).tail(14).mean() / df['close'].iloc[-1])

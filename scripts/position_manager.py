@@ -451,7 +451,7 @@ class PositionManager:
         logger.info(f"  Stop updates: {summary['stop_updates']}")
         logger.info(f"  Trading mode: {summary['policy_gate']['trading_mode']}")
         logger.info(f"  Daily remaining: ${summary['policy_gate']['daily_remaining']:.2f}")
-        logger.info(f"\nWEEKLY BUDGET:")
+        logger.info("\nWEEKLY BUDGET:")
         logger.info(f"  Current Exposure: {weekly_status['exposure']['current_pct']}")
         logger.info(f"  Daily Entries Today: {weekly_status['daily']['entries_today']}/{weekly_status['daily']['max_per_day']}")
         logger.info(f"  Budget Freed Pending: ${weekly_status['budget'].get('freed_pending', 0):,.0f}")

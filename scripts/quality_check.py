@@ -630,7 +630,7 @@ def check_disk_space(min_gb: float = 1.0) -> CheckResult:
     try:
         total, used, free = shutil.disk_usage(ROOT)
         free_gb = free / (1024 ** 3)
-        total_gb = total / (1024 ** 3)
+        total / (1024 ** 3)
         used_pct = (used / total) * 100
 
         if free_gb >= min_gb:
@@ -664,7 +664,7 @@ def check_memory() -> CheckResult:
         import psutil
         mem = psutil.virtual_memory()
         available_gb = mem.available / (1024 ** 3)
-        total_gb = mem.total / (1024 ** 3)
+        mem.total / (1024 ** 3)
         used_pct = mem.percent
 
         if available_gb >= 1.0:

@@ -12,7 +12,7 @@ import os
 import sys
 from pathlib import Path
 from datetime import datetime
-from typing import List, Dict
+from typing import Any, Dict, List
 
 import pandas as pd
 import numpy as np
@@ -64,7 +64,7 @@ def run_backtest(
                     df['symbol'] = sym
                 all_data.append(df)
                 symbols_with_data += 1
-        except Exception as e:
+        except Exception:
             pass  # Skip symbols with errors
 
     if not all_data:
@@ -165,7 +165,7 @@ def main():
     print(f"Signals Generated: {results['signals']}")
     print(f"Trades Executed:   {results['trades']}")
     print(f"Signals/Day:       {results['signals_per_day']}")
-    print(f"\nPerformance:")
+    print("\nPerformance:")
     print(f"  Win Rate:        {results['win_rate']}%")
     print(f"  Wins/Losses:     {results['wins']}/{results['losses']}")
     print(f"  Profit Factor:   {results['profit_factor']}")
@@ -173,11 +173,11 @@ def main():
     print(f"  Avg R/Trade:     {results['avg_r']}R")
     print(f"  Avg Bars Held:   {results['avg_bars_held']}")
 
-    print(f"\nExit Reasons:")
+    print("\nExit Reasons:")
     for reason, count in results.get('exit_reasons', {}).items():
         print(f"  {reason}: {count}")
 
-    print(f"\nSignal Types:")
+    print("\nSignal Types:")
     for sig_type, count in results.get('signal_types', {}).items():
         print(f"  {sig_type}: {count}")
 

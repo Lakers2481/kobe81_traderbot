@@ -198,7 +198,7 @@ class VIXMonitor:
                 raise ValueError("POLYGON_API_KEY not set")
 
             # VIX ticker on Polygon
-            url = f"https://api.polygon.io/v2/aggs/ticker/I:VIX/prev"
+            url = "https://api.polygon.io/v2/aggs/ticker/I:VIX/prev"
             params = {"apiKey": api_key}
 
             response = requests.get(url, params=params, timeout=10)

@@ -199,7 +199,7 @@ class DataQualityGate:
         # Lazy load dependencies
         self._knowledge_boundary = None
 
-        logger.info(f"DataQualityGate initialized")
+        logger.info("DataQualityGate initialized")
 
     @property
     def knowledge_boundary(self):

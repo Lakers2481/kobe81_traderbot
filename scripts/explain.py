@@ -279,20 +279,20 @@ def print_explanation(explanation: Dict[str, Any]) -> None:
     print(f"Signal: {explanation['signal']}")
     print(f"\nReason: {explanation['reason']}")
 
-    print(f"\nIndicator Values:")
+    print("\nIndicator Values:")
     for key, val in explanation.get("indicators", {}).items():
         print(f"  {key}: {val}")
 
     if explanation.get("suggested_trade"):
         trade = explanation["suggested_trade"]
-        print(f"\nSuggested Trade Parameters:")
+        print("\nSuggested Trade Parameters:")
         print(f"  Entry: ${trade['entry']}")
         print(f"  Stop Loss: ${trade['stop_loss']}")
         print(f"  Target: ${trade['target']}")
         print(f"  Risk/Reward: {trade['risk_reward']}")
 
     if explanation.get("context"):
-        print(f"\nPrice Context:")
+        print("\nPrice Context:")
         print(f"{'Date':<12} {'Open':>10} {'High':>10} {'Low':>10} {'Close':>10} {'Indicator':>12}")
         print("-" * 70)
         for row in explanation["context"]:
@@ -313,7 +313,7 @@ def main() -> None:
     ap.add_argument("--date", type=str, help="Specific date (YYYY-MM-DD), defaults to latest")
     ap.add_argument("--lookback", type=int, default=30, help="Days of price history to fetch (default: 30)")
 
-    args = ap.parse_args()
+    ap.parse_args()
 
     print("This script is deprecated. Use scripts/debugger.py for IBS+RSI signal traces.")
     sys.exit(0)

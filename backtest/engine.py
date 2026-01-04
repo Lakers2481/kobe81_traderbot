@@ -246,7 +246,7 @@ class Backtester:
         df['timestamp'] = pd.to_datetime(df['timestamp'], utc=True).dt.tz_localize(None)
         open_trade = None  # dict with keys: entry_idx, qty, stop, side
         # Pre-index by timestamp for quick lookup of entry index
-        ts_index = pd.Series(df.index.values, index=df['timestamp'])
+        pd.Series(df.index.values, index=df['timestamp'])
         # Iterate over signals chronologically
         for _, sig in sigs.sort_values('timestamp').iterrows():
             # Robust next-bar lookup using searchsorted to avoid tz/naive mismatches

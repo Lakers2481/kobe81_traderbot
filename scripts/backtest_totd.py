@@ -441,7 +441,7 @@ def simulate_trade(
 
     entry_bar = df.iloc[signal_iloc + 1]
     actual_entry = float(entry_bar['open'])
-    entry_bar_date = entry_bar['date']
+    entry_bar['date']
 
     # Calculate 1R from signal
     signal_r = abs(signal_entry - signal_stop)
@@ -458,7 +458,6 @@ def simulate_trade(
 
     # Simulate exit over next bars
     exit_price = None
-    exit_date = None
     exit_reason = None
     bars_held = 0
 
@@ -474,26 +473,26 @@ def simulate_trade(
             # Check stop hit (low <= stop)
             if float(bar['low']) <= stop_price:
                 exit_price = stop_price
-                exit_date = bar['date']
+                bar['date']
                 exit_reason = 'stop'
                 break
             # Check target hit (high >= target)
             if float(bar['high']) >= target_price:
                 exit_price = target_price
-                exit_date = bar['date']
+                bar['date']
                 exit_reason = 'target'
                 break
         else:
             # Short: stop hit if high >= stop
             if float(bar['high']) >= stop_price:
                 exit_price = stop_price
-                exit_date = bar['date']
+                bar['date']
                 exit_reason = 'stop'
                 break
             # Target hit if low <= target
             if float(bar['low']) <= target_price:
                 exit_price = target_price
-                exit_date = bar['date']
+                bar['date']
                 exit_reason = 'target'
                 break
 
@@ -503,14 +502,14 @@ def simulate_trade(
         if time_exit_iloc < len(df):
             exit_bar = df.iloc[time_exit_iloc]
             exit_price = float(exit_bar['close'])
-            exit_date = exit_bar['date']
+            exit_bar['date']
             exit_reason = 'time'
             bars_held = time_stop_bars
         else:
             # Not enough bars, use last available
             exit_bar = df.iloc[-1]
             exit_price = float(exit_bar['close'])
-            exit_date = exit_bar['date']
+            exit_bar['date']
             exit_reason = 'time_early'
             bars_held = len(df) - (signal_iloc + 2)
 
@@ -656,7 +655,7 @@ def run_backtest(
         else:
             skip_count += 1
 
-    print(f"\nSimulation complete:")
+    print("\nSimulation complete:")
     print(f"  TOTD trades: {totd_count}")
     print(f"  Skipped days: {skip_count}")
 
@@ -816,10 +815,10 @@ def write_reports(
         f.write(html)
 
     print(f"\nReports written to: {output_dir}")
-    print(f"  - all_trades.csv")
-    print(f"  - turtle_soup_trades.csv, ibs_rsi_trades.csv")
-    print(f"  - *_summary.json")
-    print(f"  - *_monthly.csv")
+    print("  - all_trades.csv")
+    print("  - turtle_soup_trades.csv, ibs_rsi_trades.csv")
+    print("  - *_summary.json")
+    print("  - *_monthly.csv")
     print(f"  - totd_report_{year}.html")
 
 

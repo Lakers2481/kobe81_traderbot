@@ -229,10 +229,10 @@ class SocraticNarrativeGenerator:
 
         symbol = signal.get("symbol", "UNKNOWN")
         strategy = signal.get("strategy", "UNKNOWN")
-        side = signal.get("side", "long")
-        entry_price = signal.get("entry_price", 0)
-        stop_loss = signal.get("stop_loss", 0)
-        take_profit = signal.get("take_profit", 0)
+        signal.get("side", "long")
+        signal.get("entry_price", 0)
+        signal.get("stop_loss", 0)
+        signal.get("take_profit", 0)
         confidence = signal.get("conf_score", signal.get("confidence", 0))
 
         # Generate each section
@@ -479,15 +479,15 @@ class SocraticNarrativeGenerator:
     ) -> str:
         """Generate Part 5: Data-Driven Confirmation."""
         symbol = signal.get("symbol", "")
-        strategy = signal.get("strategy", "")
+        signal.get("strategy", "")
 
         confirmations = []
 
         # 1. Market microstructure reference
         confirmations.append(
-            f"**Market Microstructure**: Bid-ask spread within acceptable range "
-            f"(<2% of mid). Quote age verified fresh (<5 seconds). Order book "
-            f"shows balanced depth supporting entry execution quality."
+            "**Market Microstructure**: Bid-ask spread within acceptable range "
+            "(<2% of mid). Quote age verified fresh (<5 seconds). Order book "
+            "shows balanced depth supporting entry execution quality."
         )
 
         # 2. Alternative data reference
@@ -500,8 +500,8 @@ class SocraticNarrativeGenerator:
             )
         else:
             confirmations.append(
-                f"**Sentiment Analysis**: No significant news sentiment detected. "
-                f"Trade is purely technically driven without headline risk."
+                "**Sentiment Analysis**: No significant news sentiment detected. "
+                "Trade is purely technically driven without headline risk."
             )
 
         # 3. Internal performance model reference
@@ -516,8 +516,8 @@ class SocraticNarrativeGenerator:
             )
         else:
             confirmations.append(
-                f"**Self-Model Performance**: Baseline strategy performance "
-                f"within acceptable parameters. No symbol-specific override."
+                "**Self-Model Performance**: Baseline strategy performance "
+                "within acceptable parameters. No symbol-specific override."
             )
 
         # 4. VIX/Volatility reference
@@ -548,17 +548,17 @@ class SocraticNarrativeGenerator:
         context: MarketContext = None,
     ) -> str:
         """Generate Part 6: The Path Not Taken."""
-        symbol = signal.get("symbol", "")
-        entry_price = signal.get("entry_price", 0)
+        signal.get("symbol", "")
+        signal.get("entry_price", 0)
 
         rejections = []
 
         # Always include some standard considerations
         rejections.append(
-            f"**Larger Position Size**: A larger position was considered but rejected "
-            f"because the `risk/policy_gate` enforces a $75 maximum per order "
-            f"in micro-budget mode. Additionally, conformal prediction uncertainty "
-            f"recommended conservative sizing."
+            "**Larger Position Size**: A larger position was considered but rejected "
+            "because the `risk/policy_gate` enforces a $75 maximum per order "
+            "in micro-budget mode. Additionally, conformal prediction uncertainty "
+            "recommended conservative sizing."
         )
 
         if context and context.vix_level > 25:
@@ -580,15 +580,15 @@ class SocraticNarrativeGenerator:
         else:
             # Default alternatives
             rejections.append(
-                f"**Correlated Position**: A sympathy trade in a correlated stock "
-                f"was considered but rejected due to portfolio correlation limits "
-                f"(max 0.70) or sector concentration rules (max 30% per sector)."
+                "**Correlated Position**: A sympathy trade in a correlated stock "
+                "was considered but rejected due to portfolio correlation limits "
+                "(max 0.70) or sector concentration rules (max 30% per sector)."
             )
 
         rejections.append(
-            f"**No Trade**: Standing aside was considered but rejected because "
-            f"the signal met all quality gate thresholds and historical edge "
-            f"analysis supports taking the trade."
+            "**No Trade**: Standing aside was considered but rejected because "
+            "the signal met all quality gate thresholds and historical edge "
+            "analysis supports taking the trade."
         )
 
         return "\n\n".join(rejections)
@@ -633,14 +633,14 @@ class SocraticNarrativeGenerator:
         )
 
         parts.append(
-            f"- If **WIN**: Reinforce confidence in the signal pattern; update "
-            f"symbol-specific win rate upward; log successful regime alignment."
+            "- If **WIN**: Reinforce confidence in the signal pattern; update "
+            "symbol-specific win rate upward; log successful regime alignment."
         )
 
         parts.append(
-            f"- If **LOSS**: Analyze if stop was hit due to market gap, momentum "
-            f"failure, or regime shift. Update `SelfModel` capability scores and "
-            f"adjust future confidence thresholds accordingly."
+            "- If **LOSS**: Analyze if stop was hit due to market gap, momentum "
+            "failure, or regime shift. Update `SelfModel` capability scores and "
+            "adjust future confidence thresholds accordingly."
         )
 
         # Hypothesis update
@@ -652,9 +652,9 @@ class SocraticNarrativeGenerator:
             )
 
         parts.append(
-            f"This trade contributes to my continuous improvement through the "
-            f"`CuriosityEngine`, which may generate new hypotheses based on "
-            f"the outcome pattern."
+            "This trade contributes to my continuous improvement through the "
+            "`CuriosityEngine`, which may generate new hypotheses based on "
+            "the outcome pattern."
         )
 
         return "\n\n".join(parts)

@@ -20,7 +20,7 @@ import os
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import pandas as pd
 
@@ -223,7 +223,7 @@ def select_top_n_with_gates(
     n = int(top_n_cfg.get('n', 3))
     max_correlation = float(top_n_cfg.get('max_correlation', 0.70))
     max_sector_pct = float(top_n_cfg.get('max_sector_pct', 0.40))
-    max_single_name_pct = float(top_n_cfg.get('max_single_name_pct', 0.25))
+    float(top_n_cfg.get('max_single_name_pct', 0.25))
     min_diversification = int(top_n_cfg.get('min_diversification', 2))
 
     # Sort by confidence (highest first)
@@ -439,7 +439,7 @@ def apply_portfolio_filters(
 
     for _, row in signals.iterrows():
         symbol = row.get('symbol', '')
-        entry_price = float(row.get('entry_price', 0))
+        float(row.get('entry_price', 0))
 
         # Skip if symbol already in portfolio
         if symbol in positions_dict:
@@ -996,7 +996,7 @@ Examples:
     # Determine strategies to run (dual strategy handles both IBS_RSI and TurtleSoup)
     strategies = ["dual"]  # Always use dual strategy scanner
     if args.verbose:
-        print(f"Running Dual Strategy Scanner (IBS+RSI + Turtle Soup)")
+        print("Running Dual Strategy Scanner (IBS+RSI + Turtle Soup)")
 
     # Scan ID for logging
     scan_id = f"SCAN_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
@@ -1443,7 +1443,7 @@ Examples:
                 print(f"\n{'='*60}")
                 print(f"TOP 3 PICKS - SIGNAL DATE: {signal_date}")
                 print(f"{'='*60}")
-                print(f"  NOTE: These signals are valid for the NEXT trading day")
+                print("  NOTE: These signals are valid for the NEXT trading day")
                 print("-" * 60)
                 print(out[['strategy','symbol','side','entry_price','stop_loss','take_profit','conf_score']].to_string(index=False))
                 print(f"\nWrote: {picks_path}")

@@ -220,7 +220,7 @@ class VolatilityTargetingGate:
             log_lo = np.log(df['Low'] / df['Open'])
             log_co = np.log(df['Close'] / df['Open'])
             log_oc = np.log(df['Open'] / df['Close'].shift(1))
-            log_cc = np.log(df['Close'] / df['Close'].shift(1))
+            np.log(df['Close'] / df['Close'].shift(1))
 
             # Rogers-Satchell volatility
             rs_var = (log_ho * (log_ho - log_co) + log_lo * (log_lo - log_co)).mean()

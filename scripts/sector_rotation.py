@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Analyze sector rotation - continuous market analysis."""
 from __future__ import annotations
-import argparse, sys
+import argparse
+import sys
 from pathlib import Path
 from datetime import timedelta
 
@@ -71,11 +72,11 @@ def analyze_rotation(dotenv: str) -> int:
     risk_off_perf = sum(sector_performance.get(s, {}).get('5d', 0) for s in risk_off) / 3
 
     if risk_on_perf > risk_off_perf + 0.005:
-        print(f"\n[SECTOR] Market sentiment: RISK-ON")
+        print("\n[SECTOR] Market sentiment: RISK-ON")
     elif risk_off_perf > risk_on_perf + 0.005:
-        print(f"\n[SECTOR] Market sentiment: RISK-OFF")
+        print("\n[SECTOR] Market sentiment: RISK-OFF")
     else:
-        print(f"\n[SECTOR] Market sentiment: NEUTRAL")
+        print("\n[SECTOR] Market sentiment: NEUTRAL")
 
     return 0
 

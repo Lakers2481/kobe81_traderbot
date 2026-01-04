@@ -37,7 +37,8 @@ try:
 except Exception:
     def gen_narrative(_sig: dict) -> dict:
         return {"technical": "", "casual": "", "executive": ""}
-import io, base64
+import io
+import base64
 import joblib
 
 
@@ -303,7 +304,7 @@ def reliability_plot_section() -> str:
         if not scored:
             return ''
         fig, ax = plt.subplots(figsize=(6, 4))
-        xs = np.linspace(0.05, 0.95, 10)
+        np.linspace(0.05, 0.95, 10)
         for strat, sdf in scored.items():
             p = sdf['proba'].astype(float).clip(0, 1)
             y = sdf['label'].astype(int)
@@ -380,7 +381,7 @@ def top3_explainability_section(today_iso: str) -> str:
             if exp.get('narrative'):
                 rows.append(f"<div>{exp['narrative']}</div>")
             if nar:
-                tech = nar.get('technical',''); cas = nar.get('casual',''); exe = nar.get('executive','')
+                tech = nar.get('technical',''); nar.get('casual',''); exe = nar.get('executive','')
                 rows.append(f"<div><i>Technical:</i> {tech}</div>")
                 rows.append(f"<div><i>Executive:</i> {exe}</div>")
             contrib = exp.get('contributions') or []
@@ -463,7 +464,6 @@ def feature_impact_section() -> str:
     # Fallback to coefficients if linear model accessible
     try:
         from sklearn.pipeline import Pipeline
-        import numpy as np
         est = None
         if hasattr(m, 'calibrated_classifiers_') and m.calibrated_classifiers_:
             cc = m.calibrated_classifiers_[0]

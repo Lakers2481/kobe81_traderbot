@@ -108,7 +108,6 @@ def alpaca_requests_mock(requests_mock):
 # Define a fixture for mocking Polygon API requests
 @pytest.fixture
 def polygon_requests_mock(requests_mock):
-    polygon_api_base = "https://api.polygon.io"
     
     # Mock Polygon EOD bars - Success
     requests_mock.get(

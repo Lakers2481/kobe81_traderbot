@@ -232,7 +232,7 @@ def get_data_freshness() -> Dict[str, Any]:
     newest = max(csv_files, key=lambda f: f.stat().st_mtime)
     oldest = min(csv_files, key=lambda f: f.stat().st_mtime)
     newest_time = datetime.fromtimestamp(newest.stat().st_mtime)
-    oldest_time = datetime.fromtimestamp(oldest.stat().st_mtime)
+    datetime.fromtimestamp(oldest.stat().st_mtime)
 
     result["newest_file"] = newest.name
     result["oldest_file"] = oldest.name

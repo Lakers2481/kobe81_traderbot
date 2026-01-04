@@ -88,7 +88,7 @@ def main() -> None:
     # Prepare previous meta for drift comparison and backup before any promotion
     prev_meta_path = DEPLOYED_DIR / 'meta_prev.json'
     curr_meta_path = DEPLOYED_DIR / 'meta_current.json'
-    prev_meta = load_json(prev_meta_path)
+    load_json(prev_meta_path)
     curr_before = load_json(curr_meta_path)
     if curr_before:
         # Save a copy of current to prev

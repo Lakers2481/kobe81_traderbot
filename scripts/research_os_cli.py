@@ -262,7 +262,7 @@ def cmd_propose(args):
         print(f"Proposal submitted: {request_id}")
         print()
         print("Next steps:")
-        print(f"  1. Review: python scripts/research_os_cli.py approvals --pending")
+        print("  1. Review: python scripts/research_os_cli.py approvals --pending")
         print(f"  2. Approve: python scripts/research_os_cli.py approve --id {request_id} --approver <name>")
     else:
         print("Failed to create proposal. Check that the card exists and is validated.")
@@ -316,7 +316,7 @@ CRITICAL: 'approve' and 'reject' are HUMAN ACTIONS only.
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # status
-    status_parser = subparsers.add_parser("status", help="Show system status")
+    subparsers.add_parser("status", help="Show system status")
 
     # discoveries
     disc_parser = subparsers.add_parser("discoveries", help="List knowledge cards")

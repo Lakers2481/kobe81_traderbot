@@ -54,7 +54,7 @@ def run_data_update():
         logger.info(f"Loaded {len(universe)} symbols from universe")
 
         # Note: Data is cached, so this just validates freshness
-        provider = PolygonEODProvider()
+        PolygonEODProvider()
         logger.info("Data provider initialized - using cached EOD data")
 
         return True
@@ -112,14 +112,14 @@ def run_learning_cycle():
         # Get episodic memory stats
         mem = get_episodic_memory()
         stats = mem.get_stats()
-        logger.info(f"Episodic Memory Stats:")
+        logger.info("Episodic Memory Stats:")
         logger.info(f"  Total Episodes: {stats.get('total_episodes', 0)}")
         logger.info(f"  Win Rate: {stats.get('win_rate', 'N/A')}")
         logger.info(f"  Total Lessons: {stats.get('total_lessons', 0)}")
 
         # Get self-model stats
         sm = get_self_model()
-        logger.info(f"Self Model Stats:")
+        logger.info("Self Model Stats:")
         logger.info(f"  Strengths: {len(sm.get_strengths())}")
         logger.info(f"  Weaknesses: {len(sm.get_weaknesses())}")
         logger.info(f"  Calibrated: {sm.is_well_calibrated()}")
@@ -256,7 +256,7 @@ def main():
                     last_run[name] = now  # Don't retry immediately
 
         # Sleep between cycles
-        logger.info(f"\nSleeping for 10 minutes...")
+        logger.info("\nSleeping for 10 minutes...")
         time.sleep(600)  # 10 minutes
 
 

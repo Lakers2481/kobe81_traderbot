@@ -729,15 +729,15 @@ if __name__ == "__main__":
     scheduler = get_scheduler()
     status = scheduler.get_status()
 
-    print(f"Scheduler Status:")
+    print("Scheduler Status:")
     print(f"  Current Phase: {status['context']['phase']}")
     print(f"  Work Mode: {status['context']['work_mode']}")
     print(f"  Pending Tasks: {status['pending_tasks']}")
-    print(f"\nRecommended Actions:")
+    print("\nRecommended Actions:")
     for action in status['context']['recommended_actions']:
         print(f"  - {action}")
 
-    print(f"\nNext Task: ", end="")
+    print("\nNext Task: ", end="")
     task = scheduler.get_next_task()
     if task:
         print(f"{task.name} ({task.priority.name})")

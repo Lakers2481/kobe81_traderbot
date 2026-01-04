@@ -571,7 +571,7 @@ def print_summary(analyzer: CorrelationAnalyzer) -> None:
         max_corr = analyzer.correlation_matrix.values[mask].max()
         min_corr = analyzer.correlation_matrix.values[mask].min()
 
-        print(f"\n  Correlation Statistics:")
+        print("\n  Correlation Statistics:")
         print(f"    Average: {avg_corr:.2%}")
         print(f"    Maximum: {max_corr:.2%}")
         print(f"    Minimum: {min_corr:.2%}")

@@ -213,7 +213,7 @@ class MarketClock:
         """Get next equities scan event."""
         # Find next trading day and scan time
         current_date = dt.date()
-        current_time = dt.time()
+        dt.time()
 
         # Check if today is a trading day
         if self.equities_calendar.is_trading_day(current_date):

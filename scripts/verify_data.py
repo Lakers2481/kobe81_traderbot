@@ -179,7 +179,7 @@ def main():
             date_col = 'date' if 'date' in sample_df.columns else sample_df.columns[0]
             print(f'  Date range: {sample_df[date_col].min()} to {sample_df[date_col].max()}')
     else:
-        print(f'  [WARN] Cache directory not found (will fetch on demand)')
+        print('  [WARN] Cache directory not found (will fetch on demand)')
 
     print()
 
@@ -262,8 +262,8 @@ def main():
     # Test Gap Risk Model
     try:
         from backtest.gap_risk_model import GapRiskModel
-        grm = GapRiskModel()
-        print(f'  [OK] GapRiskModel: initialized successfully')
+        GapRiskModel()
+        print('  [OK] GapRiskModel: initialized successfully')
     except Exception as e:
         print(f'  [FAIL] GapRiskModel: {e}')
         errors.append(f'GapRiskModel: {e}')
@@ -271,8 +271,8 @@ def main():
     # Test Regime Slippage
     try:
         from backtest.regime_adaptive_slippage import RegimeAdaptiveSlippage
-        rs = RegimeAdaptiveSlippage()
-        print(f'  [OK] RegimeAdaptiveSlippage: initialized successfully')
+        RegimeAdaptiveSlippage()
+        print('  [OK] RegimeAdaptiveSlippage: initialized successfully')
     except Exception as e:
         print(f'  [FAIL] RegimeAdaptiveSlippage: {e}')
         errors.append(f'RegimeAdaptiveSlippage: {e}')
@@ -280,8 +280,8 @@ def main():
     # Test Edge Decomposition
     try:
         from analytics.edge_decomposition import EdgeDecomposition
-        ed = EdgeDecomposition()
-        print(f'  [OK] EdgeDecomposition: initialized successfully')
+        EdgeDecomposition()
+        print('  [OK] EdgeDecomposition: initialized successfully')
     except Exception as e:
         print(f'  [FAIL] EdgeDecomposition: {e}')
         errors.append(f'EdgeDecomposition: {e}')
@@ -289,8 +289,8 @@ def main():
     # Test Auto Standdown
     try:
         from analytics.auto_standdown import AutoStanddown
-        asd = AutoStanddown()
-        print(f'  [OK] AutoStanddown: initialized successfully')
+        AutoStanddown()
+        print('  [OK] AutoStanddown: initialized successfully')
     except Exception as e:
         print(f'  [FAIL] AutoStanddown: {e}')
         errors.append(f'AutoStanddown: {e}')
@@ -307,8 +307,8 @@ def main():
     # Test Options Spread Builder
     try:
         from options.spreads import SpreadBuilder
-        sb = SpreadBuilder()
-        print(f'  [OK] SpreadBuilder: initialized successfully')
+        SpreadBuilder()
+        print('  [OK] SpreadBuilder: initialized successfully')
     except Exception as e:
         print(f'  [FAIL] SpreadBuilder: {e}')
         errors.append(f'SpreadBuilder: {e}')
@@ -316,7 +316,7 @@ def main():
     # Test Drift Detector
     try:
         from monitor.drift_detector import DriftDetector, get_position_scale
-        dd = DriftDetector()
+        DriftDetector()
         scale = get_position_scale()
         print(f'  [OK] DriftDetector: position_scale={scale:.0%}')
     except Exception as e:

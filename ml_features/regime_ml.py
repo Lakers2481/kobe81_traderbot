@@ -295,10 +295,9 @@ class RegimeDetectorML:
 
             if self.config.use_gmm:
                 labels = self._trend_model.predict(scaled)
-                probas = self._trend_model.predict_proba(scaled)
+                self._trend_model.predict_proba(scaled)
             else:
                 labels = self._trend_model.predict(scaled)
-                probas = None
 
             # Map cluster labels to regime states
             # Use mean return of each cluster to determine label

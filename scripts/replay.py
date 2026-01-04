@@ -96,7 +96,7 @@ def generate_signals_for_period(
                 signals = signals[(signals['timestamp'] >= start) & (signals['timestamp'] <= end)]
                 all_signals.append(signals)
 
-        except Exception as e:
+        except Exception:
             if show_progress:
                 pass  # Silently skip errors during progress
             continue

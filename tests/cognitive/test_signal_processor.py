@@ -149,7 +149,7 @@ class TestRecordOutcome:
         if evaluations:
             decision_id = evaluations[0].episode_id
             if decision_id:
-                result = processor.record_outcome(
+                processor.record_outcome(
                     decision_id=decision_id,
                     won=True,
                     pnl=500.0,

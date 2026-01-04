@@ -156,20 +156,20 @@ def assert_no_deprecated_strategies():
 
     if bad_imports:
         raise RuntimeError(
-            f"\n"
-            f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-            f"!!! FATAL: DEPRECATED STRATEGY IMPORTS DETECTED !!!\n"
-            f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-            f"\n"
-            f"Found deprecated imports:\n"
+            "\n"
+            "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+            "!!! FATAL: DEPRECATED STRATEGY IMPORTS DETECTED !!!\n"
+            "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+            "\n"
+            "Found deprecated imports:\n"
             + "\n".join(f"  - {imp}" for imp in bad_imports) +
-            f"\n\n"
-            f"These strategies do NOT have critical filters and will\n"
-            f"produce inferior results (48% WR instead of 61% WR).\n"
-            f"\n"
-            f"REQUIRED: Use strategies.registry.get_production_scanner()\n"
-            f"\n"
-            f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+            "\n\n"
+            "These strategies do NOT have critical filters and will\n"
+            "produce inferior results (48% WR instead of 61% WR).\n"
+            "\n"
+            "REQUIRED: Use strategies.registry.get_production_scanner()\n"
+            "\n"
+            "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
         )
 
 
@@ -203,15 +203,15 @@ def print_strategy_info():
     print("\n" + "="*60)
     print("KOBE81 VERIFIED STRATEGY PERFORMANCE (v2.2)")
     print("="*60)
-    print(f"\nIBS+RSI Mean Reversion:")
+    print("\nIBS+RSI Mean Reversion:")
     print(f"  - Trades: {VERIFIED_PERFORMANCE['ibs_rsi']['trades']}")
     print(f"  - Win Rate: {VERIFIED_PERFORMANCE['ibs_rsi']['win_rate']:.1%}")
     print(f"  - Profit Factor: {VERIFIED_PERFORMANCE['ibs_rsi']['profit_factor']:.2f}")
-    print(f"\nICT Turtle Soup:")
+    print("\nICT Turtle Soup:")
     print(f"  - Trades: {VERIFIED_PERFORMANCE['turtle_soup']['trades']}")
     print(f"  - Win Rate: {VERIFIED_PERFORMANCE['turtle_soup']['win_rate']:.1%}")
     print(f"  - Profit Factor: {VERIFIED_PERFORMANCE['turtle_soup']['profit_factor']:.2f}")
-    print(f"\nCombined:")
+    print("\nCombined:")
     print(f"  - Trades: {VERIFIED_PERFORMANCE['combined']['trades']}")
     print(f"  - Win Rate: {VERIFIED_PERFORMANCE['combined']['win_rate']:.1%}")
     print(f"  - Profit Factor: {VERIFIED_PERFORMANCE['combined']['profit_factor']:.2f}")

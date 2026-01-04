@@ -48,7 +48,7 @@ def main():
     regime_cfg = get_regime_filter_config()
     selection_cfg = get_selection_config()
     use_regime = args.regime_on or regime_cfg.get('enabled', False)
-    use_topn = args.topn_on or selection_cfg.get('enabled', False)
+    args.topn_on or selection_cfg.get('enabled', False)
 
     # Load SPY bars for regime filter if enabled
     spy_bars = pd.DataFrame()

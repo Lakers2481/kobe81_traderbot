@@ -9,7 +9,7 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import List, Dict
+from typing import Any, Dict, List
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -93,7 +93,7 @@ def main():
     print(f"Trades Executed:   {results['trades']}")
     print(f"Signals/Day:       {results['signals_per_day']}")
 
-    print(f"\nPerformance:")
+    print("\nPerformance:")
     print(f"  Win Rate:        {results['win_rate']}%")
     print(f"  Wins/Losses:     {results['wins']}/{results['losses']}")
     print(f"  Profit Factor:   {results['profit_factor']}")
@@ -101,7 +101,7 @@ def main():
     print(f"  Avg Loss:        {results['avg_loss_pct']}%")
     print(f"  Avg Bars Held:   {results['avg_bars_held']}")
 
-    print(f"\nExit Reasons:")
+    print("\nExit Reasons:")
     for reason, count in results.get('exit_reasons', {}).items():
         print(f"  {reason}: {count}")
 

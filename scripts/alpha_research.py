@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Alpha factor research - continuous discovery."""
 from __future__ import annotations
-import argparse, sys, json
+import argparse
+import sys
+import json
 from pathlib import Path
 from datetime import datetime, timedelta
 

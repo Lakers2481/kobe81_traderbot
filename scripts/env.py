@@ -125,9 +125,9 @@ def validate_env_vars(dotenv_path: Path = None) -> bool:
     alpaca_url = os.environ.get("ALPACA_BASE_URL", "")
     if alpaca_url:
         if "paper" in alpaca_url.lower():
-            print(f"\n[INFO] Alpaca mode: PAPER TRADING")
+            print("\n[INFO] Alpaca mode: PAPER TRADING")
         elif "api.alpaca.markets" in alpaca_url:
-            print(f"\n[WARN] Alpaca mode: LIVE TRADING (REAL MONEY)")
+            print("\n[WARN] Alpaca mode: LIVE TRADING (REAL MONEY)")
 
     is_valid = len(missing) == 0
     print(f"\nValidation: {'PASSED' if is_valid else 'FAILED'}")

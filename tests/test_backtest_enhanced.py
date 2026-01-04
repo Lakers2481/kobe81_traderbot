@@ -208,9 +208,9 @@ class TestVectorizedNumba:
         assert len(tp_hit) == 3
         # For long position: stop hit if low <= stop price
         # Index 1: low=96 <= stop=97 -> stop_hit = True
-        assert stop_hit[1] == True
+        assert stop_hit[1]
         # Index 2: low=95 > stop=90 -> stop not hit, high=110 >= tp=108 -> tp_hit = True
-        assert tp_hit[2] == True
+        assert tp_hit[2]
 
 
 # =============================================================================

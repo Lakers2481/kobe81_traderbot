@@ -430,7 +430,7 @@ def main():
         for streak_len, stats in sorted(summary_by_streak.items()):
             f.write(f"| {streak_len}+ days | {stats['stocks']} | {stats['total_samples']} | {stats['avg_bounce_5d']:.1f}% | +{stats['avg_move_5d']:.2f}% |\n")
 
-        f.write(f"\n## OPTIMAL ENTRY POINT\n")
+        f.write("\n## OPTIMAL ENTRY POINT\n")
         f.write(f"**{best_streak[0]} consecutive down days** = {best_streak[1]['avg_bounce_5d']:.1f}% avg bounce rate\n\n")
 
         f.write("## TOP 50 STOCKS WITH HIGHEST BOUNCE RATES\n\n")

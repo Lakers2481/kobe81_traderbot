@@ -184,10 +184,9 @@ class PortfolioRiskManager:
         symbol = signal.get('symbol', 'UNKNOWN')
         entry_price = signal.get('entry_price', 0)
         stop_loss = signal.get('stop_loss', 0)
-        side = signal.get('side', 'long')
+        signal.get('side', 'long')
 
         warnings = []
-        rejection_reason = None
         risk_score = 0.0
 
         # === CHECK 1: ML Confidence Filter ===

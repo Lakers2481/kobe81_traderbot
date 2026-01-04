@@ -165,7 +165,7 @@ def show_version(version_info: Dict[str, Any]) -> None:
     # Last update
     last_update = get_last_update_timestamp()
     if last_update:
-        print(f"\n--- Last Updated ---")
+        print("\n--- Last Updated ---")
         print(f"  {last_update}")
 
 

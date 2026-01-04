@@ -42,7 +42,7 @@ def main():
     # 3. ReflectionEngine
     def test_reflection():
         from cognitive.reflection_engine import ReflectionEngine
-        engine = ReflectionEngine()
+        ReflectionEngine()
         return "(initialized)"
     results.append(_run_component_test("3. ReflectionEngine", test_reflection))
 
@@ -65,7 +65,7 @@ def main():
     # 6. GameBriefings
     def test_briefings():
         from cognitive.game_briefings import GameBriefingEngine
-        engine = GameBriefingEngine()
+        GameBriefingEngine()
         return "(initialized)"
     results.append(_run_component_test("6. GameBriefings", test_briefings))
 
@@ -80,7 +80,7 @@ def main():
     # 8. KnowledgeBoundary
     def test_boundary():
         from cognitive.knowledge_boundary import KnowledgeBoundary
-        kb = KnowledgeBoundary()
+        KnowledgeBoundary()
         return "(initialized)"
     results.append(_run_component_test("8. KnowledgeBoundary", test_boundary))
 
@@ -95,21 +95,21 @@ def main():
     # 10. HMM Regime Detector
     def test_hmm():
         from ml_advanced.hmm_regime_detector import HMMRegimeDetector
-        detector = HMMRegimeDetector()
+        HMMRegimeDetector()
         return "(initialized)"
     results.append(_run_component_test("10. HMM Regime Detector", test_hmm))
 
     # 11. Confidence Integrator
     def test_confidence():
         from ml_features.confidence_integrator import ConfidenceIntegrator
-        ci = ConfidenceIntegrator()
+        ConfidenceIntegrator()
         return "(initialized)"
     results.append(_run_component_test("11. Confidence Integrator", test_confidence))
 
     # 12. LLM Narrative Analyzer
     def test_llm():
         from cognitive.llm_narrative_analyzer import get_llm_analyzer
-        analyzer = get_llm_analyzer()
+        get_llm_analyzer()
         return "(initialized)"
     results.append(_run_component_test("12. LLM Narrative Analyzer", test_llm))
 

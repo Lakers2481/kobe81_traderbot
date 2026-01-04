@@ -80,7 +80,7 @@ def main():
     # Determine output path
     if args.output:
         output_dir = Path(args.output).parent
-        output_file = Path(args.output)
+        Path(args.output)
     else:
         output_dir = reports_dir / f"profiles_{args.years}y"
 

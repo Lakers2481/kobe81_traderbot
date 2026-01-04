@@ -28,7 +28,7 @@ class TestSelfModelInitialization:
             assert model._performance == {}
             assert model._limitations == {}
             assert model._calibration == {}
-            assert model.auto_persist == False
+            assert not model.auto_persist
 
     def test_initialization_creates_state_dir(self):
         """Test that state directory is created if it doesn't exist."""
@@ -36,7 +36,7 @@ class TestSelfModelInitialization:
 
         with tempfile.TemporaryDirectory() as tmpdir:
             state_dir = os.path.join(tmpdir, 'new_state_dir')
-            model = SelfModel(state_dir=state_dir, auto_persist=False)
+            SelfModel(state_dir=state_dir, auto_persist=False)
 
             assert os.path.exists(state_dir)
 
@@ -362,7 +362,7 @@ class TestCalibrationTracking:
             model = SelfModel(state_dir=tmpdir, auto_persist=False)
 
             # With no data, should be considered calibrated
-            assert model.is_well_calibrated() == True
+            assert model.is_well_calibrated()
 
     def test_get_calibration_error(self):
         """Test getting the calibration error."""
@@ -395,7 +395,7 @@ class TestShouldStandDown:
                 )
 
             should_stand, reason = model.should_stand_down('bad_strategy', 'CHOPPY')
-            assert should_stand == True
+            assert should_stand
             assert 'POOR' in reason
 
     def test_no_stand_down_good_capability(self):
@@ -415,7 +415,7 @@ class TestShouldStandDown:
                 )
 
             should_stand, reason = model.should_stand_down('good_strategy', 'BULL')
-            assert should_stand == False
+            assert not should_stand
 
 
 class TestStrengthsAndWeaknesses:

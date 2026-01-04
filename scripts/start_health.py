@@ -9,7 +9,7 @@ def main():
     ap = argparse.ArgumentParser(description='Start health endpoints server')
     ap.add_argument('--port', type=int, default=8000)
     args = ap.parse_args()
-    s = start_health_server(args.port)
+    start_health_server(args.port)
     print(f'Health server on :{args.port} (Ctrl+C to stop)')
     try:
         import time

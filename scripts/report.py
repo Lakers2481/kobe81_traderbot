@@ -326,7 +326,7 @@ def generate_report_data(
 
     # Load all trades
     all_trades = []
-    strategy_trades: Dict[str, pd.DataFrame] = defaultdict(list)
+    defaultdict(list)
 
     for tf in files['trades']:
         if tf.suffix == '.jsonl':
@@ -688,11 +688,9 @@ def generate_html_report(data: ReportData) -> str:
 
 def generate_csv_report(data: ReportData, output_type: str = 'trades') -> str:
     """Generate CSV report."""
-    output = []
 
     if output_type == 'trades':
-        writer = csv.writer(output := [])
-        output = []
+        writer = csv.writer(_output := [])
 
         # Use StringIO for CSV
         import io

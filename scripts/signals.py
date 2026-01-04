@@ -342,7 +342,7 @@ def show_signals(
         signals = signals[:tail]
 
     print(f"\n{'#'*80}")
-    print(f"#  KOBE TRADING SYSTEM - SIGNALS VIEWER")
+    print("#  KOBE TRADING SYSTEM - SIGNALS VIEWER")
     print(f"#  Source: {source}")
     print(f"#  Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     if strategy:

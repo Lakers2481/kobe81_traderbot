@@ -112,7 +112,7 @@ def create_backup(
         # Get final compressed size
         compressed_size = backup_path.stat().st_size
 
-        print(f"\nBackup created successfully:")
+        print("\nBackup created successfully:")
         print(f"  File: {backup_path}")
         print(f"  Files backed up: {total_files}")
         print(f"  Original size: {total_size / 1024:.1f} KB")
@@ -200,7 +200,7 @@ def restore_backup(backup_name: str, confirm: bool = False) -> bool:
         print(f"Searched: {BACKUPS_DIR}")
         return False
 
-    print(f"\n=== RESTORE BACKUP ===")
+    print("\n=== RESTORE BACKUP ===")
     print(f"Backup: {backup_path.name}")
 
     # Show backup contents
@@ -317,7 +317,7 @@ def cleanup_old_backups(keep: int = 10, confirm: bool = False) -> None:
     if not confirm:
         for b in to_delete:
             print(f"  Would delete: {b['name']}")
-        print(f"\nRun with --confirm to delete these backups")
+        print("\nRun with --confirm to delete these backups")
         return
 
     for b in to_delete:

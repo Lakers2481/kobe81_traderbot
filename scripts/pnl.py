@@ -383,7 +383,7 @@ def print_period_summary(trades: List[Dict[str, Any]]):
 
 def show_pnl(period: Optional[str] = None, strategy: Optional[str] = None):
     """Main P&L display function."""
-    print(f"\n[INFO] Loading trade data...")
+    print("\n[INFO] Loading trade data...")
     trades = load_trades()
 
     if not trades:
@@ -406,7 +406,7 @@ def show_pnl(period: Optional[str] = None, strategy: Optional[str] = None):
 
     # Compute and display
     print(f"\n{'#'*80}")
-    print(f"#  KOBE TRADING SYSTEM - P&L SUMMARY")
+    print("#  KOBE TRADING SYSTEM - P&L SUMMARY")
     print(f"#  Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     if period:
         print(f"#  Period: {period.upper()}")

@@ -386,7 +386,7 @@ def load_universe_data(
     quality_report = pd.DataFrame(quality_records)
 
     if verbose:
-        print(f"\nData Loading Complete:")
+        print("\nData Loading Complete:")
         print(f"  Tickers attempted: {len(symbols)}")
         print(f"  Tickers loaded: {len(ticker_data)}")
         print(f"  Tickers failed: {len(symbols) - len(ticker_data)}")

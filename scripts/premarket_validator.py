@@ -322,7 +322,7 @@ def main():
             print(f"  X {stock['symbol']}: {gap:+.1%} gap")
 
     print()
-    print(f"Saved to: state/watchlist/today_validated.json")
+    print("Saved to: state/watchlist/today_validated.json")
 
     return 0
 

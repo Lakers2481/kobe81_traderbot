@@ -88,7 +88,7 @@ def analyze_positions(positions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     losers = []
 
     for pos in positions:
-        qty = float(pos.get("qty", 0))
+        float(pos.get("qty", 0))
         market_value = float(pos.get("market_value", 0))
         unrealized_pl = float(pos.get("unrealized_pl", 0))
         unrealized_plpc = float(pos.get("unrealized_plpc", 0))

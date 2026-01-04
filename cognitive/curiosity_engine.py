@@ -345,11 +345,11 @@ class CuriosityEngine:
         # Example: If VIX is high, hypothesize that mean reversion is more effective.
         vix = observations.get('vix', 20)
         if vix > 30:
-            hyp_id = hashlib.md5(f"high_vix_mr_perf".encode()).hexdigest()[:8]
+            hyp_id = hashlib.md5("high_vix_mr_perf".encode()).hexdigest()[:8]
             if hyp_id not in self._hypotheses:
                 hypotheses.append(Hypothesis(
                     hypothesis_id=hyp_id,
-                    description=f"Mean reversion strategies might work better when VIX > 30",
+                    description="Mean reversion strategies might work better when VIX > 30",
                     condition="vix > 30 AND is_mean_reversion",
                     prediction="win_rate > 0.6",
                     rationale=f"High VIX ({vix}) often signals fear and oversold conditions, ideal for bounces.",

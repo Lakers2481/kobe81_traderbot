@@ -10,7 +10,7 @@ import argparse
 import os
 import sys
 from pathlib import Path
-from typing import List, Dict
+from typing import Any, Dict, List
 
 import pandas as pd
 import numpy as np

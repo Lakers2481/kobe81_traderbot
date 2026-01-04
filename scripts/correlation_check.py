@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Check correlations between stocks - continuous analysis."""
 from __future__ import annotations
-import argparse, sys
+import argparse
+import sys
 from pathlib import Path
 from datetime import timedelta
 
@@ -31,7 +32,7 @@ def check_correlation(symbols: str, dotenv: str) -> int:
             pass
 
     if len(returns_dict) < 2:
-        print(f"[CORRELATION] Not enough data for correlation analysis")
+        print("[CORRELATION] Not enough data for correlation analysis")
         return 1
 
     returns_df = pd.DataFrame(returns_dict).dropna()
@@ -46,7 +47,7 @@ def check_correlation(symbols: str, dotenv: str) -> int:
                 high_corr.append((corr_matrix.columns[i], corr_matrix.columns[j], c))
 
     if high_corr:
-        print(f"[CORRELATION] Highly correlated pairs found:")
+        print("[CORRELATION] Highly correlated pairs found:")
         for s1, s2, c in sorted(high_corr, key=lambda x: -abs(x[2]))[:5]:
             print(f"  {s1} <-> {s2}: {c:.2f}")
     else:

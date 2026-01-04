@@ -27,7 +27,7 @@ class TestPolygonProvider:
         from data.providers.polygon_eod import PolygonConfig
         cfg = PolygonConfig(api_key="test_key")
         assert cfg.api_key == "test_key"
-        assert cfg.adjusted == True
+        assert cfg.adjusted
         assert cfg.sort == "asc"
         assert cfg.limit == 50000
 

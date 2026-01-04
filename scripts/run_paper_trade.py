@@ -110,7 +110,7 @@ def main():
 
     # Weekly budget status - Professional Portfolio Allocation
     weekly_status = weekly_gate.get_status()
-    print(f"\nWeekly Budget Status:")
+    print("\nWeekly Budget Status:")
     print(f"  Week: {weekly_status['week']}")
     print(f"  Current Exposure: {weekly_status['exposure']['current_pct']} of {weekly_status['exposure']['max_weekly_pct']} max")
     print(f"  Daily Entries Today: {weekly_status['daily']['entries_today']}/{weekly_status['daily']['max_per_day']}")
@@ -122,7 +122,7 @@ def main():
     # === KILL ZONE GATE - Professional Time-Based Trade Blocking ===
     kill_zone_gate = get_kill_zone_gate()
     kz_status = kill_zone_gate.check_can_trade()
-    print(f"\nKill Zone Status:")
+    print("\nKill Zone Status:")
     print(f"  Current Zone: {kz_status.current_zone.value}")
     print(f"  Can Trade: {kz_status.can_trade}")
     print(f"  Reason: {kz_status.reason}")
@@ -155,7 +155,7 @@ def main():
                 watchlist_stocks = watchlist_data.get('watchlist', [])
                 watchlist_symbols = [s['symbol'] for s in watchlist_stocks if s.get('symbol')]
                 print(f"\n{'='*60}")
-                print(f"WATCHLIST-ONLY MODE")
+                print("WATCHLIST-ONLY MODE")
                 print(f"{'='*60}")
                 print(f"Validated watchlist: {len(watchlist_symbols)} stocks")
                 for s in watchlist_stocks[:5]:
@@ -382,7 +382,7 @@ def main():
             print(f"VETO {sym}: {weekly_reason}")
             continue
 
-        decision = construct_decision(sym, 'long' if side=='BUY' else 'short', max_qty, ask)
+        construct_decision(sym, 'long' if side=='BUY' else 'short', max_qty, ask)
 
         # Calculate take profit (2R target)
         risk_per_share = limit_px - float(stop_loss)

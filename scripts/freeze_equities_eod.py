@@ -247,7 +247,7 @@ Output:
     print(f"  Rows:       {len(df):,}")
 
     # Freeze to lake
-    print(f"\nFreezing to data lake...")
+    print("\nFreezing to data lake...")
 
     from data.lake import LakeWriter
 

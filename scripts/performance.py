@@ -316,7 +316,7 @@ def run_live_monitoring(interval: int = 5) -> None:
             # Clear screen (works on most terminals)
             print("\033[2J\033[H", end="")
 
-            print(f"KOBE TRADING SYSTEM - Live Monitor")
+            print("KOBE TRADING SYSTEM - Live Monitor")
             print(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
             print("-" * 40)
 

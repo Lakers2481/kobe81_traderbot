@@ -167,7 +167,7 @@ class FileLock:
                 logger.info(f"Lock acquired: {self.lock_path}")
                 return True
 
-            except (OSError, FileExistsError) as e:
+            except (OSError, FileExistsError):
                 # Lock file already exists
                 if self._fd is not None:
                     try:

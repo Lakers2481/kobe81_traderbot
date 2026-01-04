@@ -200,7 +200,7 @@ def process_outcomes(matched_trades: List[Dict], dry_run: bool = False) -> Dict[
     from cognitive.signal_processor import get_signal_processor
     from cognitive.cognitive_brain import get_cognitive_brain
 
-    processor = get_signal_processor()
+    get_signal_processor()
     brain = get_cognitive_brain()
 
     results = {
@@ -357,11 +357,11 @@ def main():
         print("No closed orders to process.")
         return 0
 
-    print(f"\nLoading hash chain entries...")
+    print("\nLoading hash chain entries...")
     chain_entries = load_hash_chain_entries(args.days)
     print(f"  Found {len(chain_entries)} chain entries")
 
-    print(f"\nMatching orders to cognitive episodes...")
+    print("\nMatching orders to cognitive episodes...")
     matched = match_orders_to_episodes(orders, chain_entries)
     episodes_with_data = [m for m in matched if m.get('episode_id')]
     print(f"  Matched {len(episodes_with_data)} trades with cognitive episodes")
@@ -370,7 +370,7 @@ def main():
         print("No trades with cognitive episodes found.")
         return 0
 
-    print(f"\nProcessing outcomes...")
+    print("\nProcessing outcomes...")
     results = process_outcomes(episodes_with_data, dry_run=args.dry_run)
 
     print(f"\n{'='*60}")
@@ -381,7 +381,7 @@ def main():
     print(f"Errors:    {results['errors']}")
 
     if args.verbose and results['trades']:
-        print(f"\nTrades:")
+        print("\nTrades:")
         for t in results['trades']:
             status = "WIN" if t['won'] else "LOSS"
             print(f"  {t['symbol']}: {status} pnl={t['pnl']:.2f} R={t.get('r_multiple', 'N/A')}")

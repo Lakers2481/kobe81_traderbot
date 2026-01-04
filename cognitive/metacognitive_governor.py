@@ -429,7 +429,6 @@ class MetacognitiveGovernor:
         # Evaluate and apply any active trading policy's cognitive modifications
         active_policy = None
         policy_force_slow_path = False
-        policy_stand_down_on_uncertainty = False
 
         try:
             active_policy = self.policy_generator.evaluate_policy_activation(

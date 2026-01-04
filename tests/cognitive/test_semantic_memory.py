@@ -158,7 +158,7 @@ class TestSemanticMemoryInitialization:
 
         with tempfile.TemporaryDirectory() as tmpdir:
             storage_path = Path(tmpdir) / "semantic_state"
-            memory = SemanticMemory(storage_dir=str(storage_path), auto_persist=False)
+            SemanticMemory(storage_dir=str(storage_path), auto_persist=False)
 
             assert storage_path.exists()
 

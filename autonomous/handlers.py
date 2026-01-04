@@ -204,7 +204,7 @@ def retrain_models(**kwargs) -> Dict[str, Any]:
     results = {"status": "success", "models": {}}
 
     # Check what models need retraining
-    model_dir = Path("models")
+    Path("models")
     for model_name, script in [
         ("ensemble", "scripts/train_ensemble.py"),
         ("hmm", "scripts/train_hmm_regime.py"),
@@ -615,7 +615,6 @@ def discover_unique_patterns(**kwargs) -> Dict[str, Any]:
     import pandas as pd
     import numpy as np
     from pathlib import Path
-    from datetime import datetime
 
     def analyze_consecutive_pattern(df: pd.DataFrame, direction: str = 'down', min_streak: int = 3):
         """Analyze consecutive day patterns and their reversal rates."""
@@ -734,7 +733,6 @@ def weekend_morning_report(**kwargs) -> Dict[str, Any]:
     Generate comprehensive weekend morning report.
     Runs at 8:30 AM Central (9:30 AM ET) on Saturday and Sunday.
     """
-    from datetime import datetime
     from zoneinfo import ZoneInfo
 
     CT = ZoneInfo("America/Chicago")

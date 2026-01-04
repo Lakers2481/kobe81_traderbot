@@ -208,7 +208,7 @@ def compute_robustness_score(mc_results: List[Dict[str, float]], original_pnls: 
     sharpes = [r['sharpe'] for r in mc_results]
     max_dds = [r['max_drawdown'] for r in mc_results]
     win_rates = [r['win_rate'] for r in mc_results]
-    pfs = [r['profit_factor'] for r in mc_results]
+    [r['profit_factor'] for r in mc_results]
 
     # Percentiles
     mc_percentiles = {

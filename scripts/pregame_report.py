@@ -22,7 +22,7 @@ def generate_report():
     print("=" * 80)
     print("KOBE TRADING SYSTEM - PRE-GAME REPORT")
     print(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"Signal Date: 2025-12-31 (Trades Execute: Next Trading Day)")
+    print("Signal Date: 2025-12-31 (Trades Execute: Next Trading Day)")
     print("=" * 80)
     print()
 
@@ -37,7 +37,7 @@ def generate_report():
     print("-" * 40)
     print(f"Total Signals Passed Quality Gate: {len(df)}")
     print(f"Cognitive Approval: All {len(df)} signals ACCEPTED")
-    print(f"Mode: PREVIEW (Holiday - signals for next trading day)")
+    print("Mode: PREVIEW (Holiday - signals for next trading day)")
     print()
 
     print("TOP 3 TRADING OPPORTUNITIES")
@@ -58,13 +58,13 @@ def generate_report():
         print(f"  Risk/Share: ${entry-stop:.2f}")
         print()
 
-        print(f"  SIGNAL QUALITY:")
+        print("  SIGNAL QUALITY:")
         print(f"    Quality Score:   {row.get('quality_score', 0):.1f}")
         print(f"    Quality Tier:    {row.get('quality_tier', 'N/A')}")
         print(f"    Confidence:      {float(row.get('conf_score', 0) or 0)*100:.1f}%")
         print()
 
-        print(f"  TECHNICAL INDICATORS:")
+        print("  TECHNICAL INDICATORS:")
         print(f"    IBS:             {float(row.get('ibs', 0) or 0):.3f}")
         print(f"    RSI(2):          {float(row.get('rsi2', 0) or 0):.1f}")
         sma_ratio = float(row.get('sma20_over_200', 1) or 1)
@@ -73,12 +73,12 @@ def generate_report():
         print(f"    Position in Don: {float(row.get('pos_in_don20', 0) or 0)*100:.1f}%")
         print()
 
-        print(f"  LIQUIDITY:")
+        print("  LIQUIDITY:")
         adv = float(row.get('adv_usd60', 0) or 0)
         print(f"    ADV (60d):       ${adv/1e6:.1f}M daily")
         print()
 
-        print(f"  AI/ML ADJUDICATION:")
+        print("  AI/ML ADJUDICATION:")
         print(f"    Adjudication:    {float(row.get('adjudication_score', 0) or 0):.1f}/100")
         print(f"    Signal Strength: {float(row.get('adj_signal_strength', 0) or 0):.1f}")
         print(f"    Pattern Conf:    {float(row.get('adj_pattern_confluence', 0) or 0):.1f}")
@@ -97,7 +97,7 @@ def generate_report():
         from cognitive.episodic_memory import get_episodic_memory
         mem = get_episodic_memory()
         stats = mem.get_stats()
-        print(f"\n  Episodic Memory:")
+        print("\n  Episodic Memory:")
         print(f"    Total Episodes:    {stats.get('total_episodes', 0)}")
         print(f"    Active Episodes:   {stats.get('active_episodes', 0)}")
         print(f"    Historical WR:     {stats.get('win_rate', 'N/A')}")
@@ -108,7 +108,7 @@ def generate_report():
     try:
         from cognitive.self_model import get_self_model
         sm = get_self_model()
-        print(f"\n  Self Model:")
+        print("\n  Self Model:")
         print(f"    Strengths:  {len(sm.get_strengths())} contexts")
         print(f"    Weaknesses: {len(sm.get_weaknesses())} contexts")
         print(f"    Calibrated: {sm.is_well_calibrated()}")
@@ -118,13 +118,13 @@ def generate_report():
     try:
         from cognitive.knowledge_boundary import KnowledgeBoundary
         from cognitive.episodic_memory import EpisodicMemory
-        kb = KnowledgeBoundary()
+        KnowledgeBoundary()
         # Check episodic support for IBS_RSI
         sig = EpisodicMemory.normalize_context_signature({
             'regime': 'unknown', 'strategy': 'IBS_RSI', 'side': 'long'
         })
         episodic_stats = mem.get_stats_for_signature(sig)
-        print(f"\n  Knowledge Boundary:")
+        print("\n  Knowledge Boundary:")
         print(f"    IBS_RSI Episodic N:  {episodic_stats['n']}")
         print(f"    IBS_RSI Episodic WR: {episodic_stats['win_rate']:.1%}")
         print(f"    Signature:           {sig}")
@@ -153,10 +153,10 @@ def generate_report():
     print("RISK MANAGEMENT")
     print("=" * 80)
 
-    print(f"\n  Per-Order Budget:  $75")
-    print(f"  Daily Budget:      $1,000")
-    print(f"  Position Sizing:   ATR-based (2x ATR stop)")
-    print(f"  Time Stop:         7 bars")
+    print("\n  Per-Order Budget:  $75")
+    print("  Daily Budget:      $1,000")
+    print("  Position Sizing:   ATR-based (2x ATR stop)")
+    print("  Time Stop:         7 bars")
     print(f"  Kill Switch:       {'ACTIVE' if Path('state/KILL_SWITCH').exists() else 'INACTIVE'}")
 
     print()
@@ -178,7 +178,7 @@ def generate_report():
         print(f"    Max Shares:      {max_shares}")
         print(f"    Position Value:  ${position_value:.2f}")
         print(f"    Risk Amount:     ${max_shares * risk_per_share:.2f}")
-        print(f"    Order Type:      IOC LIMIT @ best_ask * 1.001")
+        print("    Order Type:      IOC LIMIT @ best_ask * 1.001")
 
     print()
     print("=" * 80)

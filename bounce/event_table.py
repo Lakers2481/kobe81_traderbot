@@ -54,7 +54,7 @@ def compute_overall_summary(events_df: pd.DataFrame) -> pd.DataFrame:
 
         # Days to recover (recovered only)
         recovered_close = streak_events[streak_events['recovered_7d_close']]
-        recovered_high = streak_events[streak_events['recovered_7d_high']]
+        streak_events[streak_events['recovered_7d_high']]
 
         avg_days_close = recovered_close['days_to_recover_close'].mean() if len(recovered_close) > 0 else np.nan
         median_days_close = recovered_close['days_to_recover_close'].median() if len(recovered_close) > 0 else np.nan

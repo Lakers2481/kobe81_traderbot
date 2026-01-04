@@ -716,7 +716,7 @@ def main() -> None:
                         elif entry.tag == 'SWING_SCANNER':
                             # Skip on early close days (use SWING_SCANNER_EARLY instead)
                             if is_early_close_day():
-                                print(f"  Skipping SWING_SCANNER - early close day (use SWING_SCANNER_EARLY)")
+                                print("  Skipping SWING_SCANNER - early close day (use SWING_SCANNER_EARLY)")
                             else:
                                 rc = do_refresh_top3(args.universe, args.dotenv, args.cap, scan_date)
                                 if send_fn:
@@ -736,7 +736,7 @@ def main() -> None:
                                         now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
                                         send_fn(f"<b>SWING_SCANNER_EARLY</b> [{stamp}] Early close day - swing scan complete")
                                     except Exception:
-                                        send_fn(f"<b>SWING_SCANNER_EARLY</b> Early close day - swing scan complete")
+                                        send_fn("<b>SWING_SCANNER_EARLY</b> Early close day - swing scan complete")
                             else:
                                 pass  # Skip on normal days
                         elif entry.tag == 'POSITION_CLOSE_CHECK_EARLY':
@@ -750,7 +750,7 @@ def main() -> None:
                                         now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
                                         send_fn(f"<b>POSITION_CLOSE_CHECK_EARLY</b> [{stamp}] Early close day - time stops checked")
                                     except Exception:
-                                        send_fn(f"<b>POSITION_CLOSE_CHECK_EARLY</b> Early close day - time stops checked")
+                                        send_fn("<b>POSITION_CLOSE_CHECK_EARLY</b> Early close day - time stops checked")
                             else:
                                 pass  # Skip on normal days
                         elif entry.tag == 'DB_BACKUP':
@@ -863,7 +863,7 @@ def main() -> None:
                                             next_day += timedelta(days=1)
                                         send_fn(f"<b>WATCHLIST READY</b> [{stamp}] Prepared for {next_day}!")
                                     except Exception:
-                                        send_fn(f"<b>WATCHLIST READY</b> Prepared for next trading day!")
+                                        send_fn("<b>WATCHLIST READY</b> Prepared for next trading day!")
 
                         elif entry.tag == 'POST_GAME':
                             # Generate comprehensive POST_GAME briefing with full day analysis
@@ -891,7 +891,7 @@ def main() -> None:
                         elif entry.tag == 'POSITION_CLOSE_CHECK':
                             # Skip on early close days (use POSITION_CLOSE_CHECK_EARLY instead)
                             if is_early_close_day():
-                                print(f"  Skipping POSITION_CLOSE_CHECK - early close day (use POSITION_CLOSE_CHECK_EARLY)")
+                                print("  Skipping POSITION_CLOSE_CHECK - early close day (use POSITION_CLOSE_CHECK_EARLY)")
                             else:
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/position_manager.py'), '--dotenv', args.dotenv])
                                 if send_fn and rc != 0:
@@ -969,7 +969,7 @@ def main() -> None:
                                     now = now_et(); stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
                                     send_fn(f"<b>PREMARKET_VALIDATOR</b> [{stamp}] Watchlist validated (gaps/news checked)")
                                 except Exception:
-                                    send_fn(f"<b>PREMARKET_VALIDATOR</b> Watchlist validated")
+                                    send_fn("<b>PREMARKET_VALIDATOR</b> Watchlist validated")
 
                         # === PREGAME BLUEPRINT (8:15 AM) ===
                         # Comprehensive Pre-Game Blueprint with historical patterns, expected move, evidence
@@ -997,7 +997,7 @@ def main() -> None:
                                     obs_num = entry.tag.split('_')[-1]
                                     send_fn(f"<b>OPENING_RANGE</b> [{stamp}] Observation #{obs_num} (NO TRADES - observing)")
                                 except Exception:
-                                    send_fn(f"<b>OPENING_RANGE</b> Observation recorded (NO TRADES)")
+                                    send_fn("<b>OPENING_RANGE</b> Observation recorded (NO TRADES)")
 
                         # === OVERNIGHT WATCHLIST (3:30 PM) ===
                         # Builds Top 5 watchlist for NEXT trading day
@@ -1017,7 +1017,7 @@ def main() -> None:
                                             next_day += timedelta(days=1)
                                         send_fn(f"<b>OVERNIGHT_WATCHLIST</b> [{stamp}] Top 5 ready for {next_day}")
                                     except Exception:
-                                        send_fn(f"<b>OVERNIGHT_WATCHLIST</b> Top 5 watchlist built for next day")
+                                        send_fn("<b>OVERNIGHT_WATCHLIST</b> Top 5 watchlist built for next day")
 
                         # === END PROFESSIONAL EXECUTION FLOW ===
 
@@ -1081,7 +1081,7 @@ def main() -> None:
                                     '[f.unlink() for f in Path("logs").glob("*.log") '
                                     'if time.time() - f.stat().st_mtime > 30*86400]'])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_LOG_CLEANUP</b> Old logs purged")
+                                    send_fn("<b>HOLIDAY_LOG_CLEANUP</b> Old logs purged")
 
                         # === MORNING: Data Integrity & Prep ===
                         elif entry.tag == 'HOLIDAY_DATA_INTEGRITY':
@@ -1118,7 +1118,7 @@ def main() -> None:
                         elif entry.tag == 'HOLIDAY_RESEARCH_START':
                             if is_market_closed_day():
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_RESEARCH</b> Starting research session...")
+                                    send_fn("<b>HOLIDAY_RESEARCH</b> Starting research session...")
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/research_discover.py'),
                                              '--cap', str(args.cap)])
 
@@ -1127,21 +1127,21 @@ def main() -> None:
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/pattern_scanner.py'),
                                              '--universe', args.universe, '--top', '50'])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_PATTERN_SCAN</b> Pattern scan complete")
+                                    send_fn("<b>HOLIDAY_PATTERN_SCAN</b> Pattern scan complete")
 
                         elif entry.tag == 'HOLIDAY_ALPHA_DISCOVERY':
                             if is_market_closed_day():
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/run_alpha_screener.py'),
                                              '--universe', args.universe, '--top', '20'])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_ALPHA_DISCOVERY</b> Alpha screening complete")
+                                    send_fn("<b>HOLIDAY_ALPHA_DISCOVERY</b> Alpha screening complete")
 
                         elif entry.tag == 'HOLIDAY_EDGE_ANALYSIS':
                             if is_market_closed_day():
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/cognitive_learn.py'),
                                              '--dotenv', args.dotenv, '--edge-discovery'])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_EDGE_ANALYSIS</b> Edge analysis complete")
+                                    send_fn("<b>HOLIDAY_EDGE_ANALYSIS</b> Edge analysis complete")
 
                         # === BACKTESTING PHASE: Validation ===
                         elif entry.tag == 'HOLIDAY_BACKTEST_QUICK':
@@ -1152,7 +1152,7 @@ def main() -> None:
                                              '--start', (datetime.now(ET) - timedelta(days=90)).strftime('%Y-%m-%d'),
                                              '--end', datetime.now(ET).strftime('%Y-%m-%d')])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_BACKTEST_QUICK</b> Quick validation complete")
+                                    send_fn("<b>HOLIDAY_BACKTEST_QUICK</b> Quick validation complete")
 
                         elif entry.tag == 'HOLIDAY_WF_TEST':
                             if is_market_closed_day():
@@ -1163,14 +1163,14 @@ def main() -> None:
                                              '--end', datetime.now(ET).strftime('%Y-%m-%d'),
                                              '--train-days', '126', '--test-days', '21'])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_WF_TEST</b> Walk-forward test complete")
+                                    send_fn("<b>HOLIDAY_WF_TEST</b> Walk-forward test complete")
 
                         elif entry.tag == 'HOLIDAY_STRATEGY_COMPARE':
                             if is_market_closed_day():
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/strategy_showdown.py'),
                                              '--universe', args.universe, '--cap', '100'])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_STRATEGY_COMPARE</b> Strategy comparison complete")
+                                    send_fn("<b>HOLIDAY_STRATEGY_COMPARE</b> Strategy comparison complete")
 
                         elif entry.tag == 'HOLIDAY_PARAM_DRIFT':
                             if is_market_closed_day():
@@ -1178,40 +1178,40 @@ def main() -> None:
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/param_drift_check.py'),
                                              '--dotenv', args.dotenv])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_PARAM_DRIFT</b> Drift check complete")
+                                    send_fn("<b>HOLIDAY_PARAM_DRIFT</b> Drift check complete")
 
                         # === MIDDAY: Optimization & Tuning ===
                         elif entry.tag == 'HOLIDAY_OPTIMIZE_START':
                             if is_market_closed_day():
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_OPTIMIZE</b> Starting optimization phase...")
+                                    send_fn("<b>HOLIDAY_OPTIMIZE</b> Starting optimization phase...")
 
                         elif entry.tag == 'HOLIDAY_GRID_SEARCH':
                             if is_market_closed_day():
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/grid_search_params.py'),
                                              '--universe', args.universe, '--cap', '100'])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_GRID_SEARCH</b> Grid search complete")
+                                    send_fn("<b>HOLIDAY_GRID_SEARCH</b> Grid search complete")
 
                         elif entry.tag == 'HOLIDAY_THRESHOLD_TUNE':
                             if is_market_closed_day():
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/tune_thresholds.py'),
                                              '--dotenv', args.dotenv])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_THRESHOLD_TUNE</b> Threshold tuning complete")
+                                    send_fn("<b>HOLIDAY_THRESHOLD_TUNE</b> Threshold tuning complete")
 
                         elif entry.tag == 'HOLIDAY_RISK_CALIBRATE':
                             if is_market_closed_day():
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/calibrate_risk.py'),
                                              '--dotenv', args.dotenv])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_RISK_CALIBRATE</b> Risk calibration complete")
+                                    send_fn("<b>HOLIDAY_RISK_CALIBRATE</b> Risk calibration complete")
 
                         # === AFTERNOON: ML Training ===
                         elif entry.tag == 'HOLIDAY_ML_TRAIN':
                             if is_market_closed_day():
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_ML_TRAIN</b> Starting ML training...")
+                                    send_fn("<b>HOLIDAY_ML_TRAIN</b> Starting ML training...")
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/train_meta.py'),
                                              '--wfdir', args.wfdir])
 
@@ -1220,21 +1220,21 @@ def main() -> None:
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/train_meta.py'),
                                              '--wfdir', args.wfdir, '--retrain'])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_META_RETRAIN</b> Meta model retrained")
+                                    send_fn("<b>HOLIDAY_META_RETRAIN</b> Meta model retrained")
 
                         elif entry.tag == 'HOLIDAY_ENSEMBLE_UPDATE':
                             if is_market_closed_day():
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/update_ensemble.py'),
                                              '--dotenv', args.dotenv])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_ENSEMBLE_UPDATE</b> Ensemble updated")
+                                    send_fn("<b>HOLIDAY_ENSEMBLE_UPDATE</b> Ensemble updated")
 
                         elif entry.tag == 'HOLIDAY_HMM_REGIME':
                             if is_market_closed_day():
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/recalibrate_hmm.py'),
                                              '--dotenv', args.dotenv])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_HMM_REGIME</b> HMM regime recalibrated")
+                                    send_fn("<b>HOLIDAY_HMM_REGIME</b> HMM regime recalibrated")
 
                         # === EVENING: Cognitive Learning ===
                         elif entry.tag == 'HOLIDAY_COGNITIVE_REFLECT':
@@ -1242,28 +1242,28 @@ def main() -> None:
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/cognitive_learn.py'),
                                              '--dotenv', args.dotenv, '--consolidate', 'weekly'])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_COGNITIVE_REFLECT</b> Cognitive reflection complete")
+                                    send_fn("<b>HOLIDAY_COGNITIVE_REFLECT</b> Cognitive reflection complete")
 
                         elif entry.tag == 'HOLIDAY_HYPOTHESIS_TEST':
                             if is_market_closed_day():
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/cognitive_learn.py'),
                                              '--dotenv', args.dotenv, '--test-hypotheses'])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_HYPOTHESIS_TEST</b> Hypothesis testing complete")
+                                    send_fn("<b>HOLIDAY_HYPOTHESIS_TEST</b> Hypothesis testing complete")
 
                         elif entry.tag == 'HOLIDAY_MEMORY_CONSOLIDATE':
                             if is_market_closed_day():
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/cognitive_learn.py'),
                                              '--dotenv', args.dotenv, '--consolidate', 'memory'])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_MEMORY_CONSOLIDATE</b> Memory consolidated")
+                                    send_fn("<b>HOLIDAY_MEMORY_CONSOLIDATE</b> Memory consolidated")
 
                         elif entry.tag == 'HOLIDAY_SELF_CALIBRATE':
                             if is_market_closed_day():
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/cognitive_learn.py'),
                                              '--dotenv', args.dotenv, '--self-calibrate'])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_SELF_CALIBRATE</b> Self-model calibrated")
+                                    send_fn("<b>HOLIDAY_SELF_CALIBRATE</b> Self-model calibrated")
 
                         # === NIGHT: Simulation & Stress Test ===
                         elif entry.tag == 'HOLIDAY_MONTE_CARLO':
@@ -1271,28 +1271,28 @@ def main() -> None:
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/monte_carlo_sim.py'),
                                              '--universe', args.universe, '--simulations', '10000'])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_MONTE_CARLO</b> Monte Carlo simulation complete")
+                                    send_fn("<b>HOLIDAY_MONTE_CARLO</b> Monte Carlo simulation complete")
 
                         elif entry.tag == 'HOLIDAY_STRESS_TEST':
                             if is_market_closed_day():
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/stress_test.py'),
                                              '--dotenv', args.dotenv])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_STRESS_TEST</b> Stress testing complete")
+                                    send_fn("<b>HOLIDAY_STRESS_TEST</b> Stress testing complete")
 
                         elif entry.tag == 'HOLIDAY_VAR_CALC':
                             if is_market_closed_day():
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/calculate_var.py'),
                                              '--dotenv', args.dotenv])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_VAR_CALC</b> VaR recalculated")
+                                    send_fn("<b>HOLIDAY_VAR_CALC</b> VaR recalculated")
 
                         elif entry.tag == 'HOLIDAY_DRAWDOWN_ANALYSIS':
                             if is_market_closed_day():
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/drawdown_analysis.py'),
                                              '--dotenv', args.dotenv])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_DRAWDOWN_ANALYSIS</b> Drawdown analysis complete")
+                                    send_fn("<b>HOLIDAY_DRAWDOWN_ANALYSIS</b> Drawdown analysis complete")
 
                         # === LATE NIGHT: Prep for Next Trading Day ===
                         elif entry.tag == 'HOLIDAY_NEXT_DAY_PREP':
@@ -1311,20 +1311,20 @@ def main() -> None:
                                              '--cap', str(args.cap), '--deterministic', '--top3',
                                              '--dotenv', args.dotenv, '--preview'])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_WATCHLIST_BUILD</b> Watchlist ready")
+                                    send_fn("<b>HOLIDAY_WATCHLIST_BUILD</b> Watchlist ready")
 
                         elif entry.tag == 'HOLIDAY_PREVIEW_SCAN':
                             if is_market_closed_day():
                                 rc = do_refresh_top3(args.universe, args.dotenv, args.cap,
                                                      datetime.now(ET).strftime('%Y-%m-%d'))
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_PREVIEW_SCAN</b> Preview scan complete")
+                                    send_fn("<b>HOLIDAY_PREVIEW_SCAN</b> Preview scan complete")
 
                         elif entry.tag == 'HOLIDAY_FINAL_BACKUP':
                             if is_market_closed_day():
                                 rc = run_cmd([sys.executable, str(ROOT / 'scripts/backup_state.py')])
                                 if send_fn:
-                                    send_fn(f"<b>HOLIDAY_FINAL_BACKUP</b> Final backup complete")
+                                    send_fn("<b>HOLIDAY_FINAL_BACKUP</b> Final backup complete")
 
                         elif entry.tag == 'HOLIDAY_COMPLETE':
                             if is_market_closed_day():

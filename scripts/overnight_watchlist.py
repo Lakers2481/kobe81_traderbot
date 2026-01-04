@@ -301,7 +301,7 @@ def main():
 
     print()
     print(f"Generated: {result['generated_at']}")
-    print(f"Saved to: state/watchlist/next_day.json")
+    print("Saved to: state/watchlist/next_day.json")
 
     return 0
 

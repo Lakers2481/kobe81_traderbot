@@ -176,7 +176,7 @@ class PatternClusteringEngine:
                 continue
 
             # Calculate cluster statistics
-            pnl_values = cluster_trades[pnl_col].values if pnl_col in cluster_trades.columns else []
+            cluster_trades[pnl_col].values if pnl_col in cluster_trades.columns else []
             stats = calculate_cluster_stats(cluster_trades, pnl_col)
 
             # Calculate feature importance (distance from overall centroid)

@@ -133,7 +133,7 @@ class MacroEventCalendar:
                         event_type=MacroEventType.FOMC,
                         event_date=fomc_date,
                         event_time=time(14, 0),  # FOMC typically announces at 2 PM ET
-                        description=f"FOMC Meeting Decision",
+                        description="FOMC Meeting Decision",
                         expected_volatility="high",
                     )
         return None

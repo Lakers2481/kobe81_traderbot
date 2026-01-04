@@ -55,7 +55,7 @@ class TestHashChain:
 
         # Verification should pass
         is_valid = hash_chain.verify_chain()
-        assert is_valid == True
+        assert is_valid
 
     def test_empty_chain_is_valid(self, tmp_path, monkeypatch):
         """Test that empty/non-existent chain is valid."""
@@ -65,7 +65,7 @@ class TestHashChain:
         monkeypatch.setattr(hash_chain, 'CHAIN_FILE', chain_file)
 
         # Non-existent file should return True
-        assert hash_chain.verify_chain() == True
+        assert hash_chain.verify_chain()
 
     def test_tamper_detection(self, tmp_path, monkeypatch):
         """Test that tampering is detected."""
@@ -84,7 +84,7 @@ class TestHashChain:
 
         # Verification should fail
         is_valid = hash_chain.verify_chain()
-        assert is_valid == False
+        assert not is_valid
 
 
 class TestStructuredLog:

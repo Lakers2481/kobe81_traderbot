@@ -417,7 +417,6 @@ def main():
 
         all_healthy = True
         for check in checks:
-            status = "OK" if check.healthy else "FAIL"
             icon = "[OK]" if check.healthy else "[!!]"
             print(f"{icon} {check.name}: {check.message}")
             if not check.healthy:

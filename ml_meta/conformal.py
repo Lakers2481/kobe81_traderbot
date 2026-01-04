@@ -146,7 +146,7 @@ class ConformalPredictor:
 
         # Compute threshold at (1 - alpha) quantile
         # For 90% coverage, we use the 90th percentile of residuals
-        alpha = 1 - self.target_coverage
+        1 - self.target_coverage
         n = len(self._nonconformity_scores)
 
         # Finite sample correction

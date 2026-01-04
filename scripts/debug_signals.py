@@ -27,7 +27,7 @@ print(f"Date range: {combined['timestamp'].min()} to {combined['timestamp'].max(
 
 # Check parameters
 params = DualStrategyParams()
-print(f"\n=== PARAMETERS ===")
+print("\n=== PARAMETERS ===")
 print(f"IBS entry threshold: < {params.ibs_entry}")
 print(f"RSI entry threshold: < {params.rsi_entry}")
 print(f"Min price: ${params.min_price}")

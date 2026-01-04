@@ -292,7 +292,7 @@ Before resuming:
                         print(f"  {activated} -> {deactivated}")
                         print(f"    Reason: {reason}")
                     except Exception:
-                        print(f"  (unparseable entry)")
+                        print("  (unparseable entry)")
         return
 
     # Check current status

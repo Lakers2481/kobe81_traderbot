@@ -357,7 +357,7 @@ def print_results(results: List[Dict[str, Any]], verbose: bool = False) -> int:
                         else:
                             print(f"    - {entry}")
                 elif value:
-                    print(f"    (use --verbose to see all entries)")
+                    print("    (use --verbose to see all entries)")
             elif isinstance(value, dict):
                 print(f"  {key}:")
                 for k, v in value.items():

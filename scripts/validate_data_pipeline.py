@@ -110,7 +110,7 @@ class DataQualityValidator:
         # Test Polygon connection with SPY
         if polygon_key:
             try:
-                cfg = PolygonConfig(api_key=polygon_key)
+                PolygonConfig(api_key=polygon_key)
                 test_url = f"https://api.polygon.io/v2/aggs/ticker/SPY/range/1/day/2024-01-01/2024-01-05?apiKey={polygon_key}"
                 response = requests.get(test_url, timeout=10)
 
@@ -555,8 +555,8 @@ class DataQualityValidator:
                     print(f"  WARN: Cannot validate {vix_symbol}: {str(e)}")
 
         if not vix_available:
-            print(f"  CRITICAL: No valid VIX data found! Position sizing will fail!")
-            print(f"  ACTION: HALT - Fetch VIX data before trading")
+            print("  CRITICAL: No valid VIX data found! Position sizing will fail!")
+            print("  ACTION: HALT - Fetch VIX data before trading")
 
     def _update_counts(self, status: str):
         """Update validation counters"""

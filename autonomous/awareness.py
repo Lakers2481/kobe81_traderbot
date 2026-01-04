@@ -546,13 +546,13 @@ def get_context(dt: Optional[datetime] = None) -> MarketContext:
 if __name__ == "__main__":
     # Demo
     ctx = get_context()
-    print(f"Current Context:")
+    print("Current Context:")
     print(f"  Time: {ctx.timestamp}")
     print(f"  Phase: {ctx.phase.value}")
     print(f"  Season: {ctx.season.value}")
     print(f"  Work Mode: {ctx.work_mode.value}")
     print(f"  Market Open: {ctx.is_market_open}")
     print(f"  Trading Allowed: {ctx.trading_allowed}")
-    print(f"  Recommended Actions:")
+    print("  Recommended Actions:")
     for action in ctx.recommended_actions:
         print(f"    - {action}")

@@ -559,7 +559,6 @@ def print_underwater_chart(analyzer: DrawdownAnalyzer) -> None:
     height = 15
 
     min_dd = dd.min()
-    max_dd = 0
 
     if min_dd >= 0:
         print("  No drawdowns to display - portfolio at highs!")

@@ -204,7 +204,7 @@ def validate_symbol_history(
                 else:
                     results["insufficient"] += 1
                     results["insufficient_symbols"].append((sym, round(years, 2)))
-        except Exception as e:
+        except Exception:
             results["errors"] += 1
             results["no_data_symbols"].append(f"{sym} (error)")
 

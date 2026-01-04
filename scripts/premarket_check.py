@@ -151,7 +151,7 @@ def check_corporate_actions(symbols: List[str], target_date: date) -> List[Dict]
 
     # Check splits
     try:
-        url = f"https://api.polygon.io/v3/reference/splits"
+        url = "https://api.polygon.io/v3/reference/splits"
         params = {
             "execution_date": date_str,
             "apiKey": api_key,
@@ -175,7 +175,7 @@ def check_corporate_actions(symbols: List[str], target_date: date) -> List[Dict]
 
     # Check dividends
     try:
-        url = f"https://api.polygon.io/v3/reference/dividends"
+        url = "https://api.polygon.io/v3/reference/dividends"
         params = {
             "ex_dividend_date": date_str,
             "apiKey": api_key,

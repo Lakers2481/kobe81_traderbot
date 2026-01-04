@@ -7,7 +7,8 @@ from pathlib import Path as _P
 
 import pandas as pd
 
-import sys, os
+import sys
+import os
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from strategies.registry import get_production_scanner

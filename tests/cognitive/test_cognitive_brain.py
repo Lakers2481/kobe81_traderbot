@@ -22,7 +22,7 @@ class TestCognitiveBrainInitialization:
         brain = CognitiveBrain()
         assert brain.min_confidence_to_act == 0.45
         assert brain.max_processing_time_ms == 5000
-        assert brain._initialized == False
+        assert not brain._initialized
         assert brain._decision_count == 0
 
     def test_custom_initialization(self):
@@ -85,7 +85,7 @@ class TestCognitiveBrainDeliberation:
 
         assert decision is not None
         assert decision.decision_type == DecisionType.ACT
-        assert decision.should_act == True
+        assert decision.should_act
         assert decision.confidence >= 0.5
         assert decision.episode_id is not None
         assert len(decision.reasoning_trace) > 0
@@ -111,7 +111,7 @@ class TestCognitiveBrainDeliberation:
         )
 
         assert decision.decision_type == DecisionType.STAND_DOWN
-        assert decision.should_act == False
+        assert not decision.should_act
         assert decision.action is None
 
     def test_deliberation_increments_decision_count(self):
@@ -310,7 +310,7 @@ class TestCognitiveBrainIntrospection:
 
         status = brain.get_status()
 
-        assert status['initialized'] == True
+        assert status['initialized']
         assert status['decision_count'] >= 1
         assert 'components' in status
         assert 'workspace' in status['components']
@@ -386,7 +386,7 @@ class TestCognitiveDecision:
         d = decision.to_dict()
 
         assert d['decision_type'] == 'act'
-        assert d['should_act'] == True
+        assert d['should_act']
         assert d['confidence'] == 0.8
         assert d['episode_id'] == 'test-123'
         assert len(d['reasoning_trace']) == 2

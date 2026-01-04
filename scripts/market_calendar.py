@@ -120,7 +120,7 @@ def show_today():
     print(f"\n=== Market Status: {now.strftime('%A, %B %d, %Y')} ===\n")
 
     if closed:
-        print(f"  Status: CLOSED")
+        print("  Status: CLOSED")
         print(f"  Reason: {reason}")
         # Find next open day
         next_day = now + timedelta(days=1)
@@ -136,15 +136,15 @@ def show_today():
         # Current session
         current_time = now.time()
         if current_time < PRE_MARKET_OPEN:
-            print(f"\n  Current Session: Pre-Pre-Market (closed)")
+            print("\n  Current Session: Pre-Pre-Market (closed)")
         elif current_time < MARKET_OPEN:
-            print(f"\n  Current Session: Pre-Market")
+            print("\n  Current Session: Pre-Market")
         elif current_time < market_close:
-            print(f"\n  Current Session: Regular Trading")
+            print("\n  Current Session: Regular Trading")
         elif current_time < AFTER_HOURS_CLOSE:
-            print(f"\n  Current Session: After Hours")
+            print("\n  Current Session: After Hours")
         else:
-            print(f"\n  Current Session: Closed")
+            print("\n  Current Session: Closed")
 
 
 def show_week():
@@ -153,7 +153,7 @@ def show_week():
     # Find Monday of current week
     monday = today - timedelta(days=today.weekday())
 
-    print(f"\n=== This Week's Market Schedule ===\n")
+    print("\n=== This Week's Market Schedule ===\n")
 
     for i in range(7):
         day = datetime.combine(monday + timedelta(days=i), time(0, 0))

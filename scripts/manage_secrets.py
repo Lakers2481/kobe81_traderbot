@@ -182,7 +182,7 @@ def validate_all_secrets():
         status = "[OK]" if telegram_result["valid"] else "[FAIL]"
         print(f"  {status} {telegram_result['message']}")
     else:
-        print(f"  [SKIP] Not configured")
+        print("  [SKIP] Not configured")
 
     # Summary
     required_valid = polygon_result["valid"] and alpaca_result["valid"]
@@ -206,13 +206,13 @@ def test_data_access():
                 data = resp.json()
                 if data.get("results"):
                     bar = data["results"][0]
-                    print(f"Polygon data test:")
-                    print(f"  Symbol: AAPL")
+                    print("Polygon data test:")
+                    print("  Symbol: AAPL")
                     print(f"  Close: ${bar.get('c', 'N/A')}")
                     print(f"  Volume: {bar.get('v', 'N/A'):,}")
-                    print(f"  [OK] Data fetch successful")
+                    print("  [OK] Data fetch successful")
                 else:
-                    print(f"  [WARN] No data returned")
+                    print("  [WARN] No data returned")
         except Exception as e:
             print(f"  [FAIL] Error: {e}")
 
@@ -230,9 +230,9 @@ def test_data_access():
             resp = requests.get(url, headers=headers, timeout=10)
             if resp.status_code == 200:
                 positions = resp.json()
-                print(f"\nAlpaca positions test:")
+                print("\nAlpaca positions test:")
                 print(f"  Open positions: {len(positions)}")
-                print(f"  [OK] Broker connection successful")
+                print("  [OK] Broker connection successful")
         except Exception as e:
             print(f"\n  [FAIL] Broker error: {e}")
 

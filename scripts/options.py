@@ -237,7 +237,7 @@ def main() -> None:
 
     if not args.snapshot:
         # Fetch contract metadata
-        print(f"\nFetching options contracts...")
+        print("\nFetching options contracts...")
         print(f"  Expiry range: {expiry_gte} to {expiry_lte}")
         if args.type:
             print(f"  Type filter: {args.type}")

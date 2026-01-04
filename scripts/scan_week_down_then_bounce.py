@@ -189,7 +189,7 @@ def load_stock_data(symbol: str) -> Optional[pd.DataFrame]:
 
         return df
 
-    except Exception as e:
+    except Exception:
         return None
 
 
@@ -897,7 +897,7 @@ def print_console_summary(results: Dict, output_paths: Dict):
 
     print("UNIVERSE VERIFICATION:")
     print(f"  Total Stocks: {len(results['symbols'])} (EXACT 900)")
-    print(f"  Magnificent 7: ALL PRESENT")
+    print("  Magnificent 7: ALL PRESENT")
     print(f"  Excluded: {len(results['excluded_symbols'])} (insufficient data)")
     print()
 

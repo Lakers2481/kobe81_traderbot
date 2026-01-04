@@ -371,10 +371,10 @@ def start_dashboard(port: int):
         with open(PID_FILE) as f:
             old_pid = f.read().strip()
         print(f"Dashboard may already be running (PID: {old_pid})")
-        print(f"Use --stop to stop it first, or --status to check")
+        print("Use --stop to stop it first, or --status to check")
         return
 
-    print(f"\n=== Starting Kobe Dashboard ===\n")
+    print("\n=== Starting Kobe Dashboard ===\n")
     print(f"Starting server on http://localhost:{port}")
 
     # Save PID
@@ -424,7 +424,7 @@ def show_status():
     if PID_FILE.exists():
         with open(PID_FILE) as f:
             pid = f.read().strip()
-        print(f"Status: RUNNING")
+        print("Status: RUNNING")
         print(f"PID: {pid}")
 
         # Try to check if process is alive

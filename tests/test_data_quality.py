@@ -227,7 +227,7 @@ class TestDataQualityReport:
         d = report.to_dict()
 
         assert d['dataset_id'] == 'test'
-        assert d['passed'] == True
+        assert d['passed']
         assert d['quality_level'] == 'good'
 
     def test_report_save_load(self):

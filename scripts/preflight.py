@@ -50,7 +50,7 @@ def check_quotes_api() -> bool:
             print('  Quotes API: No AAPL quote data returned')
             return False
 
-        print(f'  Quotes API OK (AAPL quote available)')
+        print('  Quotes API OK (AAPL quote available)')
         return True
     except Exception as e:
         print(f'  Quotes API error: {e}')

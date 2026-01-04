@@ -156,7 +156,7 @@ def check_corporate_actions(symbol: str, target_date: date) -> Dict[str, Any]:
 
     # Check splits
     try:
-        url = f"https://api.polygon.io/v3/reference/splits"
+        url = "https://api.polygon.io/v3/reference/splits"
         params = {
             "ticker": symbol,
             "execution_date": date_str,
@@ -174,7 +174,7 @@ def check_corporate_actions(symbol: str, target_date: date) -> Dict[str, Any]:
 
     # Check dividends
     try:
-        url = f"https://api.polygon.io/v3/reference/dividends"
+        url = "https://api.polygon.io/v3/reference/dividends"
         params = {
             "ticker": symbol,
             "ex_dividend_date": date_str,

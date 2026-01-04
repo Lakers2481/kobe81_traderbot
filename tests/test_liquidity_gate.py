@@ -270,7 +270,7 @@ class TestLiquidityCheck:
         d = check.to_dict()
 
         assert d['symbol'] == 'TEST'
-        assert d['passed'] == True
+        assert d['passed']
         assert d['adv_usd'] == 1_000_000
         assert 'checked_at' in d
 

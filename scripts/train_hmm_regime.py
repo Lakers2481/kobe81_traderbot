@@ -441,7 +441,7 @@ def main():
 
     # Analyze regimes
     logger.info("\n[4/4] Analyzing regimes...")
-    regime_df = analyze_regimes(features, model, state_labels)
+    analyze_regimes(features, model, state_labels)
 
     # Save model
     save_model(

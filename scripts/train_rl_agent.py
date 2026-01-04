@@ -51,7 +51,7 @@ def load_training_data(
                 price_data[sym] = df
                 if (i + 1) % 10 == 0:
                     print(f"  Loaded {i+1}/{len(symbols)} symbols...")
-        except Exception as e:
+        except Exception:
             pass  # Skip failed symbols
 
     print(f"Loaded data for {len(price_data)} symbols")
@@ -92,7 +92,7 @@ def train_agent(
     )
 
     print(f"\nTraining {algorithm} agent for {timesteps} timesteps...")
-    print(f"  Reward type: SORTINO (downside volatility only)")
+    print("  Reward type: SORTINO (downside volatility only)")
     print(f"  Learning rate: {learning_rate}")
 
     # Train
@@ -136,7 +136,7 @@ def main():
     print("=" * 60)
     print(f"Algorithm:  {args.algorithm}")
     print(f"Timesteps:  {args.timesteps}")
-    print(f"Reward:     SORTINO (downside volatility)")
+    print("Reward:     SORTINO (downside volatility)")
     print(f"Universe:   {args.cap} symbols")
     print(f"Period:     {args.start} to {args.end}")
     print("=" * 60)
@@ -169,7 +169,7 @@ def main():
 
     metrics = result.get('metrics', {})
     if isinstance(metrics, dict) and 'return_pct' in metrics:
-        print(f"\nEvaluation Results:")
+        print("\nEvaluation Results:")
         print(f"  Return:    {metrics.get('return_pct', 0):.2f}%")
         print(f"  Win Rate:  {metrics.get('win_rate', 0)*100:.1f}%")
         print(f"  Trades:    {metrics.get('n_trades', 0)}")

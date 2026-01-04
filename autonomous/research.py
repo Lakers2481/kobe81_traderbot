@@ -305,7 +305,7 @@ class ResearchEngine:
             # INTEGRITY GUARDIAN - Comprehensive validation
             # This catches EVERYTHING: bounds, consistency, data integrity
             if not validate_before_use(result, context=f"experiment:{experiment.id}"):
-                logger.error(f"INTEGRITY FAILED: Result rejected by IntegrityGuardian")
+                logger.error("INTEGRITY FAILED: Result rejected by IntegrityGuardian")
                 experiment.status = "rejected"
                 experiment.result = {
                     "status": "rejected",
@@ -475,7 +475,7 @@ class ResearchEngine:
 
                         all_trades.append(pnl_pct)
 
-                except Exception as e:
+                except Exception:
                     continue
 
             if not all_trades:
@@ -723,7 +723,7 @@ class ResearchEngine:
             cache_dir = Path("data/cache")
             if cache_dir.exists():
                 cache_files = list(cache_dir.glob("*.csv"))
-                total_size_mb = sum(f.stat().st_size for f in cache_files) / (1024 * 1024)
+                sum(f.stat().st_size for f in cache_files) / (1024 * 1024)
 
                 # Check for stale files
                 cutoff = datetime.now() - timedelta(days=30)
@@ -852,7 +852,7 @@ class ResearchEngine:
                 "timestamp": datetime.now(ET).isoformat(),
             }
             if not validate_before_use(integrity_result, context=f"pf_experiment:{exp.id}"):
-                logger.error(f"PF INTEGRITY FAILED: Result rejected by IntegrityGuardian")
+                logger.error("PF INTEGRITY FAILED: Result rejected by IntegrityGuardian")
                 exp.status = "rejected"
                 exp.result = {
                     "status": "rejected",
@@ -1181,6 +1181,6 @@ if __name__ == "__main__":
 
     # Summary
     summary = engine.get_research_summary()
-    print(f"\nSummary:")
+    print("\nSummary:")
     print(f"  Experiments: {summary['total_experiments']}")
     print(f"  Discoveries: {summary['discoveries']}")

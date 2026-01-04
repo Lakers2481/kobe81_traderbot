@@ -259,14 +259,14 @@ def print_suggestions(suggestions: List[Dict[str, Any]]) -> None:
         print(f"\n{i}. {pos['symbol']}")
         print(f"   Position: {pos['qty']} shares, ${pos['market_value']:.2f} value")
         print(f"   Current Price: ${pos['current_price']:.2f}")
-        print(f"\n   RECOMMENDED: Protective Put")
+        print("\n   RECOMMENDED: Protective Put")
         print(f"   Strike: ${put['strike']:.2f} ({put['strike_pct']:.0%} of current)")
         print(f"   Contracts: {put['contracts']}")
         print(f"   Estimated Cost: ${put['total_cost']:.2f}")
         print(f"   Protection Value: ${put['protection_value']:.2f}")
         print(f"   Note: {put['note']}")
 
-        print(f"\n   Alternative Hedges:")
+        print("\n   Alternative Hedges:")
         for alt in sug["alternative_hedges"]:
             print(f"   - {alt['type'].upper()}: {alt['description']}")
             print(f"     ({alt['note']})")

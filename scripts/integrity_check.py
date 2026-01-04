@@ -694,7 +694,7 @@ def print_report(reports: List[IntegrityReport]) -> int:
         # Group issues by severity
         critical_issues = [i for i in report.issues if i.severity == 'CRITICAL']
         warning_issues = [i for i in report.issues if i.severity == 'WARNING']
-        info_issues = [i for i in report.issues if i.severity == 'INFO']
+        [i for i in report.issues if i.severity == 'INFO']
 
         if critical_issues:
             print("  CRITICAL ISSUES:")

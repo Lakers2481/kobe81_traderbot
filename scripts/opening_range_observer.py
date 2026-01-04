@@ -139,7 +139,6 @@ def observe_opening_range(dotenv_path: str = "./.env") -> Dict:
             observations.append(obs)
 
             # Log observation
-            icon = "🟢" if strength == "STRONG" else "🔴" if strength == "WEAK" else "⚪"
             # Use ASCII for Windows compatibility
             icon_ascii = "[+]" if strength == "STRONG" else "[-]" if strength == "WEAK" else "[ ]"
             logger.info(f"  {icon_ascii} {symbol}: ${current_price:.2f} ({change_pct:+.1%}) - {strength}")
@@ -189,12 +188,12 @@ def observe_opening_range(dotenv_path: str = "./.env") -> Dict:
     with open(or_path, 'w') as f:
         json.dump(or_data, f, indent=2, default=str)
 
-    logger.info(f"")
+    logger.info("")
     logger.info(f"Opening Range Summary: {strong} strong, {neutral} neutral, {weak} weak")
     logger.info(f"Market Bias: {or_data['latest_summary']['bias']}")
-    logger.info(f"")
+    logger.info("")
     logger.info(f"Saved to: {or_path}")
-    logger.info(f"")
+    logger.info("")
     logger.info("⏳ Primary execution window opens at 10:00 AM")
 
     return {
@@ -260,7 +259,7 @@ def main():
         print(json.dumps(insights, indent=2, default=str))
         return 0
 
-    result = observe_opening_range(dotenv_path=args.dotenv)
+    observe_opening_range(dotenv_path=args.dotenv)
 
     print()
     print("=" * 60)

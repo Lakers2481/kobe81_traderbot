@@ -208,7 +208,7 @@ def analyze_factor_exposure(positions: List[Dict]):
     print("  - Volatility: 30-day realized volatility")
     print("  - Quality: ROE, debt ratios")
 
-    print(f"\nPortfolio Summary:")
+    print("\nPortfolio Summary:")
     print(f"  Positions: {total_positions}")
     print(f"  Total Value: ${total_value:,.0f}")
 
@@ -253,7 +253,7 @@ def main():
 
     positions = load_positions()
 
-    print(f"\n=== Kobe Portfolio Exposure Analysis ===")
+    print("\n=== Kobe Portfolio Exposure Analysis ===")
     print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"Positions: {len(positions)}")
 

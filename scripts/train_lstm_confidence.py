@@ -193,7 +193,7 @@ def train_model(
         early_stopping_patience=15,
     )
 
-    logger.info(f"Creating LSTM model with config:")
+    logger.info("Creating LSTM model with config:")
     logger.info(f"  lookback_bars: {lookback}")
     logger.info(f"  n_features: {n_features}")
     logger.info(f"  lstm_units: [{config.lstm_units_1}, {config.lstm_units_2}]")
@@ -221,7 +221,7 @@ def train_model(
     final_loss = history.get('loss', [0])[-1]
     final_val_loss = history.get('val_loss', [0])[-1] if 'val_loss' in history else 0
 
-    logger.info(f"Training complete!")
+    logger.info("Training complete!")
     logger.info(f"  Final loss: {final_loss:.4f}")
     logger.info(f"  Final val_loss: {final_val_loss:.4f}")
     logger.info(f"  Model saved to: {output_path}")

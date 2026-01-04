@@ -133,7 +133,7 @@ def main():
 
     # Setup logging
     setup_logging(args.log_level)
-    logger = logging.getLogger(__name__)
+    logging.getLogger(__name__)
 
     # Create brain
     brain = AutonomousBrain()

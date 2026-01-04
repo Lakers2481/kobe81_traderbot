@@ -149,7 +149,7 @@ def _generate_outcome_tweet(
     """Generate post-trade outcome tweet."""
     symbol = signal.get('symbol', '???')
     side = signal.get('side', 'long').upper()
-    entry = signal.get('entry_price', 0)
+    signal.get('entry_price', 0)
 
     pnl = outcome.get('pnl', 0)
     pnl_pct = outcome.get('pnl_pct', 0)

@@ -400,7 +400,7 @@ class StrategyFoundry:
                 return -1.0  # Penalize strategies with too few trades
 
             wins = (signal_returns > 0).sum()
-            losses = (signal_returns <= 0).sum()
+            (signal_returns <= 0).sum()
             win_rate = wins / n_trades if n_trades > 0 else 0
 
             total_gain = signal_returns[signal_returns > 0].sum()

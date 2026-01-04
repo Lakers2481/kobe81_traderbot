@@ -103,7 +103,7 @@ class TestHalfTimeBriefing:
         )
         assert briefing.position_analysis == []
         assert briefing.whats_working == []
-        assert briefing.regime_changed == False
+        assert not briefing.regime_changed
 
 
 class TestPostGameBriefing:
@@ -140,7 +140,7 @@ class TestTradeOutcome:
             exit_reason="TARGET",
             was_winner=True
         )
-        assert winner.was_winner == True
+        assert winner.was_winner
         assert winner.pnl_dollars == 500.0
 
         loser = TradeOutcome(
@@ -158,7 +158,7 @@ class TestTradeOutcome:
             exit_reason="STOP",
             was_winner=False
         )
-        assert loser.was_winner == False
+        assert not loser.was_winner
         assert loser.pnl_dollars == -100.0
 
 

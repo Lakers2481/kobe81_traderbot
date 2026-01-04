@@ -159,7 +159,7 @@ def analyze_last_error(verbose: bool = True) -> Optional[ErrorRecord]:
         print(f"\nTraceback:\n{last_error.traceback}")
 
     if last_error.context:
-        print(f"\nContext:")
+        print("\nContext:")
         for k, v in last_error.context.items():
             print(f"  {k}: {v}")
 
@@ -256,7 +256,7 @@ def trace_signal_generation(
     print(f"    Loaded {len(df)} bars")
     print(f"    Date range: {df['timestamp'].min()} to {df['timestamp'].max()}")
 
-    print(f"\n[2] Generating signals (delegated to strategy)...")
+    print("\n[2] Generating signals (delegated to strategy)...")
     df = df.sort_values("timestamp").copy()
     sigs = strat.scan_signals_over_time(df)
     if sigs.empty:
@@ -417,7 +417,7 @@ def reproduce_error(error_id: str, verbose: bool = True) -> None:
     print(f"Message: {target_error.message}")
 
     if target_error.context:
-        print(f"\nContext data:")
+        print("\nContext data:")
         for k, v in target_error.context.items():
             print(f"  {k}: {v}")
 
@@ -427,7 +427,7 @@ def reproduce_error(error_id: str, verbose: bool = True) -> None:
     print("-" * 50)
 
     context = target_error.context
-    event = target_error.event.lower()
+    target_error.event.lower()
 
     # Check if we can reproduce based on context
     if 'symbol' in context:

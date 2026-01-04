@@ -94,8 +94,8 @@ if all_streaks:
         print(f"{i:>2} | {s['start_date']:>12} | {s['end_date']:>12} | {s['streak_length']:>4} | {drop_pct:>+7.1f}% | {ret_str:>8} | {bounce_str}")
 
 # Calculate reversal stats
-bounced = [s for s in all_streaks if s['next_day_bounced'] == True]
-failed = [s for s in all_streaks if s['next_day_bounced'] == False]
+bounced = [s for s in all_streaks if s['next_day_bounced']]
+failed = [s for s in all_streaks if not s['next_day_bounced']]
 pending = [s for s in all_streaks if s['next_day_bounced'] is None]
 
 if bounced:
