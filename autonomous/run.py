@@ -333,9 +333,9 @@ class KobeRunner:
 
         try:
             # Initialize brain
-            brain = AutonomousBrain(universe_cap=universe_cap)
+            brain = AutonomousBrain(state_dir=self.state_dir)
 
-            print(f"\n[START] Brain initialized with {universe_cap}-stock universe")
+            print(f"\n[START] Brain initialized")
             print("[START] Press Ctrl+C for graceful shutdown")
             print("=" * 60)
 
@@ -348,6 +348,8 @@ class KobeRunner:
             print("\n[SHUTDOWN] Keyboard interrupt received")
         except Exception as e:
             print(f"\n[ERROR] Brain crashed: {e}")
+            import traceback
+            traceback.print_exc()
             return 1
         finally:
             self._remove_pid()
@@ -430,17 +432,17 @@ class KobeRunner:
 
         # Initialize with weekend config
         try:
-            brain = AutonomousBrain(
-                universe_cap=900,
-                force_mode="deep_research"
-            )
+            brain = AutonomousBrain(state_dir=self.state_dir)
 
             print("[WEEKEND] Starting deep research cycle...")
             print("[WEEKEND] Tasks: extended backtests, ML retraining, pattern discovery")
             print("-" * 60)
 
-            # Run extended research cycle
-            brain.run_weekend_research()
+            # Run 5 deep research cycles
+            for i in range(5):
+                print(f"\n[WEEKEND] Research cycle {i+1}/5...")
+                brain.think()
+                time.sleep(30)  # Shorter intervals for weekend
 
             print("\n" + "=" * 60)
             print("WEEKEND RESEARCH COMPLETE")
@@ -450,6 +452,8 @@ class KobeRunner:
 
         except Exception as e:
             print(f"[ERROR] Weekend research failed: {e}")
+            import traceback
+            traceback.print_exc()
             return 1
 
     def cmd_tour(self) -> int:
