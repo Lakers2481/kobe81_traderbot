@@ -135,3 +135,28 @@ shap>=0.44.0  # SHAP for feature importance (TreeExplainer for XGBoost/LightGBM)
 youtube-transcript-api>=0.6.2  # YouTube video transcripts (FREE, no API key)
 feedparser>=6.0.11  # RSS/Atom feed parsing for arXiv papers
 # praw>=7.7.0  # Reddit API (optional - JSON API works without auth)
+
+# =============================================================================
+# FREE DATA SOURCES & BRAIN TOOLS (2026-01-04)
+# Comprehensive audit integration: FRED, Treasury, COT, FAISS, OR-Tools, AutoGen
+# =============================================================================
+
+# Macro Data Providers (FREE APIs)
+fredapi>=0.5.0  # FRED API client (Federal Reserve Economic Data)
+# BEA API key required but free: https://www.bea.gov/resources/for-developers
+# EIA API key required but free: https://www.eia.gov/opendata/
+
+# Portfolio Optimization (Hard Constraint Enforcement)
+ortools>=9.8  # Google OR-Tools for constraint optimization
+
+# Vector Memory (FAISS for Similar Trade Lookup)
+faiss-cpu>=1.7.4  # FAISS CPU version (use faiss-gpu for GPU)
+sentence-transformers>=2.2  # Embeddings for trade context
+
+# LLM Observability
+langfuse>=2.0  # LLM tracing and debugging
+
+# Multi-Agent Team (Optional - requires OPENAI_API_KEY)
+# pyautogen>=0.2.0  # Microsoft AutoGen for agent orchestration
+# langgraph>=0.0.40  # LangChain LangGraph for stateful workflows
+# langchain>=0.1.0  # LangChain core (LangGraph dependency)

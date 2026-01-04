@@ -62,6 +62,36 @@ class WorkMode(Enum):
     DEEP_RESEARCH = "deep_research"           # Weekend: extensive experiments
 
 
+class MacroRegime(Enum):
+    """Macro economic regime."""
+    EXPANSIONARY = "expansionary"      # Low rates, easing, growth
+    NEUTRAL = "neutral"                # Normal conditions
+    CONTRACTIONARY = "contractionary"  # High rates, tightening
+    RISK_ON = "risk_on"               # Low VIX, bullish sentiment
+    RISK_OFF = "risk_off"             # High VIX, fear
+
+
+@dataclass
+class MacroContext:
+    """Macro economic context from FRED/Treasury/COT data."""
+    regime: MacroRegime = MacroRegime.NEUTRAL
+    yield_curve_inverted: bool = False
+    yield_curve_slope: float = 0.0  # 10Y-2Y spread
+    vix_level: float = 15.0
+    cot_sentiment: str = "NEUTRAL"  # RISK_ON, NEUTRAL, RISK_OFF
+    confidence: float = 0.0
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "regime": self.regime.value,
+            "yield_curve_inverted": self.yield_curve_inverted,
+            "yield_curve_slope": self.yield_curve_slope,
+            "vix_level": self.vix_level,
+            "cot_sentiment": self.cot_sentiment,
+            "confidence": self.confidence,
+        }
+
+
 @dataclass
 class MarketContext:
     """Complete context of what's happening right now."""
@@ -86,6 +116,9 @@ class MarketContext:
     is_opex_day: bool = False
     is_early_close: bool = False
 
+    # Macro context (NEW)
+    macro: Optional[MacroContext] = None
+
     # Recommendations
     trading_allowed: bool = True
     recommended_actions: List[str] = field(default_factory=list)
@@ -107,6 +140,7 @@ class MarketContext:
             "is_opex_day": self.is_opex_day,
             "trading_allowed": self.trading_allowed,
             "recommended_actions": self.recommended_actions,
+            "macro": self.macro.to_dict() if self.macro else None,
         }
 
 
@@ -397,13 +431,116 @@ class SeasonalAwareness:
         }
 
 
+class MacroAwareness:
+    """Knows about macro economic conditions from FRED/Treasury/COT data."""
+
+    def __init__(self):
+        self._last_update: Optional[datetime] = None
+        self._cached_context: Optional[MacroContext] = None
+        self._cache_ttl_minutes = 60  # Refresh hourly
+
+    def get_macro_context(self, force_refresh: bool = False) -> MacroContext:
+        """
+        Get current macro economic context.
+
+        Uses FRED, Treasury, and COT data providers.
+        Caches results for 1 hour to avoid API spam.
+        """
+        # Check cache
+        if not force_refresh and self._cached_context and self._last_update:
+            age = (datetime.now(ET) - self._last_update).total_seconds() / 60
+            if age < self._cache_ttl_minutes:
+                return self._cached_context
+
+        # Try to get macro data
+        try:
+            return self._fetch_macro_data()
+        except Exception as e:
+            logger.warning(f"Macro data fetch failed: {e}, using defaults")
+            return MacroContext()
+
+    def _fetch_macro_data(self) -> MacroContext:
+        """Fetch macro data from providers."""
+        regime = MacroRegime.NEUTRAL
+        yield_inverted = False
+        yield_slope = 0.0
+        vix = 15.0
+        cot_sentiment = "NEUTRAL"
+        confidence = 0.0
+
+        signals = []
+
+        # Try FRED for macro regime
+        try:
+            from data.providers.fred_macro import get_macro_regime, get_yield_curve_slope
+
+            fred_regime = get_macro_regime()
+            regime_str = fred_regime.get('regime', 'NEUTRAL')
+
+            regime_map = {
+                'EXPANSIONARY': MacroRegime.EXPANSIONARY,
+                'CONTRACTIONARY': MacroRegime.CONTRACTIONARY,
+                'RISK_ON': MacroRegime.RISK_ON,
+                'RISK_OFF': MacroRegime.RISK_OFF,
+            }
+            regime = regime_map.get(regime_str, MacroRegime.NEUTRAL)
+            confidence = fred_regime.get('confidence', 0.0)
+            signals.extend(fred_regime.get('signals', []))
+
+            # Yield curve
+            slope_data = get_yield_curve_slope()
+            yield_inverted = slope_data.get('is_inverted', False)
+            yield_slope = slope_data.get('10Y_2Y_spread', 0.0) or 0.0
+
+            # VIX from indicators
+            indicators = fred_regime.get('indicators', {})
+            latest = indicators.get('latest_values', {})
+            if 'VIXCLS' in latest:
+                vix = float(latest['VIXCLS'])
+
+        except ImportError:
+            logger.debug("FRED provider not available")
+        except Exception as e:
+            logger.warning(f"FRED data error: {e}")
+
+        # Try COT for sentiment
+        try:
+            from data.providers.cftc_cot import get_market_sentiment
+
+            cot_data = get_market_sentiment()
+            cot_sentiment = cot_data.get('overall', 'NEUTRAL')
+
+        except ImportError:
+            logger.debug("COT provider not available")
+        except Exception as e:
+            logger.warning(f"COT data error: {e}")
+
+        # Build context
+        macro_ctx = MacroContext(
+            regime=regime,
+            yield_curve_inverted=yield_inverted,
+            yield_curve_slope=yield_slope,
+            vix_level=vix,
+            cot_sentiment=cot_sentiment,
+            confidence=confidence,
+        )
+
+        # Cache
+        self._cached_context = macro_ctx
+        self._last_update = datetime.now(ET)
+
+        logger.debug(f"Macro context updated: regime={regime.value}, inverted={yield_inverted}")
+        return macro_ctx
+
+
 class ContextBuilder:
     """Builds complete market context."""
 
-    def __init__(self):
+    def __init__(self, include_macro: bool = True):
         self.time_awareness = TimeAwareness()
         self.calendar = MarketCalendarAwareness()
         self.seasonal = SeasonalAwareness()
+        self.macro_awareness = MacroAwareness() if include_macro else None
 
     def get_context(self, dt: Optional[datetime] = None) -> MarketContext:
         """Get complete market context."""
@@ -430,6 +567,19 @@ class ContextBuilder:
         # Trading allowed?
         trading_allowed = self._is_trading_allowed(phase, is_holiday)
 
+        # Get macro context (if enabled)
+        macro_ctx = None
+        if self.macro_awareness:
+            macro_ctx = self.macro_awareness.get_macro_context()
+
+            # Add macro-specific recommendations
+            if macro_ctx.yield_curve_inverted:
+                actions.append("CAUTION: Yield curve inverted - reduce risk")
+            if macro_ctx.vix_level > 25:
+                actions.append("CAUTION: High VIX - reduce position sizes")
+            if macro_ctx.cot_sentiment == "RISK_OFF":
+                actions.append("NOTE: COT sentiment bearish")
+
         return MarketContext(
             timestamp=dt,
             phase=phase,
@@ -445,6 +595,7 @@ class ContextBuilder:
             is_earnings_heavy=self.seasonal.is_earnings_season(dt),
             is_opex_day=self.calendar.is_opex_day(dt),
             is_early_close=dt.date() in self.time_awareness._early_close_dates,
+            macro=macro_ctx,
             trading_allowed=trading_allowed,
             recommended_actions=actions,
         )
