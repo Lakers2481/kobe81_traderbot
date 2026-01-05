@@ -144,10 +144,14 @@ class TaskQueue:
                 for task_data in data.get("tasks", []):
                     task_id = task_data.get("id")
                     if task_id in self.tasks:
-                        self.tasks[task_id].last_run = (
-                            datetime.fromisoformat(task_data["last_run"])
-                            if task_data.get("last_run") else None
-                        )
+                        if task_data.get("last_run"):
+                            dt = datetime.fromisoformat(task_data["last_run"])
+                            # Ensure timezone-aware (FIX 2026-01-05)
+                            if dt.tzinfo is None:
+                                dt = dt.replace(tzinfo=ET)
+                            self.tasks[task_id].last_run = dt
+                        else:
+                            self.tasks[task_id].last_run = None
                         self.tasks[task_id].run_count = task_data.get("run_count", 0)
             except Exception as e:
                 logger.warning(f"Could not load task state: {e}")
@@ -185,7 +189,9 @@ class TaskQueue:
             return None
 
         # Sort by priority (lower = more important)
-        eligible.sort(key=lambda t: (t.priority.value, t.last_run or datetime.min))
+        # Use timezone-aware datetime.min (FIX 2026-01-05)
+        min_dt = datetime.min.replace(tzinfo=ET)
+        eligible.sort(key=lambda t: (t.priority.value, t.last_run or min_dt))
 
         return eligible[0]
 
