@@ -11,6 +11,9 @@ Usage:
 
     # In emergency:
     activate_kill_switch("Manual halt - investigating issue")
+
+FIX (2026-01-04): Added atomic write pattern for kill switch activation.
+Uses temp file + rename to prevent corruption on crash.
 """
 from __future__ import annotations
 
@@ -19,6 +22,8 @@ from functools import wraps
 from pathlib import Path
 from typing import Callable, TypeVar, Optional
 import json
+import os
+import tempfile
 
 from core.structured_log import jlog
 
@@ -56,6 +61,10 @@ def activate_kill_switch(reason: str = "Manual activation") -> None:
     """
     Activate the kill switch to halt all trading.
 
+    FIX (2026-01-04): Now uses atomic write pattern (temp file + rename) to prevent
+    file corruption if there's a crash during write. This is critical for a safety
+    mechanism - a corrupted kill switch file could lead to undefined behavior.
+
     Args:
         reason: Human-readable reason for activation
     """
@@ -65,7 +74,39 @@ def activate_kill_switch(reason: str = "Manual activation") -> None:
         "activated_at": datetime.utcnow().isoformat(),
         "activated_by": "system",
     }
-    KILL_SWITCH_PATH.write_text(json.dumps(info, indent=2), encoding="utf-8")
+
+    # Atomic write: write to temp file, then rename
+    # This prevents corruption if there's a crash during write
+    tmp_path = None
+    try:
+        fd, tmp_path = tempfile.mkstemp(
+            dir=KILL_SWITCH_PATH.parent,
+            suffix=".tmp",
+            prefix="KILL_SWITCH_"
+        )
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(info, f, indent=2)
+
+        # Atomic rename (on POSIX systems)
+        # On Windows, this may not be fully atomic but is still safer
+        Path(tmp_path).replace(KILL_SWITCH_PATH)
+        tmp_path = None  # Successfully renamed, don't cleanup
+    except Exception as e:
+        jlog("kill_switch_write_error", level="ERROR", error=str(e))
+        # Fallback: try direct write if atomic failed
+        try:
+            KILL_SWITCH_PATH.write_text(json.dumps(info, indent=2), encoding="utf-8")
+        except Exception:
+            pass
+        raise
+    finally:
+        # Clean up temp file if rename failed
+        if tmp_path is not None:
+            try:
+                Path(tmp_path).unlink(missing_ok=True)
+            except Exception:
+                pass
+
     jlog("kill_switch_activated", level="CRITICAL", reason=reason)
 
 

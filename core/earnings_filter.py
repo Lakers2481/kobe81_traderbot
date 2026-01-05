@@ -4,10 +4,16 @@ Config-gated: only active when filters.earnings.enabled = true.
 
 Skips trading signals near earnings announcement dates to avoid
 IV crush and gap risk.
+
+FIX (2026-01-04): Updated to use correct Polygon events endpoint
+(/v3/reference/tickers/{ticker}/events?types=earnings) instead of
+financials endpoint (which gives filing dates, not earnings dates).
+Added yfinance fallback for users without Polygon API key.
 """
 from __future__ import annotations
 
 import json
+import logging
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -15,6 +21,8 @@ from typing import Dict, List, Optional, Set
 import requests
 
 from config.settings_loader import get_earnings_filter_config
+
+logger = logging.getLogger(__name__)
 
 
 # In-memory cache of earnings dates per symbol
@@ -92,39 +100,134 @@ def fetch_earnings_dates(
 def _fetch_from_polygon(symbol: str) -> List[datetime]:
     """
     Fetch earnings dates from Polygon API.
-    Uses the stock financials endpoint.
+
+    FIX (2026-01-04): Now uses /v3/reference/tickers/{ticker}/events endpoint
+    which returns actual earnings announcement dates, instead of /vX/reference/financials
+    which only returns SEC filing dates (not useful for earnings blackout).
+
+    Falls back to yfinance if Polygon API key is not available.
     """
     api_key = os.getenv("POLYGON_API_KEY")
     if not api_key:
-        return []
+        logger.debug(f"No POLYGON_API_KEY, falling back to yfinance for {symbol}")
+        return _fetch_from_yfinance(symbol)
 
-    # Polygon reference data for earnings/financials
-    # Note: This is a simplified approach; actual earnings calendar may require
-    # a different endpoint or third-party data source
-    url = f"https://api.polygon.io/vX/reference/financials?ticker={symbol}&limit=20&apiKey={api_key}"
+    # Use events endpoint for actual earnings announcement dates
+    url = f"https://api.polygon.io/v3/reference/tickers/{symbol}/events"
+    params = {
+        "types": "earnings",
+        "limit": 20,
+        "apiKey": api_key,
+    }
 
     try:
-        resp = requests.get(url, timeout=10)
+        resp = requests.get(url, params=params, timeout=10)
         if resp.status_code != 200:
-            return []
+            logger.warning(f"Polygon events API returned {resp.status_code} for {symbol}")
+            return _fetch_from_yfinance(symbol)
 
         data = resp.json()
-        results = data.get("results", [])
+        results = data.get("results", {})
+
+        # Events endpoint returns { "events": [...] }
+        events = results.get("events", []) if isinstance(results, dict) else []
 
         earnings_dates = []
-        for r in results:
-            # filing_date or period_of_report_date
-            filing = r.get("filing_date") or r.get("period_of_report_date")
-            if filing:
+        for event in events:
+            # Look for earnings_date or date field
+            event_date = event.get("earnings_date") or event.get("date")
+            if event_date:
                 try:
-                    dt = datetime.fromisoformat(filing.replace("Z", ""))
+                    # Handle various date formats
+                    if "T" in str(event_date):
+                        dt = datetime.fromisoformat(str(event_date).replace("Z", ""))
+                    else:
+                        dt = datetime.strptime(str(event_date), "%Y-%m-%d")
                     earnings_dates.append(dt)
                 except ValueError:
                     continue
 
+        if not earnings_dates:
+            # Fallback if Polygon returns empty
+            logger.debug(f"Polygon returned no earnings for {symbol}, trying yfinance")
+            return _fetch_from_yfinance(symbol)
+
         return sorted(set(earnings_dates))
 
-    except Exception:
+    except Exception as e:
+        logger.warning(f"Polygon earnings fetch failed for {symbol}: {e}")
+        return _fetch_from_yfinance(symbol)
+
+
+def _fetch_from_yfinance(symbol: str) -> List[datetime]:
+    """
+    Fetch earnings dates from yfinance as fallback.
+
+    Free source that doesn't require API key. Uses the earnings calendar
+    from Yahoo Finance.
+
+    Args:
+        symbol: Stock ticker
+
+    Returns:
+        List of earnings dates (may be empty if unavailable)
+    """
+    try:
+        import yfinance as yf
+
+        ticker = yf.Ticker(symbol)
+
+        # Try to get earnings calendar
+        try:
+            calendar = ticker.calendar
+            if calendar is not None and not calendar.empty:
+                # calendar is a DataFrame with 'Earnings Date' row
+                if "Earnings Date" in calendar.index:
+                    earnings_date = calendar.loc["Earnings Date"]
+                    if hasattr(earnings_date, "iloc"):
+                        # Multiple earnings dates
+                        dates = []
+                        for val in earnings_date:
+                            if val is not None:
+                                try:
+                                    if hasattr(val, "to_pydatetime"):
+                                        dates.append(val.to_pydatetime().replace(tzinfo=None))
+                                    elif isinstance(val, datetime):
+                                        dates.append(val.replace(tzinfo=None))
+                                    elif isinstance(val, str):
+                                        dates.append(datetime.fromisoformat(val.replace("Z", "")))
+                                except (ValueError, AttributeError):
+                                    continue
+                        if dates:
+                            return sorted(set(dates))
+        except Exception as e:
+            logger.debug(f"yfinance calendar failed for {symbol}: {e}")
+
+        # Try earnings_dates attribute (historical earnings)
+        try:
+            earnings_df = ticker.earnings_dates
+            if earnings_df is not None and not earnings_df.empty:
+                dates = []
+                for idx in earnings_df.index:
+                    try:
+                        if hasattr(idx, "to_pydatetime"):
+                            dates.append(idx.to_pydatetime().replace(tzinfo=None))
+                        elif isinstance(idx, datetime):
+                            dates.append(idx.replace(tzinfo=None))
+                    except (ValueError, AttributeError):
+                        continue
+                if dates:
+                    return sorted(set(dates))
+        except Exception as e:
+            logger.debug(f"yfinance earnings_dates failed for {symbol}: {e}")
+
+        return []
+
+    except ImportError:
+        logger.warning("yfinance not installed, cannot fetch earnings dates")
+        return []
+    except Exception as e:
+        logger.debug(f"yfinance earnings fetch failed for {symbol}: {e}")
         return []
 
 

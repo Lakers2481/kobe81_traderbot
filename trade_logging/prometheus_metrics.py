@@ -157,6 +157,14 @@ if PROMETHEUS_AVAILABLE:
         registry=REGISTRY
     )
 
+    # FIX (2026-01-04): Counter for intraday trigger skips
+    INTRADAY_TRIGGER_SKIPPED = Counter(
+        'kobe_intraday_trigger_skipped_total',
+        'Intraday triggers skipped due to missing data or credentials',
+        ['reason'],
+        registry=REGISTRY
+    )
+
 else:
     # No-op placeholders
     class NoOpMetric:
@@ -183,6 +191,7 @@ else:
     POLICY_GATE_REJECTED = NoOpMetric()
     COMPLIANCE_REJECTED = NoOpMetric()
     KILL_SWITCH_BLOCKS = NoOpMetric()
+    INTRADAY_TRIGGER_SKIPPED = NoOpMetric()
 
 
 # ============================================================================

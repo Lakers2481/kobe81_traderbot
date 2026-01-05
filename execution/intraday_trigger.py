@@ -12,6 +12,9 @@ Trigger Modes:
 - first_hour_low: For SHORT, price must break first hour's low
 - combined: VWAP + first hour confirmation
 
+FIX (2026-01-04): Added Prometheus counter for trigger skips (when no data
+available or credentials missing). Provides observability for debugging.
+
 Usage:
     from execution.intraday_trigger import IntradayTrigger, TriggerResult
 
@@ -43,6 +46,9 @@ from data.providers.polygon_intraday import (
     is_below_first_hour_low,
     is_above_first_hour_high,
 )
+
+# FIX (2026-01-04): Import Prometheus counter for skip observability
+from trade_logging.prometheus_metrics import INTRADAY_TRIGGER_SKIPPED
 
 logger = logging.getLogger(__name__)
 
@@ -109,6 +115,9 @@ class IntradayTrigger:
         bars = fetch_intraday_bars(symbol, timeframe="5Min", limit=78)
 
         if not bars:
+            # FIX (2026-01-04): Increment Prometheus counter for observability
+            INTRADAY_TRIGGER_SKIPPED.labels(reason="no_data").inc()
+            logger.warning(f"Intraday trigger skipped for {symbol}: no data available")
             return TriggerResult(
                 triggered=False,
                 symbol=symbol,

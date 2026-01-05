@@ -24,6 +24,7 @@ from config.settings_loader import (
     get_clamp_atr_multiple,
 )
 from risk.liquidity_gate import LiquidityGate, LiquidityCheck
+from execution.utils import normalize_side, normalize_side_lowercase, is_buy_side
 from functools import wraps
 
 logger = logging.getLogger(__name__)
@@ -718,7 +719,7 @@ def place_ioc_limit(order: OrderRecord, resolve_status: bool = True) -> BrokerEx
     payload = {
         "symbol": order.symbol.upper(),
         "qty": order.qty,
-        "side": "buy" if order.side.lower() == "long" or order.side.upper() == "BUY" else "sell",
+        "side": normalize_side_lowercase(order.side),
         "type": "limit",
         "time_in_force": "ioc",
         "limit_price": float(order.limit_price),
@@ -867,8 +868,7 @@ def apply_adaptive_clamp(
     offset = _calculate_adaptive_offset(vix_level, regime)
 
     # Apply offset based on side
-    side_upper = side.upper()
-    if side_upper in ("BUY", "LONG"):
+    if is_buy_side(side):
         raw_limit = base_price * (1 + offset)
     else:
         raw_limit = base_price * (1 - offset)
@@ -1074,7 +1074,7 @@ def construct_decision(
         decision_id=decision_id,
         signal_id=decision_id.replace("DEC_", "SIG_"),
         symbol=symbol.upper(),
-        side=side.upper(),
+        side=normalize_side(side),
         qty=int(qty),
         limit_price=float(limit_price) if limit_price else 0.0,
         tif="IOC",
@@ -1230,7 +1230,7 @@ def execute_signal(
             decision_id=f"DEC_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{symbol}_NOQUOTE",
             signal_id="",
             symbol=symbol.upper(),
-            side=side.upper(),
+            side=normalize_side(side),
             qty=qty,
             limit_price=0.0,
             tif="IOC",
@@ -1337,7 +1337,7 @@ def place_bracket_order(
         decision_id=decision_id,
         signal_id=decision_id.replace("BRACKET_", "SIG_"),
         symbol=symbol.upper(),
-        side="BUY" if side.lower() in ("long", "buy") else "SELL",
+        side=normalize_side(side),
         qty=int(qty),
         limit_price=float(limit_price),
         tif=time_in_force.upper(),
@@ -1361,7 +1361,7 @@ def place_bracket_order(
     payload = {
         "symbol": symbol.upper(),
         "qty": int(qty),
-        "side": "buy" if side.lower() in ("long", "buy") else "sell",
+        "side": normalize_side_lowercase(side),
         "type": "limit",
         "time_in_force": time_in_force.lower(),
         "limit_price": round(float(limit_price), 2),

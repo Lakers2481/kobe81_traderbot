@@ -45,6 +45,7 @@ import pandas as pd
 from oms.order_state import OrderRecord, OrderStatus
 from execution.broker_alpaca import place_ioc_limit, get_best_ask, get_best_bid, BrokerExecutionResult
 from execution.tca.transaction_cost_analyzer import get_tca_analyzer
+from execution.utils import is_buy_side
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +120,7 @@ class OrderManager:
             elif strategy.upper() == "MARKET":
                 logger.warning(f"Market order strategy not fully implemented. Using IOC LIMIT for {order.symbol}.")
                 # For market order simulation, set limit to a slightly unfavorable price to ensure fill
-                if order.side.upper() == "BUY":
+                if is_buy_side(order.side):
                     order.limit_price = market_ask_at_submission * 1.001
                 else: # SELL
                     order.limit_price = market_bid_at_submission * 0.999
@@ -147,7 +148,7 @@ class OrderManager:
         """
         if not order.limit_price:
             # Attempt to set a reasonable limit price if not provided
-            if order.side.upper() == "BUY":
+            if is_buy_side(order.side):
                 order.limit_price = market_ask_at_submission * 1.001 if market_ask_at_submission else get_best_ask(order.symbol) * 1.001
             else: # SELL
                 order.limit_price = market_bid_at_submission * 0.999 if market_bid_at_submission else get_best_bid(order.symbol) * 0.999

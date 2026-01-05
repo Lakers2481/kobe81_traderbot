@@ -5,6 +5,10 @@ Alpaca Intraday Data Provider
 Fetch intraday bars (5min, 15min, 1h) from Alpaca Data API v2.
 Used for intraday entry triggers (VWAP reclaim, first-hour high/low).
 
+FIX (2026-01-04): Switched from urllib.request to requests library with
+retry logic using core.rate_limiter.with_retry for resilience against
+transient network errors and rate limits.
+
 Usage:
     from data.providers.alpaca_intraday import fetch_intraday_bars, get_session_vwap
 
@@ -18,12 +22,14 @@ from __future__ import annotations
 
 import os
 import time
-import json
-import urllib.request
 from dataclasses import dataclass
 from datetime import datetime, date
 from typing import Optional, Dict, Any, List
 import logging
+
+import requests
+
+from core.rate_limiter import with_retry
 
 logger = logging.getLogger(__name__)
 
@@ -96,21 +102,30 @@ def fetch_intraday_bars(
     base_url = "https://data.alpaca.markets/v2"
 
     # Build URL
-    url = f"{base_url}/stocks/{symbol}/bars?timeframe={timeframe}&limit={limit}"
+    url = f"{base_url}/stocks/{symbol}/bars"
+    params: Dict[str, Any] = {
+        "timeframe": timeframe,
+        "limit": limit,
+    }
     if start:
-        url += f"&start={start}"
+        params["start"] = start
     if end:
-        url += f"&end={end}"
+        params["end"] = end
 
     headers = {
         "APCA-API-KEY-ID": api_key,
         "APCA-API-SECRET-KEY": api_secret,
     }
 
+    def do_request() -> dict:
+        """Make the API request (called by with_retry)."""
+        resp = requests.get(url, params=params, headers=headers, timeout=10)
+        resp.raise_for_status()
+        return resp.json()
+
     try:
-        req = urllib.request.Request(url, headers=headers)
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
+        # FIX (2026-01-04): Use with_retry for resilience against transient errors
+        data = with_retry(do_request, max_retries=3, base_delay_ms=500)
 
         bars_data = data.get("bars", [])
         bars = []
@@ -133,7 +148,7 @@ def fetch_intraday_bars(
         return bars
 
     except Exception as e:
-        logger.warning(f"Failed to fetch intraday bars for {symbol}: {e}")
+        logger.warning(f"Failed to fetch intraday bars for {symbol} after retries: {e}")
         return []
 
 

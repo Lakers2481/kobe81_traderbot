@@ -16,11 +16,15 @@ Features:
 This dashboard provides a "window into the AI's mind," making it easier to
 monitor, debug, and understand the complex behavior of the trading robot.
 
+FIX (2026-01-04): Docs UI (/docs, /redoc, /openapi.json) is now disabled in
+live mode to prevent information disclosure. Only available in paper mode.
+
 Usage:
     To run the FastAPI application:
     uvicorn web.main:app --reload --port 8000
 
     Then open your browser to http://localhost:8000/docs for the API documentation.
+    (Note: /docs is only available in paper mode for security)
 """
 
 import json
@@ -50,10 +54,23 @@ except ImportError:
     webhooks_router = None
 
 logger = logging.getLogger(__name__)
+
+# FIX (2026-01-04): Disable docs UI in live mode to prevent information disclosure
+# This hides /docs, /redoc, and /openapi.json endpoints when trading with real money
+_mode = get_setting("system.mode", "paper")
+_is_live_mode = _mode == "live"
+
+if _is_live_mode:
+    logger.info("Live mode detected - disabling docs UI for security")
+
 app = FastAPI(
     title="Kobe81 Traderbot Dashboard API",
     description="API for monitoring and introspecting the Kobe81 Traderbot's status and cognitive state.",
     version="1.0.0",
+    # Disable docs in live mode to prevent information disclosure
+    docs_url=None if _is_live_mode else "/docs",
+    redoc_url=None if _is_live_mode else "/redoc",
+    openapi_url=None if _is_live_mode else "/openapi.json",
 )
 
 # Mount webhook router if available
@@ -66,7 +83,16 @@ async def read_root():
     """
     Returns a simple HTML page with links to the API documentation and key endpoints.
     """
-    html_content = """
+    # Build docs links only for paper mode (hidden in live mode for security)
+    docs_links = ""
+    if not _is_live_mode:
+        docs_links = """
+                <li><a href="/docs">API Documentation (Swagger UI)</a></li>
+                <li><a href="/redoc">Alternative API Documentation (ReDoc)</a></li>"""
+
+    mode_banner = f"<p><strong>Mode:</strong> {'🔴 LIVE TRADING' if _is_live_mode else '📝 Paper Trading'}</p>"
+
+    html_content = f"""
     <html>
         <head>
             <title>Kobe81 Traderbot Dashboard</title>
@@ -74,10 +100,9 @@ async def read_root():
         </head>
         <body>
             <h1>Kobe81 Traderbot Dashboard</h1>
+            {mode_banner}
             <p>Welcome to the monitoring API for your intelligent trading robot.</p>
-            <ul>
-                <li><a href="/docs">API Documentation (Swagger UI)</a></li>
-                <li><a href="/redoc">Alternative API Documentation (ReDoc)</a></li>
+            <ul>{docs_links}
                 <li><a href="/status">General Bot Status</a></li>
                 <li><a href="/cognitive_status">Cognitive System Status</a></li>
                 <li><a href="/recent_reflections">Recent Reflections (Learning Log)</a></li>
@@ -90,7 +115,7 @@ async def read_root():
                 <li><a href="/morning_briefing">Morning Briefing</a> - Claude's daily market analysis</li>
                 <li><a href="/live_narrative/AAPL">Live Narrative (Example: AAPL)</a> - Real-time symbol analysis</li>
             </ul>
-            <p>Use the API documentation to explore available endpoints.</p>
+            <p>Use the API endpoints to explore available data.</p>
         </body>
     </html>
     """

@@ -33,11 +33,27 @@ class TestFetchEarningsDates:
         """Clear cache after each test."""
         clear_cache()
 
-    def test_returns_empty_without_api_key(self):
-        """Returns empty list when no API key is set."""
+    def test_returns_empty_without_api_key_and_yfinance(self):
+        """Returns empty list when no API key is set and yfinance fails.
+
+        Note: FIX (2026-01-04) added yfinance fallback, so we need to mock both.
+        """
         with patch.dict('os.environ', {'POLYGON_API_KEY': ''}, clear=True):
-            result = fetch_earnings_dates('AAPL')
-            assert result == []
+            # Mock yfinance to fail (simulates yfinance not installed or failing)
+            with patch('core.earnings_filter._fetch_from_yfinance', return_value=[]):
+                result = fetch_earnings_dates('AAPL')
+                assert result == []
+
+    def test_falls_back_to_yfinance_without_api_key(self):
+        """Falls back to yfinance when no Polygon API key is set.
+
+        FIX (2026-01-04): Added yfinance fallback for users without Polygon API key.
+        """
+        mock_dates = [datetime(2024, 1, 15)]
+        with patch.dict('os.environ', {'POLYGON_API_KEY': ''}, clear=True):
+            with patch('core.earnings_filter._fetch_from_yfinance', return_value=mock_dates):
+                result = fetch_earnings_dates('AAPL', force_refresh=True)
+                assert result == mock_dates
 
     def test_uses_memory_cache(self):
         """Uses memory cache for repeated calls."""
