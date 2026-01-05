@@ -33,7 +33,9 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from data.providers.alpaca_intraday import (
+# Using Polygon for intraday data (paid subscription)
+# Switched from Alpaca which requires separate paid data subscription
+from data.providers.polygon_intraday import (
     fetch_intraday_bars,
     get_session_vwap,
     get_first_hour_range,

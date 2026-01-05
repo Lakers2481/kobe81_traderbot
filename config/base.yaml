@@ -147,10 +147,9 @@ execution:
     max_retries: 3  # Max retry attempts
     base_delay_ms: 500  # Initial backoff delay
   # Intraday entry trigger (config-gated) - delays entry until price confirms
-  # DISABLED 2026-01-04: Requires paid Alpaca Market Data subscription for 5-min bars
-  # Re-enable only if you have a paid Alpaca subscription
+  # Uses Polygon intraday data (paid subscription required)
   intraday_trigger:
-    enabled: false  # DISABLED - requires paid Alpaca Market Data subscription
+    enabled: true  # Uses paid Polygon subscription for 5-min bars
     mode: "vwap_reclaim"  # vwap_reclaim | first_hour_high | first_hour_low | combined
     poll_interval_seconds: 60  # How often to check trigger
     max_wait_minutes: 120  # Max time to wait for trigger before skipping
