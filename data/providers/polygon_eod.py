@@ -101,8 +101,9 @@ def fetch_daily_bars_polygon(
             s_req = pd.to_datetime(start)
             e_req = pd.to_datetime(end)
             pattern = re.compile(rf"^{re.escape(symbol)}_(\d{{4}}-\d{{2}}-\d{{2}})_(\d{{4}}-\d{{2}}-\d{{2}})\.csv$")
-            # DETERMINISM FIX: Sort glob results for consistent cache file selection
-            for f in sorted(cache_dir.glob(f"{symbol}_*.csv")):
+            # FIX (2026-01-04): Search in polygon_cache_dir where files are actually stored
+            # Previously searched cache_dir which missed files in the polygon/ subdirectory
+            for f in sorted(polygon_cache_dir.glob(f"{symbol}_*.csv")):
                 # Skip expired superset caches unless ignoring TTL
                 if not ignore_cache_ttl and _is_cache_expired(f):
                     continue
