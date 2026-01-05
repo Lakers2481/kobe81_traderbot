@@ -17,6 +17,17 @@ Created: 2026-01-04
 
 import os
 import json
+
+# Load .env BEFORE checking environment variables
+from pathlib import Path
+try:
+    from dotenv import load_dotenv
+    # Load from project root
+    _env_path = Path(__file__).parent.parent.parent / ".env"
+    if _env_path.exists():
+        load_dotenv(_env_path)
+except ImportError:
+    pass  # dotenv not installed, rely on system env vars
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional, Dict, Any, List

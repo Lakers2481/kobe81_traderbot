@@ -136,6 +136,15 @@ class CFTCCOTProvider:
             logger.debug(f"COT cache hit: {report_type} {year}")
             return pd.read_parquet(cache_path)
 
+        # Check if we've already failed for this year (avoid repeated 404s)
+        global _cot_download_errors
+        error_key = f"{year}_{report_type}"
+        if error_key in _cot_download_errors:
+            # Already failed, try stale cache silently
+            if cache_path.exists():
+                return pd.read_parquet(cache_path)
+            return pd.DataFrame()
+
         # Build URL
         if report_type == "financial":
             url = self.FUTURES_ONLY_URL.format(base=self.BASE_URL, year=year)
@@ -181,7 +190,16 @@ class CFTCCOTProvider:
             return df
 
         except requests.RequestException as e:
-            logger.error(f"COT download failed for {year}: {e}")
+            # Use module-level error tracking to avoid repeated logging
+            # (global already declared above)
+            error_key = f"{year}_{report_type}"
+            if error_key not in _cot_download_errors:
+                # For 404 on current year, this is expected early in year
+                if '404' in str(e) and year == datetime.now().year:
+                    logger.debug(f"COT {year} not yet published (expected early in year)")
+                else:
+                    logger.warning(f"COT download failed for {year}: {e}")
+                _cot_download_errors.add(error_key)
 
             # Fall back to cache
             if cache_path.exists():
@@ -219,10 +237,22 @@ class CFTCCOTProvider:
 
         # Download all needed years
         all_data = []
+        current_year = datetime.now().year
         for year in range(start_dt.year, end_dt.year + 1):
             df = self.download_cot_report(year, "financial", force_refresh)
             if not df.empty:
                 all_data.append(df)
+            elif year == current_year:
+                # Current year not available yet, skip silently (expected early in year)
+                pass
+
+        if not all_data:
+            # If no data at all, try previous year as fallback
+            fallback_year = current_year - 1
+            df = self.download_cot_report(fallback_year, "financial", force_refresh)
+            if not df.empty:
+                all_data.append(df)
+                logger.info(f"Using {fallback_year} COT data (current year not published yet)")
 
         if not all_data:
             return pd.DataFrame()
@@ -409,6 +439,9 @@ class CFTCCOTProvider:
 
 # Singleton instance
 _provider: Optional[CFTCCOTProvider] = None
+
+# Module-level error tracking to avoid repeated failed downloads
+_cot_download_errors: set = set()
 
 
 def get_cot_provider() -> CFTCCOTProvider:
