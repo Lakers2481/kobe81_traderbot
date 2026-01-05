@@ -997,6 +997,426 @@ def weekend_morning_report(**kwargs) -> Dict[str, Any]:
 
 
 # =============================================================================
+# WEEKLY GAME PLAN & STRATEGY ROTATION HANDLERS
+# =============================================================================
+
+def weekly_game_plan(**kwargs) -> Dict[str, Any]:
+    """Generate comprehensive weekly game plan with full pre-game analysis."""
+    logger.info("=" * 60)
+    logger.info("GENERATING WEEKLY GAME PLAN")
+    logger.info("=" * 60)
+
+    now = datetime.now(ET)
+    report = {
+        "generated_at": now.isoformat(),
+        "week_of": now.strftime("%Y-W%V"),
+        "sections": {}
+    }
+
+    # 1. STRATEGY RESEARCH SUMMARY
+    logger.info("Section 1: Strategy Research Summary...")
+    try:
+        from autonomous.scrapers.source_manager import SourceManager
+        manager = SourceManager()
+
+        # Categorize ideas by strategy type
+        ict_ideas = []
+        basic_ideas = []
+        complex_ideas = []
+
+        ict_keywords = ["ict", "smart money", "order block", "fair value gap", "liquidity", "breaker"]
+        basic_keywords = ["rsi", "sma", "ema", "bollinger", "macd", "momentum", "trend"]
+        complex_keywords = ["machine learning", "lstm", "transformer", "reinforcement", "hmm", "kalman"]
+
+        for idea in manager.ideas_queue:
+            title_lower = idea.title.lower()
+            desc_lower = idea.description.lower()
+            combined = title_lower + " " + desc_lower
+
+            if any(kw in combined for kw in ict_keywords):
+                ict_ideas.append(idea)
+            elif any(kw in combined for kw in complex_keywords):
+                complex_ideas.append(idea)
+            elif any(kw in combined for kw in basic_keywords):
+                basic_ideas.append(idea)
+            else:
+                basic_ideas.append(idea)  # Default to basic
+
+        report["sections"]["strategy_research"] = {
+            "total_ideas": len(manager.ideas_queue),
+            "ict_strategies": len(ict_ideas),
+            "basic_strategies": len(basic_ideas),
+            "complex_strategies": len(complex_ideas),
+            "top_ict": [i.title[:50] for i in ict_ideas[:3]],
+            "top_basic": [i.title[:50] for i in basic_ideas[:3]],
+            "top_complex": [i.title[:50] for i in complex_ideas[:3]],
+        }
+    except Exception as e:
+        report["sections"]["strategy_research"] = {"error": str(e), "total_ideas": 0}
+
+    # 2. EXPERIMENTS SUMMARY
+    logger.info("Section 2: Experiments Summary...")
+    try:
+        state_file = Path("state/autonomous/research/research_state.json")
+        if state_file.exists():
+            research_state = json.loads(state_file.read_text())
+            experiments = research_state.get("experiments", [])
+
+            # Find promising experiments
+            promising = [e for e in experiments if e.get("improvement", 0) > 0]
+
+            report["sections"]["experiments"] = {
+                "total_run": len(experiments),
+                "promising_count": len(promising),
+                "best_improvements": sorted(
+                    [{"hypothesis": e.get("hypothesis"), "improvement": e.get("improvement")}
+                     for e in promising],
+                    key=lambda x: x.get("improvement", 0),
+                    reverse=True
+                )[:5]
+            }
+    except Exception as e:
+        report["sections"]["experiments"] = {"error": str(e)}
+
+    # 3. PATTERN DISCOVERIES
+    logger.info("Section 3: Pattern Discoveries...")
+    try:
+        discoveries_file = Path("state/autonomous/discoveries.json")
+        if discoveries_file.exists():
+            discoveries = json.loads(discoveries_file.read_text())
+            report["sections"]["discoveries"] = {
+                "total": len(discoveries),
+                "recent": discoveries[-5:] if discoveries else []
+            }
+        else:
+            report["sections"]["discoveries"] = {"total": 0, "recent": []}
+    except Exception as e:
+        report["sections"]["discoveries"] = {"error": str(e)}
+
+    # 4. MONDAY WATCHLIST PREVIEW
+    logger.info("Section 4: Monday Watchlist Preview...")
+    try:
+        # Run quick scan to get preview
+        from strategies.registry import get_production_scanner
+        scanner = get_production_scanner()
+
+        # This gives a preview of what signals would trigger
+        report["sections"]["watchlist_preview"] = {
+            "note": "Run /scan --preview for full Monday watchlist",
+            "quality_gates": {
+                "watchlist_min_score": 65,
+                "watchlist_min_confidence": 0.60,
+                "fallback_min_score": 75,
+                "fallback_min_confidence": 0.70,
+            }
+        }
+    except Exception as e:
+        report["sections"]["watchlist_preview"] = {"error": str(e)}
+
+    # 5. RISK REMINDERS
+    report["sections"]["risk_reminders"] = {
+        "max_trades_from_watchlist": 2,
+        "max_trades_from_fallback": 1,
+        "kill_zones": {
+            "blocked_9:30-10:00": "Opening range - OBSERVE ONLY",
+            "blocked_11:30-14:30": "Lunch chop - NO TRADES",
+            "blocked_15:30-16:00": "Close - MANAGE ONLY"
+        },
+        "position_sizing": {
+            "max_risk_per_trade": "2%",
+            "max_notional_per_position": "20%",
+            "formula": "min(shares_by_risk, shares_by_notional)"
+        }
+    }
+
+    # Save report
+    report_dir = Path("reports")
+    report_dir.mkdir(exist_ok=True)
+
+    date_str = now.strftime("%Y%m%d")
+    json_file = report_dir / f"weekly_game_plan_{date_str}.json"
+    json_file.write_text(json.dumps(report, indent=2))
+
+    # Also create markdown
+    md_file = report_dir / f"weekly_game_plan_{date_str}.md"
+    md_content = f"""# WEEKLY GAME PLAN
+## Week of {report['week_of']} - Generated {now.strftime('%Y-%m-%d %H:%M')} ET
+
+---
+
+## STRATEGY RESEARCH SUMMARY
+
+| Category | Count | Status |
+|----------|-------|--------|
+| ICT Strategies | {report['sections'].get('strategy_research', {}).get('ict_strategies', 0)} | Researching |
+| Basic Strategies | {report['sections'].get('strategy_research', {}).get('basic_strategies', 0)} | Researching |
+| Complex/ML Strategies | {report['sections'].get('strategy_research', {}).get('complex_strategies', 0)} | Researching |
+| **TOTAL IDEAS** | {report['sections'].get('strategy_research', {}).get('total_ideas', 0)} | In Queue |
+
+**Top ICT Ideas:**
+{chr(10).join(['- ' + t for t in report['sections'].get('strategy_research', {}).get('top_ict', ['None found'])])}
+
+**Top Basic Ideas:**
+{chr(10).join(['- ' + t for t in report['sections'].get('strategy_research', {}).get('top_basic', ['None found'])])}
+
+**Top Complex Ideas:**
+{chr(10).join(['- ' + t for t in report['sections'].get('strategy_research', {}).get('top_complex', ['None found'])])}
+
+---
+
+## EXPERIMENTS SUMMARY
+
+- **Total Run:** {report['sections'].get('experiments', {}).get('total_run', 0)}
+- **Promising (improvement > 0):** {report['sections'].get('experiments', {}).get('promising_count', 0)}
+
+---
+
+## RISK REMINDERS
+
+### Position Sizing
+- Max risk per trade: **2%**
+- Max notional per position: **20%**
+- Formula: `min(shares_by_risk, shares_by_notional)`
+
+### Kill Zones (ET)
+- **9:30-10:00 AM** - BLOCKED (Opening Range)
+- **11:30-14:30 PM** - BLOCKED (Lunch Chop)
+- **15:30-16:00 PM** - BLOCKED (Close)
+
+### Trade Limits
+- Max 2 trades from watchlist
+- Max 1 trade from fallback scan
+
+---
+
+*Report generated by Kobe Autonomous Brain*
+"""
+    md_file.write_text(md_content)
+
+    logger.info(f"Weekly game plan saved to {json_file}")
+    logger.info("=" * 60)
+
+    return {
+        "status": "success",
+        "report_file": str(json_file),
+        "md_file": str(md_file),
+        "summary": report["sections"]
+    }
+
+
+def strategy_rotation_report(**kwargs) -> Dict[str, Any]:
+    """Track which strategy types are being researched and rotated."""
+    logger.info("Generating strategy rotation report...")
+
+    now = datetime.now(ET)
+    report = {
+        "generated_at": now.isoformat(),
+        "strategy_types": {
+            "ICT": {
+                "description": "Smart Money Concepts - Order blocks, FVG, liquidity sweeps",
+                "search_terms": ["ICT", "smart money", "order block", "fair value gap", "liquidity", "breaker"],
+                "status": "active",
+                "ideas_found": 0,
+                "validated_count": 0,
+            },
+            "BASIC": {
+                "description": "Classic indicators - RSI, SMA, MACD, Bollinger Bands",
+                "search_terms": ["rsi", "sma", "ema", "bollinger", "macd", "momentum", "trend following"],
+                "status": "active",
+                "ideas_found": 0,
+                "validated_count": 0,
+            },
+            "COMPLEX": {
+                "description": "ML/AI strategies - LSTM, RL, HMM, Kalman filters",
+                "search_terms": ["machine learning", "lstm", "transformer", "reinforcement", "hmm", "kalman"],
+                "status": "active",
+                "ideas_found": 0,
+                "validated_count": 0,
+            }
+        },
+        "rotation_schedule": {
+            "current_focus": "ICT",  # Rotates every cycle
+            "next_focus": "BASIC",
+            "schedule": "Rotates every research cycle (2 hours)"
+        }
+    }
+
+    # Count ideas by category
+    try:
+        from autonomous.scrapers.source_manager import SourceManager
+        manager = SourceManager()
+
+        for idea in manager.ideas_queue:
+            combined = (idea.title + " " + idea.description).lower()
+
+            if any(kw in combined for kw in report["strategy_types"]["ICT"]["search_terms"]):
+                report["strategy_types"]["ICT"]["ideas_found"] += 1
+                if idea.validated:
+                    report["strategy_types"]["ICT"]["validated_count"] += 1
+            elif any(kw in combined for kw in report["strategy_types"]["COMPLEX"]["search_terms"]):
+                report["strategy_types"]["COMPLEX"]["ideas_found"] += 1
+                if idea.validated:
+                    report["strategy_types"]["COMPLEX"]["validated_count"] += 1
+            else:
+                report["strategy_types"]["BASIC"]["ideas_found"] += 1
+                if idea.validated:
+                    report["strategy_types"]["BASIC"]["validated_count"] += 1
+    except Exception as e:
+        logger.warning(f"Could not count ideas: {e}")
+
+    # Save report
+    report_dir = Path("reports")
+    report_dir.mkdir(exist_ok=True)
+    date_str = now.strftime("%Y%m%d_%H%M")
+    json_file = report_dir / f"strategy_rotation_{date_str}.json"
+    json_file.write_text(json.dumps(report, indent=2))
+
+    return {
+        "status": "success",
+        "report_file": str(json_file),
+        "strategy_types": report["strategy_types"],
+        "rotation": report["rotation_schedule"]
+    }
+
+
+def discoveries_dashboard(**kwargs) -> Dict[str, Any]:
+    """Generate a dashboard of all discoveries for user visibility."""
+    logger.info("Generating discoveries dashboard...")
+
+    now = datetime.now(ET)
+    dashboard = {
+        "generated_at": now.isoformat(),
+        "unique_patterns": [],
+        "parameter_improvements": [],
+        "external_ideas_validated": [],
+        "strategy_discoveries": [],
+    }
+
+    # 1. Unique patterns (like PLTR 5-day streak)
+    try:
+        pattern_file = Path("state/autonomous/patterns/unique_patterns.json")
+        if pattern_file.exists():
+            patterns = json.loads(pattern_file.read_text())
+            dashboard["unique_patterns"] = patterns[-20:]  # Last 20
+    except Exception:
+        pass
+
+    # 2. Parameter improvements from research
+    try:
+        research_file = Path("state/autonomous/research/research_state.json")
+        if research_file.exists():
+            research = json.loads(research_file.read_text())
+            experiments = research.get("experiments", [])
+            improvements = [
+                {
+                    "hypothesis": e.get("hypothesis"),
+                    "improvement": e.get("improvement"),
+                    "win_rate": e.get("result", {}).get("win_rate"),
+                    "profit_factor": e.get("result", {}).get("profit_factor"),
+                }
+                for e in experiments
+                if e.get("improvement", 0) > 0
+            ]
+            dashboard["parameter_improvements"] = sorted(
+                improvements, key=lambda x: x.get("improvement", 0), reverse=True
+            )[:10]
+    except Exception:
+        pass
+
+    # 3. Validated external ideas
+    try:
+        from autonomous.scrapers.source_manager import SourceManager
+        manager = SourceManager()
+        validated = [
+            {
+                "title": idea.title[:60],
+                "source": idea.source_type,
+                "validation_result": idea.validation_result
+            }
+            for idea in manager.ideas_queue
+            if idea.validated and idea.validation_result
+        ]
+        dashboard["external_ideas_validated"] = validated[:10]
+    except Exception:
+        pass
+
+    # 4. Strategy discoveries
+    try:
+        discoveries_file = Path("state/autonomous/discoveries.json")
+        if discoveries_file.exists():
+            discoveries = json.loads(discoveries_file.read_text())
+            dashboard["strategy_discoveries"] = discoveries[-10:]
+    except Exception:
+        pass
+
+    # Save dashboard
+    report_dir = Path("reports")
+    report_dir.mkdir(exist_ok=True)
+    date_str = now.strftime("%Y%m%d_%H%M")
+    json_file = report_dir / f"discoveries_dashboard_{date_str}.json"
+    json_file.write_text(json.dumps(dashboard, indent=2))
+
+    # Create readable summary
+    summary = f"""
+=== DISCOVERIES DASHBOARD ===
+Generated: {now.strftime('%Y-%m-%d %H:%M')} ET
+
+Unique Patterns Found: {len(dashboard['unique_patterns'])}
+Parameter Improvements: {len(dashboard['parameter_improvements'])}
+Validated External Ideas: {len(dashboard['external_ideas_validated'])}
+Strategy Discoveries: {len(dashboard['strategy_discoveries'])}
+
+Top Improvements:
+"""
+    for imp in dashboard["parameter_improvements"][:5]:
+        summary += f"  - {imp['hypothesis']}: {imp['improvement']:+.1f}%\n"
+
+    logger.info(summary)
+
+    return {
+        "status": "success",
+        "report_file": str(json_file),
+        "summary": {
+            "unique_patterns": len(dashboard["unique_patterns"]),
+            "parameter_improvements": len(dashboard["parameter_improvements"]),
+            "validated_ideas": len(dashboard["external_ideas_validated"]),
+            "strategy_discoveries": len(dashboard["strategy_discoveries"]),
+        }
+    }
+
+
+def force_build_watchlist(**kwargs) -> Dict[str, Any]:
+    """Force build watchlist for Monday - runs anytime."""
+    logger.info("=" * 60)
+    logger.info("FORCE BUILDING MONDAY WATCHLIST")
+    logger.info("=" * 60)
+
+    try:
+        # Run the scanner in preview mode for next day
+        result = run_script(
+            "scripts/scan.py",
+            ["--cap", "200", "--deterministic", "--top3", "--preview"],
+            timeout=300
+        )
+
+        # Also try to build the overnight watchlist
+        watchlist_script = Path("scripts/overnight_watchlist.py")
+        if watchlist_script.exists():
+            wl_result = run_script("scripts/overnight_watchlist.py", timeout=180)
+            result["watchlist_script"] = wl_result
+
+        logger.info("Watchlist built successfully")
+        return {
+            "status": "success",
+            "message": "Monday watchlist built",
+            "scan_result": result
+        }
+    except Exception as e:
+        logger.error(f"Watchlist build error: {e}")
+        return {"status": "error", "error": str(e)}
+
+
+# =============================================================================
 # HANDLER REGISTRY
 # =============================================================================
 
@@ -1059,6 +1479,12 @@ HANDLERS = {
 
     # Weekend Morning Report (8:30 AM Central game plan)
     "autonomous.handlers:weekend_morning_report": weekend_morning_report,
+
+    # NEW: Weekly Game Plan and Strategy Rotation
+    "autonomous.handlers:weekly_game_plan": weekly_game_plan,
+    "autonomous.handlers:strategy_rotation_report": strategy_rotation_report,
+    "autonomous.handlers:discoveries_dashboard": discoveries_dashboard,
+    "autonomous.handlers:force_build_watchlist": force_build_watchlist,
 }
 
 

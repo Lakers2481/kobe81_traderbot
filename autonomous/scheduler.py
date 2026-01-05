@@ -299,6 +299,7 @@ class AutonomousScheduler:
             ),
 
             # === LEARNING TASKS ===
+            # FIXED: Allow learning during weekend/deep_research modes
             Task(
                 id="analyze_trades",
                 name="Analyze Recent Trades",
@@ -306,7 +307,7 @@ class AutonomousScheduler:
                 priority=TaskPriority.NORMAL,
                 description="Learn from recent trade outcomes",
                 handler="autonomous.learning:analyze_trades",
-                valid_modes=[WorkMode.LEARNING],
+                valid_modes=[WorkMode.LEARNING, WorkMode.DEEP_RESEARCH, WorkMode.RESEARCH],
                 cooldown_minutes=60,
                 recurring=True,
             ),
@@ -317,7 +318,7 @@ class AutonomousScheduler:
                 priority=TaskPriority.NORMAL,
                 description="Store new experiences in cognitive memory",
                 handler="autonomous.learning:update_memory",
-                valid_modes=[WorkMode.LEARNING],
+                valid_modes=[WorkMode.LEARNING, WorkMode.DEEP_RESEARCH, WorkMode.RESEARCH],
                 cooldown_minutes=30,
                 recurring=True,
             ),
@@ -328,8 +329,9 @@ class AutonomousScheduler:
                 priority=TaskPriority.NORMAL,
                 description="Generate daily performance reflection",
                 handler="autonomous.learning:daily_reflection",
-                valid_phases=[MarketPhase.AFTER_HOURS],
-                cooldown_minutes=1440,  # Once per day
+                valid_phases=[MarketPhase.AFTER_HOURS, MarketPhase.WEEKEND, MarketPhase.NIGHT],
+                valid_modes=[WorkMode.LEARNING, WorkMode.DEEP_RESEARCH, WorkMode.RESEARCH],
+                cooldown_minutes=480,  # Every 8 hours to allow weekend reflections
                 recurring=True,
             ),
 
@@ -426,6 +428,7 @@ class AutonomousScheduler:
             ),
 
             # === WATCHLIST TASKS (Professional Flow) ===
+            # FIXED: Allow weekend so Monday watchlist can be built
             Task(
                 id="build_overnight_watchlist",
                 name="Build Overnight Watchlist",
@@ -434,8 +437,9 @@ class AutonomousScheduler:
                 description="Build Top 5 watchlist for next trading day",
                 handler="scripts.overnight_watchlist:build",
                 scheduled_time=None,
-                valid_phases=[MarketPhase.MARKET_CLOSE],
-                cooldown_minutes=1440,
+                valid_phases=[MarketPhase.MARKET_CLOSE, MarketPhase.WEEKEND, MarketPhase.AFTER_HOURS],
+                valid_modes=[WorkMode.DEEP_RESEARCH, WorkMode.RESEARCH, WorkMode.MONITORING],
+                cooldown_minutes=480,  # Every 8 hours during weekend
                 recurring=True,
             ),
             Task(
@@ -445,8 +449,21 @@ class AutonomousScheduler:
                 priority=TaskPriority.HIGH,
                 description="Validate overnight watchlist for gaps and news",
                 handler="scripts.premarket_validator:validate",
-                valid_phases=[MarketPhase.PRE_MARKET_ACTIVE],
+                valid_phases=[MarketPhase.PRE_MARKET_ACTIVE, MarketPhase.PRE_MARKET_EARLY],
                 cooldown_minutes=1440,
+                recurring=True,
+            ),
+            # FORCE watchlist builder - can run anytime
+            Task(
+                id="force_build_watchlist",
+                name="Force Build Monday Watchlist",
+                category=TaskCategory.TRADING,
+                priority=TaskPriority.HIGH,
+                description="Force build watchlist - runs anytime during weekend",
+                handler="autonomous.handlers:force_build_watchlist",
+                valid_phases=[MarketPhase.WEEKEND],
+                valid_modes=[WorkMode.DEEP_RESEARCH, WorkMode.RESEARCH],
+                cooldown_minutes=240,  # Every 4 hours
                 recurring=True,
             ),
 
@@ -638,6 +655,46 @@ class AutonomousScheduler:
                 valid_phases=[MarketPhase.NIGHT, MarketPhase.WEEKEND, MarketPhase.AFTER_HOURS],
                 valid_modes=[WorkMode.DEEP_RESEARCH, WorkMode.RESEARCH, WorkMode.OPTIMIZATION],
                 cooldown_minutes=120,  # Every 2 hours - find new insights frequently
+                recurring=True,
+            ),
+
+            # =================================================================
+            # NEW: WEEKLY GAME PLAN & STRATEGY ROTATION
+            # =================================================================
+            Task(
+                id="weekly_game_plan",
+                name="Generate Weekly Game Plan",
+                category=TaskCategory.TRADING,
+                priority=TaskPriority.HIGH,
+                description="Comprehensive weekly plan with strategy research, experiments, and risk reminders",
+                handler="autonomous.handlers:weekly_game_plan",
+                valid_phases=[MarketPhase.WEEKEND],
+                valid_modes=[WorkMode.DEEP_RESEARCH, WorkMode.RESEARCH],
+                cooldown_minutes=480,  # Every 8 hours during weekend
+                recurring=True,
+            ),
+            Task(
+                id="strategy_rotation_report",
+                name="Strategy Rotation Report",
+                category=TaskCategory.LEARNING,
+                priority=TaskPriority.NORMAL,
+                description="Track ICT vs Basic vs Complex strategy research rotation",
+                handler="autonomous.handlers:strategy_rotation_report",
+                valid_phases=[MarketPhase.WEEKEND, MarketPhase.NIGHT],
+                valid_modes=[WorkMode.DEEP_RESEARCH, WorkMode.RESEARCH],
+                cooldown_minutes=360,  # Every 6 hours
+                recurring=True,
+            ),
+            Task(
+                id="discoveries_dashboard",
+                name="Generate Discoveries Dashboard",
+                category=TaskCategory.LEARNING,
+                priority=TaskPriority.NORMAL,
+                description="Dashboard showing all discoveries for user visibility",
+                handler="autonomous.handlers:discoveries_dashboard",
+                valid_phases=[MarketPhase.WEEKEND, MarketPhase.NIGHT, MarketPhase.AFTER_HOURS],
+                valid_modes=[WorkMode.DEEP_RESEARCH, WorkMode.RESEARCH, WorkMode.LEARNING],
+                cooldown_minutes=120,  # Every 2 hours
                 recurring=True,
             ),
         ]

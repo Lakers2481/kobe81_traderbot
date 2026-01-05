@@ -63,8 +63,8 @@ def build_overnight_watchlist(
     now = datetime.now(ET)
 
     # Determine next trading day
-    from data.calendar import get_next_trading_day
     try:
+        from scripts.market_calendar import get_next_trading_day
         next_day = get_next_trading_day(now.date())
     except Exception:
         # Fallback: assume next weekday

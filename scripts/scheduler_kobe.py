@@ -369,6 +369,39 @@ SCHEDULE: List[ScheduleEntry] = [
     ScheduleEntry('HOLIDAY_PREVIEW_SCAN', dtime(21, 0)),     # Preview mode scan
     ScheduleEntry('HOLIDAY_FINAL_BACKUP', dtime(21, 30)),    # Final backup
     ScheduleEntry('HOLIDAY_COMPLETE', dtime(22, 0)),         # Holiday schedule complete
+
+    # =============================================================================
+    # NEW: GAME PLANS & STRATEGY RESEARCH (Added per user request)
+    # =============================================================================
+    # These ensure comprehensive preparation and strategy discovery
+
+    # === WEEKDAY GAME PLAN (Daily trading preparation) ===
+    ScheduleEntry('WEEKDAY_GAME_PLAN', dtime(7, 30)),        # Daily game plan before market
+
+    # === WEEKEND/HOLIDAY GAME PLAN (Comprehensive weekly prep) ===
+    ScheduleEntry('WEEKEND_GAME_PLAN_1', dtime(8, 0)),       # First game plan - morning
+    ScheduleEntry('WEEKEND_GAME_PLAN_2', dtime(14, 0)),      # Second game plan - afternoon
+    ScheduleEntry('WEEKEND_GAME_PLAN_3', dtime(20, 0)),      # Third game plan - evening
+
+    # === STRATEGY ROTATION (ICT vs Basic vs Complex) ===
+    ScheduleEntry('STRATEGY_ROTATION_1', dtime(9, 0)),       # Morning rotation report
+    ScheduleEntry('STRATEGY_ROTATION_2', dtime(15, 0)),      # Afternoon rotation report
+    ScheduleEntry('STRATEGY_ROTATION_3', dtime(21, 0)),      # Evening rotation report
+
+    # === DISCOVERIES DASHBOARD (Track what robot learned) ===
+    ScheduleEntry('DISCOVERIES_DASHBOARD_1', dtime(10, 0)),  # Morning discoveries
+    ScheduleEntry('DISCOVERIES_DASHBOARD_2', dtime(16, 0)),  # Afternoon discoveries
+    ScheduleEntry('DISCOVERIES_DASHBOARD_3', dtime(22, 0)),  # Evening discoveries
+
+    # === STRATEGY RESEARCH (ICT, Basic, Complex rotation) ===
+    ScheduleEntry('RESEARCH_ICT', dtime(8, 30)),             # Research ICT strategies
+    ScheduleEntry('RESEARCH_BASIC', dtime(11, 30)),          # Research basic strategies
+    ScheduleEntry('RESEARCH_COMPLEX', dtime(14, 30)),        # Research complex/ML strategies
+    ScheduleEntry('RESEARCH_SCRAPE_ALL', dtime(17, 30)),     # Scrape GitHub/Reddit/arXiv
+
+    # === MONDAY WATCHLIST (Force build on weekends) ===
+    ScheduleEntry('MONDAY_WATCHLIST_BUILD', dtime(10, 30)),  # Morning watchlist build
+    ScheduleEntry('MONDAY_WATCHLIST_REFRESH', dtime(18, 30)),# Evening watchlist refresh
 ]
 
 
@@ -1334,6 +1367,140 @@ def main() -> None:
                                     while not cal.is_trading_day(next_day):
                                         next_day += timedelta(days=1)
                                     send_fn(f"<b>HOLIDAY LEARNING COMPLETE</b> Robot ready for {next_day}!")
+
+                        # =============================================================================
+                        # NEW: GAME PLANS & STRATEGY RESEARCH (Added per user request)
+                        # =============================================================================
+
+                        # === WEEKDAY GAME PLAN ===
+                        elif entry.tag == 'WEEKDAY_GAME_PLAN':
+                            if not is_market_closed_day():
+                                # Generate daily game plan for trading day
+                                try:
+                                    from autonomous.handlers import weekly_game_plan
+                                    result = weekly_game_plan()
+                                    if send_fn:
+                                        send_fn(f"<b>WEEKDAY_GAME_PLAN</b> Daily plan ready: {result.get('report_file', 'generated')}")
+                                except Exception as e:
+                                    if send_fn:
+                                        send_fn(f"<b>WEEKDAY_GAME_PLAN</b> Error: {e}")
+
+                        # === WEEKEND/HOLIDAY GAME PLAN ===
+                        elif entry.tag.startswith('WEEKEND_GAME_PLAN'):
+                            if is_market_closed_day():
+                                try:
+                                    from autonomous.handlers import weekly_game_plan
+                                    result = weekly_game_plan()
+                                    if send_fn:
+                                        send_fn(f"<b>WEEKEND_GAME_PLAN</b> Weekly plan ready!")
+                                except Exception as e:
+                                    if send_fn:
+                                        send_fn(f"<b>WEEKEND_GAME_PLAN</b> Error: {e}")
+
+                        # === STRATEGY ROTATION (ICT vs Basic vs Complex) ===
+                        elif entry.tag.startswith('STRATEGY_ROTATION'):
+                            if is_market_closed_day():
+                                try:
+                                    from autonomous.handlers import strategy_rotation_report
+                                    result = strategy_rotation_report()
+                                    ict = result.get('strategy_types', {}).get('ICT', {}).get('ideas_found', 0)
+                                    basic = result.get('strategy_types', {}).get('BASIC', {}).get('ideas_found', 0)
+                                    cmplx = result.get('strategy_types', {}).get('COMPLEX', {}).get('ideas_found', 0)
+                                    if send_fn:
+                                        send_fn(f"<b>STRATEGY_ROTATION</b> ICT:{ict} Basic:{basic} Complex:{cmplx}")
+                                except Exception as e:
+                                    if send_fn:
+                                        send_fn(f"<b>STRATEGY_ROTATION</b> Error: {e}")
+
+                        # === DISCOVERIES DASHBOARD ===
+                        elif entry.tag.startswith('DISCOVERIES_DASHBOARD'):
+                            try:
+                                from autonomous.handlers import discoveries_dashboard
+                                result = discoveries_dashboard()
+                                summary = result.get('summary', {})
+                                if send_fn:
+                                    send_fn(f"<b>DISCOVERIES</b> Patterns:{summary.get('unique_patterns',0)} Improvements:{summary.get('parameter_improvements',0)} Ideas:{summary.get('validated_ideas',0)}")
+                            except Exception as e:
+                                if send_fn:
+                                    send_fn(f"<b>DISCOVERIES</b> Error: {e}")
+
+                        # === STRATEGY RESEARCH (ICT, Basic, Complex rotation) ===
+                        elif entry.tag == 'RESEARCH_ICT':
+                            if is_market_closed_day():
+                                try:
+                                    from autonomous.scrapers.github_scraper import GitHubScraper
+                                    scraper = GitHubScraper()
+                                    # Focus on ICT queries
+                                    ict_queries = ["ICT trading strategy python", "smart money concepts trading",
+                                                   "order block indicator", "fair value gap detector"]
+                                    repos = scraper.scrape_queries(ict_queries, max_per_query=2)
+                                    if send_fn:
+                                        send_fn(f"<b>RESEARCH_ICT</b> Found {len(repos)} ICT strategy repos")
+                                except Exception as e:
+                                    if send_fn:
+                                        send_fn(f"<b>RESEARCH_ICT</b> Error: {e}")
+
+                        elif entry.tag == 'RESEARCH_BASIC':
+                            if is_market_closed_day():
+                                try:
+                                    from autonomous.scrapers.github_scraper import GitHubScraper
+                                    scraper = GitHubScraper()
+                                    # Focus on basic strategy queries
+                                    basic_queries = ["rsi trading strategy python", "bollinger band mean reversion",
+                                                     "trend following backtest", "momentum strategy python"]
+                                    repos = scraper.scrape_queries(basic_queries, max_per_query=2)
+                                    if send_fn:
+                                        send_fn(f"<b>RESEARCH_BASIC</b> Found {len(repos)} basic strategy repos")
+                                except Exception as e:
+                                    if send_fn:
+                                        send_fn(f"<b>RESEARCH_BASIC</b> Error: {e}")
+
+                        elif entry.tag == 'RESEARCH_COMPLEX':
+                            if is_market_closed_day():
+                                try:
+                                    from autonomous.scrapers.github_scraper import GitHubScraper
+                                    scraper = GitHubScraper()
+                                    # Focus on ML/complex strategy queries
+                                    complex_queries = ["machine learning trading backtest", "lstm price prediction",
+                                                       "reinforcement learning trading", "regime detection hmm"]
+                                    repos = scraper.scrape_queries(complex_queries, max_per_query=2)
+                                    if send_fn:
+                                        send_fn(f"<b>RESEARCH_COMPLEX</b> Found {len(repos)} ML/complex strategy repos")
+                                except Exception as e:
+                                    if send_fn:
+                                        send_fn(f"<b>RESEARCH_COMPLEX</b> Error: {e}")
+
+                        elif entry.tag == 'RESEARCH_SCRAPE_ALL':
+                            if is_market_closed_day():
+                                try:
+                                    from autonomous.scrapers.source_manager import SourceManager
+                                    manager = SourceManager()
+                                    ideas = manager.scrape_all()
+                                    if send_fn:
+                                        send_fn(f"<b>RESEARCH_SCRAPE_ALL</b> Scraped {len(ideas)} ideas from all sources")
+                                except Exception as e:
+                                    if send_fn:
+                                        send_fn(f"<b>RESEARCH_SCRAPE_ALL</b> Error: {e}")
+
+                        # === MONDAY WATCHLIST (Force build on weekends) ===
+                        elif entry.tag == 'MONDAY_WATCHLIST_BUILD':
+                            if is_market_closed_day():
+                                try:
+                                    from autonomous.handlers import force_build_watchlist
+                                    result = force_build_watchlist()
+                                    if send_fn:
+                                        send_fn(f"<b>MONDAY_WATCHLIST</b> {result.get('message', 'Built')}")
+                                except Exception as e:
+                                    if send_fn:
+                                        send_fn(f"<b>MONDAY_WATCHLIST</b> Error: {e}")
+
+                        elif entry.tag == 'MONDAY_WATCHLIST_REFRESH':
+                            if is_market_closed_day():
+                                rc = run_cmd([sys.executable, str(ROOT / 'scripts/scan.py'),
+                                             '--cap', str(args.cap), '--deterministic', '--top3',
+                                             '--dotenv', args.dotenv, '--preview'])
+                                if send_fn:
+                                    send_fn(f"<b>MONDAY_WATCHLIST_REFRESH</b> {'Ready' if rc == 0 else 'failed'}")
 
                         mark_ran(state, entry.tag, ymd)
                         save_state(state)

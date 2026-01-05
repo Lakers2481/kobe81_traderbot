@@ -10,6 +10,10 @@ import time
 import requests
 import pandas as pd
 
+# CRITICAL: Load .env file to ensure API keys are available
+from dotenv import load_dotenv
+load_dotenv()
+
 from core.structured_log import jlog
 
 POLYGON_AGGS_URL = "https://api.polygon.io/v2/aggs/ticker/{ticker}/range/1/day/{start}/{end}"
