@@ -9,15 +9,19 @@ FIX (2026-01-04): Updated to use correct Polygon events endpoint
 (/v3/reference/tickers/{ticker}/events?types=earnings) instead of
 financials endpoint (which gives filing dates, not earnings dates).
 Added yfinance fallback for users without Polygon API key.
+
+FIX (2026-01-05): Added source tagging for data provenance tracking
+and canary function to detect when sources return zero events.
 """
 from __future__ import annotations
 
 import json
 import logging
 import os
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Literal, Optional, Set
 import requests
 
 from config.settings_loader import get_earnings_filter_config
@@ -25,8 +29,24 @@ from config.settings_loader import get_earnings_filter_config
 logger = logging.getLogger(__name__)
 
 
+# =============================================================================
+# Data Types
+# =============================================================================
+
+EarningsSource = Literal["polygon", "yfinance", "none"]
+
+
+@dataclass
+class EarningsData:
+    """Earnings data with source provenance."""
+
+    dates: List[datetime]
+    source: EarningsSource
+    fetched_at: datetime
+
+
 # In-memory cache of earnings dates per symbol
-_earnings_cache: Dict[str, List[datetime]] = {}
+_earnings_cache: Dict[str, EarningsData] = {}
 
 
 def _get_cache_path() -> Path:
@@ -35,20 +55,46 @@ def _get_cache_path() -> Path:
     return Path(cfg.get("cache_file", "state/earnings_cache.json"))
 
 
-def _load_cache() -> Dict[str, List[str]]:
-    """Load earnings cache from disk."""
+def _load_cache() -> Dict[str, Dict]:
+    """
+    Load earnings cache from disk.
+
+    FIX (2026-01-05): Updated to support new format with source tagging.
+    Handles both old format (list of dates) and new format (dict with metadata).
+    """
     cache_path = _get_cache_path()
     if cache_path.exists():
         try:
             with open(cache_path, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                # Handle old format migration
+                migrated = {}
+                for symbol, value in data.items():
+                    if isinstance(value, list):
+                        # Old format: just list of date strings
+                        migrated[symbol] = {
+                            "dates": value,
+                            "source": "unknown",  # Legacy data
+                            "fetched_at": None,
+                        }
+                    elif isinstance(value, dict):
+                        # New format
+                        migrated[symbol] = value
+                    else:
+                        # Skip invalid entries
+                        continue
+                return migrated
         except (json.JSONDecodeError, IOError):
             return {}
     return {}
 
 
-def _save_cache(cache: Dict[str, List[str]]) -> None:
-    """Save earnings cache to disk."""
+def _save_cache(cache: Dict[str, Dict]) -> None:
+    """
+    Save earnings cache to disk.
+
+    FIX (2026-01-05): Updated to support new format with source tagging.
+    """
     cache_path = _get_cache_path()
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     with open(cache_path, "w", encoding="utf-8") as f:
@@ -63,6 +109,8 @@ def fetch_earnings_dates(
     Fetch earnings dates for a symbol.
     Uses Polygon API if available, with disk caching.
 
+    FIX (2026-01-05): Now tracks source provenance.
+
     Args:
         symbol: Stock ticker
         force_refresh: Force API refresh instead of using cache
@@ -76,41 +124,86 @@ def fetch_earnings_dates(
 
     # Check memory cache first
     if not force_refresh and symbol_upper in _earnings_cache:
-        return _earnings_cache[symbol_upper]
+        return _earnings_cache[symbol_upper].dates
 
     # Check disk cache
     disk_cache = _load_cache()
     if not force_refresh and symbol_upper in disk_cache:
-        dates = [datetime.fromisoformat(d) for d in disk_cache[symbol_upper]]
-        _earnings_cache[symbol_upper] = dates
+        cached = disk_cache[symbol_upper]
+        dates = [datetime.fromisoformat(d) for d in cached.get("dates", [])]
+        source = cached.get("source", "unknown")
+        fetched_at_str = cached.get("fetched_at")
+        fetched_at = (
+            datetime.fromisoformat(fetched_at_str)
+            if fetched_at_str
+            else datetime.now()
+        )
+        _earnings_cache[symbol_upper] = EarningsData(
+            dates=dates, source=source, fetched_at=fetched_at
+        )
         return dates
 
-    # Fetch from Polygon API
-    earnings_dates = _fetch_from_polygon(symbol_upper)
+    # Fetch from Polygon API (returns tuple: dates, source)
+    earnings_dates, source = _fetch_from_polygon_with_source(symbol_upper)
 
     # Update caches
-    if earnings_dates:
-        _earnings_cache[symbol_upper] = earnings_dates
-        disk_cache[symbol_upper] = [d.isoformat() for d in earnings_dates]
-        _save_cache(disk_cache)
+    now = datetime.now()
+    earnings_data = EarningsData(dates=earnings_dates, source=source, fetched_at=now)
+    _earnings_cache[symbol_upper] = earnings_data
+
+    disk_cache[symbol_upper] = {
+        "dates": [d.isoformat() for d in earnings_dates],
+        "source": source,
+        "fetched_at": now.isoformat(),
+    }
+    _save_cache(disk_cache)
 
     return earnings_dates
 
 
-def _fetch_from_polygon(symbol: str) -> List[datetime]:
+def get_earnings_source(symbol: str) -> Optional[EarningsSource]:
     """
-    Fetch earnings dates from Polygon API.
+    Get the data source for a symbol's earnings data.
+
+    FIX (2026-01-05): Added for source provenance tracking.
+
+    Args:
+        symbol: Stock ticker
+
+    Returns:
+        Source name ("polygon", "yfinance", "none") or None if not cached
+    """
+    symbol_upper = symbol.upper()
+
+    # Check memory cache
+    if symbol_upper in _earnings_cache:
+        return _earnings_cache[symbol_upper].source
+
+    # Check disk cache
+    disk_cache = _load_cache()
+    if symbol_upper in disk_cache:
+        return disk_cache[symbol_upper].get("source")
+
+    return None
+
+
+def _fetch_from_polygon_with_source(symbol: str) -> tuple[List[datetime], EarningsSource]:
+    """
+    Fetch earnings dates from Polygon API with source tracking.
 
     FIX (2026-01-04): Now uses /v3/reference/tickers/{ticker}/events endpoint
     which returns actual earnings announcement dates, instead of /vX/reference/financials
     which only returns SEC filing dates (not useful for earnings blackout).
+
+    FIX (2026-01-05): Returns tuple of (dates, source) for provenance tracking.
 
     Falls back to yfinance if Polygon API key is not available.
     """
     api_key = os.getenv("POLYGON_API_KEY")
     if not api_key:
         logger.debug(f"No POLYGON_API_KEY, falling back to yfinance for {symbol}")
-        return _fetch_from_yfinance(symbol)
+        dates = _fetch_from_yfinance(symbol)
+        return (dates, "yfinance" if dates else "none")
 
     # Use events endpoint for actual earnings announcement dates
     url = f"https://api.polygon.io/v3/reference/tickers/{symbol}/events"
@@ -124,7 +217,8 @@ def _fetch_from_polygon(symbol: str) -> List[datetime]:
         resp = requests.get(url, params=params, timeout=10)
         if resp.status_code != 200:
             logger.warning(f"Polygon events API returned {resp.status_code} for {symbol}")
-            return _fetch_from_yfinance(symbol)
+            dates = _fetch_from_yfinance(symbol)
+            return (dates, "yfinance" if dates else "none")
 
         data = resp.json()
         results = data.get("results", {})
@@ -150,13 +244,15 @@ def _fetch_from_polygon(symbol: str) -> List[datetime]:
         if not earnings_dates:
             # Fallback if Polygon returns empty
             logger.debug(f"Polygon returned no earnings for {symbol}, trying yfinance")
-            return _fetch_from_yfinance(symbol)
+            dates = _fetch_from_yfinance(symbol)
+            return (dates, "yfinance" if dates else "none")
 
-        return sorted(set(earnings_dates))
+        return (sorted(set(earnings_dates)), "polygon")
 
     except Exception as e:
         logger.warning(f"Polygon earnings fetch failed for {symbol}: {e}")
-        return _fetch_from_yfinance(symbol)
+        dates = _fetch_from_yfinance(symbol)
+        return (dates, "yfinance" if dates else "none")
 
 
 def _fetch_from_yfinance(symbol: str) -> List[datetime]:
@@ -350,6 +446,130 @@ def get_blackout_dates(
                 blackout.add(blackout_date)
 
     return blackout
+
+
+# =============================================================================
+# Canary Functions (Data Quality Monitoring)
+# =============================================================================
+
+# Well-known large-cap stocks that always have quarterly earnings
+# Used as canary to detect when data sources are broken
+KNOWN_EARNINGS_SYMBOLS = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA"]
+
+
+def run_earnings_canary(
+    symbols: Optional[List[str]] = None,
+    lookback_days: int = 90,
+) -> Dict[str, Dict]:
+    """
+    Run canary check to verify earnings data sources are working.
+
+    FIX (2026-01-05): Added to detect when data sources silently fail.
+
+    If a well-known earnings symbol returns zero events within lookback_days,
+    it's a sign the data source is broken. Logs warning and increments
+    Prometheus counter.
+
+    Args:
+        symbols: Symbols to check (default: KNOWN_EARNINGS_SYMBOLS)
+        lookback_days: Days to look back for earnings (default: 90)
+
+    Returns:
+        Dict with results per symbol: {"AAPL": {"passed": True, "source": "polygon", ...}}
+    """
+    from trade_logging.prometheus_metrics import EARNINGS_CANARY_FAILED
+
+    if symbols is None:
+        symbols = KNOWN_EARNINGS_SYMBOLS
+
+    results = {}
+    now = datetime.now()
+    lookback_start = now - timedelta(days=lookback_days)
+
+    for symbol in symbols:
+        try:
+            # Force refresh to get fresh data
+            dates = fetch_earnings_dates(symbol, force_refresh=True)
+            source = get_earnings_source(symbol)
+
+            # Check if any earnings dates are within lookback window
+            recent_dates = [d for d in dates if d >= lookback_start]
+
+            if not recent_dates:
+                # Canary failed - no earnings in last 90 days for known symbol
+                logger.warning(
+                    f"Earnings canary FAILED for {symbol}: "
+                    f"zero events in last {lookback_days} days from source '{source}'"
+                )
+                EARNINGS_CANARY_FAILED.labels(symbol=symbol, source=source or "unknown").inc()
+                results[symbol] = {
+                    "passed": False,
+                    "source": source,
+                    "dates_found": len(dates),
+                    "recent_dates": 0,
+                    "reason": f"No earnings in last {lookback_days} days",
+                }
+            else:
+                results[symbol] = {
+                    "passed": True,
+                    "source": source,
+                    "dates_found": len(dates),
+                    "recent_dates": len(recent_dates),
+                    "next_earnings": min(recent_dates).isoformat() if recent_dates else None,
+                }
+
+        except Exception as e:
+            logger.error(f"Earnings canary error for {symbol}: {e}")
+            EARNINGS_CANARY_FAILED.labels(symbol=symbol, source="error").inc()
+            results[symbol] = {
+                "passed": False,
+                "source": "error",
+                "dates_found": 0,
+                "recent_dates": 0,
+                "reason": str(e),
+            }
+
+    # Summary log
+    passed = sum(1 for r in results.values() if r.get("passed"))
+    total = len(results)
+    if passed < total:
+        logger.warning(f"Earnings canary: {passed}/{total} passed")
+    else:
+        logger.info(f"Earnings canary: {passed}/{total} passed")
+
+    return results
+
+
+def check_earnings_source_health() -> Dict[str, any]:
+    """
+    Check overall health of earnings data sources.
+
+    FIX (2026-01-05): Added for preflight/health checks.
+
+    Returns:
+        Dict with:
+        - healthy: bool - True if canary passes for majority of symbols
+        - canary_results: Dict per symbol
+        - source_stats: Dict with source distribution
+    """
+    canary_results = run_earnings_canary()
+
+    # Calculate source distribution
+    sources = {}
+    for result in canary_results.values():
+        src = result.get("source", "unknown")
+        sources[src] = sources.get(src, 0) + 1
+
+    passed = sum(1 for r in canary_results.values() if r.get("passed"))
+    total = len(canary_results)
+
+    return {
+        "healthy": passed >= (total // 2 + 1),  # Majority must pass
+        "passed": passed,
+        "total": total,
+        "canary_results": canary_results,
+        "source_stats": sources,
+    }
 
 
 def clear_cache() -> None:

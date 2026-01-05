@@ -165,6 +165,21 @@ if PROMETHEUS_AVAILABLE:
         registry=REGISTRY
     )
 
+    # FIX (2026-01-05): Counter for rate-limited metrics requests
+    METRICS_THROTTLED = Counter(
+        'kobe_metrics_throttled_total',
+        'Metrics requests rejected due to rate limiting',
+        registry=REGISTRY
+    )
+
+    # FIX (2026-01-05): Counter for earnings canary failures
+    EARNINGS_CANARY_FAILED = Counter(
+        'kobe_earnings_canary_failed_total',
+        'Earnings canary checks that failed (source returned zero events)',
+        ['symbol', 'source'],
+        registry=REGISTRY
+    )
+
 else:
     # No-op placeholders
     class NoOpMetric:
@@ -192,6 +207,8 @@ else:
     COMPLIANCE_REJECTED = NoOpMetric()
     KILL_SWITCH_BLOCKS = NoOpMetric()
     INTRADAY_TRIGGER_SKIPPED = NoOpMetric()
+    METRICS_THROTTLED = NoOpMetric()
+    EARNINGS_CANARY_FAILED = NoOpMetric()
 
 
 # ============================================================================

@@ -357,6 +357,191 @@ python scripts/restore_snapshot.py --date 20260101
 
 ---
 
+## LIVE TRADING PREFLIGHT (FIX 2026-01-05)
+
+### Before Going Live
+
+**ALWAYS run preflight before live trading:**
+
+```bash
+python scripts/preflight_live.py --mode live
+```
+
+**Expected output:** All checks PASS. If ANY check fails, trading is blocked.
+
+### Preflight Checks (15+)
+
+| Check | Description | Blocking |
+|-------|-------------|----------|
+| Settings Schema | Pydantic config validation | Yes |
+| Webhook HMAC | Webhook secret configured | Yes (live) |
+| Broker Keys | ALPACA_API_KEY_ID/SECRET present | Yes |
+| Broker Connectivity | Can reach Alpaca API | Yes |
+| Market Calendar | NYSE calendar loaded | Yes |
+| Earnings Source | Polygon/yfinance reachable | No |
+| Prometheus | Metrics registry works | No |
+| Kill Switch | Not active | Yes |
+| LLM Budget | >10% remaining | No |
+| Position Reconciliation | Broker matches local | Yes |
+| Data Freshness | Data < 24h old | Yes (weekday) |
+| Config Pin | Config hash matches frozen | Yes |
+| Mode Match | Requested mode matches config | Yes |
+| Pending Orders | No stale pending orders | No |
+| Hash Chain | Audit chain intact | No |
+
+### If Preflight Fails
+
+```bash
+# View detailed failure reason
+python scripts/preflight_live.py --mode live --verbose
+
+# Fix the issue, then re-run
+python scripts/preflight_live.py --mode live
+```
+
+---
+
+## KILL SWITCH RECOVERY (FIX 2026-01-05)
+
+### Understanding Kill Switch
+
+The kill switch is a safety mechanism that halts ALL trading when activated.
+
+**Kill switch file:** `state/KILL_SWITCH`
+
+### When Kill Switch Activates
+
+1. Manual activation (`echo "reason" > state/KILL_SWITCH`)
+2. Risk limit exceeded (daily loss > threshold)
+3. Broker connection failure
+4. Critical error in execution path
+
+### Recovery Steps
+
+```bash
+# 1. Check why kill switch was activated
+type state\KILL_SWITCH
+grep -i "kill" logs/events.jsonl | tail -10
+
+# 2. Investigate the root cause
+python scripts/reconcile_alpaca.py
+python -m autonomous.run --status
+
+# 3. Verify system is safe to resume
+python scripts/preflight_live.py --mode paper
+
+# 4. Remove kill switch ONLY after investigation
+del state\KILL_SWITCH
+
+# 5. Verify trading can resume
+python -m autonomous.run --health
+```
+
+### IMPORTANT
+
+- NEVER remove kill switch without understanding why it was activated
+- If cause is unknown, keep kill switch active and investigate
+- After recovery, run a paper trade cycle before resuming live
+
+---
+
+## LLM BUDGET MANAGEMENT (FIX 2026-01-05)
+
+### Token Budget System
+
+LLM calls are rate-limited to prevent runaway API costs.
+
+**Budget file:** `state/llm_token_usage.json`
+
+### Check Budget Status
+
+```bash
+python -c "from llm.token_budget import get_token_budget; print(get_token_budget().get_status())"
+```
+
+### Daily Limits
+
+| Metric | Default Limit | Alert Threshold |
+|--------|---------------|-----------------|
+| Tokens | 100,000/day | 80,000 |
+| Cost | $50/day | $25 |
+
+### If Budget Exceeded
+
+LLM-powered features (narratives, analysis) will be skipped until reset.
+
+```bash
+# Check remaining budget
+python -c "from llm.token_budget import get_token_budget; b=get_token_budget(); print(f'Remaining: {b.get_remaining_percent():.1f}%')"
+
+# Budget auto-resets at midnight
+# To manually reset (for testing only):
+python -c "from llm.token_budget import get_token_budget; b=get_token_budget(); b.used_today=0; b.cost_usd_today=0; b._save_state()"
+```
+
+---
+
+## STATE MANAGEMENT (FIX 2026-01-05)
+
+### Central State Manager
+
+All state files are now managed through `portfolio/state_manager.py` with:
+- File locking (prevents race conditions)
+- Atomic writes (temp file + rename)
+
+### State Files
+
+| File | Purpose | Manager Method |
+|------|---------|----------------|
+| `state/position_state.json` | Current positions | `get/set_positions()` |
+| `state/weekly_budget.json` | Weekly exposure budget | `get/set_weekly_budget()` |
+| `state/earnings_cache.json` | Earnings dates cache | `get/set_earnings_cache()` |
+| `state/autonomous/brain_state.json` | Brain state | `get/set_brain_state()` |
+
+### If State Corruption Suspected
+
+```bash
+# Backup current state
+python scripts/backup_state.py
+
+# Validate state files
+python -c "from portfolio.state_manager import get_state_manager; sm=get_state_manager(); print(sm.get_positions())"
+
+# Reconcile with broker
+python scripts/reconcile_alpaca.py
+```
+
+---
+
+## DATA QUALITY CANARIES (FIX 2026-01-05)
+
+### Earnings Data Canary
+
+Checks that earnings data sources (Polygon/yfinance) are working.
+
+```bash
+# Run earnings canary
+python -c "from core.earnings_filter import run_earnings_canary; print(run_earnings_canary())"
+```
+
+### Price Discontinuity Canary
+
+Detects potential split/dividend issues in price data.
+
+```bash
+# Check specific symbol for discontinuities
+python -c "from data.quality import check_recent_data; print(check_recent_data('AAPL'))"
+```
+
+### If Canary Fails
+
+1. Check if data source is down (Polygon status page)
+2. Verify API key is valid
+3. Try alternative source (yfinance fallback)
+4. If persistent, disable affected features and investigate
+
+---
+
 ## SUPPORT
 
 ### Getting Help
@@ -375,4 +560,4 @@ python scripts/restore_snapshot.py --date 20260101
 
 ---
 
-*Kobe Trading System Runbook v1.0*
+*Kobe Trading System Runbook v1.1 (Updated 2026-01-05)*

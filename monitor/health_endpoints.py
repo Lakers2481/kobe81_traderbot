@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from collections import deque
 from http.server import BaseHTTPRequestHandler, HTTPServer
+import logging
 import threading
 import json
 import time
@@ -8,6 +10,110 @@ from pathlib import Path
 from typing import Dict, Any, Optional
 
 from config.settings_loader import get_metrics_config
+
+logger = logging.getLogger(__name__)
+
+
+# ============================================================================
+# FIX (2026-01-05): Token Bucket Rate Limiter for /metrics endpoints
+# Prevents flood attacks that could impact process performance
+# ============================================================================
+
+class TokenBucketRateLimiter:
+    """
+    Token bucket rate limiter for protecting endpoints.
+
+    Uses sliding window to track requests per time period.
+    """
+
+    def __init__(self, max_requests: int = 60, window_seconds: int = 60):
+        """
+        Initialize rate limiter.
+
+        Args:
+            max_requests: Maximum requests allowed in window
+            window_seconds: Time window in seconds
+        """
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.requests: deque = deque()
+        self._lock = threading.Lock()
+
+    def is_allowed(self) -> bool:
+        """
+        Check if a request is allowed.
+
+        Returns:
+            True if allowed, False if rate limited
+        """
+        with self._lock:
+            now = time.time()
+
+            # Remove old requests outside window
+            while self.requests and self.requests[0] < now - self.window_seconds:
+                self.requests.popleft()
+
+            # Check if under limit
+            if len(self.requests) >= self.max_requests:
+                return False
+
+            # Record this request
+            self.requests.append(now)
+            return True
+
+    def get_retry_after(self) -> int:
+        """Get seconds until a request would be allowed."""
+        with self._lock:
+            if not self.requests:
+                return 0
+
+            oldest = self.requests[0]
+            wait_time = self.window_seconds - (time.time() - oldest)
+            return max(1, int(wait_time))
+
+
+# Global rate limiter for metrics endpoints
+# 60 requests per minute should be sufficient for monitoring
+_metrics_rate_limiter: Optional[TokenBucketRateLimiter] = None
+_rate_limiter_lock = threading.Lock()
+_metrics_throttled_count = 0  # Track throttled requests
+
+
+def get_metrics_rate_limiter() -> TokenBucketRateLimiter:
+    """Get or create the metrics rate limiter."""
+    global _metrics_rate_limiter
+    if _metrics_rate_limiter is None:
+        with _rate_limiter_lock:
+            if _metrics_rate_limiter is None:
+                _metrics_rate_limiter = TokenBucketRateLimiter(
+                    max_requests=60,
+                    window_seconds=60,
+                )
+    return _metrics_rate_limiter
+
+
+def is_rate_limiting_enabled() -> bool:
+    """Check if rate limiting should be enabled (live mode only)."""
+    try:
+        from config.settings_loader import get_setting
+        return get_setting("system.mode", "paper") == "live"
+    except ImportError:
+        import os
+        return os.getenv("KOBE_MODE", "paper").lower() == "live"
+
+
+def increment_throttle_counter() -> None:
+    """Increment the throttled requests counter."""
+    global _metrics_throttled_count
+    _metrics_throttled_count += 1
+    # Also update Prometheus counter if available
+    try:
+        from trade_logging.prometheus_metrics import METRICS_THROTTLED
+        METRICS_THROTTLED.inc()
+    except ImportError:
+        pass
+    except Exception:
+        pass  # Ignore errors in metrics
 
 
 # Global metrics storage (thread-safe via GIL for simple operations)
@@ -560,6 +666,9 @@ class _Handler(BaseHTTPRequestHandler):
                 "alive": True,
             })
         elif self.path == "/metrics":
+            # FIX (2026-01-05): Rate limit /metrics in live mode
+            if not self._check_rate_limit():
+                return
             cfg = get_metrics_config()
             if not cfg.get("enabled", True):
                 self.send_response(404)
@@ -567,11 +676,48 @@ class _Handler(BaseHTTPRequestHandler):
                 return
             self._json(get_metrics())
         elif self.path == "/metrics/prometheus":
+            # FIX (2026-01-05): Rate limit /metrics/prometheus in live mode
+            if not self._check_rate_limit():
+                return
             # Prometheus text format endpoint
             self._prometheus()
         else:
             self.send_response(404)
             self.end_headers()
+
+    def _check_rate_limit(self) -> bool:
+        """
+        Check rate limit for metrics endpoints.
+
+        FIX (2026-01-05): Added rate limiting to prevent flood attacks.
+
+        Returns:
+            True if request is allowed, False if rate limited (429 sent)
+        """
+        if not is_rate_limiting_enabled():
+            return True  # Rate limiting disabled in paper mode
+
+        rate_limiter = get_metrics_rate_limiter()
+        if rate_limiter.is_allowed():
+            return True
+
+        # Rate limited - send 429
+        increment_throttle_counter()
+        retry_after = rate_limiter.get_retry_after()
+
+        body = json.dumps({
+            "error": "Too Many Requests",
+            "message": "Rate limit exceeded for metrics endpoint",
+            "retry_after": retry_after,
+        }).encode("utf-8")
+
+        self.send_response(429)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Retry-After", str(retry_after))
+        self.end_headers()
+        self.wfile.write(body)
+        return False
 
     def _prometheus(self):
         """Serve Prometheus text format metrics."""

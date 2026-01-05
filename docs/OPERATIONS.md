@@ -1,7 +1,7 @@
 # Kobe Trading System - Operations Runbook
 
-> **Version:** 2.3
-> **Last Updated:** 2025-12-31
+> **Version:** 2.4
+> **Last Updated:** 2026-01-05
 > **Status:** Production Ready
 
 ---
@@ -21,6 +21,26 @@
 ## Pre-Market Checklist
 
 Run these checks **before market open** (8:30 AM ET):
+
+### 0. Live Trading Preflight (REQUIRED for LIVE) - NEW 2026-01-05
+
+```bash
+python scripts/preflight_live.py --mode live
+```
+
+**ALL checks must PASS.** If ANY blocking check fails, trading is halted.
+
+**15+ Checks Include:**
+- Settings schema validation (Pydantic)
+- Broker API keys present
+- Broker connectivity
+- Market calendar
+- Kill switch inactive
+- LLM budget available
+- Position reconciliation
+- Data freshness
+- Config pin match
+- And more...
 
 ### 1. Cognitive Preflight (Required)
 
@@ -120,7 +140,14 @@ python scripts/runner.py --mode live --universe data/universe/optionable_liquid_
 |----------|-----|---------|
 | Health | `http://localhost:8080/health` | System liveness |
 | Metrics | `http://localhost:8080/metrics` | All metrics dashboard |
+| Prometheus | `http://localhost:8080/metrics/prometheus` | Prometheus format metrics |
 | Ready | `http://localhost:8080/ready` | Readiness check |
+
+**Rate Limiting (NEW 2026-01-05):**
+- `/metrics` and `/metrics/prometheus` are rate-limited in live mode
+- Limit: 60 requests/minute
+- Exceeding limit returns HTTP 429 with `Retry-After` header
+- Rate limiting disabled in paper mode for easier development
 
 ### Log Locations
 
@@ -354,15 +381,26 @@ python scripts/reconcile_alpaca.py --force-sync
 #### 5. "LLM budget exceeded"
 
 ```bash
-# Check current usage
-curl http://localhost:8080/metrics | python -c "import sys,json; d=json.load(sys.stdin); print(d['llm'])"
+# Check current usage (NEW 2026-01-05 - uses token_budget module)
+python -c "from llm.token_budget import get_token_budget; print(get_token_budget().get_status())"
 
-# Disable LLM temporarily
+# Check remaining budget percentage
+python -c "from llm.token_budget import get_token_budget; print(f'{get_token_budget().get_remaining_percent():.1f}% remaining')"
+
+# Budget auto-resets at midnight
+# To manually reset (testing only):
+python -c "from llm.token_budget import get_token_budget; b=get_token_budget(); b.used_today=0; b.cost_usd_today=0; b._save_state()"
+
+# Disable LLM temporarily if needed
 # Edit config/base.yaml: cognitive.llm_analyzer.enabled: false
-
-# Or switch to cache-only
-# Edit config/base.yaml: cognitive.llm_analyzer.mode: "off"
 ```
+
+**LLM Budget Enforcement (NEW 2026-01-05):**
+- LLM calls now check budget BEFORE making API requests
+- If budget exceeded, LLM features are skipped (not blocked)
+- State file: `state/llm_token_usage.json`
+- Default limits: 100K tokens/day, $50/day
+- Alert threshold: $25 (logs warning)
 
 #### 6. "Circuit breaker triggered"
 
@@ -450,10 +488,65 @@ python scripts/scan.py --cap 100 --top3
 | Category | Path | Purpose |
 |----------|------|---------|
 | Config | `config/base.yaml` | Main configuration |
+| Config Schema | `config/settings_schema.py` | Pydantic validation (NEW 2026-01-05) |
 | Frozen Params | `config/frozen_strategy_params_v2.2.json` | Strategy parameters |
 | State | `state/` | Runtime state files |
+| State Manager | `portfolio/state_manager.py` | Central state management (NEW 2026-01-05) |
+| LLM Budget | `state/llm_token_usage.json` | Token/cost tracking (NEW 2026-01-05) |
 | Logs | `logs/` | All log files |
 | Cache | `cache/` | Data cache |
 | Models | `models/` | Trained ML models |
 | Universe | `data/universe/` | Stock universes |
+| Data Quality | `data/quality/` | Canary scripts (NEW 2026-01-05) |
 | Backtest Output | `wf_outputs/` | Walk-forward results |
+
+---
+
+## Appendix: New Features (2026-01-05)
+
+### State Manager
+
+All state files are now managed through a central `StateManager` with:
+- File locking (cross-platform via `filelock`)
+- Atomic writes (temp file + rename pattern)
+- Thread-safe operations
+
+```python
+from portfolio.state_manager import get_state_manager
+sm = get_state_manager()
+
+# Read state
+positions = sm.get_positions()
+budget = sm.get_weekly_budget()
+
+# Write state (atomic with locking)
+sm.set_positions(new_positions)
+```
+
+### Data Quality Canaries
+
+Run canary checks to validate data sources:
+
+```bash
+# Earnings data source check
+python -c "from core.earnings_filter import run_earnings_canary; print(run_earnings_canary())"
+
+# Price discontinuity check (splits/dividends)
+python -c "from data.quality import check_recent_data; print(check_recent_data('AAPL'))"
+```
+
+### Secrets Masking
+
+Prevent API keys from appearing in logs:
+
+```python
+from core.secrets import mask_secrets, SecretsMaskingFilter
+
+# Mask in strings
+safe = mask_secrets("POLYGON_API_KEY=abc123")  # Returns masked version
+
+# Add to logging
+import logging
+handler = logging.StreamHandler()
+handler.addFilter(SecretsMaskingFilter())
+```

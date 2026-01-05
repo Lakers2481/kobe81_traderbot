@@ -123,6 +123,9 @@ class LLMNarrativeAnalyzer:
     A class that uses an LLM to analyze performance reflections.
     """
 
+    # Estimated tokens per reflection analysis call
+    ESTIMATED_TOKENS = 2000  # ~500 input + ~1200 output + buffer
+
     def __init__(self):
         """
         Initializes the analyzer and the Anthropic client.
@@ -140,6 +143,68 @@ class LLMNarrativeAnalyzer:
             except Exception as e:
                 logger.error(f"Failed to initialize Anthropic client: {e}")
                 self._client = None
+
+    def _check_budget(self) -> bool:
+        """
+        Check if LLM budget allows for this call.
+
+        FIX (2026-01-05): Added budget enforcement to prevent runaway costs.
+
+        Returns:
+            True if budget allows call, False otherwise
+        """
+        try:
+            from llm.token_budget import get_token_budget
+            budget = get_token_budget()
+            return budget.can_use(self.ESTIMATED_TOKENS)
+        except ImportError:
+            # Token budget module not available, allow call
+            return True
+        except Exception as e:
+            logger.warning(f"Failed to check LLM budget: {e}")
+            # On error, be conservative and block in live mode
+            try:
+                from config.settings_loader import get_setting
+                is_live = get_setting("system.mode", "paper") == "live"
+                return not is_live  # Block in live mode, allow in paper mode
+            except Exception:
+                return True  # Default to allowing
+
+    def _record_usage(self, response: Any) -> None:
+        """
+        Record token usage from API response.
+
+        FIX (2026-01-05): Added for budget tracking.
+
+        Args:
+            response: The Anthropic API response object
+        """
+        try:
+            from llm.token_budget import get_token_budget
+
+            # Extract usage from response
+            usage = getattr(response, 'usage', None)
+            if usage:
+                input_tokens = getattr(usage, 'input_tokens', 0)
+                output_tokens = getattr(usage, 'output_tokens', 0)
+                total_tokens = input_tokens + output_tokens
+
+                budget = get_token_budget()
+                budget.record_usage(
+                    tokens=total_tokens,
+                    model="claude-sonnet-4-20250514",
+                    input_tokens=input_tokens,
+                    output_tokens=output_tokens,
+                )
+                logger.debug(f"Recorded LLM usage: {input_tokens} in, {output_tokens} out")
+            else:
+                # Fallback: estimate usage
+                budget = get_token_budget()
+                budget.record_usage(tokens=self.ESTIMATED_TOKENS)
+        except ImportError:
+            pass  # Token budget module not available
+        except Exception as e:
+            logger.warning(f"Failed to record LLM usage: {e}")
     
     def analyze_reflection(self, reflection: "Reflection") -> LLMAnalysisResult:
         """
@@ -154,6 +219,15 @@ class LLMNarrativeAnalyzer:
         if not self._client:
             logger.debug("LLM client not available. Skipping analysis.")
             return LLMAnalysisResult(critique=None, hypotheses=[], strategy_ideas=[])
+
+        # FIX (2026-01-05): Check LLM budget before making API call
+        if not self._check_budget():
+            logger.warning("LLM budget exceeded. Skipping analysis.")
+            return LLMAnalysisResult(
+                critique="[Budget exceeded - analysis skipped]",
+                hypotheses=[],
+                strategy_ideas=[],
+            )
 
         # Construct a detailed prompt for the LLM.
         prompt = self._build_prompt(reflection)
@@ -176,6 +250,9 @@ class LLMNarrativeAnalyzer:
             # Extract the content from the response object.
             analysis_text = response.content[0].text
             logger.info("Received LLM analysis for reflection.")
+
+            # FIX (2026-01-05): Record token usage for budget tracking
+            self._record_usage(response)
 
             # Parse structured hypotheses from the response
             hypotheses = self._parse_hypotheses(analysis_text)

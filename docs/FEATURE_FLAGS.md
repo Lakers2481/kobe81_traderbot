@@ -1,7 +1,7 @@
 # Kobe81 Feature Flags - Complete Reference
 
-**Last Updated:** 2025-12-30
-**System Version:** 2.3
+**Last Updated:** 2026-01-05
+**System Version:** 2.4
 
 This document explains every configurable feature in the Kobe81 trading robot - what it does, why it exists, how it works, and when to enable it.
 
@@ -321,6 +321,197 @@ These features work immediately without any trading history. They use real-time 
 
 ---
 
+### 14. Preflight Live Gate (ADDED 2026-01-05)
+
+| Attribute | Value |
+|-----------|-------|
+| **Config Location** | N/A (standalone script) |
+| **Default** | Required for live |
+| **Needs History** | NO |
+
+**WHAT:** Comprehensive 15+ check gate that MUST pass before live trading.
+
+**WHY:**
+- Ensures all dependencies are working
+- Validates configuration before risking real money
+- Catches misconfigurations early
+
+**HOW:**
+```bash
+python scripts/preflight_live.py --mode live
+```
+See `docs/RUNBOOK.md` for full check list.
+
+---
+
+### 15. LLM Budget Enforcement (ADDED 2026-01-05)
+
+| Attribute | Value |
+|-----------|-------|
+| **Config Location** | `state/llm_token_usage.json` |
+| **Default** | `true` (auto-enforced) |
+| **Needs History** | NO |
+
+**WHAT:** Enforces daily token/cost limits on LLM API calls.
+
+**WHY:**
+- Prevents runaway API costs
+- Tracks usage per day
+- Alerts at 50% usage
+
+**HOW:**
+- Checks `can_use()` before each LLM call
+- Records usage after each call
+- Blocks calls when budget exceeded
+- Auto-resets at midnight
+
+**LIMITS:**
+- Tokens: 100,000/day
+- Cost: $50/day
+- Alert: at $25
+
+---
+
+### 16. Metrics Rate Limiting (ADDED 2026-01-05)
+
+| Attribute | Value |
+|-----------|-------|
+| **Config Location** | Auto-enabled in live mode |
+| **Default** | `true` (live), `false` (paper) |
+| **Needs History** | NO |
+
+**WHAT:** Rate limits /metrics endpoint to prevent flood attacks.
+
+**WHY:**
+- Protects health server from DoS
+- Prevents process impact from excessive requests
+- Only enabled in live mode
+
+**HOW:**
+- Token bucket: 60 requests/minute
+- Returns 429 when exceeded
+- Tracks via `METRICS_THROTTLED` Prometheus counter
+
+---
+
+### 17. Central State Manager (ADDED 2026-01-05)
+
+| Attribute | Value |
+|-----------|-------|
+| **Config Location** | `portfolio/state_manager.py` |
+| **Default** | Always active |
+| **Needs History** | NO |
+
+**WHAT:** Centralized atomic state management with file locking.
+
+**WHY:**
+- Prevents race conditions in state files
+- Ensures atomic writes (temp + rename)
+- Cross-platform file locking
+
+**HOW:**
+```python
+from portfolio.state_manager import get_state_manager
+sm = get_state_manager()
+positions = sm.get_positions()
+sm.set_positions(new_positions)
+```
+
+---
+
+### 18. Earnings Data Canary (ADDED 2026-01-05)
+
+| Attribute | Value |
+|-----------|-------|
+| **Config Location** | `core/earnings_filter.py` |
+| **Default** | Available on-demand |
+| **Needs History** | NO |
+
+**WHAT:** Validates that earnings data sources are working.
+
+**WHY:**
+- Detects silent failures in Polygon/yfinance
+- Tracks data source provenance
+- Alerts when sources return zero events
+
+**HOW:**
+```python
+from core.earnings_filter import run_earnings_canary
+results = run_earnings_canary()  # Checks AAPL, MSFT, etc.
+```
+
+---
+
+### 19. Corporate Actions Canary (ADDED 2026-01-05)
+
+| Attribute | Value |
+|-----------|-------|
+| **Config Location** | `data/quality/corporate_actions_canary.py` |
+| **Default** | Available on-demand |
+| **Needs History** | NO |
+
+**WHAT:** Detects price discontinuities that may indicate splits/dividends.
+
+**WHY:**
+- Catches unadjusted split data
+- Identifies data quality issues
+- Prevents trading on corrupt data
+
+**HOW:**
+```python
+from data.quality import check_symbol_for_splits
+result = check_symbol_for_splits("AAPL", df)
+```
+
+---
+
+### 20. Secrets Masking (ADDED 2026-01-05)
+
+| Attribute | Value |
+|-----------|-------|
+| **Config Location** | `core/secrets.py` |
+| **Default** | Available for use |
+| **Needs History** | NO |
+
+**WHAT:** Masks API keys and secrets in logs and error messages.
+
+**WHY:**
+- Prevents accidental secret exposure in logs
+- Sanitizes exception messages
+- Logging filter available
+
+**HOW:**
+```python
+from core.secrets import mask_secrets, sanitize_exception
+safe_text = mask_secrets("API key: PKABCD123")
+# Output: "API key: ***ALPACA_KEY***"
+```
+
+---
+
+## Deprecated Features
+
+### Liquidity Gate (DEPRECATED)
+
+| Attribute | Value |
+|-----------|-------|
+| **Status** | DEPRECATED as of 2026-01-04 |
+| **Replacement** | Built-in Alpaca liquidity checks |
+
+**WHAT:** Previously manually toggled liquidity checks.
+
+**WHY DEPRECATED:**
+- Alpaca now handles liquidity checks automatically
+- Function was redundant
+- Caused confusion about what was actually checked
+
+**MIGRATION:**
+- `enable_liquidity_gate()` is now a no-op with deprecation warning
+- Will be removed in v2.5
+- No action needed - Alpaca handles this automatically
+
+---
+
 ## Features Disabled (Need Trading History)
 
 These features require actual trade outcomes to function. Enable after accumulating sufficient trading history.
@@ -419,9 +610,17 @@ These features require actual trade outcomes to function. Enable after accumulat
 | llm_analyzer | YES | NO | llm_analyzer.enabled |
 | supervisor | YES | NO | supervisor.enabled |
 | historical_edge | YES | NO | historical_edge.enabled |
+| **preflight_live** | YES | NO | scripts/preflight_live.py |
+| **llm_budget** | YES | NO | state/llm_token_usage.json |
+| **metrics_rate_limit** | YES (live) | NO | monitor/health_endpoints.py |
+| **state_manager** | YES | NO | portfolio/state_manager.py |
+| **earnings_canary** | YES | NO | core/earnings_filter.py |
+| **corporate_actions_canary** | YES | NO | data/quality/ |
+| **secrets_masking** | YES | NO | core/secrets.py |
 | calibration | NO | YES (50+) | ml.calibration.enabled |
 | conformal | NO | YES (50+) | ml.conformal.enabled |
 | exec_bandit | NO | YES (100+) | N/A |
+| ~~liquidity_gate~~ | DEPRECATED | - | - |
 
 *Learns from history but works without it
 

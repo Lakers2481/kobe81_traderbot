@@ -259,6 +259,24 @@ class TokenBudget:
             "can_use": self.can_use(2000),
         }
 
+    def get_remaining_percent(self) -> float:
+        """
+        Get percentage of budget remaining.
+
+        FIX (2026-01-05): Added for preflight checks.
+
+        Returns:
+            Percentage remaining (0-100), based on the more limiting factor
+            (either tokens or USD).
+        """
+        self._check_reset()
+
+        tokens_remaining_pct = 100 * (self.daily_limit - self.used_today) / self.daily_limit
+        usd_remaining_pct = 100 * (self.max_daily_usd - self.cost_usd_today) / self.max_daily_usd
+
+        # Return the more limiting factor
+        return min(tokens_remaining_pct, usd_remaining_pct)
+
 
 # Global instance (lazy initialization)
 _global_budget: TokenBudget | None = None

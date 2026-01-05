@@ -50,6 +50,9 @@ from data.providers.polygon_intraday import (
 # FIX (2026-01-04): Import Prometheus counter for skip observability
 from trade_logging.prometheus_metrics import INTRADAY_TRIGGER_SKIPPED
 
+# FIX (2026-01-05): Import kill switch for safety check
+from core.kill_switch import is_kill_switch_active
+
 logger = logging.getLogger(__name__)
 
 
@@ -110,6 +113,22 @@ class IntradayTrigger:
         """
         side = side.lower()
         now = datetime.utcnow().isoformat()
+
+        # FIX (2026-01-05): Check kill switch FIRST - never poll while kill-switched
+        if is_kill_switch_active():
+            INTRADAY_TRIGGER_SKIPPED.labels(reason="kill_switch").inc()
+            logger.warning(f"Intraday trigger blocked for {symbol}: kill switch active")
+            return TriggerResult(
+                triggered=False,
+                symbol=symbol,
+                side=side,
+                price=None,
+                vwap=None,
+                first_hour_high=None,
+                first_hour_low=None,
+                reason="Kill switch active - trading halted",
+                checked_at=now,
+            )
 
         # Fetch current data
         bars = fetch_intraday_bars(symbol, timeframe="5Min", limit=78)
