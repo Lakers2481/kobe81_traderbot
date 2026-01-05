@@ -365,6 +365,32 @@ def premarket_validation(**kwargs) -> Dict[str, Any]:
     return run_script("scripts/premarket_validator.py", timeout=120)
 
 
+def generate_pregame_blueprint(**kwargs) -> Dict[str, Any]:
+    """Generate Pre-Game Blueprint with full 15-section analysis for Top 2 trades.
+
+    This runs at 8:00-8:30 AM premarket to generate comprehensive analysis
+    for the top 2 trade candidates including:
+    - Historical patterns with sample sizes
+    - Expected move analysis
+    - Support/resistance levels
+    - News and sentiment
+    - Congressional and insider activity
+    - Position sizing
+    - Bull/bear cases
+    - Risk analysis
+    """
+    logger.info("Generating Pre-Game Blueprint for Top 2 trades...")
+    script = Path("scripts/generate_pregame_blueprint.py")
+    if not script.exists():
+        return {"status": "error", "message": "Pre-Game Blueprint script not found"}
+    # Run with --cap 900 --top 5 --execute 2 (select Top 2 for full analysis)
+    return run_script(
+        "scripts/generate_pregame_blueprint.py",
+        args=["--cap", "900", "--top", "5", "--execute", "2"],
+        timeout=300  # 5 minutes for full analysis
+    )
+
+
 # =============================================================================
 # EXTERNAL RESEARCH HANDLERS - 24/7 Learning from External Sources
 # =============================================================================
@@ -1455,6 +1481,7 @@ HANDLERS = {
     # Watchlist
     "scripts.overnight_watchlist:build": build_overnight_watchlist,
     "scripts.premarket_validator:validate": premarket_validation,
+    "autonomous.handlers:generate_pregame_blueprint": generate_pregame_blueprint,
 
     # Self-improvement
     "autonomous.brain:review_discoveries": review_discoveries,

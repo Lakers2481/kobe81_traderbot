@@ -242,8 +242,10 @@ class AutonomousScheduler:
                 priority=TaskPriority.HIGH,
                 description="Run the scanner to find trading opportunities",
                 handler="scripts.scan:run_scan",
-                valid_phases=[MarketPhase.MARKET_MORNING, MarketPhase.MARKET_AFTERNOON],
-                valid_modes=[WorkMode.ACTIVE_TRADING],
+                # FIX 2026-01-05: Include MARKET_LUNCH so scanning happens all day
+                valid_phases=[MarketPhase.MARKET_MORNING, MarketPhase.MARKET_LUNCH, MarketPhase.MARKET_AFTERNOON],
+                # FIX 2026-01-05: Include MONITORING so scan runs even when not in active trading
+                valid_modes=[WorkMode.ACTIVE_TRADING, WorkMode.MONITORING, WorkMode.RESEARCH],
                 cooldown_minutes=30,
                 recurring=True,
             ),
@@ -467,6 +469,18 @@ class AutonomousScheduler:
                 priority=TaskPriority.HIGH,
                 description="Validate overnight watchlist for gaps and news",
                 handler="scripts.premarket_validator:validate",
+                valid_phases=[MarketPhase.PRE_MARKET_ACTIVE, MarketPhase.PRE_MARKET_EARLY],
+                cooldown_minutes=1440,
+                recurring=True,
+            ),
+            # NEW 2026-01-05: Pre-Game Blueprint for Top 2 trades
+            Task(
+                id="generate_pregame_blueprint",
+                name="Generate Pre-Game Blueprint",
+                category=TaskCategory.TRADING,
+                priority=TaskPriority.CRITICAL,
+                description="Generate full 15-section analysis for Top 2 trades",
+                handler="autonomous.handlers:generate_pregame_blueprint",
                 valid_phases=[MarketPhase.PRE_MARKET_ACTIVE, MarketPhase.PRE_MARKET_EARLY],
                 cooldown_minutes=1440,
                 recurring=True,
