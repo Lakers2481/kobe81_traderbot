@@ -57,10 +57,13 @@ class TestFetchEarningsDates:
 
     def test_uses_memory_cache(self):
         """Uses memory cache for repeated calls."""
-        # Prime the cache with mock data
+        # Prime the cache with mock data (using EarningsData)
         from core import earnings_filter
+        from core.earnings_filter import EarningsData
         test_dates = [datetime(2024, 1, 15), datetime(2024, 4, 15)]
-        earnings_filter._earnings_cache['AAPL'] = test_dates
+        earnings_filter._earnings_cache['AAPL'] = EarningsData(
+            dates=test_dates, source="polygon", fetched_at=datetime.now()
+        )
 
         # Should return cached data without API call
         result = fetch_earnings_dates('AAPL')
@@ -72,8 +75,11 @@ class TestFetchEarningsDates:
     def test_normalizes_symbol_to_uppercase(self):
         """Symbol is normalized to uppercase."""
         from core import earnings_filter
+        from core.earnings_filter import EarningsData
         test_dates = [datetime(2024, 1, 15)]
-        earnings_filter._earnings_cache['AAPL'] = test_dates
+        earnings_filter._earnings_cache['AAPL'] = EarningsData(
+            dates=test_dates, source="polygon", fetched_at=datetime.now()
+        )
 
         # Lowercase should still find it
         result = fetch_earnings_dates('aapl')
@@ -89,11 +95,16 @@ class TestIsNearEarnings:
         """Clear cache and set up mock data."""
         clear_cache()
         from core import earnings_filter
-        # Set up mock earnings dates
-        earnings_filter._earnings_cache['TEST'] = [
-            datetime(2024, 1, 15),  # Earnings on Jan 15
-            datetime(2024, 4, 20),  # Earnings on Apr 20
-        ]
+        from core.earnings_filter import EarningsData
+        # Set up mock earnings dates (using EarningsData)
+        earnings_filter._earnings_cache['TEST'] = EarningsData(
+            dates=[
+                datetime(2024, 1, 15),  # Earnings on Jan 15
+                datetime(2024, 4, 20),  # Earnings on Apr 20
+            ],
+            source="polygon",
+            fetched_at=datetime.now(),
+        )
 
     def teardown_method(self):
         clear_cache()
@@ -150,8 +161,13 @@ class TestFilterSignalsByEarnings:
     def setup_method(self):
         clear_cache()
         from core import earnings_filter
-        earnings_filter._earnings_cache['AAPL'] = [datetime(2024, 1, 15)]
-        earnings_filter._earnings_cache['MSFT'] = [datetime(2024, 2, 20)]
+        from core.earnings_filter import EarningsData
+        earnings_filter._earnings_cache['AAPL'] = EarningsData(
+            dates=[datetime(2024, 1, 15)], source="polygon", fetched_at=datetime.now()
+        )
+        earnings_filter._earnings_cache['MSFT'] = EarningsData(
+            dates=[datetime(2024, 2, 20)], source="polygon", fetched_at=datetime.now()
+        )
 
     def teardown_method(self):
         clear_cache()
@@ -198,7 +214,10 @@ class TestGetBlackoutDates:
     def setup_method(self):
         clear_cache()
         from core import earnings_filter
-        earnings_filter._earnings_cache['AAPL'] = [datetime(2024, 1, 15)]
+        from core.earnings_filter import EarningsData
+        earnings_filter._earnings_cache['AAPL'] = EarningsData(
+            dates=[datetime(2024, 1, 15)], source="polygon", fetched_at=datetime.now()
+        )
 
     def teardown_method(self):
         clear_cache()
@@ -234,7 +253,10 @@ class TestClearCache:
     def test_clears_memory_cache(self):
         """Clears in-memory cache."""
         from core import earnings_filter
-        earnings_filter._earnings_cache['TEST'] = [datetime(2024, 1, 1)]
+        from core.earnings_filter import EarningsData
+        earnings_filter._earnings_cache['TEST'] = EarningsData(
+            dates=[datetime(2024, 1, 1)], source="polygon", fetched_at=datetime.now()
+        )
 
         clear_cache()
 

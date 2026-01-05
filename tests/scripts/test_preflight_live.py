@@ -27,14 +27,14 @@ class TestCheckKillSwitch:
 
     def test_passes_when_inactive(self):
         """Check passes when kill switch is not active."""
-        with patch('scripts.preflight_live.is_kill_switch_active', return_value=False):
+        with patch('core.kill_switch.is_kill_switch_active', return_value=False):
             result = check_kill_switch()
             assert result.passed is True
             assert result.blocking is True
 
     def test_fails_when_active(self):
         """Check fails when kill switch is active."""
-        with patch('scripts.preflight_live.is_kill_switch_active', return_value=True):
+        with patch('core.kill_switch.is_kill_switch_active', return_value=True):
             result = check_kill_switch()
             assert result.passed is False
             assert result.blocking is True

@@ -128,9 +128,27 @@ class StateManager:
 
     def _get_state_path(self, name: str) -> Path:
         """Get the file path for a named state."""
+        # If using custom state_dir, use relative paths from that directory
+        if self.state_dir != STATE_DIR:
+            # Map name to relative path
+            relative_paths = {
+                "positions": "position_state.json",
+                "weekly_budget": "weekly_budget.json",
+                "brain_state": "autonomous/brain_state.json",
+                "reconciliation": "reconciliation/last_reconcile.json",
+                "earnings_cache": "earnings_cache.json",
+                "orders": "orders.json",
+                "daily_pnl": "daily_pnl.json",
+                "kill_switch": "KILL_SWITCH",
+                "watchlist": "watchlist/today_validated.json",
+            }
+            if name in relative_paths:
+                return self.state_dir / relative_paths[name]
+            return self.state_dir / f"{name}.json"
+
+        # Default: use global STATE_FILES
         if name in STATE_FILES:
             return STATE_FILES[name]
-        # Default to state_dir/<name>.json
         return self.state_dir / f"{name}.json"
 
     @contextmanager
