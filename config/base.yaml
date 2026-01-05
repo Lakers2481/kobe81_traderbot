@@ -147,9 +147,10 @@ execution:
     max_retries: 3  # Max retry attempts
     base_delay_ms: 500  # Initial backoff delay
   # Intraday entry trigger (config-gated) - delays entry until price confirms
-  # ENABLED 2025-12-30: Prevents chasing weak openings, waits for VWAP reclaim
+  # DISABLED 2026-01-04: Requires paid Alpaca Market Data subscription for 5-min bars
+  # Re-enable only if you have a paid Alpaca subscription
   intraday_trigger:
-    enabled: true  # Waits for price > VWAP before entry (no history needed)
+    enabled: false  # DISABLED - requires paid Alpaca Market Data subscription
     mode: "vwap_reclaim"  # vwap_reclaim | first_hour_high | first_hour_low | combined
     poll_interval_seconds: 60  # How often to check trigger
     max_wait_minutes: 120  # Max time to wait for trigger before skipping

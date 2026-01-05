@@ -59,13 +59,25 @@ def save_model(strategy: str, model: Pipeline, metadata: Dict, kind: str = 'cand
 
 
 def load_model(strategy: str) -> Optional[Pipeline]:
+    """
+    Load a trained model for the given strategy.
+
+    SECURITY FIX (2026-01-04): Uses safe_joblib_load with path validation.
+    """
     # Prefer deployed models; fallback to candidates if not deployed yet
     pkl, _ = model_paths(strategy, kind='deployed')
     if not pkl.exists():
         pkl, _ = model_paths(strategy, kind='candidate')
         if not pkl.exists():
             return None
-    return joblib.load(pkl)
+
+    # Use safe loading with path validation
+    try:
+        from core.safe_pickle import safe_joblib_load
+        return safe_joblib_load(pkl)
+    except ImportError:
+        # Fallback if safe_pickle module not available
+        return joblib.load(pkl)
 
 
 def predict_proba(model: Pipeline, df_features: pd.DataFrame) -> np.ndarray:

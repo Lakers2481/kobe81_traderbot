@@ -611,15 +611,31 @@ class _Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
 
-def start_health_server(port: int = 8000) -> HTTPServer:
+def start_health_server(port: int = 8000, bind_localhost_only: bool = None) -> HTTPServer:
     """
     Start HTTP health check server with endpoints:
     - /health - Overall health status
     - /readiness - Kubernetes readiness probe
     - /liveness - Kubernetes liveness probe
     - /metrics - Performance and request metrics (config-gated)
+
+    SECURITY FIX (2026-01-04): In production mode, binds to 127.0.0.1 (localhost only).
+    In paper mode, binds to 0.0.0.0 (all interfaces) for easier debugging.
     """
-    server = HTTPServer(("0.0.0.0", port), _Handler)
+    # Determine binding address
+    if bind_localhost_only is None:
+        # Auto-detect based on mode
+        try:
+            from config.settings_loader import get_setting
+            is_live = get_setting("system.mode", "paper") == "live"
+        except ImportError:
+            import os
+            is_live = os.getenv("KOBE_MODE", "paper").lower() == "live"
+        bind_localhost_only = is_live
+
+    host = "127.0.0.1" if bind_localhost_only else "0.0.0.0"
+    logger.info(f"Starting health server on {host}:{port} (localhost_only={bind_localhost_only})")
+    server = HTTPServer((host, port), _Handler)
     t = threading.Thread(target=server.serve_forever, daemon=True)
     t.start()
     return server

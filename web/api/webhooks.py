@@ -43,8 +43,14 @@ router = APIRouter(prefix="/webhook", tags=["webhooks"])
 # Configuration
 # =============================================================================
 
-# Production mode detection - CRITICAL for security
-_PRODUCTION_MODE = os.getenv("KOBE_MODE", "paper").lower() == "live"
+# SECURITY FIX (2026-01-04): Use centralized config for production mode detection
+# This ensures consistent mode detection across all components
+try:
+    from config.settings_loader import get_setting
+    _PRODUCTION_MODE = get_setting("system.mode", "paper") == "live"
+except ImportError:
+    # Fallback to env var if settings loader not available
+    _PRODUCTION_MODE = os.getenv("KOBE_MODE", "paper").lower() == "live"
 
 # HMAC secret for TradingView (set via environment variable)
 TRADINGVIEW_WEBHOOK_SECRET = os.getenv("TRADINGVIEW_WEBHOOK_SECRET", "")
@@ -76,6 +82,30 @@ RATE_LIMIT_MAX_REQUESTS = 30  # Max requests per window per IP
 
 # Request tracking for rate limiting
 _request_counts: Dict[str, list] = {}
+
+# SECURITY FIX (2026-01-04): API key for status endpoints in production
+WEBHOOK_API_KEY = os.getenv("WEBHOOK_API_KEY", "")
+
+
+async def require_api_key_in_production(x_api_key: Optional[str] = Header(None)):
+    """
+    Require API key for status endpoints in production mode.
+
+    In paper mode, status endpoints are open for easier debugging.
+    In production (live) mode, API key is required to prevent information leakage.
+    """
+    if _PRODUCTION_MODE:
+        if not WEBHOOK_API_KEY:
+            raise HTTPException(
+                status_code=500,
+                detail="WEBHOOK_API_KEY not configured for production mode"
+            )
+        if not x_api_key or x_api_key != WEBHOOK_API_KEY:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid or missing X-API-Key header"
+            )
+    # In paper mode, allow without API key
 
 
 # =============================================================================
@@ -445,12 +475,13 @@ async def custom_signal_webhook(
         )
 
 
-@router.get("/status")
+@router.get("/status", dependencies=[Depends(require_api_key_in_production)])
 async def webhook_status():
     """
     Get webhook system status.
 
     Returns queue statistics and configuration status.
+    SECURITY FIX (2026-01-04): Requires API key in production mode.
     """
     queue = get_signal_queue()
     stats = queue.get_stats()
@@ -469,12 +500,13 @@ async def webhook_status():
     }
 
 
-@router.get("/queue")
+@router.get("/queue", dependencies=[Depends(require_api_key_in_production)])
 async def get_queue_contents():
     """
     Get pending signals in queue (for monitoring).
 
     Returns list of pending signals waiting to be processed.
+    SECURITY FIX (2026-01-04): Requires API key in production mode.
     """
     queue = get_signal_queue()
     pending = queue.get_pending()

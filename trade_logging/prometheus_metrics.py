@@ -136,6 +136,27 @@ if PROMETHEUS_AVAILABLE:
         registry=REGISTRY
     )
 
+    # SECURITY FIX (2026-01-04): Counters for policy/compliance/killswitch rejections
+    POLICY_GATE_REJECTED = Counter(
+        'kobe_policy_gate_rejected_total',
+        'Orders blocked by PolicyGate',
+        ['reason'],
+        registry=REGISTRY
+    )
+
+    COMPLIANCE_REJECTED = Counter(
+        'kobe_compliance_rejected_total',
+        'Orders blocked by compliance checks',
+        ['reason'],
+        registry=REGISTRY
+    )
+
+    KILL_SWITCH_BLOCKS = Counter(
+        'kobe_kill_switch_blocks_total',
+        'Operations blocked by kill switch',
+        registry=REGISTRY
+    )
+
 else:
     # No-op placeholders
     class NoOpMetric:
@@ -159,6 +180,9 @@ else:
     DECISIONS_RECORDED = NoOpMetric()
     ERRORS_TOTAL = NoOpMetric()
     SCANS_COMPLETED = NoOpMetric()
+    POLICY_GATE_REJECTED = NoOpMetric()
+    COMPLIANCE_REJECTED = NoOpMetric()
+    KILL_SWITCH_BLOCKS = NoOpMetric()
 
 
 # ============================================================================

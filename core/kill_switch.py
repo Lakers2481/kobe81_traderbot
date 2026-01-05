@@ -97,6 +97,12 @@ def check_kill_switch() -> None:
     if is_kill_switch_active():
         info = get_kill_switch_info()
         reason = info.get("reason", "Unknown") if info else "Unknown"
+        # SECURITY FIX (2026-01-04): Increment Prometheus counter
+        try:
+            from trade_logging.prometheus_metrics import KILL_SWITCH_BLOCKS
+            KILL_SWITCH_BLOCKS.inc()
+        except Exception:
+            pass
         raise KillSwitchActiveError(f"Kill switch active: {reason}")
 
 

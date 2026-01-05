@@ -244,12 +244,11 @@ class EmergencyProtocol:
             from risk.dynamic_position_sizer import set_size_multiplier
             from core.structured_log import jlog
             set_size_multiplier(0.5)  # Reduce all future positions by 50%
-            jlog('emergency_action', {
-                'action': 'reduce_exposure',
-                'multiplier': 0.5,
-                'event': event.message,
-                'level': event.level.name
-            })
+            jlog('emergency_action',
+                 action='reduce_exposure',
+                 multiplier=0.5,
+                 event=event.message,
+                 level=event.level.name)
             logger.warning("Position sizing reduced to 50%")
         except ImportError:
             logger.warning("dynamic_position_sizer not available, falling back to PolicyGate")
@@ -275,12 +274,11 @@ class EmergencyProtocol:
 
             gate = PolicyGate.from_config()
             gate.set_trading_halted(True)
-            jlog('emergency_action', {
-                'action': 'halt_trades',
-                'halted': True,
-                'event': event.message,
-                'level': event.level.name
-            })
+            jlog('emergency_action',
+                 action='halt_trades',
+                 halted=True,
+                 event=event.message,
+                 level=event.level.name)
             logger.error("All new trades HALTED by emergency protocol")
         except Exception as e:
             logger.error(f"Failed to halt trades via PolicyGate: {e}")
@@ -301,12 +299,11 @@ class EmergencyProtocol:
 
             broker = AlpacaBroker()
             result = broker.close_all_positions()
-            jlog('emergency_action', {
-                'action': 'close_all_positions',
-                'result': str(result),
-                'event': event.message,
-                'level': event.level.name
-            })
+            jlog('emergency_action',
+                 action='close_all_positions',
+                 result=str(result),
+                 event=event.message,
+                 level=event.level.name)
             logger.critical(f"All positions CLOSED: {result}")
         except Exception as e:
             logger.error(f"Failed to close all positions: {e}")

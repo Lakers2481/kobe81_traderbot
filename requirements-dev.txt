@@ -1,0 +1,33 @@
+# Kobe Trading System - Development Dependencies
+# Install with: pip install -r requirements-dev.txt
+#
+# These are development-only dependencies, not required for production.
+# SECURITY FIX (2026-01-04): Separated from requirements.txt to reduce production footprint.
+
+# Include production dependencies
+-r requirements.txt
+
+# Testing Framework
+pytest>=7.4
+pytest-cov>=4.1
+pytest-asyncio>=0.21
+pytest-mock>=3.12
+requests-mock>=1.11
+
+# Type Checking
+mypy>=1.7
+types-requests>=2.31  # Type stubs for requests
+types-PyYAML>=6.0  # Type stubs for PyYAML
+
+# Code Quality & Formatting
+black>=23.0
+flake8>=6.1
+isort>=5.12
+ruff>=0.1  # Fast linter (optional)
+
+# Pre-commit Hooks
+pre-commit>=3.5
+
+# Documentation (optional)
+# sphinx>=7.0
+# sphinx-rtd-theme>=2.0

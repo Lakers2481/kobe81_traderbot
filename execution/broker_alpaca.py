@@ -71,14 +71,20 @@ def require_policy_gate(func):
                     qty=int(order.qty)
                 )
                 if not allowed:
-                    jlog('policy_gate_reject', {
-                        'symbol': order.symbol,
-                        'side': order.side,
-                        'qty': order.qty,
-                        'reason': reason,
-                        'function': func.__name__
-                    })
+                    # SECURITY FIX 2026-01-04: Use ** to unpack dict as kwargs
+                    jlog('policy_gate_reject',
+                         symbol=order.symbol,
+                         side=order.side,
+                         qty=order.qty,
+                         reason=reason,
+                         function=func.__name__)
                     logger.warning(f"PolicyGate blocked {order.symbol}: {reason}")
+                    # Increment Prometheus counter
+                    try:
+                        from trade_logging.prometheus_metrics import POLICY_GATE_REJECTED
+                        POLICY_GATE_REJECTED.labels(reason=reason[:50]).inc()
+                    except Exception:
+                        pass
                     raise PolicyGateError(f"PolicyGate blocked: {reason}")
 
                 # Compliance: Prohibited list check
@@ -94,12 +100,17 @@ def require_policy_gate(func):
                             'reasons': [{'code': r.code, 'detail': r.detail} for r in reasons],
                             'function': func.__name__
                         })
-                        jlog('compliance_reject', {
-                            'symbol': order.symbol,
-                            'reason': 'prohibited_list',
-                            'codes': reason_str
-                        })
+                        jlog('compliance_reject',
+                             symbol=order.symbol,
+                             reason='prohibited_list',
+                             codes=reason_str)
                         logger.warning(f"Compliance blocked {order.symbol}: prohibited ({reason_str})")
+                        # Increment Prometheus counter
+                        try:
+                            from trade_logging.prometheus_metrics import COMPLIANCE_REJECTED
+                            COMPLIANCE_REJECTED.labels(reason='prohibited_list').inc()
+                        except Exception:
+                            pass
                         raise ComplianceError(f"Symbol prohibited: {reason_str}")
                 except ComplianceError:
                     raise
@@ -125,11 +136,16 @@ def require_policy_gate(func):
                             'reason': rule_reason,
                             'function': func.__name__
                         })
-                        jlog('compliance_rules_reject', {
-                            'symbol': order.symbol,
-                            'reason': rule_reason
-                        })
+                        jlog('compliance_rules_reject',
+                             symbol=order.symbol,
+                             reason=rule_reason)
                         logger.warning(f"Compliance rules blocked {order.symbol}: {rule_reason}")
+                        # Increment Prometheus counter
+                        try:
+                            from trade_logging.prometheus_metrics import COMPLIANCE_REJECTED
+                            COMPLIANCE_REJECTED.labels(reason='trade_rules').inc()
+                        except Exception:
+                            pass
                         raise ComplianceError(f"Trade rules violated: {rule_reason}")
                 except (ImportError, RuntimeError):
                     # equity_sizer may fail or compliance not available, continue
@@ -142,7 +158,15 @@ def require_policy_gate(func):
             except ImportError:
                 logger.warning("PolicyGate not available, skipping check")
             except Exception as e:
-                logger.warning(f"PolicyGate check failed: {e}, allowing order")
+                # SECURITY FIX (2026-01-04): Fail CLOSED, not OPEN
+                # Any exception during policy check BLOCKS the order and activates kill switch
+                logger.critical(f"PolicyGate check failed: {e}, BLOCKING order (fail-closed)")
+                try:
+                    from core.kill_switch import activate_kill_switch
+                    activate_kill_switch(f"PolicyGate failure: {e}")
+                except Exception:
+                    pass  # Kill switch activation failed, but still block the order
+                raise PolicyGateError(f"Policy check error (fail-closed): {e}")
         return func(*args, **kwargs)
     return wrapper
 
@@ -228,15 +252,24 @@ def get_account_info(timeout: int = 10) -> Optional[Dict[str, Any]]:
 
 
 def _fetch_quotes(symbol: str, timeout: int = 5) -> Optional[Dict[str, Any]]:
+    """
+    Fetch quotes from Alpaca with retry support.
+
+    SECURITY FIX (2026-01-04): Added retry wrapper for reliability.
+    """
     cfg = _alpaca_cfg()
     if not cfg.key_id or not cfg.secret:
         return None
     # Use the data API domain for quotes
     data_base = _data_api_base(cfg)
     url = f"{data_base}{ALPACA_QUOTES_URL}?symbols={symbol.upper()}"
-    try:
+
+    def do_request():
+        """Inner function for retry wrapper."""
         r = requests.get(url, headers=_auth_headers(cfg), timeout=timeout)
         if r.status_code != 200:
+            if r.status_code == 429:
+                raise requests.exceptions.HTTPError("Rate limited")
             return None
         data = r.json()
         quotes = data.get("quotes") or data.get("quotes_by_symbol")
@@ -247,9 +280,13 @@ def _fetch_quotes(symbol: str, timeout: int = 5) -> Optional[Dict[str, Any]]:
             arr = quotes or []
         if not arr:
             return None
-        q = arr[-1]
-        return q
+        return arr[-1]
+
+    try:
+        from core.rate_limiter import with_retry
+        return with_retry(do_request, max_retries=3, base_delay_ms=500)
     except Exception:
+        # Retry exhausted or unexpected error
         return None
 
 
@@ -391,11 +428,10 @@ def enable_liquidity_gate(enabled: bool = True) -> None:
     if not enabled:
         logger.critical("SECURITY: Attempt to disable liquidity gate BLOCKED. Liquidity gate is always enabled.")
         from core.structured_log import jlog
-        jlog('security_violation', {
-            'type': 'liquidity_gate_disable_attempt',
-            'blocked': True,
-            'message': 'Liquidity gate cannot be disabled programmatically'
-        })
+        jlog('security_violation',
+             violation_type='liquidity_gate_disable_attempt',
+             blocked=True,
+             message='Liquidity gate cannot be disabled programmatically')
     else:
         logger.info("Liquidity gate is always enabled (no action needed)")
 
@@ -1093,18 +1129,15 @@ def place_order_with_liquidity_check(
 
     Returns:
         OrderResult with order status and liquidity check details
+
+    Note:
+        SECURITY FIX (2026-01-04): bypass_if_disabled param is deprecated and ignored.
+        Liquidity gate is ALWAYS enabled, cannot be bypassed.
     """
-    # Check if liquidity gate is enabled
-    if not is_liquidity_gate_enabled() and bypass_if_disabled:
-        logger.debug(f"Liquidity gate disabled, bypassing check for {order.symbol}")
-        broker_result = place_ioc_limit(order)
-        return OrderResult(
-            order=broker_result.order,
-            liquidity_check=None,
-            blocked_by_liquidity=False,
-            market_bid_at_execution=broker_result.market_bid_at_execution,
-            market_ask_at_execution=broker_result.market_ask_at_execution,
-        )
+    # SECURITY FIX (2026-01-04): Removed dead branch
+    # Liquidity gate is always enabled, no bypass possible
+    if bypass_if_disabled:
+        logger.debug("bypass_if_disabled is deprecated and ignored - liquidity gate is always on")
 
     # Run liquidity check
     liq_check = check_liquidity_for_order(
@@ -1219,7 +1252,9 @@ def execute_signal(
     )
 
     # Place with liquidity check
-    if check_liquidity and is_liquidity_gate_enabled():
+    # SECURITY FIX (2026-01-04): Removed redundant is_liquidity_gate_enabled() check
+    # Liquidity gate is always enabled - simplified to just check_liquidity flag
+    if check_liquidity:
         return place_order_with_liquidity_check(
             order=order,
             strict=strict_liquidity,

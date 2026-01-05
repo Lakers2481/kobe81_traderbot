@@ -37,6 +37,10 @@ from cognitive.reflection_engine import get_reflection_engine
 from cognitive.self_model import get_self_model
 from execution.tca.transaction_cost_analyzer import get_tca_analyzer
 
+# Import for real status values (SECURITY FIX 2026-01-04: replace placeholders)
+from core.kill_switch import is_kill_switch_active
+from config.settings_loader import get_setting
+
 # Import webhook router
 try:
     from web.api.webhooks import router as webhooks_router
@@ -100,11 +104,14 @@ async def get_bot_status() -> Dict[str, Any]:
     try:
         signal_processor = get_signal_processor()
         # This will be refined as more components are exposed
+        # SECURITY FIX 2026-01-04: Use real status values, not placeholders
+        mode = get_setting("system.mode", "paper")
         status = {
             "timestamp": datetime.now().isoformat(),
             "overall_health": "operational",
-            "kill_switch_active": False, # Placeholder
-            "paper_mode": True, # Placeholder
+            "kill_switch_active": is_kill_switch_active(),
+            "paper_mode": mode == "paper",
+            "mode": mode,
             "active_cognitive_episodes": len(signal_processor._active_episodes),
             "log_level": logging.getLevelName(logger.getEffectiveLevel()),
         }

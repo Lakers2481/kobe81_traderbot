@@ -62,7 +62,7 @@ def get_account_equity(fail_safe: bool = True) -> float:
                 from core.kill_switch import activate_kill_switch
                 from core.structured_log import jlog
                 activate_kill_switch(f"equity_sizer: {msg}")
-                jlog('equity_fetch_failed', {'reason': 'missing_credentials', 'action': 'kill_switch_activated'})
+                jlog('equity_fetch_failed', reason='missing_credentials', action='kill_switch_activated')
                 return 0.0  # Return 0 to prevent any trades
             raise RuntimeError(msg)
 
@@ -83,7 +83,7 @@ def get_account_equity(fail_safe: bool = True) -> float:
             from core.kill_switch import activate_kill_switch
             from core.structured_log import jlog
             activate_kill_switch(f"equity_sizer: {msg}")
-            jlog('equity_fetch_failed', {'reason': str(e), 'action': 'kill_switch_activated'})
+            jlog('equity_fetch_failed', reason=str(e), action='kill_switch_activated')
             return 0.0  # Return 0 to prevent any trades
         raise RuntimeError(msg) from e
 

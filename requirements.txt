@@ -39,20 +39,14 @@ anthropic>=0.21  # For Claude API integration
 matplotlib>=3.7
 plotly>=5.18
 
-# Testing
-pytest>=7.4
-pytest-cov>=4.1
-pytest-asyncio>=0.21
-pytest-mock>=3.12
-requests-mock>=1.11
-
-# Type Checking
-mypy>=1.7
-
-# Code Quality
-black>=23.0
-flake8>=6.1
-isort>=5.12
+# =============================================================================
+# DEVELOPMENT DEPENDENCIES
+# SECURITY FIX (2026-01-04): Dev dependencies moved to requirements-dev.txt
+# For development, install: pip install -r requirements-dev.txt
+# =============================================================================
+# Testing: pytest, pytest-cov, pytest-asyncio, pytest-mock, requests-mock
+# Type Checking: mypy
+# Code Quality: black, flake8, isort
 
 # Scheduling
 schedule>=1.2
