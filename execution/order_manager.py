@@ -36,8 +36,10 @@ Usage:
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 import time
+import threading
+from concurrent.futures import ThreadPoolExecutor, Future
 import pandas as pd
 
 from oms.order_state import OrderRecord, OrderStatus
@@ -45,6 +47,21 @@ from execution.broker_alpaca import place_ioc_limit, get_best_ask, get_best_bid,
 from execution.tca.transaction_cost_analyzer import get_tca_analyzer
 
 logger = logging.getLogger(__name__)
+
+# Thread pool for non-blocking TWAP/VWAP execution
+# SECURITY FIX (2026-01-04): TWAP was using blocking time.sleep() which could
+# freeze the main trading thread for up to 60 minutes. Now uses ThreadPoolExecutor.
+_execution_pool: Optional[ThreadPoolExecutor] = None
+_execution_pool_lock = threading.Lock()
+
+def get_execution_pool() -> ThreadPoolExecutor:
+    """Get or create singleton thread pool for execution strategies."""
+    global _execution_pool
+    with _execution_pool_lock:
+        if _execution_pool is None:
+            _execution_pool = ThreadPoolExecutor(max_workers=5, thread_name_prefix="TWAP_")
+            logger.info("Created ThreadPoolExecutor for non-blocking order execution")
+        return _execution_pool
 
 
 class OrderManager:
@@ -57,6 +74,9 @@ class OrderManager:
         self.default_execution_strategy = default_execution_strategy
         # Lazy load TCA analyzer
         self._tca_analyzer = None
+        # Track background executions (TWAP/VWAP)
+        self._background_executions: Dict[str, Future] = {}
+        self._executions_lock = threading.Lock()
         logger.info(f"OrderManager initialized with default strategy: {self.default_execution_strategy}")
 
     @property
@@ -164,13 +184,43 @@ class OrderManager:
         """
         Executes a Time-Weighted Average Price (TWAP) strategy.
         Breaks a large order into smaller slices over a specified duration.
+
+        SECURITY FIX (2026-01-04): Now runs in background thread instead of blocking.
+        The main thread returns immediately with order status = PENDING.
+        Use get_execution_status() to check progress.
+        """
+        total_qty = order.qty
+        logger.info(f"Starting non-blocking TWAP for {total_qty} {order.symbol} over {duration_minutes} min, in {slice_count} slices.")
+
+        # Mark order as in-progress
+        order.status = OrderStatus.PENDING
+        order.notes = f"TWAP in progress: 0/{slice_count} slices"
+
+        # Submit to background thread pool
+        pool = get_execution_pool()
+        future = pool.submit(
+            self._execute_twap_worker,
+            order, market_bid_at_submission, market_ask_at_submission,
+            duration_minutes, slice_count
+        )
+
+        # Track the execution
+        with self._executions_lock:
+            self._background_executions[order.execution_id] = future
+
+        logger.info(f"TWAP for {order.symbol} submitted to background thread (execution_id={order.execution_id})")
+
+    def _execute_twap_worker(self, order: OrderRecord, market_bid_at_submission: float, market_ask_at_submission: float, duration_minutes: int, slice_count: int):
+        """
+        Worker function that executes TWAP slices in a background thread.
+        This is where the blocking sleeps happen (safely off the main thread).
         """
         total_qty = order.qty
         slice_qty = total_qty // slice_count
         remaining_qty = total_qty % slice_count
         interval_seconds = duration_minutes * 60 / slice_count
 
-        logger.info(f"Executing TWAP for {total_qty} {order.symbol} over {duration_minutes} min, in {slice_count} slices.")
+        logger.info(f"[TWAP Worker] Executing TWAP for {total_qty} {order.symbol} over {duration_minutes} min, in {slice_count} slices.")
 
         for i in range(slice_count):
             qty_to_execute = slice_qty + (remaining_qty if i == slice_count - 1 else 0)
@@ -192,28 +242,60 @@ class OrderManager:
                 strategy_used=order.strategy_used,
                 execution_id=f"{order.execution_id}-TWAP-slice-{i+1}"
             )
-            
+
             try:
                 broker_result = self._execute_simple_ioc_limit(slice_order, market_bid_at_submission, market_ask_at_submission)
-                logger.debug(f"TWAP slice {i+1} for {order.symbol} executed: {broker_result.order.status.value}")
-                
+                logger.debug(f"[TWAP Worker] Slice {i+1}/{slice_count} for {order.symbol} executed: {broker_result.order.status.value}")
+
                 # Aggregate filled quantity and average price for the parent order
                 order.filled_qty = (order.filled_qty or 0) + (broker_result.order.filled_qty or 0)
                 if broker_result.order.filled_qty and broker_result.order.fill_price:
                     if order.filled_qty > 0:
-                        order.fill_price = ((order.fill_price or 0) * (order.filled_qty - broker_result.order.filled_qty) + 
+                        order.fill_price = ((order.fill_price or 0) * (order.filled_qty - broker_result.order.filled_qty) +
                                             (broker_result.order.fill_price * broker_result.order.filled_qty)) / order.filled_qty
                     else:
                         order.fill_price = broker_result.order.fill_price
 
+                # Update progress
+                order.notes = f"TWAP in progress: {i+1}/{slice_count} slices, filled {order.filled_qty or 0}/{total_qty}"
+
             except Exception as e:
-                logger.warning(f"TWAP slice {i+1} failed for {order.symbol}: {e}")
-            
+                logger.warning(f"[TWAP Worker] Slice {i+1} failed for {order.symbol}: {e}")
+
             if i < slice_count - 1:
-                time.sleep(interval_seconds) # Wait for the next slice
+                time.sleep(interval_seconds)  # Safe to sleep here - we're in background thread
 
         order.update_status(OrderStatus.FILLED if (order.filled_qty or 0) > 0 else OrderStatus.FAILED)
-        logger.info(f"TWAP for {order.symbol} completed. Filled {order.filled_qty or 0}/{total_qty} shares.")
+        logger.info(f"[TWAP Worker] TWAP for {order.symbol} completed. Filled {order.filled_qty or 0}/{total_qty} shares.")
+
+        # Clean up tracking
+        with self._executions_lock:
+            if order.execution_id in self._background_executions:
+                del self._background_executions[order.execution_id]
+
+    def get_execution_status(self, execution_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Check status of a background execution (TWAP/VWAP).
+
+        Returns:
+            Dict with 'running', 'done', 'error' status, or None if not found.
+        """
+        with self._executions_lock:
+            future = self._background_executions.get(execution_id)
+
+        if future is None:
+            return None
+
+        if future.running():
+            return {"execution_id": execution_id, "status": "running"}
+        elif future.done():
+            try:
+                future.result()  # This will raise if there was an exception
+                return {"execution_id": execution_id, "status": "done"}
+            except Exception as e:
+                return {"execution_id": execution_id, "status": "error", "error": str(e)}
+        else:
+            return {"execution_id": execution_id, "status": "pending"}
 
     def _execute_vwap(self, order: OrderRecord, market_bid_at_submission: float, market_ask_at_submission: float, lookback_hours: int = 2):
         """

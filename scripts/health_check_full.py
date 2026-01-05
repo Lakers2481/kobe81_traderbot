@@ -61,7 +61,11 @@ def check_imports() -> Tuple[List[str], List[str]]:
 
     for mod, cls in imports:
         try:
-            exec(f'from {mod} import {cls}')
+            # SECURITY FIX (2026-01-04): Replaced exec() with importlib
+            # exec() is a security risk - arbitrary code execution
+            import importlib
+            module = importlib.import_module(mod)
+            getattr(module, cls)  # Verify the attribute exists
             ok.append(f'{mod}.{cls}')
         except Exception as e:
             issues.append(f'Import {mod}.{cls}: {str(e)[:50]}')

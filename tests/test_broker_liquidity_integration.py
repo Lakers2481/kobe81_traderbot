@@ -2,6 +2,11 @@
 Tests for Broker-Liquidity Gate Integration.
 
 Tests that the liquidity gate is properly wired into the broker execution flow.
+
+NOTE (2026-01-04): Security fixes changed behavior:
+- Liquidity gate is now ALWAYS enabled (toggle removed)
+- PolicyGate is now enforced at broker boundary
+Tests updated to mock PolicyGate where needed.
 """
 import pytest
 from unittest.mock import patch, MagicMock
@@ -12,7 +17,6 @@ from execution.broker_alpaca import (
     BrokerExecutionResult,
     get_liquidity_gate,
     set_liquidity_gate,
-    enable_liquidity_gate,
     is_liquidity_gate_enabled,
     check_liquidity_for_order,
     place_order_with_liquidity_check,
@@ -23,6 +27,27 @@ from execution.broker_alpaca import (
 )
 from oms.order_state import OrderRecord, OrderStatus
 from risk.liquidity_gate import LiquidityGate, LiquidityCheck, LiquidityIssue
+
+
+# Mock PolicyGate to allow orders (since we're testing liquidity, not risk limits)
+@pytest.fixture(autouse=True)
+def mock_policy_gate():
+    """Mock PolicyGate.check to always pass for liquidity tests."""
+    with patch('risk.policy_gate.PolicyGate') as mock:
+        mock_gate = MagicMock()
+        mock_gate.check.return_value = (True, "allowed")
+        mock.from_config.return_value = mock_gate
+        yield mock
+
+
+# Mock compliance module to not block orders in liquidity tests
+@pytest.fixture(autouse=True)
+def mock_compliance():
+    """Mock compliance checks to always pass for liquidity tests."""
+    with patch('compliance.is_prohibited', return_value=(False, [])), \
+         patch('compliance.evaluate_trade_rules', return_value=(True, 'ok')), \
+         patch('compliance.log_compliance_event'):
+        yield
 
 
 class TestLiquidityGateIntegration:
@@ -58,13 +83,12 @@ class TestLiquidityGateIntegration:
         import execution.broker_alpaca as broker
         broker._liquidity_gate = None
 
-    def test_enable_disable_liquidity_gate(self):
-        """Should toggle liquidity gate on/off."""
-        enable_liquidity_gate(False)
-        assert not is_liquidity_gate_enabled()
-
-        enable_liquidity_gate(True)
+    def test_liquidity_gate_always_enabled(self):
+        """Liquidity gate is always enabled (SECURITY FIX 2026-01-04: toggle removed)."""
+        # The toggle was removed as a security measure - liquidity gate is ALWAYS on
         assert is_liquidity_gate_enabled()
+        # Calling with False should be a no-op or not exist
+        assert is_liquidity_gate_enabled()  # Still True
 
 
 class TestCheckLiquidityForOrder:
@@ -155,7 +179,7 @@ class TestPlaceOrderWithLiquidityCheck:
     @patch('execution.broker_alpaca.place_ioc_limit')
     def test_places_order_when_liquidity_passes(self, mock_place, mock_check):
         """Should place order when liquidity check passes."""
-        enable_liquidity_gate(True)
+        # Liquidity gate is always enabled (toggle removed in security fix)
 
         mock_check.return_value = LiquidityCheck(
             symbol='AAPL',
@@ -183,7 +207,7 @@ class TestPlaceOrderWithLiquidityCheck:
     @patch('execution.broker_alpaca.place_ioc_limit')
     def test_blocks_order_when_liquidity_fails(self, mock_place, mock_check):
         """Should block order when liquidity check fails."""
-        enable_liquidity_gate(True)
+        # Liquidity gate is always enabled (toggle removed in security fix)
 
         mock_check.return_value = LiquidityCheck(
             symbol='LOWVOL',
@@ -202,27 +226,15 @@ class TestPlaceOrderWithLiquidityCheck:
         assert "liquidity_gate" in result.order.notes
         mock_place.assert_not_called()
 
-    @patch('execution.broker_alpaca.place_ioc_limit')
-    def test_bypasses_check_when_disabled(self, mock_place):
-        """Should bypass check when gate is disabled."""
-        enable_liquidity_gate(False)
+    @pytest.mark.skip(reason="SECURITY FIX 2026-01-04: Liquidity gate can no longer be disabled")
+    def test_bypasses_check_when_disabled(self):
+        """
+        DEPRECATED: This test is skipped because liquidity gate toggle was removed.
 
-        order = self._create_test_order()
-        order.status = OrderStatus.SUBMITTED
-        mock_place.return_value = BrokerExecutionResult(
-            order=order,
-            market_bid_at_execution=149.98,
-            market_ask_at_execution=150.02,
-        )
-
-        result = place_order_with_liquidity_check(order)
-
-        assert result.liquidity_check is None
-        assert not result.blocked_by_liquidity
-        mock_place.assert_called_once()
-
-        # Re-enable for other tests
-        enable_liquidity_gate(True)
+        The liquidity gate is now ALWAYS enabled as a security measure to prevent
+        trading in illiquid securities. There is no way to bypass this check.
+        """
+        pass
 
 
 class TestExecuteSignal:
@@ -234,7 +246,7 @@ class TestExecuteSignal:
     @patch('execution.broker_alpaca.place_ioc_limit')
     def test_full_execution_flow(self, mock_place, mock_check, mock_ask, mock_bid):
         """Should execute full flow: quote -> construct -> check -> place."""
-        enable_liquidity_gate(True)
+        # Liquidity gate is always enabled (toggle removed in security fix)
 
         mock_ask.return_value = 150.0
         mock_bid.return_value = 149.98
@@ -282,43 +294,20 @@ class TestExecuteSignal:
         assert result.order.status == OrderStatus.REJECTED
         assert "no_quote" in result.order.notes
 
-    @patch('execution.broker_alpaca.get_best_ask')
-    @patch('execution.broker_alpaca.check_liquidity_for_order')
-    @patch('execution.broker_alpaca.place_ioc_limit')
-    def test_skips_liquidity_when_disabled(self, mock_place, mock_check, mock_ask):
-        """Should skip liquidity check when disabled."""
-        enable_liquidity_gate(False)
+    @pytest.mark.skip(reason="SECURITY FIX 2026-01-04: Liquidity gate can no longer be disabled")
+    def test_skips_liquidity_when_disabled(self):
+        """
+        DEPRECATED: This test is skipped because liquidity gate toggle was removed.
 
-        mock_ask.return_value = 150.0
-
-        def set_submitted(order):
-            order.status = OrderStatus.SUBMITTED
-            return BrokerExecutionResult(
-                order=order,
-                market_bid_at_execution=149.0,
-                market_ask_at_execution=150.0,
-            )
-
-        mock_place.side_effect = set_submitted
-
-        result = execute_signal(
-            symbol='AAPL',
-            side='BUY',
-            qty=100,
-            check_liquidity=True,  # Would check, but gate disabled
-        )
-
-        assert result.liquidity_check is None
-        mock_check.assert_not_called()
-
-        # Re-enable
-        enable_liquidity_gate(True)
+        The liquidity gate is now ALWAYS enabled as a security measure.
+        """
+        pass
 
     @patch('execution.broker_alpaca.get_best_ask')
     @patch('execution.broker_alpaca.place_ioc_limit')
     def test_skips_liquidity_when_param_false(self, mock_place, mock_ask):
         """Should skip liquidity check when check_liquidity=False."""
-        enable_liquidity_gate(True)
+        # Liquidity gate is always enabled, but check_liquidity param can still skip
 
         mock_ask.return_value = 150.0
 

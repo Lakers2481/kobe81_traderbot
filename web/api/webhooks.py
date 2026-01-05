@@ -43,9 +43,32 @@ router = APIRouter(prefix="/webhook", tags=["webhooks"])
 # Configuration
 # =============================================================================
 
+# Production mode detection - CRITICAL for security
+_PRODUCTION_MODE = os.getenv("KOBE_MODE", "paper").lower() == "live"
+
 # HMAC secret for TradingView (set via environment variable)
 TRADINGVIEW_WEBHOOK_SECRET = os.getenv("TRADINGVIEW_WEBHOOK_SECRET", "")
 CUSTOM_WEBHOOK_SECRET = os.getenv("CUSTOM_WEBHOOK_SECRET", "")
+
+# =============================================================================
+# SECURITY FIX (2026-01-04): Fail-closed in production mode
+# =============================================================================
+# In production mode, webhooks MUST have HMAC secrets configured.
+# This prevents attackers from sending fake trading signals.
+
+if _PRODUCTION_MODE:
+    _missing_secrets = []
+    if not TRADINGVIEW_WEBHOOK_SECRET:
+        _missing_secrets.append("TRADINGVIEW_WEBHOOK_SECRET")
+    if not CUSTOM_WEBHOOK_SECRET:
+        _missing_secrets.append("CUSTOM_WEBHOOK_SECRET")
+
+    if _missing_secrets:
+        raise RuntimeError(
+            f"SECURITY CRITICAL: Production mode requires webhook HMAC secrets. "
+            f"Missing: {', '.join(_missing_secrets)}. "
+            f"Set these environment variables or switch to paper mode (KOBE_MODE=paper)."
+        )
 
 # Rate limiting
 RATE_LIMIT_WINDOW_S = 60  # 1 minute window
@@ -166,10 +189,16 @@ def validate_hmac_signature(
 
     Returns:
         True if signature is valid
+
+    SECURITY FIX (2026-01-04): Fail-closed in production mode.
     """
     if not secret:
-        logger.warning("HMAC secret not configured, skipping validation")
-        return True  # Allow if not configured (dev mode)
+        if _PRODUCTION_MODE:
+            logger.error("HMAC secret not configured in PRODUCTION - rejecting request")
+            return False  # FAIL-CLOSED in production
+        else:
+            logger.warning("HMAC secret not configured (paper mode) - allowing request")
+            return True  # Allow in paper/dev mode only
 
     if not signature:
         return False

@@ -32,12 +32,21 @@ class PositionSize:
     cap_reason: str = ""
 
 
-def get_account_equity() -> float:
+def get_account_equity(fail_safe: bool = True) -> float:
     """
     Fetch current account equity from Alpaca.
 
+    CRITICAL FIX (2026-01-04): No longer returns 100k fallback which caused
+    10x position sizing errors. Now activates kill switch on failure.
+
+    Args:
+        fail_safe: If True, activates kill switch on failure. If False, raises exception.
+
     Returns:
-        Account equity in USD, or 100000.0 as fallback.
+        Account equity in USD. Returns 0.0 if fail_safe and error occurs.
+
+    Raises:
+        RuntimeError: If fail_safe=False and equity cannot be fetched.
     """
     try:
         from alpaca.trading.client import TradingClient
@@ -47,8 +56,15 @@ def get_account_equity() -> float:
         base_url = os.environ.get('ALPACA_BASE_URL', '')
 
         if not api_key or not api_secret:
-            logger.warning("Alpaca credentials not found, using default equity")
-            return 100_000.0
+            msg = "CRITICAL: Alpaca credentials not found - CANNOT DETERMINE EQUITY"
+            logger.critical(msg)
+            if fail_safe:
+                from core.kill_switch import activate_kill_switch
+                from core.structured_log import jlog
+                activate_kill_switch(f"equity_sizer: {msg}")
+                jlog('equity_fetch_failed', {'reason': 'missing_credentials', 'action': 'kill_switch_activated'})
+                return 0.0  # Return 0 to prevent any trades
+            raise RuntimeError(msg)
 
         is_paper = 'paper' in base_url.lower()
         client = TradingClient(api_key, api_secret, paper=is_paper)
@@ -58,9 +74,18 @@ def get_account_equity() -> float:
         logger.debug(f"Account equity: ${equity:,.2f}")
         return equity
 
+    except RuntimeError:
+        raise  # Re-raise RuntimeError from credentials check
     except Exception as e:
-        logger.warning(f"Failed to fetch account equity: {e}, using default")
-        return 100_000.0
+        msg = f"CRITICAL: Failed to fetch account equity: {e}"
+        logger.critical(msg)
+        if fail_safe:
+            from core.kill_switch import activate_kill_switch
+            from core.structured_log import jlog
+            activate_kill_switch(f"equity_sizer: {msg}")
+            jlog('equity_fetch_failed', {'reason': str(e), 'action': 'kill_switch_activated'})
+            return 0.0  # Return 0 to prevent any trades
+        raise RuntimeError(msg) from e
 
 
 def calculate_position_size(

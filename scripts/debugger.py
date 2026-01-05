@@ -23,6 +23,7 @@ import json
 import os
 import pstats
 import re
+import runpy  # SECURITY FIX (2026-01-04): Use runpy instead of exec()
 import subprocess
 import sys
 import traceback
@@ -294,18 +295,12 @@ def profile_script(script_path: str, args: List[str] = None) -> None:
     print("-" * 50 + "\n")
 
     try:
-        # Read and compile script
-        with open(script, 'r', encoding='utf-8') as f:
-            code = f.read()
-
         # Set up profiler
         profiler = cProfile.Profile()
 
-        # Run with profiler
-        globals_dict = {
-            '__name__': '__main__',
-            '__file__': str(script),
-        }
+        # SECURITY FIX (2026-01-04): Replaced exec() with runpy.run_path()
+        # exec() is a security risk - arbitrary code execution with less isolation
+        # runpy.run_path() provides a safer way to run scripts as __main__
         sys.argv = [str(script)] + args
 
         old_cwd = os.getcwd()
@@ -313,7 +308,7 @@ def profile_script(script_path: str, args: List[str] = None) -> None:
 
         try:
             profiler.enable()
-            exec(compile(code, str(script), 'exec'), globals_dict)
+            runpy.run_path(str(script), run_name='__main__')
             profiler.disable()
         finally:
             os.chdir(old_cwd)

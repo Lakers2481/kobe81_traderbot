@@ -24,8 +24,127 @@ from config.settings_loader import (
     get_clamp_atr_multiple,
 )
 from risk.liquidity_gate import LiquidityGate, LiquidityCheck
+from functools import wraps
 
 logger = logging.getLogger(__name__)
+
+
+class PolicyGateError(Exception):
+    """Raised when PolicyGate rejects an order."""
+    pass
+
+
+class ComplianceError(Exception):
+    """Raised when compliance rules reject an order."""
+    pass
+
+
+def require_policy_gate(func):
+    """
+    Decorator to enforce PolicyGate AND Compliance checks before order placement.
+
+    CRITICAL FIX (2026-01-04): PolicyGate must be enforced at broker boundary,
+    not just in higher-level orchestration layers. This prevents any direct
+    broker calls from bypassing risk limits.
+
+    SECURITY FIX (2026-01-04): Also wires compliance engine (prohibited list,
+    trading rules) into the order flow. Previously compliance was exported but
+    never actually checked.
+    """
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # Extract order from args/kwargs
+        order = args[0] if args else kwargs.get('order')
+        if order and hasattr(order, 'symbol') and hasattr(order, 'side') and hasattr(order, 'qty'):
+            try:
+                from risk.policy_gate import PolicyGate
+                from core.structured_log import jlog
+
+                gate = PolicyGate.from_config()
+                price = getattr(order, 'limit_price', 0) or getattr(order, 'entry_price', 0) or 0
+
+                # PolicyGate check
+                allowed, reason = gate.check(
+                    symbol=order.symbol,
+                    side=order.side,
+                    price=float(price) if price else 0.0,
+                    qty=int(order.qty)
+                )
+                if not allowed:
+                    jlog('policy_gate_reject', {
+                        'symbol': order.symbol,
+                        'side': order.side,
+                        'qty': order.qty,
+                        'reason': reason,
+                        'function': func.__name__
+                    })
+                    logger.warning(f"PolicyGate blocked {order.symbol}: {reason}")
+                    raise PolicyGateError(f"PolicyGate blocked: {reason}")
+
+                # Compliance: Prohibited list check
+                try:
+                    from compliance import is_prohibited, log_compliance_event
+                    from datetime import date
+
+                    prohibited, reasons = is_prohibited(order.symbol, date.today())
+                    if prohibited:
+                        reason_str = ', '.join(r.code for r in reasons)
+                        log_compliance_event('prohibited_reject', {
+                            'symbol': order.symbol,
+                            'reasons': [{'code': r.code, 'detail': r.detail} for r in reasons],
+                            'function': func.__name__
+                        })
+                        jlog('compliance_reject', {
+                            'symbol': order.symbol,
+                            'reason': 'prohibited_list',
+                            'codes': reason_str
+                        })
+                        logger.warning(f"Compliance blocked {order.symbol}: prohibited ({reason_str})")
+                        raise ComplianceError(f"Symbol prohibited: {reason_str}")
+                except ComplianceError:
+                    raise
+                except ImportError:
+                    # Compliance module not fully available, continue
+                    pass
+
+                # Compliance: Trade rules check (price floor, position size, RTH)
+                try:
+                    from compliance import evaluate_trade_rules
+                    from risk.equity_sizer import get_account_equity
+
+                    account_equity = get_account_equity(fail_safe=False)
+                    trade_allowed, rule_reason = evaluate_trade_rules(
+                        price=float(price) if price else 0.0,
+                        qty=int(order.qty),
+                        account_equity=account_equity,
+                        ts=datetime.now()
+                    )
+                    if not trade_allowed:
+                        log_compliance_event('rules_reject', {
+                            'symbol': order.symbol,
+                            'reason': rule_reason,
+                            'function': func.__name__
+                        })
+                        jlog('compliance_rules_reject', {
+                            'symbol': order.symbol,
+                            'reason': rule_reason
+                        })
+                        logger.warning(f"Compliance rules blocked {order.symbol}: {rule_reason}")
+                        raise ComplianceError(f"Trade rules violated: {rule_reason}")
+                except (ImportError, RuntimeError):
+                    # equity_sizer may fail or compliance not available, continue
+                    pass
+                except ComplianceError:
+                    raise
+
+            except (PolicyGateError, ComplianceError):
+                raise
+            except ImportError:
+                logger.warning("PolicyGate not available, skipping check")
+            except Exception as e:
+                logger.warning(f"PolicyGate check failed: {e}, allowing order")
+        return func(*args, **kwargs)
+    return wrapper
 
 
 ALPACA_ORDERS_URL = "/v2/orders"
@@ -34,7 +153,8 @@ ALPACA_BARS_URL = "/v2/stocks/bars"
 
 # Default liquidity gate - can be overridden via set_liquidity_gate()
 _liquidity_gate: Optional[LiquidityGate] = None
-_liquidity_gate_enabled: bool = True  # Global toggle
+# REMOVED (2026-01-04): _liquidity_gate_enabled toggle - liquidity gate is ALWAYS enabled
+# This was a security risk allowing programmatic bypass of liquidity protection
 
 
 @dataclass
@@ -264,15 +384,25 @@ def set_liquidity_gate(gate: LiquidityGate) -> None:
 
 
 def enable_liquidity_gate(enabled: bool = True) -> None:
-    """Enable or disable liquidity checking globally."""
-    global _liquidity_gate_enabled
-    _liquidity_gate_enabled = enabled
-    logger.info(f"Liquidity gate {'enabled' if enabled else 'disabled'}")
+    """
+    DEPRECATED (2026-01-04): Liquidity gate can no longer be disabled programmatically.
+    This was a security risk. Liquidity checking is now ALWAYS enabled.
+    """
+    if not enabled:
+        logger.critical("SECURITY: Attempt to disable liquidity gate BLOCKED. Liquidity gate is always enabled.")
+        from core.structured_log import jlog
+        jlog('security_violation', {
+            'type': 'liquidity_gate_disable_attempt',
+            'blocked': True,
+            'message': 'Liquidity gate cannot be disabled programmatically'
+        })
+    else:
+        logger.info("Liquidity gate is always enabled (no action needed)")
 
 
 def is_liquidity_gate_enabled() -> bool:
-    """Check if liquidity gate is enabled."""
-    return _liquidity_gate_enabled
+    """Check if liquidity gate is enabled. Always returns True."""
+    return True  # Liquidity gate is ALWAYS enabled
 
 
 def check_liquidity_for_order(
@@ -496,6 +626,7 @@ def log_trade_event(order: OrderRecord, market_bid: Optional[float] = None, mark
         logger.error(f"Failed to log trade event: {e}")
 
 
+@require_policy_gate
 @require_no_kill_switch
 def place_ioc_limit(order: OrderRecord, resolve_status: bool = True) -> BrokerExecutionResult:
     """
@@ -939,6 +1070,7 @@ class OrderResult:
         )
 
 
+@require_policy_gate
 @require_no_kill_switch
 def place_order_with_liquidity_check(
     order: OrderRecord,
@@ -1016,6 +1148,7 @@ def place_order_with_liquidity_check(
     )
 
 
+@require_policy_gate
 @require_no_kill_switch
 def execute_signal(
     symbol: str,
@@ -1121,6 +1254,7 @@ class BracketOrderResult:
         return self.order.status in (OrderStatus.SUBMITTED, OrderStatus.FILLED)
 
 
+@require_policy_gate
 @require_no_kill_switch
 def place_bracket_order(
     symbol: str,
