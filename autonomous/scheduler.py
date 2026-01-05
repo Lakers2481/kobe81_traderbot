@@ -402,6 +402,18 @@ class AutonomousScheduler:
                 cooldown_minutes=30,
                 recurring=True,
             ),
+            # FIX (2026-01-05): Proactive LLM budget reset at midnight
+            Task(
+                id="reset_llm_budget",
+                name="Reset Daily LLM Budget",
+                category=TaskCategory.MAINTENANCE,
+                priority=TaskPriority.CRITICAL,
+                description="Reset token/USD limits for LLM API calls at midnight ET",
+                handler="llm.token_budget:reset_daily_budget",
+                valid_phases=[MarketPhase.NIGHT],  # Run during night phase (after midnight)
+                cooldown_minutes=1440,  # Once per day
+                recurring=True,
+            ),
 
             # === DATA TASKS ===
             Task(

@@ -288,3 +288,34 @@ def get_token_budget() -> TokenBudget:
     if _global_budget is None:
         _global_budget = TokenBudget()
     return _global_budget
+
+
+def reset_daily_budget() -> None:
+    """
+    Force reset of daily LLM budget.
+
+    Called by scheduler at midnight ET for proactive reset.
+    Also useful for manual reset during debugging.
+
+    FIX (2026-01-05): Added for scheduled midnight reset.
+    """
+    budget = get_token_budget()
+
+    # Force reset regardless of current date
+    today = date.today().isoformat()
+    old_used = budget.used_today
+    old_cost = budget.cost_usd_today
+
+    budget.used_today = 0
+    budget.cost_usd_today = 0.0
+    budget.input_tokens_today = 0
+    budget.output_tokens_today = 0
+    budget.calls_today = 0
+    budget._alert_sent = False
+    budget.last_reset = today
+    budget._save_state()
+
+    logger.info(
+        f"[SCHEDULED] Token budget reset for {today}. "
+        f"Previous: {old_used} tokens, ${old_cost:.4f} USD"
+    )

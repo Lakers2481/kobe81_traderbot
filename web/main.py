@@ -30,10 +30,11 @@ Usage:
 import json
 import logging
 from pathlib import Path
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, Header, Request
 from fastapi.responses import HTMLResponse
 from typing import Dict, Any, List, Optional
 from datetime import datetime
+import os
 
 # Import necessary components from the cognitive architecture
 from cognitive.signal_processor import get_signal_processor
@@ -78,6 +79,92 @@ if WEBHOOKS_AVAILABLE and webhooks_router:
     app.include_router(webhooks_router)
     logger.info("Webhook endpoints mounted at /webhook/*")
 
+
+# =============================================================================
+# API Security - Protect sensitive endpoints in live mode
+# FIX (2026-01-05): Added to prevent unauthorized access to trading picks
+# =============================================================================
+
+async def require_api_key_in_production(x_api_key: Optional[str] = Header(None)):
+    """
+    Require API key for data endpoints in production (live) mode.
+
+    In paper mode, endpoints are open for development convenience.
+    In live mode, requires X-API-Key header matching WEB_API_KEY env var.
+
+    FIX (2026-01-05): Added to protect /status, /top3_picks, /trade_of_day
+    """
+    if _is_live_mode:
+        expected_key = os.getenv("WEB_API_KEY")
+        if not expected_key:
+            logger.error("WEB_API_KEY not configured in live mode")
+            raise HTTPException(
+                status_code=500,
+                detail="WEB_API_KEY not configured. Set this environment variable for live mode."
+            )
+        if not x_api_key or x_api_key != expected_key:
+            logger.warning(f"Unauthorized API access attempt to protected endpoint")
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid or missing X-API-Key header"
+            )
+
+
+# Rate limiter for API endpoints (reuse existing pattern from webhooks)
+from collections import deque
+import time
+
+class APIRateLimiter:
+    """Simple token bucket rate limiter for API endpoints."""
+
+    def __init__(self, max_requests: int = 100, window_seconds: int = 60):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self._requests: Dict[str, deque] = {}  # IP -> timestamps
+
+    def is_allowed(self, client_ip: str) -> bool:
+        """Check if request from client_ip is allowed."""
+        now = time.time()
+
+        if client_ip not in self._requests:
+            self._requests[client_ip] = deque()
+
+        # Remove old entries
+        while self._requests[client_ip] and self._requests[client_ip][0] < now - self.window_seconds:
+            self._requests[client_ip].popleft()
+
+        if len(self._requests[client_ip]) >= self.max_requests:
+            return False
+
+        self._requests[client_ip].append(now)
+        return True
+
+    def get_retry_after(self) -> int:
+        """Return seconds to wait before retry."""
+        return self.window_seconds
+
+
+_api_rate_limiter = APIRateLimiter(max_requests=100, window_seconds=60)
+
+
+async def check_rate_limit(request: Request):
+    """Rate limiting dependency for API endpoints."""
+    if not _is_live_mode:
+        return  # No rate limiting in paper mode
+
+    # Get client IP (respecting X-Forwarded-For)
+    client_ip = request.headers.get("X-Forwarded-For", request.client.host if request.client else "unknown")
+    if "," in client_ip:
+        client_ip = client_ip.split(",")[0].strip()
+
+    if not _api_rate_limiter.is_allowed(client_ip):
+        logger.warning(f"Rate limit exceeded for IP: {client_ip}")
+        raise HTTPException(
+            status_code=429,
+            detail="Too many requests. Please wait before retrying.",
+            headers={"Retry-After": str(_api_rate_limiter.get_retry_after())}
+        )
+
 @app.get("/", response_class=HTMLResponse, summary="Home Page")
 async def read_root():
     """
@@ -121,7 +208,11 @@ async def read_root():
     """
     return html_content
 
-@app.get("/status", summary="Get overall bot status")
+@app.get(
+    "/status",
+    summary="Get overall bot status",
+    dependencies=[Depends(require_api_key_in_production), Depends(check_rate_limit)]
+)
 async def get_bot_status() -> Dict[str, Any]:
     """
     Returns a high-level overview of the bot's operational status.
@@ -145,7 +236,11 @@ async def get_bot_status() -> Dict[str, Any]:
         logger.error(f"Error getting bot status: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/cognitive_status", summary="Get cognitive system status")
+@app.get(
+    "/cognitive_status",
+    summary="Get cognitive system status",
+    dependencies=[Depends(require_api_key_in_production), Depends(check_rate_limit)]
+)
 async def get_cognitive_system_status() -> Dict[str, Any]:
     """
     Returns a detailed status of the CognitiveSignalProcessor and its underlying Brain.
@@ -199,7 +294,11 @@ async def get_ai_self_description() -> Dict[str, str]:
 # LLM-Powered Endpoints (Human-Like Reasoning from Claude)
 # =============================================================================
 
-@app.get("/morning_briefing", summary="Get daily morning briefing with LLM analysis")
+@app.get(
+    "/morning_briefing",
+    summary="Get daily morning briefing with LLM analysis",
+    dependencies=[Depends(require_api_key_in_production), Depends(check_rate_limit)]
+)
 async def get_morning_briefing() -> Dict[str, Any]:
     """
     Returns the daily insights report with Claude LLM-generated narratives.
@@ -246,7 +345,11 @@ async def get_morning_briefing() -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/live_narrative/{symbol}", summary="Get real-time LLM narrative for a symbol")
+@app.get(
+    "/live_narrative/{symbol}",
+    summary="Get real-time LLM narrative for a symbol",
+    dependencies=[Depends(require_api_key_in_production), Depends(check_rate_limit)]
+)
 async def get_live_narrative(symbol: str) -> Dict[str, Any]:
     """
     Generates a real-time LLM analysis for a specific symbol.
@@ -302,7 +405,11 @@ async def get_live_narrative(symbol: str) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/top3_picks", summary="Get current Top-3 picks with narratives")
+@app.get(
+    "/top3_picks",
+    summary="Get current Top-3 picks with narratives",
+    dependencies=[Depends(require_api_key_in_production), Depends(check_rate_limit)]
+)
 async def get_top3_picks() -> Dict[str, Any]:
     """
     Returns the current Top-3 trading picks with LLM-generated explanations.
@@ -353,7 +460,11 @@ async def get_top3_picks() -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/trade_of_day", summary="Get Trade of the Day with deep analysis")
+@app.get(
+    "/trade_of_day",
+    summary="Get Trade of the Day with deep analysis",
+    dependencies=[Depends(require_api_key_in_production), Depends(check_rate_limit)]
+)
 async def get_trade_of_day() -> Dict[str, Any]:
     """
     Returns the Trade of the Day with extended LLM-generated analysis.
