@@ -37,7 +37,7 @@ class VIXConfig:
     elevated_threshold: float = 25.0
     extreme_threshold: float = 40.0
     cache_ttl_seconds: int = 3600  # 1 hour cache
-    data_source: str = "yfinance"  # "yfinance" or "polygon"
+    data_source: str = "fred"  # "fred" (primary), "polygon", or "yfinance"
     fallback_vix: float = 20.0  # Default if fetch fails
 
 
@@ -109,7 +109,9 @@ class VIXMonitor:
         self._last_fetch_attempt = datetime.now()
 
         try:
-            if self.config.data_source == "yfinance":
+            if self.config.data_source == "fred":
+                vix_level = self._fetch_from_fred()
+            elif self.config.data_source == "yfinance":
                 vix_level = self._fetch_from_yfinance()
             elif self.config.data_source == "polygon":
                 vix_level = self._fetch_from_polygon()
@@ -157,6 +159,60 @@ class VIXMonitor:
                 source="fallback",
                 is_stale=True,
             )
+
+    def _fetch_from_fred(self) -> float:
+        """
+        Fetch VIX from FRED (Federal Reserve Economic Data).
+
+        Uses VIXCLS series - most reliable official VIX source.
+        Requires FRED_API_KEY environment variable.
+
+        FIX (2026-01-05): Added FRED as primary VIX source.
+        """
+        try:
+            import os
+            from datetime import timedelta
+
+            from data.providers.fred_macro import FREDMacroProvider
+
+            api_key = os.getenv("FRED_API_KEY")
+            if not api_key:
+                raise ValueError("FRED_API_KEY not set")
+
+            provider = FREDMacroProvider(api_key=api_key)
+
+            # Get last 7 days of VIX data
+            end_date = datetime.now().strftime("%Y-%m-%d")
+            start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+            df = provider.get_series("VIXCLS", start_date=start_date, end_date=end_date)
+
+            if df is None or df.empty:
+                raise ValueError("No VIX data from FRED")
+
+            # FRED returns DataFrame with ['date', 'value', 'series_id'] columns
+            # Get most recent non-NaN value from 'value' column
+            if 'value' in df.columns:
+                # Drop NaN values and get last
+                valid_values = df.dropna(subset=['value'])
+                if valid_values.empty:
+                    raise ValueError("No valid VIX values from FRED")
+                vix_level = float(valid_values['value'].iloc[-1])
+            elif hasattr(df, 'iloc'):
+                vix_level = float(df.iloc[-1])
+            else:
+                vix_level = float(df)
+
+            if vix_level <= 0 or vix_level > 100:
+                raise ValueError(f"Invalid VIX level from FRED: {vix_level}")
+
+            return vix_level
+
+        except ImportError as e:
+            logger.warning(f"FRED provider not available: {e}, falling back to yfinance")
+            return self._fetch_from_yfinance()
+        except Exception as e:
+            logger.warning(f"FRED VIX fetch failed: {e}, falling back to yfinance")
+            return self._fetch_from_yfinance()
 
     def _fetch_from_yfinance(self) -> float:
         """Fetch VIX from Yahoo Finance."""

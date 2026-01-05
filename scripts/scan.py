@@ -102,6 +102,10 @@ def get_last_trading_day(reference_date: datetime = None) -> tuple[str, bool, st
     - Saturday/Sunday: Use Friday's close + PREVIEW mode (signals trigger Monday)
     - Monday-Friday: Use today's date + NORMAL mode (fresh data)
 
+    PRE-MARKET LOGIC (FIX 2026-01-05):
+    - Before 9:30 AM ET: Use previous trading day + PREVIEW mode
+    - This ensures we have data when running scans before market open
+
     WHY PREVIEW ON WEEKENDS:
     - Normal mode uses .shift(1) for lookahead safety (checks PREVIOUS bar)
     - On weekends, Friday is the last bar - but shift(1) would check Thursday
@@ -112,6 +116,10 @@ def get_last_trading_day(reference_date: datetime = None) -> tuple[str, bool, st
 
     weekday = reference_date.weekday()  # Monday=0, Sunday=6
     is_weekend = weekday >= 5  # Saturday=5, Sunday=6
+
+    # Check if before market open (9:30 AM ET)
+    # Note: This assumes the system is running in ET timezone
+    is_pre_market = reference_date.hour < 9 or (reference_date.hour == 9 and reference_date.minute < 30)
 
     try:
         import pandas_market_calendars as mcal
@@ -133,20 +141,31 @@ def get_last_trading_day(reference_date: datetime = None) -> tuple[str, bool, st
                 # Weekend: use last trading day (Friday) + preview mode
                 return last_trading_str, True, f"WEEKEND: Using {last_trading_str} (Friday) + PREVIEW mode"
             elif ref_str == last_trading_str:
-                # Weekday and today is a trading day: use today + normal mode
-                return ref_str, False, f"WEEKDAY: Using today ({ref_str}) + NORMAL mode (fresh data)"
+                # Today is a trading day
+                if is_pre_market:
+                    # Before market open: use previous trading day
+                    # Find the trading day before today
+                    if len(schedule) > 1:
+                        prev_trading = schedule.index[-2]
+                        prev_trading_str = prev_trading.strftime('%Y-%m-%d')
+                        return prev_trading_str, True, f"PRE-MARKET: Using {prev_trading_str} + PREVIEW mode (market opens at 9:30 AM)"
+                    else:
+                        return last_trading_str, True, f"PRE-MARKET: Using {last_trading_str} + PREVIEW mode"
+                else:
+                    # Market is open or has closed: use today + normal mode
+                    return ref_str, False, f"WEEKDAY: Using today ({ref_str}) + NORMAL mode (fresh data)"
             else:
                 # Weekday but today is a holiday: use last trading day + preview
                 return last_trading_str, True, f"HOLIDAY: Using {last_trading_str} + PREVIEW mode"
         else:
             # Fallback
-            return _fallback_trading_day(reference_date, is_weekend)
+            return _fallback_trading_day(reference_date, is_weekend, is_pre_market)
 
     except ImportError:
-        return _fallback_trading_day(reference_date, is_weekend)
+        return _fallback_trading_day(reference_date, is_weekend, is_pre_market)
 
 
-def _fallback_trading_day(reference_date: datetime, is_weekend: bool) -> tuple[str, bool, str]:
+def _fallback_trading_day(reference_date: datetime, is_weekend: bool, is_pre_market: bool = False) -> tuple[str, bool, str]:
     """Fallback when pandas_market_calendars not available."""
     if is_weekend:
         # Go back to Friday
@@ -155,6 +174,14 @@ def _fallback_trading_day(reference_date: datetime, is_weekend: bool) -> tuple[s
             days_back = 7 if reference_date.weekday() != 4 else 0
         last_friday = reference_date - timedelta(days=days_back)
         return last_friday.strftime('%Y-%m-%d'), True, f"WEEKEND: Using Friday ({last_friday.strftime('%Y-%m-%d')}) + PREVIEW"
+    elif is_pre_market:
+        # Before market open: go back 1 day (may not be accurate for holidays)
+        prev_day = reference_date - timedelta(days=1)
+        # Skip weekend
+        if prev_day.weekday() >= 5:
+            days_back = prev_day.weekday() - 4
+            prev_day = prev_day - timedelta(days=days_back)
+        return prev_day.strftime('%Y-%m-%d'), True, f"PRE-MARKET: Using {prev_day.strftime('%Y-%m-%d')} + PREVIEW mode"
     else:
         return reference_date.strftime('%Y-%m-%d'), False, "WEEKDAY: Using today + NORMAL mode"
 
@@ -701,6 +728,12 @@ Examples:
         default=None,
         help="Limit number of symbols to scan",
     )
+    ap.add_argument(
+        "--workers",
+        type=int,
+        default=5,
+        help="Number of parallel data fetch workers (default: 5, use 1 for debugging)",
+    )
     ap.add_argument("--top3", action="store_true", help="Select Top-3 picks and write logs/daily_picks.csv")
     ap.add_argument(
         "--top3-mix",
@@ -1081,7 +1114,8 @@ Examples:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
     # Parallel fetching for 5-10x speedup (respects Polygon rate limits)
-    max_workers = min(10, len(symbols))  # Max 10 concurrent requests
+    # Use --workers arg (default 5), capped at symbol count
+    max_workers = min(args.workers, len(symbols)) if hasattr(args, 'workers') else min(5, len(symbols))
 
     def fetch_wrapper(symbol: str) -> tuple:
         """Wrapper to return (symbol, dataframe) tuple."""
