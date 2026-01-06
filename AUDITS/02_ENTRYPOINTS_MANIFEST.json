@@ -1,0 +1,1452 @@
+[
+  {
+    "file": "agents\\autogen_team.py",
+    "dir": "agents",
+    "has_argparse": false
+  },
+  {
+    "file": "agents\\langgraph_coordinator.py",
+    "dir": "agents",
+    "has_argparse": false
+  },
+  {
+    "file": "alerts\\regime_alerts.py",
+    "dir": "alerts",
+    "has_argparse": false
+  },
+  {
+    "file": "analytics\\alpha_decay\\alpha_monitor.py",
+    "dir": "analytics",
+    "has_argparse": false
+  },
+  {
+    "file": "analytics\\attribution\\attribution_report.py",
+    "dir": "analytics",
+    "has_argparse": false
+  },
+  {
+    "file": "analytics\\attribution\\daily_pnl.py",
+    "dir": "analytics",
+    "has_argparse": false
+  },
+  {
+    "file": "analytics\\attribution\\factor_attribution.py",
+    "dir": "analytics",
+    "has_argparse": false
+  },
+  {
+    "file": "analytics\\attribution\\strategy_attribution.py",
+    "dir": "analytics",
+    "has_argparse": false
+  },
+  {
+    "file": "autonomous\\__main__.py",
+    "dir": "autonomous",
+    "has_argparse": false
+  },
+  {
+    "file": "autonomous\\awareness.py",
+    "dir": "autonomous",
+    "has_argparse": false
+  },
+  {
+    "file": "autonomous\\brain.py",
+    "dir": "autonomous",
+    "has_argparse": true
+  },
+  {
+    "file": "autonomous\\comprehensive_brain.py",
+    "dir": "autonomous",
+    "has_argparse": true
+  },
+  {
+    "file": "autonomous\\learning.py",
+    "dir": "autonomous",
+    "has_argparse": false
+  },
+  {
+    "file": "autonomous\\maintenance.py",
+    "dir": "autonomous",
+    "has_argparse": false
+  },
+  {
+    "file": "autonomous\\master_brain.py",
+    "dir": "autonomous",
+    "has_argparse": true
+  },
+  {
+    "file": "autonomous\\master_brain_full.py",
+    "dir": "autonomous",
+    "has_argparse": true
+  },
+  {
+    "file": "autonomous\\monitor.py",
+    "dir": "autonomous",
+    "has_argparse": false
+  },
+  {
+    "file": "autonomous\\research.py",
+    "dir": "autonomous",
+    "has_argparse": false
+  },
+  {
+    "file": "autonomous\\run.py",
+    "dir": "autonomous",
+    "has_argparse": true
+  },
+  {
+    "file": "autonomous\\scheduler.py",
+    "dir": "autonomous",
+    "has_argparse": false
+  },
+  {
+    "file": "autonomous\\scheduler_full.py",
+    "dir": "autonomous",
+    "has_argparse": false
+  },
+  {
+    "file": "cognitive\\circuit_breakers.py",
+    "dir": "cognitive",
+    "has_argparse": false
+  },
+  {
+    "file": "cognitive\\tweet_generator.py",
+    "dir": "cognitive",
+    "has_argparse": false
+  },
+  {
+    "file": "cognitive\\vector_memory.py",
+    "dir": "cognitive",
+    "has_argparse": false
+  },
+  {
+    "file": "dashboard\\ml_confidence.py",
+    "dir": "dashboard",
+    "has_argparse": false
+  },
+  {
+    "file": "data\\alternative\\alt_data_aggregator.py",
+    "dir": "data",
+    "has_argparse": false
+  },
+  {
+    "file": "data\\alternative\\congress_trades.py",
+    "dir": "data",
+    "has_argparse": false
+  },
+  {
+    "file": "data\\alternative\\insider_trades.py",
+    "dir": "data",
+    "has_argparse": false
+  },
+  {
+    "file": "data\\alternative\\news_sentiment.py",
+    "dir": "data",
+    "has_argparse": false
+  },
+  {
+    "file": "data\\alternative\\options_flow.py",
+    "dir": "data",
+    "has_argparse": false
+  },
+  {
+    "file": "data\\providers\\alpaca_live.py",
+    "dir": "data",
+    "has_argparse": false
+  },
+  {
+    "file": "data\\providers\\bea_macro.py",
+    "dir": "data",
+    "has_argparse": false
+  },
+  {
+    "file": "data\\providers\\cftc_cot.py",
+    "dir": "data",
+    "has_argparse": false
+  },
+  {
+    "file": "data\\providers\\eia_energy.py",
+    "dir": "data",
+    "has_argparse": false
+  },
+  {
+    "file": "data\\providers\\fred_macro.py",
+    "dir": "data",
+    "has_argparse": false
+  },
+  {
+    "file": "data\\providers\\treasury_yields.py",
+    "dir": "data",
+    "has_argparse": false
+  },
+  {
+    "file": "data\\universe\\canonical.py",
+    "dir": "data",
+    "has_argparse": false
+  },
+  {
+    "file": "execution\\analytics\\execution_report.py",
+    "dir": "execution",
+    "has_argparse": false
+  },
+  {
+    "file": "execution\\analytics\\market_impact.py",
+    "dir": "execution",
+    "has_argparse": false
+  },
+  {
+    "file": "execution\\analytics\\slippage_tracker.py",
+    "dir": "execution",
+    "has_argparse": false
+  },
+  {
+    "file": "execution\\analytics\\timing_analysis.py",
+    "dir": "execution",
+    "has_argparse": false
+  },
+  {
+    "file": "guardian\\alert_manager.py",
+    "dir": "guardian",
+    "has_argparse": false
+  },
+  {
+    "file": "guardian\\daily_digest.py",
+    "dir": "guardian",
+    "has_argparse": false
+  },
+  {
+    "file": "guardian\\decision_engine.py",
+    "dir": "guardian",
+    "has_argparse": false
+  },
+  {
+    "file": "guardian\\emergency_protocol.py",
+    "dir": "guardian",
+    "has_argparse": false
+  },
+  {
+    "file": "guardian\\guardian.py",
+    "dir": "guardian",
+    "has_argparse": false
+  },
+  {
+    "file": "guardian\\self_learner.py",
+    "dir": "guardian",
+    "has_argparse": false
+  },
+  {
+    "file": "guardian\\system_monitor.py",
+    "dir": "guardian",
+    "has_argparse": false
+  },
+  {
+    "file": "ml_features\\macro_features.py",
+    "dir": "ml_features",
+    "has_argparse": false
+  },
+  {
+    "file": "monitor\\divergence.py",
+    "dir": "monitor",
+    "has_argparse": true
+  },
+  {
+    "file": "monitor\\divergence_monitor.py",
+    "dir": "monitor",
+    "has_argparse": true
+  },
+  {
+    "file": "observability\\langfuse_tracer.py",
+    "dir": "observability",
+    "has_argparse": false
+  },
+  {
+    "file": "pipelines\\implementation_pipeline.py",
+    "dir": "pipelines",
+    "has_argparse": false
+  },
+  {
+    "file": "portfolio\\optimizer\\mean_variance.py",
+    "dir": "portfolio",
+    "has_argparse": false
+  },
+  {
+    "file": "portfolio\\optimizer\\portfolio_manager.py",
+    "dir": "portfolio",
+    "has_argparse": false
+  },
+  {
+    "file": "portfolio\\optimizer\\rebalancer.py",
+    "dir": "portfolio",
+    "has_argparse": false
+  },
+  {
+    "file": "portfolio\\optimizer\\risk_parity.py",
+    "dir": "portfolio",
+    "has_argparse": false
+  },
+  {
+    "file": "preflight\\cognitive_preflight.py",
+    "dir": "preflight",
+    "has_argparse": false
+  },
+  {
+    "file": "reports\\weekly_ai_summary.py",
+    "dir": "reports",
+    "has_argparse": false
+  },
+  {
+    "file": "risk\\advanced\\portfolio_optimizer.py",
+    "dir": "risk",
+    "has_argparse": false
+  },
+  {
+    "file": "risk\\circuit_breakers\\breaker_manager.py",
+    "dir": "risk",
+    "has_argparse": false
+  },
+  {
+    "file": "risk\\circuit_breakers\\correlation_breaker.py",
+    "dir": "risk",
+    "has_argparse": false
+  },
+  {
+    "file": "risk\\circuit_breakers\\drawdown_breaker.py",
+    "dir": "risk",
+    "has_argparse": false
+  },
+  {
+    "file": "risk\\circuit_breakers\\execution_breaker.py",
+    "dir": "risk",
+    "has_argparse": false
+  },
+  {
+    "file": "risk\\circuit_breakers\\streak_breaker.py",
+    "dir": "risk",
+    "has_argparse": false
+  },
+  {
+    "file": "risk\\circuit_breakers\\volatility_breaker.py",
+    "dir": "risk",
+    "has_argparse": false
+  },
+  {
+    "file": "risk\\factor_model\\factor_calculator.py",
+    "dir": "risk",
+    "has_argparse": false
+  },
+  {
+    "file": "risk\\factor_model\\factor_report.py",
+    "dir": "risk",
+    "has_argparse": false
+  },
+  {
+    "file": "risk\\factor_model\\sector_exposure.py",
+    "dir": "risk",
+    "has_argparse": false
+  },
+  {
+    "file": "risk\\kill_zone_gate.py",
+    "dir": "risk",
+    "has_argparse": false
+  },
+  {
+    "file": "run_brain.py",
+    "dir": ".",
+    "has_argparse": true
+  },
+  {
+    "file": "run_brain_full.py",
+    "dir": ".",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\aggregate_wf_report.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\alerts.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\alpha_research.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\analyze_stock.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\audit.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\backfill_yfinance.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\backtest_dual_strategy.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\backtest_ibs_rsi.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\backtest_totd.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\backup.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\backup_snapshot.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\backup_state.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\benchmark.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\broker.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\build_signal_dataset.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\build_totd_dataset.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\build_universe_900.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\build_universe_polygon.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\check_data_quality.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\check_polygon_earliest.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\check_polygon_earliest_universe.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\cleanup.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\cognitive_learn.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\config_utils.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\correlation.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\correlation_check.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\dashboard.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\data.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\debugger.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\deploy.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\drawdown.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\earnings.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\env.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\eod_finalize.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\eod_report.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\exit_manager.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\explain.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\export_ai_bundle.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\export_evidence_bundle.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\exposure.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\feature_experiment.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\find_unique_patterns.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\freeze_crypto_ohlcv.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\freeze_equities_eod.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\generate_briefing.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\generate_pregame.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\generate_pregame_blueprint.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\generate_totd_playbook.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\generate_training_data.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\health_check_full.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\health_monitor.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\heartbeat.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\hedge.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\idempotency.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\install_git_hooks.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\integrity_check.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\interview_quick_test.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\journal.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\kill.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\learn.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\log_event.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\logs.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\manage_secrets.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\market_calendar.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\metrics.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\mini_backtest.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\monte_carlo.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\morning_check.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\morning_report.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\normalize_docs.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\opening_range_observer.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\ops\\check_circular_imports.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\ops\\check_missing_init.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\optimize.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\options.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\orders.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\overnight_runner.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\overnight_watchlist.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\pattern_hunt.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\performance.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\pnl.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\polygon.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\position_manager.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\positions.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\pre_game_plan.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\prefetch_polygon_universe.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\preflight.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\preflight_live.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\pregame_report.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\premarket_check.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\premarket_validator.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\promote_models.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\quality_check.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\quant_dashboard.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\quant_pattern_analysis.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\readiness_check.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\rebuild_state.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\reconcile_alpaca.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\reconcile_broker_daily.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\regime.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\regime_analysis.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\replay.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\replay_day.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\report.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\research_discover.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\research_os_cli.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\restart.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\resume.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\risk_cli.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\run_alpha_screener.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\run_autonomous.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\run_backtest.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\run_backtest_options_synth.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\run_backtest_polygon.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\run_comprehensive_brain.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\run_daily_pipeline.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\run_guardian.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\run_job.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\run_live_trade_micro.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\run_master_brain.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\run_paper_trade.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\run_shadow.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\run_showdown_crypto.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\run_showdown_polygon.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\run_weekly_training.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\run_wf_polygon.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\runner.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\scan.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\scan_down_streaks.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\scan_week_down_then_bounce.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\scheduler_ctl.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\scheduler_kobe.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\sector_rotation.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\seed_episodic_memory.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\send_telegram_test.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\show_config_pin.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\signals.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\simulate.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\smoke_test.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\snapshot.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\start.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\start_health.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\state.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\status.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\stop.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\strategy.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\submit_totd.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\suggest.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\supervisor.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\sync_all_tasks.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\telegram.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\test.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\trade_top3.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\train_ensemble.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\train_ensemble_models.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\train_hmm_regime.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\train_lstm_confidence.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\train_meta.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\train_rl_agent.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\universe.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\update_sentiment_cache.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\update_slippage_defaults.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\update_status_md.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\validate.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\validate_data_pipeline.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\validate_lake.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\validate_universe_coverage.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\verify_architecture.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\verify_data.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\verify_hash_chain.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\verify_scan_consistency.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\verify_system.py",
+    "dir": "scripts",
+    "has_argparse": false
+  },
+  {
+    "file": "scripts\\version.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\volatility_study.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\watchdog.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "scripts\\watchlist.py",
+    "dir": "scripts",
+    "has_argparse": true
+  },
+  {
+    "file": "strategies\\ict\\turtle_soup.py",
+    "dir": "strategies",
+    "has_argparse": false
+  },
+  {
+    "file": "testing\\monte_carlo.py",
+    "dir": "testing",
+    "has_argparse": true
+  },
+  {
+    "file": "testing\\stress_test.py",
+    "dir": "testing",
+    "has_argparse": true
+  },
+  {
+    "file": "tests\\cognitive\\test_cognitive_brain.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\cognitive\\test_llm_trade_analyzer.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\cognitive\\test_metacognitive_governor.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\cognitive\\test_reflection_engine.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\cognitive\\test_self_model.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\cognitive\\test_signal_adjudicator.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\core\\test_restart_backoff.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\core\\test_vix_monitor.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\integration\\test_demo_run.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\integration\\test_pipeline_run.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\ml_advanced\\test_markov_chain.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\test_autonomous_config.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\test_autonomous_run.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\test_backtest_enhanced.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\test_bounce.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\test_broker_liquidity_integration.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\test_cognitive_integration.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\test_cognitive_system.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\test_data_lake.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\test_data_quality.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\test_experiments.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\test_liquidity_gate.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\test_macro_providers.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\test_options.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\test_pipelines.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\test_research.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\test_safety_mode.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tests\\test_scanner_determinism.py",
+    "dir": "tests",
+    "has_argparse": false
+  },
+  {
+    "file": "tools\\bounce_profile.py",
+    "dir": "tools",
+    "has_argparse": true
+  },
+  {
+    "file": "tools\\build_bounce_db.py",
+    "dir": "tools",
+    "has_argparse": true
+  },
+  {
+    "file": "tools\\build_bounce_profiles_all.py",
+    "dir": "tools",
+    "has_argparse": true
+  },
+  {
+    "file": "tools\\cleanup_cache.py",
+    "dir": "tools",
+    "has_argparse": true
+  },
+  {
+    "file": "tools\\today_bounce_watchlist.py",
+    "dir": "tools",
+    "has_argparse": true
+  },
+  {
+    "file": "tools\\verify_alive.py",
+    "dir": "tools",
+    "has_argparse": true
+  },
+  {
+    "file": "tools\\verify_repo.py",
+    "dir": "tools",
+    "has_argparse": true
+  },
+  {
+    "file": "tools\\verify_robot.py",
+    "dir": "tools",
+    "has_argparse": true
+  },
+  {
+    "file": "web\\dashboard.py",
+    "dir": "web",
+    "has_argparse": true
+  },
+  {
+    "file": "web\\dashboard_pro.py",
+    "dir": "web",
+    "has_argparse": false
+  },
+  {
+    "file": "web\\main.py",
+    "dir": "web",
+    "has_argparse": false
+  }
+]

@@ -1,0 +1,113 @@
+{
+  "title": "SUPER AUDIT VERIFICATION REPORT",
+  "generated": "2026-01-06T01:29:27.211415",
+  "version": "1.0.0",
+  "sections": [
+    {
+      "name": "Safety Gates",
+      "checks": [
+        {
+          "gate": 1,
+          "name": "PAPER_ONLY",
+          "status": "PASS",
+          "evidence": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\safety\\mode.py:50",
+          "value": "True"
+        },
+        {
+          "gate": 2,
+          "name": "LIVE_TRADING_ENABLED",
+          "status": "PASS",
+          "evidence": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\safety\\mode.py:53",
+          "value": "False"
+        },
+        {
+          "gate": 3,
+          "name": "Kill Switch",
+          "status": "PASS",
+          "evidence": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\core\\kill_switch.py",
+          "value": "Implemented"
+        },
+        {
+          "gate": 4,
+          "name": "APPROVE_LIVE_ACTION",
+          "status": "PASS",
+          "evidence": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\research_os\\approval_gate.py:29",
+          "value": "False"
+        },
+        {
+          "gate": 5,
+          "name": "Kill Switch File",
+          "status": "PASS",
+          "evidence": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\state\\KILL_SWITCH",
+          "value": "Not present"
+        },
+        {
+          "gate": 6,
+          "name": "@require_policy_gate",
+          "status": "PASS",
+          "evidence": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\execution\\broker_alpaca.py:1184",
+          "value": "Applied to execute_signal"
+        },
+        {
+          "gate": 7,
+          "name": "@require_no_kill_switch",
+          "status": "PASS",
+          "evidence": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\execution\\broker_alpaca.py:1185",
+          "value": "Applied to execute_signal"
+        }
+      ],
+      "passed": 7,
+      "total": 7
+    },
+    {
+      "name": "Runtime Evidence",
+      "checks": [
+        {
+          "name": "Heartbeat",
+          "status": "PASS",
+          "evidence": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\state\\autonomous\\heartbeat.json",
+          "value": "alive=True, cycles=2504"
+        },
+        {
+          "name": "Watchlist",
+          "status": "PASS",
+          "evidence": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\state\\watchlist\\next_day.json",
+          "value": "TOTD=AAPL, size=4"
+        },
+        {
+          "name": "Recent Logs",
+          "status": "PASS",
+          "evidence": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\logs",
+          "value": "5 active log files"
+        },
+        {
+          "name": "Data Cache",
+          "status": "PASS",
+          "evidence": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\data\\polygon_cache",
+          "value": "102 stocks cached"
+        }
+      ],
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "name": "Test Suite",
+      "checks": [
+        {
+          "name": "Pytest",
+          "status": "PASS",
+          "evidence": "pytest tests/",
+          "value": "1221/1238 passed (98.9%)"
+        }
+      ],
+      "passed": 1,
+      "total": 1
+    }
+  ],
+  "summary": {
+    "total_passed": 12,
+    "total_checks": 12,
+    "pass_rate": "100.0%",
+    "verdict": "VERIFIED"
+  }
+}

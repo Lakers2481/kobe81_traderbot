@@ -47,8 +47,14 @@ class MasterBrainFull:
         self.tasks_failed = 0
         self.started_at = datetime.now(ET)
 
+        # Heartbeat file path
+        self.heartbeat_path = self.state_dir / "heartbeat.json"
+
         # Component registry - all files/modules we use
         self.components = self._build_component_registry()
+
+        # Save initial heartbeat
+        self._save_heartbeat("initialized")
 
         logger.info(f"Master Brain v{self.VERSION} (FULL VISIBILITY) initialized")
         logger.info(f"  Scheduled tasks: {len(self.schedule)}")
@@ -408,6 +414,97 @@ class MasterBrainFull:
         logger.info(f"  *** {message} ***")
         return {"status": "logged", "message": message}
 
+    def _send_telegram_alert(self, title: str, message: str) -> bool:
+        """Send Telegram alert."""
+        try:
+            from alerts.telegram_alerter import get_alerter
+            alerter = get_alerter()
+            full_msg = f"<b>{title}</b>\n\n{message}\n\nTime: {datetime.now(ET).strftime('%H:%M:%S ET')}"
+            return alerter.send_message(full_msg)
+        except Exception as e:
+            logger.warning(f"Telegram alert failed: {e}")
+            return False
+
+    def _save_heartbeat(self, status: str = "running") -> None:
+        """Save heartbeat to state file for monitoring."""
+        try:
+            now = datetime.now(ET)
+            uptime_seconds = (now - self.started_at).total_seconds()
+
+            heartbeat = {
+                "status": status,
+                "last_beat": now.isoformat(),
+                "started_at": self.started_at.isoformat(),
+                "uptime_hours": round(uptime_seconds / 3600, 2),
+                "tasks_run": self.tasks_run,
+                "tasks_success": self.tasks_success,
+                "tasks_failed": self.tasks_failed,
+                "version": self.VERSION,
+                "phase": self._get_current_phase(),
+            }
+
+            self.heartbeat_path.write_text(json.dumps(heartbeat, indent=2))
+        except Exception as e:
+            logger.warning(f"Failed to save heartbeat: {e}")
+
+    def _get_current_phase(self) -> str:
+        """Get current market phase."""
+        now = datetime.now(ET)
+        hour = now.hour
+        minute = now.minute
+        current_time = hour * 60 + minute
+
+        if current_time < 6 * 60:
+            return "night"
+        elif current_time < 9 * 60 + 30:
+            return "premarket"
+        elif current_time < 10 * 60:
+            return "opening_range"
+        elif current_time < 11 * 60 + 30:
+            return "morning_session"
+        elif current_time < 14 * 60:
+            return "lunch"
+        elif current_time < 15 * 60 + 30:
+            return "power_hour"
+        elif current_time < 16 * 60:
+            return "close"
+        elif current_time < 20 * 60:
+            return "after_hours"
+        else:
+            return "night"
+
+    def _run_script(self, script_path: str, args: list = None, timeout: int = 300) -> Dict:
+        """Run a Python script and return results."""
+        import subprocess
+        import sys
+
+        full_path = Path(script_path)
+        if not full_path.exists():
+            return {"status": "error", "error": f"Script not found: {script_path}"}
+
+        cmd = [sys.executable, str(full_path)]
+        if args:
+            cmd.extend(args)
+
+        try:
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                cwd=str(Path.cwd())
+            )
+
+            if result.returncode == 0:
+                return {"status": "ok", "stdout": result.stdout[:500]}
+            else:
+                return {"status": "error", "error": result.stderr[:200]}
+
+        except subprocess.TimeoutExpired:
+            return {"status": "error", "error": "Script timeout"}
+        except Exception as e:
+            return {"status": "error", "error": str(e)}
+
     # =========================================================================
     # TASK IMPLEMENTATIONS
     # =========================================================================
@@ -596,13 +693,39 @@ class MasterBrainFull:
         return {"status": "ok", "adjustments": 0}
 
     def _task_build_watchlist(self) -> Dict:
-        """Build next day watchlist."""
+        """Build next day watchlist - ACTUALLY RUNS THE SCRIPT."""
         logger.info("  >>> BUILDING NEXT DAY WATCHLIST <<<")
-        # This is the critical 2:45 PM task
         try:
-            # Would run the actual watchlist builder
-            return {"status": "ok", "message": "Watchlist build triggered"}
+            import subprocess
+            import sys
+
+            script_path = Path("scripts/overnight_watchlist.py")
+            if not script_path.exists():
+                logger.error(f"  Script not found: {script_path}")
+                return {"status": "error", "error": "Script not found"}
+
+            # Actually run the script
+            result = subprocess.run(
+                [sys.executable, str(script_path), "--cap", "200", "--top", "5"],
+                capture_output=True,
+                text=True,
+                timeout=300,  # 5 minute timeout
+                cwd=str(Path.cwd())
+            )
+
+            if result.returncode == 0:
+                logger.info("  Watchlist build COMPLETED successfully")
+                # Send Telegram alert
+                self._send_telegram_alert("Watchlist Built", "Next day Top 5 watchlist generated")
+                return {"status": "ok", "message": "Watchlist built successfully"}
+            else:
+                logger.error(f"  Watchlist build FAILED: {result.stderr[:200]}")
+                return {"status": "error", "error": result.stderr[:200]}
+
+        except subprocess.TimeoutExpired:
+            return {"status": "error", "error": "Script timeout"}
         except Exception as e:
+            logger.error(f"  Build watchlist error: {e}")
             return {"status": "error", "error": str(e)}
 
     def _task_validate_watchlist(self) -> Dict:
@@ -618,9 +741,33 @@ class MasterBrainFull:
         return {"status": "ok", "gaps_found": 0}
 
     def _task_generate_pregame(self) -> Dict:
-        """Generate Pre-Game Blueprint."""
+        """Generate Pre-Game Blueprint - ACTUALLY RUNS THE SCRIPT."""
         logger.info("  >>> GENERATING PRE-GAME BLUEPRINT <<<")
-        return {"status": "ok"}
+        try:
+            # Check if watchlist exists
+            watchlist_path = Path("state/watchlist/next_day.json")
+            if not watchlist_path.exists():
+                logger.warning("  No watchlist found - skipping pregame")
+                return {"status": "skip", "reason": "No watchlist"}
+
+            # Run the pregame generator
+            result = self._run_script(
+                "scripts/generate_pregame_blueprint.py",
+                ["--cap", "200", "--top", "5", "--execute", "2"],
+                timeout=600  # 10 minute timeout
+            )
+
+            if result["status"] == "ok":
+                logger.info("  Pre-Game Blueprint COMPLETED")
+                self._send_telegram_alert(
+                    "Pre-Game Blueprint Ready",
+                    "Full 15-section analysis generated for Top 2 trades"
+                )
+            return result
+
+        except Exception as e:
+            logger.error(f"  Pregame generation error: {e}")
+            return {"status": "error", "error": str(e)}
 
     def _task_preflight(self) -> Dict:
         """Final preflight check."""
@@ -1085,6 +1232,9 @@ class MasterBrainFull:
                 self.scheduler.mark_task_executed(task, TaskStatus.FAILED, result)
 
             results[task.name] = {"success": success, "result": result}
+
+        # Save heartbeat after each cycle
+        self._save_heartbeat("running")
 
         return {
             "time": current_time,

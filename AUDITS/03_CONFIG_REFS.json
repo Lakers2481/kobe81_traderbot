@@ -1,0 +1,2510 @@
+[
+  {
+    "pattern": ".json",
+    "file": "analytics\\alpha_decay\\alpha_monitor.py",
+    "line": 155,
+    "content": "STATE_FILE = Path(\"state/alpha_decay/health_history.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "analytics\\attribution\\daily_pnl.py",
+    "line": 145,
+    "content": "HISTORY_FILE = Path(\"state/pnl/daily_history.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "analytics\\attribution\\daily_pnl.py",
+    "line": 146,
+    "content": "POSITIONS_FILE = Path(\"state/pnl/positions.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "analytics\\attribution\\factor_attribution.py",
+    "line": 127,
+    "content": "STATE_FILE = Path(\"state/pnl/factor_history.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "analytics\\attribution\\strategy_attribution.py",
+    "line": 112,
+    "content": "HISTORY_FILE = Path(\"state/pnl/strategy_history.json\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\brain.py",
+    "line": 81,
+    "content": "state_dir = Path(\"state/autonomous\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\comprehensive_brain.py",
+    "line": 46,
+    "content": "state_dir = Path(\"state/autonomous\")"
+  },
+  {
+    "pattern": ".csv",
+    "file": "autonomous\\comprehensive_brain.py",
+    "line": 256,
+    "content": "signals_file = Path(\"logs/brain_signals.csv\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "autonomous\\comprehensive_brain.py",
+    "line": 281,
+    "content": "positions_file = Path(\"state/positions.json\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\data_validator.py",
+    "line": 44,
+    "content": "self.state_dir = Path(\"state/autonomous/validation\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "autonomous\\handlers.py",
+    "line": 77,
+    "content": "state_file = Path(\"state/positions.json\")"
+  },
+  {
+    "pattern": ".csv",
+    "file": "autonomous\\handlers.py",
+    "line": 763,
+    "content": "df = pd.read_csv(cache_dir / f\"{symbol}.csv\", parse_dates=['timestamp'])"
+  },
+  {
+    "pattern": ".json",
+    "file": "autonomous\\handlers.py",
+    "line": 847,
+    "content": "heartbeat_file = Path(\"state/autonomous/heartbeat.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "autonomous\\handlers.py",
+    "line": 918,
+    "content": "state_file = Path(\"state/autonomous/research/research_state.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "autonomous\\handlers.py",
+    "line": 1086,
+    "content": "state_file = Path(\"state/autonomous/research/research_state.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "autonomous\\handlers.py",
+    "line": 1110,
+    "content": "discoveries_file = Path(\"state/autonomous/discoveries.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "autonomous\\handlers.py",
+    "line": 1323,
+    "content": "pattern_file = Path(\"state/autonomous/patterns/unique_patterns.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "autonomous\\handlers.py",
+    "line": 1332,
+    "content": "research_file = Path(\"state/autonomous/research/research_state.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "autonomous\\handlers.py",
+    "line": 1371,
+    "content": "discoveries_file = Path(\"state/autonomous/discoveries.json\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\integrity.py",
+    "line": 68,
+    "content": "self.state_dir = state_dir or Path(\"state/integrity\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\knowledge_integrator.py",
+    "line": 93,
+    "content": "state_dir = Path(\"state/autonomous/learning\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\knowledge_integrator.py",
+    "line": 280,
+    "content": "scraper_dir = Path(\"state/autonomous/scrapers\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\learning.py",
+    "line": 62,
+    "content": "state_dir = Path(\"state/autonomous/learning\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "autonomous\\learning.py",
+    "line": 107,
+    "content": "trade_log = Path(\"logs/trades.jsonl\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "autonomous\\learning.py",
+    "line": 255,
+    "content": "trade_log = Path(\"logs/trades.jsonl\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\master_brain.py",
+    "line": 79,
+    "content": "state_dir = Path(\"state/autonomous\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\master_brain_full.py",
+    "line": 35,
+    "content": "state_dir = Path(\"state/autonomous\")"
+  },
+  {
+    "pattern": ".csv",
+    "file": "autonomous\\master_brain_full.py",
+    "line": 561,
+    "content": "universe_file = Path(\"data/universe/optionable_liquid_900.csv\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "autonomous\\master_brain_full.py",
+    "line": 653,
+    "content": "watchlist_file = Path(\"state/watchlist/next_day.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "autonomous\\master_brain_full.py",
+    "line": 748,
+    "content": "watchlist_path = Path(\"state/watchlist/next_day.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "autonomous\\master_brain_full.py",
+    "line": 1047,
+    "content": "watchlist_path = Path(\"state/watchlist/next_day.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "autonomous\\master_brain_full.py",
+    "line": 1074,
+    "content": "watchlist_path = Path(\"state/watchlist/next_day.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "autonomous\\master_brain_full.py",
+    "line": 1118,
+    "content": "watchlist_path = Path(\"state/watchlist/next_day.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "autonomous\\master_brain_full.py",
+    "line": 1142,
+    "content": "watchlist_path = Path(\"state/watchlist/next_day.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "autonomous\\master_brain_full.py",
+    "line": 1177,
+    "content": "watchlist_path = Path(\"state/watchlist/next_day.json\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\monitor.py",
+    "line": 28,
+    "content": "state_dir = Path(\"state/autonomous\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\monitor.py",
+    "line": 173,
+    "content": "kill_switch = Path(\"state/KILL_SWITCH\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\pattern_rhymes.py",
+    "line": 62,
+    "content": "self.state_dir = Path(\"state/autonomous/patterns\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\research.py",
+    "line": 111,
+    "content": "state_dir = Path(\"state/autonomous/research\")"
+  },
+  {
+    "pattern": ".csv",
+    "file": "autonomous\\research.py",
+    "line": 745,
+    "content": "universe_file = Path(\"data/universe/optionable_liquid_900.csv\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\scheduler.py",
+    "line": 220,
+    "content": "state_dir = Path(\"state/autonomous\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\scheduler_full.py",
+    "line": 677,
+    "content": "state_dir = Path(\"state/autonomous/scheduler\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\source_tracker.py",
+    "line": 100,
+    "content": "self.state_dir = state_dir or Path(\"state/autonomous/source_tracking\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\scrapers\\all_sources.py",
+    "line": 137,
+    "content": "state_dir = Path(\"state/autonomous/scrapers\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\scrapers\\arxiv_scraper.py",
+    "line": 100,
+    "content": "self.cache_dir = cache_dir or Path(\"state/autonomous/scrapers/arxiv\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\scrapers\\github_scraper.py",
+    "line": 98,
+    "content": "self.cache_dir = cache_dir or Path(\"state/autonomous/scrapers/github\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\scrapers\\reddit_scraper.py",
+    "line": 88,
+    "content": "self.cache_dir = cache_dir or Path(\"state/autonomous/scrapers/reddit\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\scrapers\\source_manager.py",
+    "line": 74,
+    "content": "self.state_dir = state_dir or Path(\"state/autonomous/external_ideas\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "autonomous\\scrapers\\youtube_scraper.py",
+    "line": 73,
+    "content": "self.cache_dir = cache_dir or Path(\"state/autonomous/scrapers/youtube\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "backtest\\engine.py",
+    "line": 526,
+    "content": "with open(out / 'summary.json', 'w') as f:"
+  },
+  {
+    "pattern": ".csv",
+    "file": "bounce\\strategy_integration.py",
+    "line": 37,
+    "content": "per_stock_5y=pd.read_csv(\"reports/bounce/week_down_then_bounce_per_stock_5y.csv\"),"
+  },
+  {
+    "pattern": ".csv",
+    "file": "bounce\\strategy_integration.py",
+    "line": 38,
+    "content": "per_stock_10y=pd.read_csv(\"reports/bounce/week_down_then_bounce_per_stock_10y.csv\"),"
+  },
+  {
+    "pattern": ".json",
+    "file": "cognitive\\azr_reasoning.py",
+    "line": 418,
+    "content": "history_file = Path(\"state/cognitive/learnability_history.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "cognitive\\azr_reasoning.py",
+    "line": 431,
+    "content": "history_file = Path(\"state/cognitive/learnability_history.json\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "cognitive\\azr_reasoning.py",
+    "line": 531,
+    "content": "self._storage_dir = Path(\"state/cognitive\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "cognitive\\game_briefings.py",
+    "line": 901,
+    "content": "# Get regime - try to load from daily_insights.json first (most reliable)"
+  },
+  {
+    "pattern": ".csv",
+    "file": "cognitive\\game_briefings.py",
+    "line": 1026,
+    "content": "# Try to load from daily_picks.csv"
+  },
+  {
+    "pattern": ".json",
+    "file": "cognitive\\game_briefings.py",
+    "line": 1036,
+    "content": "# Try to load TOTD from comprehensive_totd.json"
+  },
+  {
+    "pattern": ".env",
+    "file": "cognitive\\llm_narrative_analyzer.py",
+    "line": 29,
+    "content": "# The dotenv library is already a project dependency, used for loading .env files."
+  },
+  {
+    "pattern": ".env",
+    "file": "cognitive\\llm_narrative_analyzer.py",
+    "line": 132,
+    "content": "It loads the ANTHROPIC_API_KEY from the .env file in the project root."
+  },
+  {
+    "pattern": ".json",
+    "file": "cognitive\\self_model.py",
+    "line": 693,
+    "content": "with open(self.state_dir / \"self_model.json\", 'w') as f:"
+  },
+  {
+    "pattern": ".json",
+    "file": "cognitive\\semantic_memory.py",
+    "line": 382,
+    "content": "with open(self.storage_dir / \"semantic_rules.json\", 'w') as f:"
+  },
+  {
+    "pattern": ".yaml",
+    "file": "cognitive\\symbolic_reasoner.py",
+    "line": 13,
+    "content": "The reasoner loads rules from `config/symbolic_rules.yaml` and evaluates them"
+  },
+  {
+    "pattern": "state/",
+    "file": "cognitive\\vector_memory.py",
+    "line": 73,
+    "content": "STATE_DIR = Path(\"state/cognitive/vector_memory\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "compliance\\audit_trail.py",
+    "line": 17,
+    "content": "LOG_PATH = Path(\"logs/compliance.jsonl\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "config\\env_loader.py",
+    "line": 10,
+    "content": "Minimal .env loader: reads KEY=VALUE pairs and sets os.environ."
+  },
+  {
+    "pattern": ".env",
+    "file": "config\\env_loader.py",
+    "line": 35,
+    "content": "loaded['ALPACA_API_KEY_ID'] = os.environ['ALPACA_API_KEY']"
+  },
+  {
+    "pattern": ".env",
+    "file": "config\\env_loader.py",
+    "line": 39,
+    "content": "loaded['ALPACA_API_SECRET_KEY'] = os.environ['ALPACA_SECRET_KEY']"
+  },
+  {
+    "pattern": ".yaml",
+    "file": "config\\settings_loader.py",
+    "line": 24,
+    "content": "return Path(__file__).parent / \"base.yaml\""
+  },
+  {
+    "pattern": ".yaml",
+    "file": "config\\settings_loader.py",
+    "line": 28,
+    "content": "\"\"\"Load and cache settings from base.yaml.\"\"\""
+  },
+  {
+    "pattern": ".yaml",
+    "file": "config\\settings_schema.py",
+    "line": 196,
+    "content": "path = Path(__file__).parent / \"base.yaml\""
+  },
+  {
+    "pattern": ".yaml",
+    "file": "config\\settings_schema.py",
+    "line": 208,
+    "content": "Load and validate settings from base.yaml."
+  },
+  {
+    "pattern": ".json",
+    "file": "core\\decision_packet.py",
+    "line": 34,
+    "content": "loaded = DecisionPacket.load(\"packets/2024-01-15_AAPL_abc123.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "core\\earnings_filter.py",
+    "line": 55,
+    "content": "return Path(cfg.get(\"cache_file\", \"state/earnings_cache.json\"))"
+  },
+  {
+    "pattern": ".json",
+    "file": "core\\hash_chain.py",
+    "line": 9,
+    "content": "CHAIN_FILE = Path(\"state/hash_chain.jsonl\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "core\\journal.py",
+    "line": 9,
+    "content": "JOURNAL_PATH = Path(\"state/journal.jsonl\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "core\\kill_switch.py",
+    "line": 32,
+    "content": "KILL_SWITCH_PATH = Path(\"state/KILL_SWITCH\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "core\\restart_backoff.py",
+    "line": 40,
+    "content": "DEFAULT_STATE_FILE = Path(\"state/restart_backoff.json\")"
+  },
+  {
+    "pattern": ".yaml",
+    "file": "core\\clock\\market_clock.py",
+    "line": 111,
+    "content": "# Try loading from base.yaml"
+  },
+  {
+    "pattern": ".json",
+    "file": "data\\corporate_actions.py",
+    "line": 69,
+    "content": "self.actions_path = actions_path or Path(\"data/corporate_actions.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "data\\alternative\\alt_data_aggregator.py",
+    "line": 132,
+    "content": "STATE_FILE = Path(\"state/alternative/aggregated_signals.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "data\\alternative\\congress_trades.py",
+    "line": 191,
+    "content": "STATE_FILE = Path(\"state/alternative/congress_trades.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "data\\alternative\\insider_trades.py",
+    "line": 207,
+    "content": "STATE_FILE = Path(\"state/alternative/insider_trades.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "data\\alternative\\news_sentiment.py",
+    "line": 148,
+    "content": "STATE_FILE = Path(\"state/alternative/news_cache.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "data\\alternative\\options_flow.py",
+    "line": 213,
+    "content": "STATE_FILE = Path(\"state/alternative/options_flow.json\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "data\\providers\\fred_macro.py",
+    "line": 21,
+    "content": "# Load .env BEFORE checking environment variables"
+  },
+  {
+    "pattern": ".env",
+    "file": "data\\providers\\fred_macro.py",
+    "line": 26,
+    "content": "_env_path = Path(__file__).parent.parent.parent / \".env\""
+  },
+  {
+    "pattern": ".env",
+    "file": "data\\providers\\polygon_eod.py",
+    "line": 13,
+    "content": "# CRITICAL: Load .env file to ensure API keys are available"
+  },
+  {
+    "pattern": ".csv",
+    "file": "data\\universe\\canonical.py",
+    "line": 15,
+    "content": "CANONICAL_UNIVERSE_FILE = Path(__file__).parent / \"optionable_liquid_900.csv\""
+  },
+  {
+    "pattern": ".csv",
+    "file": "data\\universe\\loader.py",
+    "line": 15,
+    "content": "CANONICAL_UNIVERSE_FILE = Path(__file__).parent / \"optionable_liquid_900.csv\""
+  },
+  {
+    "pattern": ".json",
+    "file": "data_exploration\\data_registry.py",
+    "line": 150,
+    "content": "self.registry_path = Path(registry_path) if registry_path else Path(\"data/registry.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "evolution\\registry.py",
+    "line": 92,
+    "content": "self.registry_path = registry_path or Path(\"state/evolution_registry.jsonl\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "execution\\broker_alpaca.py",
+    "line": 503,
+    "content": "TRADES_LOG_PATH = Path(\"logs/trades.jsonl\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "execution\\broker_alpaca.py",
+    "line": 795,
+    "content": "IOC_TELEMETRY_PATH = Path(\"state/ioc_telemetry.json\")"
+  },
+  {
+    "pattern": ".yaml",
+    "file": "execution\\broker_factory.py",
+    "line": 151,
+    "content": "config_path = Path(\"config/base.yaml\")"
+  },
+  {
+    "pattern": ".yaml",
+    "file": "execution\\broker_factory.py",
+    "line": 170,
+    "content": "brokers_yaml = Path(\"config/brokers.yaml\")"
+  },
+  {
+    "pattern": ".yaml",
+    "file": "execution\\broker_factory.py",
+    "line": 177,
+    "content": "logger.warning(f\"Failed to load brokers.yaml: {e}\")"
+  },
+  {
+    "pattern": ".yaml",
+    "file": "execution\\broker_factory.py",
+    "line": 181,
+    "content": "config_path = Path(\"config/base.yaml\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "execution\\analytics\\market_impact.py",
+    "line": 128,
+    "content": "HISTORY_FILE = Path(\"state/execution/impact_history.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "execution\\analytics\\slippage_tracker.py",
+    "line": 102,
+    "content": "HISTORY_FILE = Path(\"state/execution/slippage_history.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "execution\\analytics\\timing_analysis.py",
+    "line": 72,
+    "content": "HISTORY_FILE = Path(\"state/execution/timing_history.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "execution\\tca\\transaction_cost_analyzer.py",
+    "line": 261,
+    "content": "with open(self.storage_dir / \"tca_records.json\", 'w') as f:"
+  },
+  {
+    "pattern": ".json",
+    "file": "guardian\\alert_manager.py",
+    "line": 146,
+    "content": "STATE_FILE = Path(\"state/guardian/alerts.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "guardian\\alert_manager.py",
+    "line": 147,
+    "content": "HISTORY_FILE = Path(\"state/guardian/alert_history.jsonl\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "guardian\\decision_engine.py",
+    "line": 118,
+    "content": "STATE_FILE = Path(\"state/guardian/decisions.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "guardian\\decision_engine.py",
+    "line": 119,
+    "content": "HISTORY_FILE = Path(\"state/guardian/decision_history.jsonl\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "guardian\\emergency_protocol.py",
+    "line": 113,
+    "content": "STATE_FILE = Path(\"state/guardian/emergency.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "guardian\\emergency_protocol.py",
+    "line": 114,
+    "content": "HISTORY_FILE = Path(\"state/guardian/emergency_history.jsonl\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "guardian\\emergency_protocol.py",
+    "line": 115,
+    "content": "KILL_SWITCH_FILE = Path(\"state/KILL_SWITCH\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "guardian\\guardian.py",
+    "line": 120,
+    "content": "STATE_FILE = Path(\"state/guardian/guardian.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "guardian\\guardian.py",
+    "line": 121,
+    "content": "HEARTBEAT_FILE = Path(\"state/guardian/heartbeat.json\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "guardian\\guardian.py",
+    "line": 267,
+    "content": "if Path(\"state/KILL_SWITCH\").exists():"
+  },
+  {
+    "pattern": ".json",
+    "file": "guardian\\self_learner.py",
+    "line": 128,
+    "content": "CHANGES_FILE = Path(\"state/guardian/change_history.jsonl\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "guardian\\self_learner.py",
+    "line": 129,
+    "content": "ERRORS_FILE = Path(\"state/guardian/error_patterns.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "guardian\\self_learner.py",
+    "line": 130,
+    "content": "LESSONS_FILE = Path(\"state/guardian/lessons_learned.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "guardian\\self_learner.py",
+    "line": 131,
+    "content": "FIXES_FILE = Path(\"state/guardian/known_fixes.json\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "guardian\\self_learner.py",
+    "line": 424,
+    "content": "Path(\"state/KILL_SWITCH\"),"
+  },
+  {
+    "pattern": ".json",
+    "file": "guardian\\self_learner.py",
+    "line": 425,
+    "content": "Path(\"state/guardian/emergency.json\"),"
+  },
+  {
+    "pattern": ".env",
+    "file": "guardian\\self_learner.py",
+    "line": 491,
+    "content": "why=\"API keys in .env file were not being loaded because os.getenv() only reads \""
+  },
+  {
+    "pattern": ".env",
+    "file": "guardian\\self_learner.py",
+    "line": 493,
+    "content": "\"must explicitly load .env first.\","
+  },
+  {
+    "pattern": ".env",
+    "file": "guardian\\self_learner.py",
+    "line": 522,
+    "content": "\"The .env file is not automatically loaded - must use python-dotenv\","
+  },
+  {
+    "pattern": ".env",
+    "file": "guardian\\self_learner.py",
+    "line": 533,
+    "content": "root_cause=\"python-dotenv was not loading .env file before os.getenv() calls\","
+  },
+  {
+    "pattern": ".env",
+    "file": "guardian\\system_monitor.py",
+    "line": 26,
+    "content": "# CRITICAL: Load .env file FIRST before any os.getenv() calls"
+  },
+  {
+    "pattern": ".json",
+    "file": "guardian\\system_monitor.py",
+    "line": 140,
+    "content": "STATE_FILE = Path(\"state/guardian/system_health.json\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "guardian\\system_monitor.py",
+    "line": 236,
+    "content": "kill_file = Path(\"state/KILL_SWITCH\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "guardian\\system_monitor.py",
+    "line": 256,
+    "content": "state_file = Path(\"state/risk/circuit_breakers.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "guardian\\system_monitor.py",
+    "line": 368,
+    "content": "heartbeat_file = Path(\"state/autonomous/heartbeat.json\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "guardian\\__init__.py",
+    "line": 24,
+    "content": "# CRITICAL: Load .env file FIRST before any module imports"
+  },
+  {
+    "pattern": ".json",
+    "file": "integration\\learning_hub.py",
+    "line": 131,
+    "content": "STATE_FILE = Path(\"state/integration/learning_hub_state.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "ml\\alpha_discovery\\hybrid_pipeline\\orchestrator.py",
+    "line": 76,
+    "content": "with open(save_path / 'discovery_result.json', 'w') as f:"
+  },
+  {
+    "pattern": ".json",
+    "file": "ml\\alpha_discovery\\pattern_miner\\clustering.py",
+    "line": 307,
+    "content": "with open(save_path / 'clusters.json', 'w') as f:"
+  },
+  {
+    "pattern": ".json",
+    "file": "ml\\alpha_discovery\\pattern_miner\\clustering.py",
+    "line": 311,
+    "content": "with open(save_path / 'feature_names.json', 'w') as f:"
+  },
+  {
+    "pattern": ".json",
+    "file": "ml\\alpha_discovery\\pattern_miner\\clustering.py",
+    "line": 320,
+    "content": "clusters_file = load_path / 'clusters.json'"
+  },
+  {
+    "pattern": ".json",
+    "file": "ml\\alpha_discovery\\pattern_miner\\clustering.py",
+    "line": 326,
+    "content": "features_file = load_path / 'feature_names.json'"
+  },
+  {
+    "pattern": ".json",
+    "file": "ml\\alpha_discovery\\rl_agent\\agent.py",
+    "line": 271,
+    "content": "with open(save_path / 'config.json', 'w') as f:"
+  },
+  {
+    "pattern": ".json",
+    "file": "ml\\alpha_discovery\\rl_agent\\agent.py",
+    "line": 281,
+    "content": "config_file = load_path / 'config.json'"
+  },
+  {
+    "pattern": ".json",
+    "file": "ml_advanced\\online_learning.py",
+    "line": 282,
+    "content": "with open(path_obj / 'online_learning_state.json', 'w') as f:"
+  },
+  {
+    "pattern": ".json",
+    "file": "ml_features\\ensemble_brain.py",
+    "line": 482,
+    "content": "with open(path / 'ensemble_state.json', 'w') as f:"
+  },
+  {
+    "pattern": ".json",
+    "file": "ml_features\\ensemble_brain.py",
+    "line": 507,
+    "content": "with open(path / 'ensemble_state.json', 'r') as f:"
+  },
+  {
+    "pattern": "state/",
+    "file": "ml_meta\\model.py",
+    "line": 15,
+    "content": "DEPLOYED_DIR = Path(\"state/models/deployed\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "ml_meta\\model.py",
+    "line": 16,
+    "content": "CANDIDATE_DIR = Path(\"state/models/candidates\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "monitor\\divergence_monitor.py",
+    "line": 545,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "monitor\\drift_detector.py",
+    "line": 148,
+    "content": "self.state_path = Path(state_path) if state_path else Path(\"state/drift_state.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "monitor\\health_endpoints.py",
+    "line": 264,
+    "content": "\"\"\"Load performance metrics from a summary.json file.\"\"\""
+  },
+  {
+    "pattern": ".json",
+    "file": "monitor\\heartbeat.py",
+    "line": 22,
+    "content": "DEFAULT_HEARTBEAT_PATH = Path(\"state/heartbeat.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "news\\news_monitor.py",
+    "line": 76,
+    "content": "self.news_file = Path(\"data/news/latest_news.json\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "observability\\langfuse_tracer.py",
+    "line": 117,
+    "content": "STATE_DIR = Path(\"state/observability\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "ops\\locks.py",
+    "line": 22,
+    "content": "DEFAULT_LOCK_PATH = Path(\"state/kobe.lock\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "ops\\supervisor.py",
+    "line": 91,
+    "content": "self.state_path = state_path or Path(\"state/supervisor_state.json\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "ops\\supervisor.py",
+    "line": 377,
+    "content": "kill_switch_path = Path(\"state/KILL_SWITCH\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "ops\\supervisor.py",
+    "line": 516,
+    "content": "kill_switch_path = Path(\"state/KILL_SWITCH\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "ops\\supervisor.py",
+    "line": 542,
+    "content": "kill_switch_path = Path(\"state/KILL_SWITCH\")"
+  },
+  {
+    "pattern": ".csv",
+    "file": "pipelines\\implementation_pipeline.py",
+    "line": 247,
+    "content": "# df = pd.read_csv(\"sample_data.csv\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "portfolio\\optimizer\\mean_variance.py",
+    "line": 114,
+    "content": "STATE_FILE = Path(\"state/portfolio/mv_optimizer.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "portfolio\\optimizer\\portfolio_manager.py",
+    "line": 148,
+    "content": "STATE_FILE = Path(\"state/portfolio/manager.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "portfolio\\optimizer\\rebalancer.py",
+    "line": 139,
+    "content": "STATE_FILE = Path(\"state/portfolio/rebalancer.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "portfolio\\optimizer\\risk_parity.py",
+    "line": 103,
+    "content": "STATE_FILE = Path(\"state/portfolio/rp_optimizer.json\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "preflight\\cognitive_preflight.py",
+    "line": 456,
+    "content": "kill_switch_path = Path(\"state/KILL_SWITCH\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "reports\\weekly_ai_summary.py",
+    "line": 38,
+    "content": "\"\"\"Load signals from the past week from signals.jsonl.\"\"\""
+  },
+  {
+    "pattern": ".json",
+    "file": "research_os\\knowledge_card.py",
+    "line": 170,
+    "content": "store_path = Path(__file__).parent.parent / \"state\" / \"research_os\" / \"knowledge_cards.json\""
+  },
+  {
+    "pattern": ".json",
+    "file": "research_os\\proposal.py",
+    "line": 220,
+    "content": "store_path = Path(__file__).parent.parent / \"state\" / \"research_os\" / \"proposals.json\""
+  },
+  {
+    "pattern": ".yaml",
+    "file": "risk\\policy_gate.py",
+    "line": 24,
+    "content": "\"\"\"Load RiskLimits from config/base.yaml based on trading_mode."
+  },
+  {
+    "pattern": ".csv",
+    "file": "risk\\portfolio_risk.py",
+    "line": 489,
+    "content": "sector_map_path = Path(\"data/sector_map.csv\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "risk\\weekly_exposure_gate.py",
+    "line": 29,
+    "content": "STATE_FILE = Path('state/weekly_budget.json')"
+  },
+  {
+    "pattern": ".json",
+    "file": "risk\\circuit_breakers\\breaker_manager.py",
+    "line": 107,
+    "content": "STATE_FILE = Path(\"state/circuit_breakers/breaker_state.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "risk\\circuit_breakers\\breaker_manager.py",
+    "line": 108,
+    "content": "ALERT_LOG = Path(\"state/circuit_breakers/alerts.jsonl\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "risk\\circuit_breakers\\correlation_breaker.py",
+    "line": 66,
+    "content": "STATE_FILE = Path(\"state/circuit_breakers/correlation_history.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "risk\\circuit_breakers\\execution_breaker.py",
+    "line": 68,
+    "content": "STATE_FILE = Path(\"state/circuit_breakers/execution_history.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "risk\\circuit_breakers\\streak_breaker.py",
+    "line": 58,
+    "content": "STATE_FILE = Path(\"state/circuit_breakers/streak_history.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "risk\\circuit_breakers\\volatility_breaker.py",
+    "line": 54,
+    "content": "VIX_CACHE_FILE = Path(\"state/circuit_breakers/vix_history.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "risk\\factor_model\\factor_calculator.py",
+    "line": 139,
+    "content": "STATE_FILE = Path(\"state/risk/factor_exposures.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "risk\\factor_model\\sector_exposure.py",
+    "line": 150,
+    "content": "STATE_FILE = Path(\"state/risk/sector_history.json\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\alerts.py",
+    "line": 13,
+    "content": "python alerts.py --dotenv /path/to/.env      # Load env vars from file"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\alerts.py",
+    "line": 27,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\alerts.py",
+    "line": 43,
+    "content": "DEFAULT_DOTENV = Path(\"C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\alpha_research.py",
+    "line": 14,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\analyze_stock.py",
+    "line": 19,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\audit.py",
+    "line": 22,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\backtest_dual_strategy.py",
+    "line": 19,
+    "content": "# Load .env from project root"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\backtest_dual_strategy.py",
+    "line": 20,
+    "content": "env_path = Path(__file__).parent.parent / \".env\""
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\backtest_ibs_rsi.py",
+    "line": 22,
+    "content": "env_path = Path(__file__).parent.parent / \".env\""
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\backtest_totd.py",
+    "line": 32,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\backtest_totd.py",
+    "line": 785,
+    "content": "with open(output_dir / 'turtle_soup_summary.json', 'w') as f:"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\backtest_totd.py",
+    "line": 787,
+    "content": "with open(output_dir / 'ibs_rsi_summary.json', 'w') as f:"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\backtest_totd.py",
+    "line": 789,
+    "content": "with open(output_dir / 'combined_summary.json', 'w') as f:"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\backtest_totd.py",
+    "line": 1015,
+    "content": "alt_env = Path(\"C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\backup.py",
+    "line": 25,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\backup.py",
+    "line": 153,
+    "content": "metadata = json.loads(zf.read(\"backup_metadata.json\"))"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\backup.py",
+    "line": 222,
+    "content": "metadata = json.loads(zf.read(\"backup_metadata.json\"))"
+  },
+  {
+    "pattern": "state/",
+    "file": "scripts\\backup_state.py",
+    "line": 53,
+    "content": "add_tree(z, models, Path('state/models'))"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\benchmark.py",
+    "line": 60,
+    "content": "\"\"\"Load environment variables from .env file.\"\"\""
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\benchmark.py",
+    "line": 62,
+    "content": "dotenv_path = Path(__file__).parent.parent / '.env'"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\benchmark.py",
+    "line": 496,
+    "content": "help='Load environment variables from .env file'"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\broker.py",
+    "line": 22,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\build_signal_dataset.py",
+    "line": 34,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\build_universe_polygon.py",
+    "line": 19,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".csv",
+    "file": "scripts\\build_universe_polygon.py",
+    "line": 94,
+    "content": "final_df.to_csv(str(Path(args.out).with_suffix('.full.csv')), index=False)"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\check_data_quality.py",
+    "line": 13,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\check_polygon_earliest_universe.py",
+    "line": 15,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\cleanup.py",
+    "line": 12,
+    "content": "python cleanup.py --dotenv PATH    # Load environment from .env file"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\cleanup.py",
+    "line": 27,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\cognitive_learn.py",
+    "line": 34,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\config_utils.py",
+    "line": 20,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\correlation.py",
+    "line": 33,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\correlation_check.py",
+    "line": 13,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": "state/",
+    "file": "scripts\\dashboard.py",
+    "line": 22,
+    "content": "PID_FILE = Path(\"state/dashboard.pid\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "scripts\\dashboard.py",
+    "line": 72,
+    "content": "\"kill_switch\": Path(\"state/KILL_SWITCH\").exists(),"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\dashboard.py",
+    "line": 84,
+    "content": "runner_state = Path(\"state/runner_state.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\dashboard.py",
+    "line": 98,
+    "content": "positions_file = Path(\"state/positions.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\dashboard.py",
+    "line": 126,
+    "content": "pnl_file = Path(\"state/pnl_summary.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\dashboard.py",
+    "line": 135,
+    "content": "trade_log = Path(\"logs/trades.jsonl\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\dashboard.py",
+    "line": 164,
+    "content": "orders_file = Path(\"state/order_history.json\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\data.py",
+    "line": 22,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\debugger.py",
+    "line": 41,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\deploy.py",
+    "line": 68,
+    "content": "positions_file = Path(\"state/positions.json\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "scripts\\deploy.py",
+    "line": 85,
+    "content": "kill_switch = Path(\"state/KILL_SWITCH\")"
+  },
+  {
+    "pattern": ".yaml",
+    "file": "scripts\\deploy.py",
+    "line": 136,
+    "content": "config_file = Path(\"config/base.yaml\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\deploy.py",
+    "line": 198,
+    "content": "with open(backup_path / \"manifest.json\", \"w\") as f:"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\drawdown.py",
+    "line": 34,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\earnings.py",
+    "line": 23,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\env.py",
+    "line": 30,
+    "content": "\"\"\"Load environment variables from .env file.\"\"\""
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\env.py",
+    "line": 182,
+    "content": "# Load .env if specified"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\eod_finalize.py",
+    "line": 36,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\exit_manager.py",
+    "line": 33,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\explain.py",
+    "line": 24,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\exposure.py",
+    "line": 67,
+    "content": "positions_file = Path(\"state/positions.json\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\feature_experiment.py",
+    "line": 13,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".csv",
+    "file": "scripts\\find_unique_patterns.py",
+    "line": 22,
+    "content": "cache_path = Path(\"data/polygon_cache\") / f\"{symbol}.csv\""
+  },
+  {
+    "pattern": ".csv",
+    "file": "scripts\\generate_pregame.py",
+    "line": 40,
+    "content": "df = pd.read_csv('logs/daily_picks.csv')"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\generate_pregame.py",
+    "line": 54,
+    "content": "with open('reports/pregame_20260101.json', 'w') as f:"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\generate_training_data.py",
+    "line": 408,
+    "content": "with open(output_dir / \"metadata.json\", \"w\") as f:"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\health_check_full.py",
+    "line": 22,
+    "content": "load_dotenv(ROOT / '.env')"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\health_check_full.py",
+    "line": 79,
+    "content": "with open('state/weekly_budget.json') as f:"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\health_check_full.py",
+    "line": 115,
+    "content": "positions_file = Path('state/reconcile/positions.json')"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\health_monitor.py",
+    "line": 36,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\hedge.py",
+    "line": 22,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\idempotency.py",
+    "line": 19,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\integrity_check.py",
+    "line": 35,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\journal.py",
+    "line": 23,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\kill.py",
+    "line": 26,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\learn.py",
+    "line": 21,
+    "content": "order_file = Path(\"state/order_history.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\learn.py",
+    "line": 31,
+    "content": "trade_log = Path(\"logs/trades.jsonl\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\logs.py",
+    "line": 25,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\manage_secrets.py",
+    "line": 20,
+    "content": "\"\"\"Load environment variables from .env file.\"\"\""
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\manage_secrets.py",
+    "line": 249,
+    "content": "# Load .env if specified"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\metrics.py",
+    "line": 71,
+    "content": "\"\"\"Load environment variables from .env file.\"\"\""
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\metrics.py",
+    "line": 73,
+    "content": "dotenv_path = Path(__file__).parent.parent / '.env'"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\metrics.py",
+    "line": 536,
+    "content": "help='Load environment variables from .env file'"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\mini_backtest.py",
+    "line": 19,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\monte_carlo.py",
+    "line": 21,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\monte_carlo.py",
+    "line": 66,
+    "content": "with open(outdir / 'robustness_score.json', 'w') as f:"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\optimize.py",
+    "line": 41,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\optimize.py",
+    "line": 139,
+    "content": "with open(outdir / 'best_params.json', 'w') as f:"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\options.py",
+    "line": 23,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\orders.py",
+    "line": 30,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\orders.py",
+    "line": 81,
+    "content": "print(f\"[WARN] Failed to load orders.json: {e}\")"
+  },
+  {
+    "pattern": "state/",
+    "file": "scripts\\overnight_runner.py",
+    "line": 39,
+    "content": "return Path('state/KILL_SWITCH').exists()"
+  },
+  {
+    "pattern": ".csv",
+    "file": "scripts\\overnight_runner.py",
+    "line": 53,
+    "content": "universe = load_universe('data/universe/optionable_liquid_900.csv', cap=100)"
+  },
+  {
+    "pattern": ".csv",
+    "file": "scripts\\overnight_runner.py",
+    "line": 140,
+    "content": "'universe_file': Path('data/universe/optionable_liquid_900.csv').exists(),"
+  },
+  {
+    "pattern": "state/",
+    "file": "scripts\\overnight_runner.py",
+    "line": 141,
+    "content": "'episodic_memory': Path('state/cognitive/episodes').exists(),"
+  },
+  {
+    "pattern": "state/",
+    "file": "scripts\\overnight_runner.py",
+    "line": 142,
+    "content": "'ml_models': Path('state/models/ensemble').exists(),"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\pattern_hunt.py",
+    "line": 23,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\performance.py",
+    "line": 10,
+    "content": "python performance.py --dotenv PATH  # Load environment from .env file"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\performance.py",
+    "line": 27,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\pnl.py",
+    "line": 32,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\pnl.py",
+    "line": 55,
+    "content": "print(f\"[WARN] Failed to load trades.json: {e}\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\pnl.py",
+    "line": 66,
+    "content": "print(f\"[WARN] Failed to load orders.json: {e}\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\polygon.py",
+    "line": 25,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\positions.py",
+    "line": 29,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\position_manager.py",
+    "line": 39,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\prefetch_polygon_universe.py",
+    "line": 17,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\preflight.py",
+    "line": 23,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\preflight_live.py",
+    "line": 50,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".csv",
+    "file": "scripts\\pregame_report.py",
+    "line": 31,
+    "content": "df = pd.read_csv('logs/daily_picks.csv')"
+  },
+  {
+    "pattern": "state/",
+    "file": "scripts\\pregame_report.py",
+    "line": 160,
+    "content": "print(f\"  Kill Switch:       {'ACTIVE' if Path('state/KILL_SWITCH').exists() else 'INACTIVE'}\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\premarket_check.py",
+    "line": 32,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\promote_models.py",
+    "line": 52,
+    "content": "(bdir / 'meta_current.json').write_text(cur.read_text(encoding='utf-8'), encoding='utf-8')"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\quality_check.py",
+    "line": 36,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\quality_check.py",
+    "line": 195,
+    "content": "'config.env_loader',"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\quant_dashboard.py",
+    "line": 111,
+    "content": "\"\"\"Load environment variables from .env file.\"\"\""
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\quant_dashboard.py",
+    "line": 113,
+    "content": "dotenv_path = Path(__file__).parent.parent / '.env'"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\quant_dashboard.py",
+    "line": 679,
+    "content": "help='Load environment variables from .env file'"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\quant_pattern_analysis.py",
+    "line": 32,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\quant_pattern_analysis.py",
+    "line": 33,
+    "content": "load_env(Path(\".env\"))"
+  },
+  {
+    "pattern": ".csv",
+    "file": "scripts\\quant_pattern_analysis.py",
+    "line": 208,
+    "content": "universe_file = Path(\"data/universe/optionable_liquid_900.csv\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\readiness_check.py",
+    "line": 35,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\reconcile_alpaca.py",
+    "line": 13,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\regime.py",
+    "line": 32,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\regime_analysis.py",
+    "line": 13,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\replay.py",
+    "line": 28,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\replay.py",
+    "line": 475,
+    "content": "with open(outdir / f'{prefix}_comparison.json', 'w') as f:"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\report.py",
+    "line": 76,
+    "content": "\"\"\"Load environment variables from .env file.\"\"\""
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\report.py",
+    "line": 78,
+    "content": "dotenv_path = Path(__file__).parent.parent / '.env'"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\report.py",
+    "line": 817,
+    "content": "help='Load environment variables from .env file'"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\research_discover.py",
+    "line": 24,
+    "content": "load_dotenv(ROOT / '.env')"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\restart.py",
+    "line": 11,
+    "content": "python restart.py --dotenv PATH    # Load environment from .env file"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\restart.py",
+    "line": 29,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\resume.py",
+    "line": 23,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\risk_cli.py",
+    "line": 22,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\runner.py",
+    "line": 44,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\run_alpha_screener.py",
+    "line": 33,
+    "content": "load_dotenv(ROOT / '.env')"
+  },
+  {
+    "pattern": ".csv",
+    "file": "scripts\\run_backtest_options_synth.py",
+    "line": 265,
+    "content": "output_path = Path('sample_options_signals.csv')"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\run_backtest_polygon.py",
+    "line": 18,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\run_live_trade_micro.py",
+    "line": 14,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\run_live_trade_micro.py",
+    "line": 88,
+    "content": "config_pin = sha256_file('config/settings.json') if Path('config/settings.json').exists() else None"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\run_paper_trade.py",
+    "line": 17,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\run_paper_trade.py",
+    "line": 312,
+    "content": "config_pin = sha256_file('config/settings.json') if Path('config/settings.json').exists() else None"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\run_showdown_crypto.py",
+    "line": 23,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\run_showdown_polygon.py",
+    "line": 17,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\run_wf_polygon.py",
+    "line": 22,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".csv",
+    "file": "scripts\\scan.py",
+    "line": 10,
+    "content": "- Loads universe from data/universe/optionable_liquid_900.csv (900 symbols)"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\scan.py",
+    "line": 31,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\scan.py",
+    "line": 1970,
+    "content": "comp_path = Path(\"logs/comprehensive_totd.json\")"
+  },
+  {
+    "pattern": ".csv",
+    "file": "scripts\\scan_down_streaks.py",
+    "line": 99,
+    "content": "universe_file = Path(\"data/universe/optionable_liquid_900.csv\")"
+  },
+  {
+    "pattern": ".csv",
+    "file": "scripts\\scan_down_streaks.py",
+    "line": 217,
+    "content": "output_file = Path(\"logs/down_streak_scan.csv\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\scheduler_kobe.py",
+    "line": 607,
+    "content": "# Load local .env first"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\scheduler_kobe.py",
+    "line": 609,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\scheduler_kobe.py",
+    "line": 615,
+    "content": "# Load 2K28 .env as fallback for TELEGRAM_* keys"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\sector_rotation.py",
+    "line": 13,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": "state/",
+    "file": "scripts\\seed_episodic_memory.py",
+    "line": 143,
+    "content": "episodes_dir = Path('state/cognitive/episodes')"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\send_telegram_test.py",
+    "line": 7,
+    "content": "Loads TELEGRAM_* from --dotenv and optional --fallback (e.g., 2K28 .env),"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\send_telegram_test.py",
+    "line": 44,
+    "content": "# Load .env then fallback (Telegram keys only)"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\signals.py",
+    "line": 29,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\signals.py",
+    "line": 50,
+    "content": "print(f\"[WARN] Failed to load signals.json: {e}\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\simulate.py",
+    "line": 25,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\snapshot.py",
+    "line": 11,
+    "content": "python snapshot.py --dotenv PATH               # Load environment from .env file"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\snapshot.py",
+    "line": 30,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\snapshot.py",
+    "line": 233,
+    "content": "manifest = json.loads(zf.read(\"MANIFEST.json\"))"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\snapshot.py",
+    "line": 289,
+    "content": "manifest = json.loads(zf.read(\"MANIFEST.json\"))"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\start.py",
+    "line": 25,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\state.py",
+    "line": 24,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\status.py",
+    "line": 29,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\stop.py",
+    "line": 25,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\strategy.py",
+    "line": 28,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\submit_totd.py",
+    "line": 20,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\submit_totd.py",
+    "line": 270,
+    "content": "config_pin = sha256_file('config/settings.json') if Path('config/settings.json').exists() else None"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\suggest.py",
+    "line": 21,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\sync_all_tasks.py",
+    "line": 6,
+    "content": "1. Reloads ALL tasks from autonomous/scheduler.py into task_queue.json"
+  },
+  {
+    "pattern": "state/",
+    "file": "scripts\\sync_all_tasks.py",
+    "line": 20,
+    "content": "STATE_DIR = Path(\"state/autonomous\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\telegram.py",
+    "line": 11,
+    "content": "python telegram.py --dotenv /path/to/.env    # Load env vars from file"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\telegram.py",
+    "line": 26,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\telegram.py",
+    "line": 40,
+    "content": "DEFAULT_DOTENV = Path(\"C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env\")"
+  },
+  {
+    "pattern": ".yaml",
+    "file": "scripts\\test.py",
+    "line": 131,
+    "content": "Path(\"config/base.yaml\"),"
+  },
+  {
+    "pattern": ".csv",
+    "file": "scripts\\test.py",
+    "line": 149,
+    "content": "universe_file = Path(\"data/universe/optionable_liquid_900.csv\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\trade_top3.py",
+    "line": 8,
+    "content": "- Load .env for credentials"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\trade_top3.py",
+    "line": 27,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\train_ensemble.py",
+    "line": 366,
+    "content": "with open(output_dir / \"ensemble_metadata.json\", \"w\") as f:"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\train_rl_agent.py",
+    "line": 27,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\universe.py",
+    "line": 23,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\update_sentiment_cache.py",
+    "line": 22,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\update_slippage_defaults.py",
+    "line": 44,
+    "content": "SLIPPAGE_CONFIG_FILE = Path(\"config/slippage_thresholds.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\update_slippage_defaults.py",
+    "line": 45,
+    "content": "SLIPPAGE_HISTORY_FILE = Path(\"state/execution/slippage_history.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\update_slippage_defaults.py",
+    "line": 46,
+    "content": "AUDIT_LOG_FILE = Path(\"state/execution/slippage_audit.jsonl\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\validate.py",
+    "line": 22,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\validate.py",
+    "line": 256,
+    "content": "(\"config.env_loader\", \"load_env\"),"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\validate_data_pipeline.py",
+    "line": 24,
+    "content": "load_dotenv(project_root / '.env')"
+  },
+  {
+    "pattern": ".csv",
+    "file": "scripts\\verify_data.py",
+    "line": 52,
+    "content": "universe = pd.read_csv('data/universe/optionable_liquid_900.csv')"
+  },
+  {
+    "pattern": ".csv",
+    "file": "scripts\\verify_data.py",
+    "line": 67,
+    "content": "picks = pd.read_csv('logs/daily_picks.csv')"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\verify_data.py",
+    "line": 87,
+    "content": "with open('logs/signals.jsonl', 'r') as f:"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\verify_data.py",
+    "line": 104,
+    "content": "with open('reports/pregame_20260101.json', 'r') as f:"
+  },
+  {
+    "pattern": ".yaml",
+    "file": "scripts\\verify_data.py",
+    "line": 144,
+    "content": "with open('config/base.yaml', 'r') as f:"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\verify_scan_consistency.py",
+    "line": 16,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\verify_scan_consistency.py",
+    "line": 23,
+    "content": "load_env(ROOT / '.env')"
+  },
+  {
+    "pattern": ".csv",
+    "file": "scripts\\verify_scan_consistency.py",
+    "line": 34,
+    "content": "symbols = load_universe(ROOT / 'data/universe/optionable_liquid_900.csv', cap=900)"
+  },
+  {
+    "pattern": ".csv",
+    "file": "scripts\\verify_streak.py",
+    "line": 5,
+    "content": "df = pd.read_csv('data/cache/polygon/TSLA_2024-01-03_2026-01-02.csv')"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\version.py",
+    "line": 9,
+    "content": "python version.py --dotenv PATH    # Load environment from .env file"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\version.py",
+    "line": 25,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\version.py",
+    "line": 50,
+    "content": "\"\"\"Load version info from VERSION.json or generate default.\"\"\""
+  },
+  {
+    "pattern": ".json",
+    "file": "scripts\\version.py",
+    "line": 55,
+    "content": "print(f\"[WARN] Failed to load VERSION.json: {e}\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\volatility_study.py",
+    "line": 13,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".env",
+    "file": "scripts\\watchlist.py",
+    "line": 25,
+    "content": "from config.env_loader import load_env"
+  },
+  {
+    "pattern": ".json",
+    "file": "selfmonitor\\circuit_breaker.py",
+    "line": 76,
+    "content": "self.state_file = state_file or Path(\"state/circuit_breaker.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "tax\\lot_accounting.py",
+    "line": 439,
+    "content": "default_path = Path(__file__).parent.parent / \"state\" / \"tax_ledger.json\""
+  },
+  {
+    "pattern": ".yaml",
+    "file": "tests\\test_autonomous_config.py",
+    "line": 5,
+    "content": "- config/autonomous.yaml loads correctly"
+  },
+  {
+    "pattern": ".env",
+    "file": "tests\\cognitive\\test_llm_narrative_analyzer.py",
+    "line": 16,
+    "content": "# Mock the load_dotenv to prevent actual .env loading during tests"
+  },
+  {
+    "pattern": ".csv",
+    "file": "tests\\unit\\test_data.py",
+    "line": 131,
+    "content": "symbols = load_universe(tmp_path / \"nonexistent.csv\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "tests\\unit\\test_decision_packet.py",
+    "line": 112,
+    "content": "path = Path(tmpdir) / \"packet.json\""
+  },
+  {
+    "pattern": ".csv",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 53,
+    "content": "path1 = Path(tmpdir) / \"data1.csv\""
+  },
+  {
+    "pattern": ".csv",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 54,
+    "content": "path2 = Path(tmpdir) / \"data2.csv\""
+  },
+  {
+    "pattern": ".csv",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 62,
+    "content": "path1 = Path(tmpdir) / \"exists.csv\""
+  },
+  {
+    "pattern": ".csv",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 63,
+    "content": "path2 = Path(tmpdir) / \"missing.csv\""
+  },
+  {
+    "pattern": ".json",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 101,
+    "content": "tracker = LineageTracker(Path(tmpdir) / \"lineage.jsonl\")"
+  },
+  {
+    "pattern": ".csv",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 102,
+    "content": "data_file = Path(tmpdir) / \"data.csv\""
+  },
+  {
+    "pattern": ".json",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 112,
+    "content": "tracker = LineageTracker(Path(tmpdir) / \"lineage.jsonl\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 124,
+    "content": "tracker = LineageTracker(Path(tmpdir) / \"lineage.jsonl\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 135,
+    "content": "tracker = LineageTracker(Path(tmpdir) / \"lineage.jsonl\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 150,
+    "content": "tracker = LineageTracker(Path(tmpdir) / \"lineage.jsonl\")"
+  },
+  {
+    "pattern": ".csv",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 151,
+    "content": "data_file = Path(tmpdir) / \"data.csv\""
+  },
+  {
+    "pattern": ".json",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 172,
+    "content": "tracker = LineageTracker(Path(tmpdir) / \"lineage.jsonl\")"
+  },
+  {
+    "pattern": ".csv",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 173,
+    "content": "data_file = Path(tmpdir) / \"data.csv\""
+  },
+  {
+    "pattern": ".json",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 189,
+    "content": "lineage_path = Path(tmpdir) / \"lineage.jsonl\""
+  },
+  {
+    "pattern": ".json",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 207,
+    "content": "tracker = LineageTracker(Path(tmpdir) / \"lineage.jsonl\")"
+  },
+  {
+    "pattern": ".csv",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 208,
+    "content": "data_file = Path(tmpdir) / \"data.csv\""
+  },
+  {
+    "pattern": ".env",
+    "file": "tools\\verify_robot.py",
+    "line": 618,
+    "content": "c['EnvLoader'] = self.check_import('config.env_loader', 'load_env')"
+  },
+  {
+    "pattern": "config/",
+    "file": "tools\\verify_robot.py",
+    "line": 619,
+    "content": "c['SettingsLoader'] = self.check_file('config/settings_loader.py')"
+  },
+  {
+    "pattern": ".json",
+    "file": "trade_logging\\decision_card_logger.py",
+    "line": 298,
+    "content": "config_path = Path(__file__).parent.parent / \"config\" / \"frozen_strategy_params_v2.2.json\""
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\dashboard_pro.py",
+    "line": 367,
+    "content": "path = Path(\"data/trade_history.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\dashboard_pro.py",
+    "line": 397,
+    "content": "daily_scan_path = Path(f\"reports/daily/SCAN_{today}.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\dashboard_pro.py",
+    "line": 400,
+    "content": "fallback_path = Path(\"data/scanner/latest_scan_results.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\dashboard_pro.py",
+    "line": 677,
+    "content": "path = Path(\"data/performance_stats.json\")"
+  },
+  {
+    "pattern": ".env",
+    "file": "web\\dashboard_pro.py",
+    "line": 700,
+    "content": "env_file = Path(\".env.paper\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\dashboard_pro.py",
+    "line": 791,
+    "content": "path = Path(\"reports/bulletproof_validation/final_validation_results.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\dashboard_pro.py",
+    "line": 873,
+    "content": "gate_file = Path(\"data/runtime/gate_status.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\dashboard_pro.py",
+    "line": 881,
+    "content": "cb_file = Path(\"data/runtime/circuit_breaker.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\dashboard_pro.py",
+    "line": 975,
+    "content": "path = Path(\"data/ai_learning/training_report.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\dashboard_pro.py",
+    "line": 1113,
+    "content": "path = Path(\"data/news/latest_news.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\dashboard_pro.py",
+    "line": 1465,
+    "content": "edge_file = Path(\"config/universe/FINAL_EDGE_STOCKS.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\dashboard_pro.py",
+    "line": 1467,
+    "content": "edge_file = Path(\"FINAL_EDGE_STOCKS.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\dashboard_pro.py",
+    "line": 1796,
+    "content": "results_file = Path(\"data/scanner/latest_scan_results.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\dashboard_pro.py",
+    "line": 1856,
+    "content": "results_file = Path(\"data/scanner/latest_scan_results.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\data_provider.py",
+    "line": 517,
+    "content": "# Try loading from state/signals.json"
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\main.py",
+    "line": 319,
+    "content": "insights_path = Path(\"logs/daily_insights.json\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\main.py",
+    "line": 419,
+    "content": "insights_path = Path(\"logs/daily_insights.json\")"
+  },
+  {
+    "pattern": ".csv",
+    "file": "web\\main.py",
+    "line": 423,
+    "content": "picks_path = Path(\"logs/daily_picks.csv\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\main.py",
+    "line": 474,
+    "content": "insights_path = Path(\"logs/daily_insights.json\")"
+  },
+  {
+    "pattern": ".csv",
+    "file": "web\\main.py",
+    "line": 475,
+    "content": "totd_csv_path = Path(\"logs/trade_of_day.csv\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\api\\signal_queue.py",
+    "line": 161,
+    "content": "DEFAULT_QUEUE_PATH = Path(\"logs/signal_queue.jsonl\")"
+  },
+  {
+    "pattern": ".json",
+    "file": "web\\api\\signal_queue.py",
+    "line": 162,
+    "content": "DEFAULT_ARCHIVE_PATH = Path(\"logs/signal_archive.jsonl\")"
+  }
+]

@@ -77,7 +77,7 @@ def build_overnight_watchlist(
     # Import scanner
     from strategies.dual_strategy import DualStrategyScanner, DualStrategyParams
     from data.universe.loader import load_universe
-    from data.providers.polygon_eod import PolygonEODProvider
+    from data.providers.polygon_eod import fetch_daily_bars_polygon
 
     # Load universe
     symbols = load_universe(universe_path, cap=cap)
@@ -86,20 +86,31 @@ def build_overnight_watchlist(
     # Initialize scanner with frozen params
     params = DualStrategyParams()
     scanner = DualStrategyScanner(params)
-    provider = PolygonEODProvider()
 
     # Scan for setups
     all_signals = []
     scanned = 0
     errors = 0
 
+    # Use cached data if available
+    cache_dir = Path("data/polygon_cache")
+
     for symbol in symbols:
         try:
-            # Get recent data (last 60 days for indicators)
-            end_date = now.strftime('%Y-%m-%d')
-            start_date = (now - timedelta(days=90)).strftime('%Y-%m-%d')
+            # Try to load from cache first
+            cache_file = cache_dir / f"{symbol.lower()}.csv"
+            if cache_file.exists():
+                import pandas as pd
+                df = pd.read_csv(cache_file)
+                if 'timestamp' not in df.columns and 'date' in df.columns:
+                    df['timestamp'] = pd.to_datetime(df['date'])
+                df['symbol'] = symbol
+            else:
+                # Fetch from Polygon if no cache
+                end_date = now.strftime('%Y-%m-%d')
+                start_date = (now - timedelta(days=90)).strftime('%Y-%m-%d')
+                df = fetch_daily_bars_polygon(symbol, start_date, end_date)
 
-            df = provider.get_bars(symbol, start_date, end_date)
             if df is None or len(df) < 30:
                 continue
 

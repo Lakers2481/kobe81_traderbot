@@ -1,0 +1,51 @@
+{
+  "heartbeat": {
+    "alive": true,
+    "timestamp": "2026-01-05T20:18:25.895230-05:00",
+    "cycles": 2750,
+    "uptime_hours": 25.052398783333334
+  },
+  "task_queue": {
+    "pending": 0,
+    "completed": 0
+  },
+  "brain_state": {
+    "status": null,
+    "current_phase": null,
+    "last_activity": null
+  },
+  "watchlist": {
+    "for_date": "2026-01-06",
+    "watchlist_size": 4,
+    "status": "READY",
+    "totd": "AAPL"
+  },
+  "logs": [
+    {
+      "file": "divergence.jsonl",
+      "modified": "2026-01-05T14:52:33.464486",
+      "size": 531582
+    },
+    {
+      "file": "events.jsonl",
+      "modified": "2026-01-05T19:12:37.115918",
+      "size": 1647299
+    },
+    {
+      "file": "heartbeat.jsonl",
+      "modified": "2026-01-05T19:18:01.904801",
+      "size": 19619352
+    },
+    {
+      "file": "signals.jsonl",
+      "modified": "2026-01-05T18:57:34.559890",
+      "size": 1897845
+    },
+    {
+      "file": "trades.jsonl",
+      "modified": "2026-01-05T08:13:03.558343",
+      "size": 250422
+    }
+  ],
+  "cache_files": 102
+}

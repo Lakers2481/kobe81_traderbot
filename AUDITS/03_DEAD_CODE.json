@@ -1,0 +1,184 @@
+{
+  "pass_only_functions": [
+    {
+      "file": "agents\\base_agent.py",
+      "line": 148,
+      "function": "def get_system_prompt(self) -> str:"
+    },
+    {
+      "file": "backtest\\costs.py",
+      "line": 37,
+      "function": "def cost_type(self) -> CostType:"
+    },
+    {
+      "file": "backtest\\fill_model.py",
+      "line": 40,
+      "function": "def model_type(self) -> FillModelType:"
+    },
+    {
+      "file": "backtest\\slippage.py",
+      "line": 46,
+      "function": "def model_type(self) -> SlippageType:"
+    },
+    {
+      "file": "data\\quorum.py",
+      "line": 147,
+      "function": "def fetch_price(self, symbol: str, date_str: str) -> SourceP"
+    },
+    {
+      "file": "data\\quorum.py",
+      "line": 152,
+      "function": "def fetch_range(self, symbol: str, start: str, end: str) -> "
+    },
+    {
+      "file": "evolution\\strategy_foundry.py",
+      "line": 57,
+      "function": "def evaluate(self, df: pd.DataFrame) -> pd.Series:"
+    },
+    {
+      "file": "evolution\\strategy_foundry.py",
+      "line": 62,
+      "function": "def to_string(self) -> str:"
+    },
+    {
+      "file": "evolution\\strategy_foundry.py",
+      "line": 67,
+      "function": "def depth(self) -> int:"
+    },
+    {
+      "file": "evolution\\strategy_foundry.py",
+      "line": 72,
+      "function": "def copy(self) -> 'Node':"
+    },
+    {
+      "file": "execution\\broker_base.py",
+      "line": 257,
+      "function": "def broker_type(self) -> BrokerType:"
+    },
+    {
+      "file": "execution\\broker_base.py",
+      "line": 263,
+      "function": "def name(self) -> str:"
+    },
+    {
+      "file": "execution\\broker_base.py",
+      "line": 269,
+      "function": "def supports_extended_hours(self) -> bool:"
+    },
+    {
+      "file": "execution\\broker_base.py",
+      "line": 275,
+      "function": "def is_24_7(self) -> bool:"
+    },
+    {
+      "file": "execution\\broker_base.py",
+      "line": 292,
+      "function": "def disconnect(self) -> None:"
+    },
+    {
+      "file": "execution\\broker_base.py",
+      "line": 297,
+      "function": "def is_connected(self) -> bool:"
+    },
+    {
+      "file": "execution\\broker_base.py",
+      "line": 332,
+      "function": "def is_market_open(self) -> bool:"
+    },
+    {
+      "file": "execution\\broker_base.py",
+      "line": 339,
+      "function": "def get_account(self) -> Optional[Account]:"
+    },
+    {
+      "file": "execution\\broker_base.py",
+      "line": 344,
+      "function": "def get_positions(self) -> List[Position]:"
+    },
+    {
+      "file": "execution\\broker_base.py",
+      "line": 349,
+      "function": "def get_position(self, symbol: str) -> Optional[Position]:"
+    },
+    {
+      "file": "llm\\provider_base.py",
+      "line": 121,
+      "function": "def provider_name(self) -> str:"
+    },
+    {
+      "file": "ml_advanced\\ensemble\\ensemble_predictor.py",
+      "line": 91,
+      "function": "def load(self, model_path: Path) -> None:"
+    },
+    {
+      "file": "ml_advanced\\ensemble\\ensemble_predictor.py",
+      "line": 95,
+      "function": "def predict(self, features: np.ndarray) -> float:"
+    },
+    {
+      "file": "options\\iv_signals.py",
+      "line": 274,
+      "function": "def __init__(self):"
+    },
+    {
+      "file": "pipelines\\base.py",
+      "line": 99,
+      "function": "def name(self) -> str:"
+    },
+    {
+      "file": "quant_gates\\gate_1_baseline.py",
+      "line": 52,
+      "function": "def __init__(self):"
+    },
+    {
+      "file": "quant_gates\\gate_2_robustness.py",
+      "line": 61,
+      "function": "def __init__(self):"
+    },
+    {
+      "file": "scripts\\dashboard.py",
+      "line": 61,
+      "function": "def log_message(self, format, *args):"
+    },
+    {
+      "file": "tests\\unit\\test_rate_limiter.py",
+      "line": 119,
+      "function": "def my_func():"
+    },
+    {
+      "file": "trade_logging\\prometheus_metrics.py",
+      "line": 188,
+      "function": "def inc(self, amount=1):"
+    },
+    {
+      "file": "trade_logging\\prometheus_metrics.py",
+      "line": 190,
+      "function": "def dec(self, amount=1):"
+    },
+    {
+      "file": "trade_logging\\prometheus_metrics.py",
+      "line": 192,
+      "function": "def set(self, value):"
+    },
+    {
+      "file": "trade_logging\\prometheus_metrics.py",
+      "line": 194,
+      "function": "def observe(self, value):"
+    }
+  ],
+  "todo_fixme": [
+    {
+      "file": "scripts\\run_autonomous.py",
+      "line": 159,
+      "content": "# TODO: Implement proper daemonization for Windows"
+    }
+  ],
+  "deprecated": [
+    {
+      "file": "strategies\\registry.py",
+      "line": 142,
+      "content": "def assert_no_deprecated_strategies():"
+    }
+  ],
+  "unused_imports_hint": []
+}

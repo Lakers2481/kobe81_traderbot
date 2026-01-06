@@ -1,0 +1,338 @@
+[
+  {
+    "pattern": "registry",
+    "file": "agents\\agent_tools.py",
+    "line": 614,
+    "content": "def get_registry_tools() -> List[tuple]:"
+  },
+  {
+    "pattern": "get_strategy",
+    "file": "analytics\\duckdb_engine.py",
+    "line": 228,
+    "content": "def get_strategy_performance(self) -> pd.DataFrame:"
+  },
+  {
+    "pattern": "get_strategy",
+    "file": "analytics\\attribution\\strategy_attribution.py",
+    "line": 205,
+    "content": "def get_strategy_pnl("
+  },
+  {
+    "pattern": "registry",
+    "file": "autonomous\\master_brain_full.py",
+    "line": 63,
+    "content": "def _build_component_registry(self) -> Dict[str, Dict]:"
+  },
+  {
+    "pattern": "get_strategy",
+    "file": "cognitive\\curiosity_engine.py",
+    "line": 588,
+    "content": "def get_strategy_ideas(self, status: Optional[str] = None) -> List[StrategyIdeaR"
+  },
+  {
+    "pattern": "get_provider",
+    "file": "data\\providers\\multi_source.py",
+    "line": 136,
+    "content": "def get_provider_stats() -> Dict[str, Dict[str, Any]]:"
+  },
+  {
+    "pattern": "Registry",
+    "file": "data_exploration\\data_registry.py",
+    "line": 130,
+    "content": "class DataRegistry:"
+  },
+  {
+    "pattern": "registry",
+    "file": "data_exploration\\data_registry.py",
+    "line": 359,
+    "content": "def get_registry() -> DataRegistry:"
+  },
+  {
+    "pattern": "Registry",
+    "file": "evolution\\registry.py",
+    "line": 80,
+    "content": "class EvolutionRegistry:"
+  },
+  {
+    "pattern": "registry",
+    "file": "evolution\\registry.py",
+    "line": 91,
+    "content": "def __init__(self, registry_path: Optional[Path] = None):"
+  },
+  {
+    "pattern": "registry",
+    "file": "evolution\\registry.py",
+    "line": 202,
+    "content": "def _rewrite_registry(self) -> None:"
+  },
+  {
+    "pattern": "get_broker",
+    "file": "execution\\broker_factory.py",
+    "line": 56,
+    "content": "def get_broker("
+  },
+  {
+    "pattern": "get_broker",
+    "file": "execution\\broker_factory.py",
+    "line": 142,
+    "content": "def _get_broker_from_config(config_path: Optional[Path] = None) -> str:"
+  },
+  {
+    "pattern": "Factory",
+    "file": "execution\\broker_factory.py",
+    "line": 226,
+    "content": "class BrokerFactory:"
+  },
+  {
+    "pattern": "Factory",
+    "file": "execution\\broker_factory.py",
+    "line": 228,
+    "content": "Factory class for creating broker instances."
+  },
+  {
+    "pattern": "Registry",
+    "file": "experiments\\registry.py",
+    "line": 224,
+    "content": "class ExperimentRegistry:"
+  },
+  {
+    "pattern": "registry",
+    "file": "experiments\\registry.py",
+    "line": 623,
+    "content": "def get_registry() -> ExperimentRegistry:"
+  },
+  {
+    "pattern": "get_provider",
+    "file": "llm\\router.py",
+    "line": 84,
+    "content": "def _get_provider(self, name: str, **kwargs) -> Optional[ProviderBase]:"
+  },
+  {
+    "pattern": "get_provider",
+    "file": "llm\\router.py",
+    "line": 111,
+    "content": "def get_provider("
+  },
+  {
+    "pattern": "get_provider",
+    "file": "llm\\router.py",
+    "line": 231,
+    "content": "def get_provider("
+  },
+  {
+    "pattern": "get_strategy",
+    "file": "ml_features\\regime_hmm.py",
+    "line": 325,
+    "content": "def _get_strategy_adjustments("
+  },
+  {
+    "pattern": "registry",
+    "file": "quant_gates\\gate_4_multiple_testing.py",
+    "line": 66,
+    "content": "def __init__(self, registry_path: Optional[str] = None):"
+  },
+  {
+    "pattern": "registry",
+    "file": "quant_gates\\gate_4_multiple_testing.py",
+    "line": 68,
+    "content": "self._registry: Dict[str, int] = {}"
+  },
+  {
+    "pattern": "registry",
+    "file": "quant_gates\\gate_4_multiple_testing.py",
+    "line": 71,
+    "content": "def _load_registry(self) -> None:"
+  },
+  {
+    "pattern": "registry",
+    "file": "quant_gates\\gate_4_multiple_testing.py",
+    "line": 80,
+    "content": "def _save_registry(self) -> None:"
+  },
+  {
+    "pattern": "get_broker",
+    "file": "scripts\\exit_manager.py",
+    "line": 66,
+    "content": "def get_broker_positions() -> List[Dict]:"
+  },
+  {
+    "pattern": "get_scanner",
+    "file": "scripts\\generate_pregame_blueprint.py",
+    "line": 275,
+    "content": "def _get_scanner_signals("
+  },
+  {
+    "pattern": "get_strategy",
+    "file": "scripts\\signals.py",
+    "line": 160,
+    "content": "def get_strategy_from_signal(signal: Dict[str, Any]) -> str:"
+  },
+  {
+    "pattern": "get_strategy",
+    "file": "scripts\\strategy.py",
+    "line": 50,
+    "content": "def get_strategy_params(strategy_key: str) -> Dict[str, Any]:"
+  },
+  {
+    "pattern": "get_strategy",
+    "file": "scripts\\strategy.py",
+    "line": 60,
+    "content": "def get_strategy_param_descriptions(strategy_key: str) -> Dict[str, str]:"
+  },
+  {
+    "pattern": "get_strategy",
+    "file": "strategies\\adaptive_selector.py",
+    "line": 126,
+    "content": "def _get_strategy_instance(self, name: str):"
+  },
+  {
+    "pattern": "get_strategy",
+    "file": "strategies\\adaptive_selector.py",
+    "line": 246,
+    "content": "def get_strategy_for_regime("
+  },
+  {
+    "pattern": "Registry",
+    "file": "tests\\test_experiments.py",
+    "line": 146,
+    "content": "class TestExperimentRegistry:"
+  },
+  {
+    "pattern": "registry",
+    "file": "tests\\test_experiments.py",
+    "line": 150,
+    "content": "def temp_registry(self):"
+  },
+  {
+    "pattern": "registry",
+    "file": "tests\\test_experiments.py",
+    "line": 159,
+    "content": "def test_register_experiment(self, temp_registry):"
+  },
+  {
+    "pattern": "registry",
+    "file": "tests\\test_experiments.py",
+    "line": 171,
+    "content": "def test_get_experiment(self, temp_registry):"
+  },
+  {
+    "pattern": "registry",
+    "file": "tests\\test_experiments.py",
+    "line": 186,
+    "content": "def test_record_results(self, temp_registry):"
+  },
+  {
+    "pattern": "registry",
+    "file": "tests\\test_experiments.py",
+    "line": 210,
+    "content": "def test_list_experiments(self, temp_registry):"
+  },
+  {
+    "pattern": "registry",
+    "file": "tests\\test_experiments.py",
+    "line": 229,
+    "content": "def test_list_experiments_filter_strategy(self, temp_registry):"
+  },
+  {
+    "pattern": "registry",
+    "file": "tests\\test_experiments.py",
+    "line": 249,
+    "content": "def test_get_config(self, temp_registry):"
+  },
+  {
+    "pattern": "registry",
+    "file": "tests\\test_experiments.py",
+    "line": 290,
+    "content": "def test_verify_reproducibility(self, temp_registry):"
+  },
+  {
+    "pattern": "Registry",
+    "file": "tests\\test_pipelines.py",
+    "line": 60,
+    "content": "class TestPipelineRegistry:"
+  },
+  {
+    "pattern": "registry",
+    "file": "tests\\test_pipelines.py",
+    "line": 63,
+    "content": "def test_pipeline_registry_exists(self):"
+  },
+  {
+    "pattern": "registry",
+    "file": "tests\\test_pipelines.py",
+    "line": 68,
+    "content": "def test_pipeline_registry_has_10_pipelines(self):"
+  },
+  {
+    "pattern": "factory",
+    "file": "tests\\cognitive\\test_cognitive_brain.py",
+    "line": 49,
+    "content": "def test_singleton_factory(self):"
+  },
+  {
+    "pattern": "Factory",
+    "file": "tests\\cognitive\\test_episodic_memory.py",
+    "line": 497,
+    "content": "class TestSingletonFactory:"
+  },
+  {
+    "pattern": "Factory",
+    "file": "tests\\cognitive\\test_global_workspace.py",
+    "line": 370,
+    "content": "class TestSingletonFactory:"
+  },
+  {
+    "pattern": "Factory",
+    "file": "tests\\cognitive\\test_semantic_memory.py",
+    "line": 408,
+    "content": "class TestSingletonFactory:"
+  },
+  {
+    "pattern": "Factory",
+    "file": "tests\\cognitive\\test_signal_processor.py",
+    "line": 243,
+    "content": "class TestSingletonFactory:"
+  },
+  {
+    "pattern": "Factory",
+    "file": "tests\\execution\\test_intelligent_executor.py",
+    "line": 350,
+    "content": "class TestSingletonFactory:"
+  },
+  {
+    "pattern": "Factory",
+    "file": "tests\\execution\\test_order_manager.py",
+    "line": 245,
+    "content": "class TestSingletonFactory:"
+  },
+  {
+    "pattern": "Factory",
+    "file": "tests\\unit\\test_fill_models.py",
+    "line": 242,
+    "content": "class TestFillModelFactory:"
+  },
+  {
+    "pattern": "Factory",
+    "file": "tests\\unit\\test_slippage_models.py",
+    "line": 134,
+    "content": "class TestSlippageFactory:"
+  },
+  {
+    "pattern": "Registry",
+    "file": "tests\\unit\\test_strategies.py",
+    "line": 40,
+    "content": "class TestStrategyRegistry:"
+  },
+  {
+    "pattern": "get_scanner",
+    "file": "web\\dashboard_pro.py",
+    "line": 93,
+    "content": "def get_scanner_config() -> Dict[str, Any]:"
+  },
+  {
+    "pattern": "get_strategy",
+    "file": "web\\dashboard_pro.py",
+    "line": 818,
+    "content": "def _get_strategy_info(self) -> Dict:"
+  }
+]

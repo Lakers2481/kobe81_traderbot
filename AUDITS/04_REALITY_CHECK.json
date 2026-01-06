@@ -1,0 +1,72 @@
+[
+  {
+    "file": "strategies/dual_strategy/combined.py",
+    "status": "REAL",
+    "functions": 18,
+    "stubs": 0,
+    "size_bytes": 28448
+  },
+  {
+    "file": "strategies/ibs_rsi/strategy.py",
+    "status": "REAL",
+    "functions": 7,
+    "stubs": 0,
+    "size_bytes": 7139
+  },
+  {
+    "file": "strategies/ict/turtle_soup.py",
+    "status": "REAL",
+    "functions": 13,
+    "stubs": 0,
+    "size_bytes": 19364
+  },
+  {
+    "file": "execution/broker_alpaca.py",
+    "status": "REAL",
+    "functions": 54,
+    "stubs": 0,
+    "size_bytes": 68415
+  },
+  {
+    "file": "execution/broker_paper.py",
+    "status": "REAL",
+    "functions": 25,
+    "stubs": 0,
+    "size_bytes": 14734
+  },
+  {
+    "file": "risk/policy_gate.py",
+    "status": "REAL",
+    "functions": 10,
+    "stubs": 0,
+    "size_bytes": 6393
+  },
+  {
+    "file": "risk/signal_quality_gate.py",
+    "status": "REAL",
+    "functions": 24,
+    "stubs": 0,
+    "size_bytes": 30522
+  },
+  {
+    "file": "core/kill_switch.py",
+    "status": "PARTIAL",
+    "functions": 10,
+    "stubs": 2,
+    "size_bytes": 5600
+  },
+  {
+    "file": "safety/mode.py",
+    "status": "REAL",
+    "functions": 8,
+    "stubs": 0,
+    "size_bytes": 8533
+  },
+  {
+    "file": "data/providers/polygon_eod.py",
+    "status": "REAL",
+    "functions": 4,
+    "stubs": 0,
+    "size_bytes": 9331
+  }
+]

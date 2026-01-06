@@ -1,0 +1,7192 @@
+[
+  {
+    "name": "BiasType",
+    "file": "agents\\auditor_agent.py",
+    "line": 32
+  },
+  {
+    "name": "Severity",
+    "file": "agents\\auditor_agent.py",
+    "line": 43
+  },
+  {
+    "name": "AuditFinding",
+    "file": "agents\\auditor_agent.py",
+    "line": 52
+  },
+  {
+    "name": "AuditReport",
+    "file": "agents\\auditor_agent.py",
+    "line": 65
+  },
+  {
+    "name": "AuditorAgent",
+    "file": "agents\\auditor_agent.py",
+    "line": 80
+  },
+  {
+    "name": "BaseTradingAgent",
+    "file": "agents\\autogen_team.py",
+    "line": 33
+  },
+  {
+    "name": "MacroAnalystAgent",
+    "file": "agents\\autogen_team.py",
+    "line": 49
+  },
+  {
+    "name": "TechnicalAnalystAgent",
+    "file": "agents\\autogen_team.py",
+    "line": 119
+  },
+  {
+    "name": "RiskManagerAgent",
+    "file": "agents\\autogen_team.py",
+    "line": 178
+  },
+  {
+    "name": "MemoryKeeperAgent",
+    "file": "agents\\autogen_team.py",
+    "line": 265
+  },
+  {
+    "name": "TradingTeam",
+    "file": "agents\\autogen_team.py",
+    "line": 350
+  },
+  {
+    "name": "AgentStatus",
+    "file": "agents\\base_agent.py",
+    "line": 43
+  },
+  {
+    "name": "AgentConfig",
+    "file": "agents\\base_agent.py",
+    "line": 53
+  },
+  {
+    "name": "ToolResult",
+    "file": "agents\\base_agent.py",
+    "line": 65
+  },
+  {
+    "name": "AgentThought",
+    "file": "agents\\base_agent.py",
+    "line": 74
+  },
+  {
+    "name": "AgentAction",
+    "file": "agents\\base_agent.py",
+    "line": 84
+  },
+  {
+    "name": "AgentResult",
+    "file": "agents\\base_agent.py",
+    "line": 92
+  },
+  {
+    "name": "BaseAgent",
+    "file": "agents\\base_agent.py",
+    "line": 105
+  },
+  {
+    "name": "WorkflowState",
+    "file": "agents\\langgraph_coordinator.py",
+    "line": 38
+  },
+  {
+    "name": "TradingWorkflowState",
+    "file": "agents\\langgraph_coordinator.py",
+    "line": 52
+  },
+  {
+    "name": "TradingWorkflowCoordinator",
+    "file": "agents\\langgraph_coordinator.py",
+    "line": 94
+  },
+  {
+    "name": "GraphState",
+    "file": "agents\\langgraph_coordinator.py",
+    "line": 133
+  },
+  {
+    "name": "PipelineStage",
+    "file": "agents\\orchestrator.py",
+    "line": 38
+  },
+  {
+    "name": "PipelineItem",
+    "file": "agents\\orchestrator.py",
+    "line": 51
+  },
+  {
+    "name": "AgentOrchestrator",
+    "file": "agents\\orchestrator.py",
+    "line": 65
+  },
+  {
+    "name": "ReporterAgent",
+    "file": "agents\\reporter_agent.py",
+    "line": 29
+  },
+  {
+    "name": "GateStatus",
+    "file": "agents\\risk_agent.py",
+    "line": 31
+  },
+  {
+    "name": "GateResult",
+    "file": "agents\\risk_agent.py",
+    "line": 40
+  },
+  {
+    "name": "RiskReport",
+    "file": "agents\\risk_agent.py",
+    "line": 52
+  },
+  {
+    "name": "RiskAgent",
+    "file": "agents\\risk_agent.py",
+    "line": 63
+  },
+  {
+    "name": "IdeaCard",
+    "file": "agents\\scout_agent.py",
+    "line": 31
+  },
+  {
+    "name": "ScoutAgent",
+    "file": "agents\\scout_agent.py",
+    "line": 48
+  },
+  {
+    "name": "PositionReport",
+    "file": "alerts\\professional_alerts.py",
+    "line": 22
+  },
+  {
+    "name": "ProfessionalAlerts",
+    "file": "alerts\\professional_alerts.py",
+    "line": 40
+  },
+  {
+    "name": "TelegramAlerter",
+    "file": "alerts\\telegram_alerter.py",
+    "line": 30
+  },
+  {
+    "name": "PendingTrade",
+    "file": "alerts\\telegram_commander.py",
+    "line": 46
+  },
+  {
+    "name": "TelegramCommander",
+    "file": "alerts\\telegram_commander.py",
+    "line": 60
+  },
+  {
+    "name": "CongressionalTrade",
+    "file": "altdata\\congressional_trades.py",
+    "line": 51
+  },
+  {
+    "name": "CongressionalTradeSummary",
+    "file": "altdata\\congressional_trades.py",
+    "line": 99
+  },
+  {
+    "name": "CongressionalTradesClient",
+    "file": "altdata\\congressional_trades.py",
+    "line": 156
+  },
+  {
+    "name": "InsiderTrade",
+    "file": "altdata\\insider_activity.py",
+    "line": 53
+  },
+  {
+    "name": "InsiderActivitySummary",
+    "file": "altdata\\insider_activity.py",
+    "line": 111
+  },
+  {
+    "name": "InsiderActivityClient",
+    "file": "altdata\\insider_activity.py",
+    "line": 153
+  },
+  {
+    "name": "MoodState",
+    "file": "altdata\\market_mood_analyzer.py",
+    "line": 36
+  },
+  {
+    "name": "MarketMood",
+    "file": "altdata\\market_mood_analyzer.py",
+    "line": 51
+  },
+  {
+    "name": "MarketMoodAnalyzer",
+    "file": "altdata\\market_mood_analyzer.py",
+    "line": 94
+  },
+  {
+    "name": "NewsArticle",
+    "file": "altdata\\news_processor.py",
+    "line": 52
+  },
+  {
+    "name": "NewsProcessor",
+    "file": "altdata\\news_processor.py",
+    "line": 78
+  },
+  {
+    "name": "UnusualOptionActivity",
+    "file": "altdata\\options_flow.py",
+    "line": 52
+  },
+  {
+    "name": "OptionsFlowSummary",
+    "file": "altdata\\options_flow.py",
+    "line": 109
+  },
+  {
+    "name": "OptionsFlowClient",
+    "file": "altdata\\options_flow.py",
+    "line": 153
+  },
+  {
+    "name": "NewsItem",
+    "file": "altdata\\sentiment.py",
+    "line": 18
+  },
+  {
+    "name": "HistoricalInstance",
+    "file": "analysis\\historical_patterns.py",
+    "line": 49
+  },
+  {
+    "name": "EntryTimingRecommendation",
+    "file": "analysis\\historical_patterns.py",
+    "line": 65
+  },
+  {
+    "name": "ConsecutiveDayPattern",
+    "file": "analysis\\historical_patterns.py",
+    "line": 82
+  },
+  {
+    "name": "SupportResistanceLevel",
+    "file": "analysis\\historical_patterns.py",
+    "line": 116
+  },
+  {
+    "name": "VolumeProfile",
+    "file": "analysis\\historical_patterns.py",
+    "line": 133
+  },
+  {
+    "name": "SectorRelativeStrength",
+    "file": "analysis\\historical_patterns.py",
+    "line": 149
+  },
+  {
+    "name": "HistoricalPatternAnalyzer",
+    "file": "analysis\\historical_patterns.py",
+    "line": 165
+  },
+  {
+    "name": "ExpectedMove",
+    "file": "analysis\\options_expected_move.py",
+    "line": 39
+  },
+  {
+    "name": "ExpectedMoveCalculator",
+    "file": "analysis\\options_expected_move.py",
+    "line": 61
+  },
+  {
+    "name": "StanddownSeverity",
+    "file": "analytics\\auto_standdown.py",
+    "line": 29
+  },
+  {
+    "name": "StanddownTrigger",
+    "file": "analytics\\auto_standdown.py",
+    "line": 39
+  },
+  {
+    "name": "StanddownRecommendation",
+    "file": "analytics\\auto_standdown.py",
+    "line": 52
+  },
+  {
+    "name": "StanddownConfig",
+    "file": "analytics\\auto_standdown.py",
+    "line": 109
+  },
+  {
+    "name": "AutoStanddown",
+    "file": "analytics\\auto_standdown.py",
+    "line": 151
+  },
+  {
+    "name": "QueryResult",
+    "file": "analytics\\duckdb_engine.py",
+    "line": 48
+  },
+  {
+    "name": "DuckDBEngine",
+    "file": "analytics\\duckdb_engine.py",
+    "line": 59
+  },
+  {
+    "name": "DimensionType",
+    "file": "analytics\\edge_decomposition.py",
+    "line": 32
+  },
+  {
+    "name": "DimensionStats",
+    "file": "analytics\\edge_decomposition.py",
+    "line": 47
+  },
+  {
+    "name": "DecompositionResult",
+    "file": "analytics\\edge_decomposition.py",
+    "line": 87
+  },
+  {
+    "name": "EdgeDecomposition",
+    "file": "analytics\\edge_decomposition.py",
+    "line": 135
+  },
+  {
+    "name": "FactorType",
+    "file": "analytics\\factor_attribution.py",
+    "line": 31
+  },
+  {
+    "name": "FactorContribution",
+    "file": "analytics\\factor_attribution.py",
+    "line": 47
+  },
+  {
+    "name": "AttributionResult",
+    "file": "analytics\\factor_attribution.py",
+    "line": 71
+  },
+  {
+    "name": "FactorAttribution",
+    "file": "analytics\\factor_attribution.py",
+    "line": 111
+  },
+  {
+    "name": "HealthStatus",
+    "file": "analytics\\alpha_decay\\alpha_monitor.py",
+    "line": 30
+  },
+  {
+    "name": "AlphaHealth",
+    "file": "analytics\\alpha_decay\\alpha_monitor.py",
+    "line": 39
+  },
+  {
+    "name": "StrategyHealth",
+    "file": "analytics\\alpha_decay\\alpha_monitor.py",
+    "line": 92
+  },
+  {
+    "name": "AlphaDecayMonitor",
+    "file": "analytics\\alpha_decay\\alpha_monitor.py",
+    "line": 143
+  },
+  {
+    "name": "AttributionReport",
+    "file": "analytics\\attribution\\attribution_report.py",
+    "line": 31
+  },
+  {
+    "name": "AttributionReporter",
+    "file": "analytics\\attribution\\attribution_report.py",
+    "line": 185
+  },
+  {
+    "name": "PositionPnL",
+    "file": "analytics\\attribution\\daily_pnl.py",
+    "line": 25
+  },
+  {
+    "name": "DailyPnL",
+    "file": "analytics\\attribution\\daily_pnl.py",
+    "line": 60
+  },
+  {
+    "name": "DailyPnLTracker",
+    "file": "analytics\\attribution\\daily_pnl.py",
+    "line": 134
+  },
+  {
+    "name": "FactorPnL",
+    "file": "analytics\\attribution\\factor_attribution.py",
+    "line": 34
+  },
+  {
+    "name": "FactorDecomposition",
+    "file": "analytics\\attribution\\factor_attribution.py",
+    "line": 53
+  },
+  {
+    "name": "FactorAttributor",
+    "file": "analytics\\attribution\\factor_attribution.py",
+    "line": 102
+  },
+  {
+    "name": "StrategyPnL",
+    "file": "analytics\\attribution\\strategy_attribution.py",
+    "line": 29
+  },
+  {
+    "name": "StrategyComparison",
+    "file": "analytics\\attribution\\strategy_attribution.py",
+    "line": 81
+  },
+  {
+    "name": "StrategyAttributor",
+    "file": "analytics\\attribution\\strategy_attribution.py",
+    "line": 101
+  },
+  {
+    "name": "MarketPhase",
+    "file": "autonomous\\awareness.py",
+    "line": 26
+  },
+  {
+    "name": "Season",
+    "file": "autonomous\\awareness.py",
+    "line": 41
+  },
+  {
+    "name": "WorkMode",
+    "file": "autonomous\\awareness.py",
+    "line": 54
+  },
+  {
+    "name": "MacroRegime",
+    "file": "autonomous\\awareness.py",
+    "line": 65
+  },
+  {
+    "name": "MacroContext",
+    "file": "autonomous\\awareness.py",
+    "line": 75
+  },
+  {
+    "name": "MarketContext",
+    "file": "autonomous\\awareness.py",
+    "line": 96
+  },
+  {
+    "name": "TimeAwareness",
+    "file": "autonomous\\awareness.py",
+    "line": 147
+  },
+  {
+    "name": "MarketCalendarAwareness",
+    "file": "autonomous\\awareness.py",
+    "line": 263
+  },
+  {
+    "name": "SeasonalAwareness",
+    "file": "autonomous\\awareness.py",
+    "line": 368
+  },
+  {
+    "name": "MacroAwareness",
+    "file": "autonomous\\awareness.py",
+    "line": 434
+  },
+  {
+    "name": "ContextBuilder",
+    "file": "autonomous\\awareness.py",
+    "line": 536
+  },
+  {
+    "name": "Discovery",
+    "file": "autonomous\\brain.py",
+    "line": 33
+  },
+  {
+    "name": "AutonomousBrain",
+    "file": "autonomous\\brain.py",
+    "line": 65
+  },
+  {
+    "name": "ComprehensiveBrain",
+    "file": "autonomous\\comprehensive_brain.py",
+    "line": 30
+  },
+  {
+    "name": "DataValidator",
+    "file": "autonomous\\data_validator.py",
+    "line": 35
+  },
+  {
+    "name": "IntegrityReport",
+    "file": "autonomous\\integrity.py",
+    "line": 28
+  },
+  {
+    "name": "IntegrityGuardian",
+    "file": "autonomous\\integrity.py",
+    "line": 39
+  },
+  {
+    "name": "KnowledgeIntegrator",
+    "file": "autonomous\\knowledge_integrator.py",
+    "line": 31
+  },
+  {
+    "name": "TradeLesson",
+    "file": "autonomous\\learning.py",
+    "line": 25
+  },
+  {
+    "name": "DailyReflection",
+    "file": "autonomous\\learning.py",
+    "line": 41
+  },
+  {
+    "name": "LearningEngine",
+    "file": "autonomous\\learning.py",
+    "line": 55
+  },
+  {
+    "name": "MaintenanceEngine",
+    "file": "autonomous\\maintenance.py",
+    "line": 24
+  },
+  {
+    "name": "StrategyType",
+    "file": "autonomous\\master_brain.py",
+    "line": 47
+  },
+  {
+    "name": "MarketPhase",
+    "file": "autonomous\\master_brain.py",
+    "line": 54
+  },
+  {
+    "name": "MasterBrain",
+    "file": "autonomous\\master_brain.py",
+    "line": 66
+  },
+  {
+    "name": "MasterBrainFull",
+    "file": "autonomous\\master_brain_full.py",
+    "line": 25
+  },
+  {
+    "name": "BrainMonitor",
+    "file": "autonomous\\monitor.py",
+    "line": 23
+  },
+  {
+    "name": "PatternMatch",
+    "file": "autonomous\\pattern_rhymes.py",
+    "line": 22
+  },
+  {
+    "name": "RhymeAnalysis",
+    "file": "autonomous\\pattern_rhymes.py",
+    "line": 34
+  },
+  {
+    "name": "PatternRhymesEngine",
+    "file": "autonomous\\pattern_rhymes.py",
+    "line": 47
+  },
+  {
+    "name": "Experiment",
+    "file": "autonomous\\research.py",
+    "line": 30
+  },
+  {
+    "name": "Discovery",
+    "file": "autonomous\\research.py",
+    "line": 43
+  },
+  {
+    "name": "Goal",
+    "file": "autonomous\\research.py",
+    "line": 55
+  },
+  {
+    "name": "ResearchEngine",
+    "file": "autonomous\\research.py",
+    "line": 64
+  },
+  {
+    "name": "KobeRunner",
+    "file": "autonomous\\run.py",
+    "line": 55
+  },
+  {
+    "name": "TaskPriority",
+    "file": "autonomous\\scheduler.py",
+    "line": 27
+  },
+  {
+    "name": "TaskStatus",
+    "file": "autonomous\\scheduler.py",
+    "line": 36
+  },
+  {
+    "name": "TaskCategory",
+    "file": "autonomous\\scheduler.py",
+    "line": 45
+  },
+  {
+    "name": "Task",
+    "file": "autonomous\\scheduler.py",
+    "line": 58
+  },
+  {
+    "name": "TaskQueue",
+    "file": "autonomous\\scheduler.py",
+    "line": 129
+  },
+  {
+    "name": "AutonomousScheduler",
+    "file": "autonomous\\scheduler.py",
+    "line": 207
+  },
+  {
+    "name": "TaskStatus",
+    "file": "autonomous\\scheduler_full.py",
+    "line": 24
+  },
+  {
+    "name": "ScheduledTask",
+    "file": "autonomous\\scheduler_full.py",
+    "line": 33
+  },
+  {
+    "name": "FullScheduler",
+    "file": "autonomous\\scheduler_full.py",
+    "line": 669
+  },
+  {
+    "name": "ResearchSource",
+    "file": "autonomous\\source_tracker.py",
+    "line": 21
+  },
+  {
+    "name": "SourceTracker",
+    "file": "autonomous\\source_tracker.py",
+    "line": 88
+  },
+  {
+    "name": "KobeKnowledgeScraper",
+    "file": "autonomous\\scrapers\\all_sources.py",
+    "line": 44
+  },
+  {
+    "name": "ArxivPaper",
+    "file": "autonomous\\scrapers\\arxiv_scraper.py",
+    "line": 25
+  },
+  {
+    "name": "ArxivScraper",
+    "file": "autonomous\\scrapers\\arxiv_scraper.py",
+    "line": 39
+  },
+  {
+    "name": "GitHubRepo",
+    "file": "autonomous\\scrapers\\github_scraper.py",
+    "line": 25
+  },
+  {
+    "name": "GitHubScraper",
+    "file": "autonomous\\scrapers\\github_scraper.py",
+    "line": 40
+  },
+  {
+    "name": "RedditPost",
+    "file": "autonomous\\scrapers\\reddit_scraper.py",
+    "line": 25
+  },
+  {
+    "name": "RedditScraper",
+    "file": "autonomous\\scrapers\\reddit_scraper.py",
+    "line": 40
+  },
+  {
+    "name": "ExternalIdea",
+    "file": "autonomous\\scrapers\\source_manager.py",
+    "line": 29
+  },
+  {
+    "name": "SourceManager",
+    "file": "autonomous\\scrapers\\source_manager.py",
+    "line": 62
+  },
+  {
+    "name": "YouTubeVideo",
+    "file": "autonomous\\scrapers\\youtube_scraper.py",
+    "line": 34
+  },
+  {
+    "name": "YouTubeScraper",
+    "file": "autonomous\\scrapers\\youtube_scraper.py",
+    "line": 46
+  },
+  {
+    "name": "CostType",
+    "file": "backtest\\costs.py",
+    "line": 15
+  },
+  {
+    "name": "CostResult",
+    "file": "backtest\\costs.py",
+    "line": 24
+  },
+  {
+    "name": "CostModel",
+    "file": "backtest\\costs.py",
+    "line": 32
+  },
+  {
+    "name": "ZeroCostModel",
+    "file": "backtest\\costs.py",
+    "line": 64
+  },
+  {
+    "name": "EquityCommissionCost",
+    "file": "backtest\\costs.py",
+    "line": 86
+  },
+  {
+    "name": "CryptoTakerCost",
+    "file": "backtest\\costs.py",
+    "line": 187
+  },
+  {
+    "name": "TieredCostModel",
+    "file": "backtest\\costs.py",
+    "line": 230
+  },
+  {
+    "name": "CommissionConfig",
+    "file": "backtest\\engine.py",
+    "line": 13
+  },
+  {
+    "name": "BacktestConfig",
+    "file": "backtest\\engine.py",
+    "line": 24
+  },
+  {
+    "name": "Trade",
+    "file": "backtest\\engine.py",
+    "line": 33
+  },
+  {
+    "name": "Position",
+    "file": "backtest\\engine.py",
+    "line": 42
+  },
+  {
+    "name": "Backtester",
+    "file": "backtest\\engine.py",
+    "line": 48
+  },
+  {
+    "name": "FillModelType",
+    "file": "backtest\\fill_model.py",
+    "line": 16
+  },
+  {
+    "name": "FillResult",
+    "file": "backtest\\fill_model.py",
+    "line": 25
+  },
+  {
+    "name": "FillModel",
+    "file": "backtest\\fill_model.py",
+    "line": 35
+  },
+  {
+    "name": "AlwaysFillModel",
+    "file": "backtest\\fill_model.py",
+    "line": 77
+  },
+  {
+    "name": "LimitOrderFillModel",
+    "file": "backtest\\fill_model.py",
+    "line": 111
+  },
+  {
+    "name": "ProbabilisticFillModel",
+    "file": "backtest\\fill_model.py",
+    "line": 190
+  },
+  {
+    "name": "PartialFillModel",
+    "file": "backtest\\fill_model.py",
+    "line": 296
+  },
+  {
+    "name": "GapType",
+    "file": "backtest\\gap_risk_model.py",
+    "line": 30
+  },
+  {
+    "name": "GapRiskResult",
+    "file": "backtest\\gap_risk_model.py",
+    "line": 39
+  },
+  {
+    "name": "GapDistribution",
+    "file": "backtest\\gap_risk_model.py",
+    "line": 58
+  },
+  {
+    "name": "GapRiskModel",
+    "file": "backtest\\gap_risk_model.py",
+    "line": 70
+  },
+  {
+    "name": "MonteCarloConfig",
+    "file": "backtest\\monte_carlo.py",
+    "line": 46
+  },
+  {
+    "name": "MonteCarloResults",
+    "file": "backtest\\monte_carlo.py",
+    "line": 56
+  },
+  {
+    "name": "MonteCarloSimulator",
+    "file": "backtest\\monte_carlo.py",
+    "line": 157
+  },
+  {
+    "name": "PurgedKFoldConfig",
+    "file": "backtest\\purged_cv.py",
+    "line": 48
+  },
+  {
+    "name": "PurgedKFold",
+    "file": "backtest\\purged_cv.py",
+    "line": 57
+  },
+  {
+    "name": "TimeSeriesSplit",
+    "file": "backtest\\purged_cv.py",
+    "line": 189
+  },
+  {
+    "name": "CombinatorialPurgedKFold",
+    "file": "backtest\\purged_cv.py",
+    "line": 268
+  },
+  {
+    "name": "WalkForwardCV",
+    "file": "backtest\\purged_cv.py",
+    "line": 377
+  },
+  {
+    "name": "MarketRegime",
+    "file": "backtest\\regime_adaptive_slippage.py",
+    "line": 35
+  },
+  {
+    "name": "TimeOfDay",
+    "file": "backtest\\regime_adaptive_slippage.py",
+    "line": 44
+  },
+  {
+    "name": "RegimeSlippageResult",
+    "file": "backtest\\regime_adaptive_slippage.py",
+    "line": 56
+  },
+  {
+    "name": "RegimeAdaptiveSlippage",
+    "file": "backtest\\regime_adaptive_slippage.py",
+    "line": 64
+  },
+  {
+    "name": "VIXIntegratedSlippage",
+    "file": "backtest\\regime_adaptive_slippage.py",
+    "line": 245
+  },
+  {
+    "name": "HybridSlippage",
+    "file": "backtest\\regime_adaptive_slippage.py",
+    "line": 343
+  },
+  {
+    "name": "DataVersion",
+    "file": "backtest\\reproducibility.py",
+    "line": 52
+  },
+  {
+    "name": "ExperimentManifest",
+    "file": "backtest\\reproducibility.py",
+    "line": 71
+  },
+  {
+    "name": "DataVersioner",
+    "file": "backtest\\reproducibility.py",
+    "line": 167
+  },
+  {
+    "name": "ExperimentRun",
+    "file": "backtest\\reproducibility.py",
+    "line": 360
+  },
+  {
+    "name": "ExperimentTracker",
+    "file": "backtest\\reproducibility.py",
+    "line": 481
+  },
+  {
+    "name": "ReproducibleContext",
+    "file": "backtest\\reproducibility.py",
+    "line": 714
+  },
+  {
+    "name": "SlippageType",
+    "file": "backtest\\slippage.py",
+    "line": 16
+  },
+  {
+    "name": "SlippageResult",
+    "file": "backtest\\slippage.py",
+    "line": 26
+  },
+  {
+    "name": "SlippageModel",
+    "file": "backtest\\slippage.py",
+    "line": 41
+  },
+  {
+    "name": "ZeroSlippage",
+    "file": "backtest\\slippage.py",
+    "line": 85
+  },
+  {
+    "name": "FixedBpsSlippage",
+    "file": "backtest\\slippage.py",
+    "line": 109
+  },
+  {
+    "name": "ATRFractionSlippage",
+    "file": "backtest\\slippage.py",
+    "line": 154
+  },
+  {
+    "name": "SpreadPercentileSlippage",
+    "file": "backtest\\slippage.py",
+    "line": 213
+  },
+  {
+    "name": "VolumeImpactSlippage",
+    "file": "backtest\\slippage.py",
+    "line": 280
+  },
+  {
+    "name": "TripleBarrierConfig",
+    "file": "backtest\\triple_barrier.py",
+    "line": 43
+  },
+  {
+    "name": "TripleBarrierLabeler",
+    "file": "backtest\\triple_barrier.py",
+    "line": 66
+  },
+  {
+    "name": "MetaLabeler",
+    "file": "backtest\\triple_barrier.py",
+    "line": 398
+  },
+  {
+    "name": "VectorBTConfig",
+    "file": "backtest\\vectorbt_engine.py",
+    "line": 50
+  },
+  {
+    "name": "VectorBTBacktester",
+    "file": "backtest\\vectorbt_engine.py",
+    "line": 75
+  },
+  {
+    "name": "VectorBTOptimizer",
+    "file": "backtest\\vectorbt_engine.py",
+    "line": 308
+  },
+  {
+    "name": "VectorBTMultiAsset",
+    "file": "backtest\\vectorbt_engine.py",
+    "line": 395
+  },
+  {
+    "name": "VectorConfig",
+    "file": "backtest\\vectorized.py",
+    "line": 48
+  },
+  {
+    "name": "VectorResults",
+    "file": "backtest\\vectorized.py",
+    "line": 59
+  },
+  {
+    "name": "VectorizedBacktester",
+    "file": "backtest\\vectorized.py",
+    "line": 144
+  },
+  {
+    "name": "PlotConfig",
+    "file": "backtest\\visualization.py",
+    "line": 54
+  },
+  {
+    "name": "BacktestPlotter",
+    "file": "backtest\\visualization.py",
+    "line": 89
+  },
+  {
+    "name": "WFSplit",
+    "file": "backtest\\walk_forward.py",
+    "line": 15
+  },
+  {
+    "name": "BounceIntegration",
+    "file": "bounce\\strategy_integration.py",
+    "line": 31
+  },
+  {
+    "name": "Verdict",
+    "file": "cognitive\\adjudicator.py",
+    "line": 23
+  },
+  {
+    "name": "ReasoningType",
+    "file": "cognitive\\azr_reasoning.py",
+    "line": 64
+  },
+  {
+    "name": "ReasoningTask",
+    "file": "cognitive\\azr_reasoning.py",
+    "line": 83
+  },
+  {
+    "name": "ReasoningTypeClassifier",
+    "file": "cognitive\\azr_reasoning.py",
+    "line": 128
+  },
+  {
+    "name": "LearnabilityScore",
+    "file": "cognitive\\azr_reasoning.py",
+    "line": 213
+  },
+  {
+    "name": "LearnabilityScorer",
+    "file": "cognitive\\azr_reasoning.py",
+    "line": 235
+  },
+  {
+    "name": "SelfPlayCycleResult",
+    "file": "cognitive\\azr_reasoning.py",
+    "line": 446
+  },
+  {
+    "name": "SelfPlayScheduler",
+    "file": "cognitive\\azr_reasoning.py",
+    "line": 484
+  },
+  {
+    "name": "BreakerId",
+    "file": "cognitive\\circuit_breakers.py",
+    "line": 40
+  },
+  {
+    "name": "CircuitBreakerViolation",
+    "file": "cognitive\\circuit_breakers.py",
+    "line": 51
+  },
+  {
+    "name": "CognitiveSafetyMonitor",
+    "file": "cognitive\\circuit_breakers.py",
+    "line": 69
+  },
+  {
+    "name": "DecisionType",
+    "file": "cognitive\\cognitive_brain.py",
+    "line": 53
+  },
+  {
+    "name": "CognitiveDecision",
+    "file": "cognitive\\cognitive_brain.py",
+    "line": 61
+  },
+  {
+    "name": "CognitiveBrain",
+    "file": "cognitive\\cognitive_brain.py",
+    "line": 97
+  },
+  {
+    "name": "HypothesisStatus",
+    "file": "cognitive\\curiosity_engine.py",
+    "line": 53
+  },
+  {
+    "name": "Hypothesis",
+    "file": "cognitive\\curiosity_engine.py",
+    "line": 63
+  },
+  {
+    "name": "Edge",
+    "file": "cognitive\\curiosity_engine.py",
+    "line": 104
+  },
+  {
+    "name": "StrategyIdeaRecord",
+    "file": "cognitive\\curiosity_engine.py",
+    "line": 139
+  },
+  {
+    "name": "CuriosityEngine",
+    "file": "cognitive\\curiosity_engine.py",
+    "line": 185
+  },
+  {
+    "name": "PolicyType",
+    "file": "cognitive\\dynamic_policy_generator.py",
+    "line": 50
+  },
+  {
+    "name": "PolicyStatus",
+    "file": "cognitive\\dynamic_policy_generator.py",
+    "line": 62
+  },
+  {
+    "name": "TradingPolicy",
+    "file": "cognitive\\dynamic_policy_generator.py",
+    "line": 72
+  },
+  {
+    "name": "PolicyTransition",
+    "file": "cognitive\\dynamic_policy_generator.py",
+    "line": 131
+  },
+  {
+    "name": "DynamicPolicyGenerator",
+    "file": "cognitive\\dynamic_policy_generator.py",
+    "line": 141
+  },
+  {
+    "name": "EpisodeOutcome",
+    "file": "cognitive\\episodic_memory.py",
+    "line": 81
+  },
+  {
+    "name": "Episode",
+    "file": "cognitive\\episodic_memory.py",
+    "line": 92
+  },
+  {
+    "name": "EpisodicMemory",
+    "file": "cognitive\\episodic_memory.py",
+    "line": 212
+  },
+  {
+    "name": "DecisionPacket",
+    "file": "cognitive\\game_briefings.py",
+    "line": 68
+  },
+  {
+    "name": "BriefingContext",
+    "file": "cognitive\\game_briefings.py",
+    "line": 281
+  },
+  {
+    "name": "PositionStatus",
+    "file": "cognitive\\game_briefings.py",
+    "line": 327
+  },
+  {
+    "name": "PreGameBriefing",
+    "file": "cognitive\\game_briefings.py",
+    "line": 358
+  },
+  {
+    "name": "HalfTimeBriefing",
+    "file": "cognitive\\game_briefings.py",
+    "line": 405
+  },
+  {
+    "name": "TradeOutcome",
+    "file": "cognitive\\game_briefings.py",
+    "line": 456
+  },
+  {
+    "name": "PostGameBriefing",
+    "file": "cognitive\\game_briefings.py",
+    "line": 478
+  },
+  {
+    "name": "GameBriefingEngine",
+    "file": "cognitive\\game_briefings.py",
+    "line": 784
+  },
+  {
+    "name": "Priority",
+    "file": "cognitive\\global_workspace.py",
+    "line": 65
+  },
+  {
+    "name": "WorkspaceItem",
+    "file": "cognitive\\global_workspace.py",
+    "line": 75
+  },
+  {
+    "name": "WorkingMemorySlot",
+    "file": "cognitive\\global_workspace.py",
+    "line": 101
+  },
+  {
+    "name": "GlobalWorkspace",
+    "file": "cognitive\\global_workspace.py",
+    "line": 112
+  },
+  {
+    "name": "UncertaintyLevel",
+    "file": "cognitive\\knowledge_boundary.py",
+    "line": 55
+  },
+  {
+    "name": "UncertaintySource",
+    "file": "cognitive\\knowledge_boundary.py",
+    "line": 63
+  },
+  {
+    "name": "Invalidator",
+    "file": "cognitive\\knowledge_boundary.py",
+    "line": 80
+  },
+  {
+    "name": "KnowledgeAssessment",
+    "file": "cognitive\\knowledge_boundary.py",
+    "line": 93
+  },
+  {
+    "name": "KnowledgeBoundary",
+    "file": "cognitive\\knowledge_boundary.py",
+    "line": 122
+  },
+  {
+    "name": "LLMHypothesis",
+    "file": "cognitive\\llm_narrative_analyzer.py",
+    "line": 44
+  },
+  {
+    "name": "StrategyIdea",
+    "file": "cognitive\\llm_narrative_analyzer.py",
+    "line": 68
+  },
+  {
+    "name": "LLMAnalysisResult",
+    "file": "cognitive\\llm_narrative_analyzer.py",
+    "line": 100
+  },
+  {
+    "name": "LLMNarrativeAnalyzer",
+    "file": "cognitive\\llm_narrative_analyzer.py",
+    "line": 121
+  },
+  {
+    "name": "TokenBudget",
+    "file": "cognitive\\llm_trade_analyzer.py",
+    "line": 81
+  },
+  {
+    "name": "TradeNarrative",
+    "file": "cognitive\\llm_trade_analyzer.py",
+    "line": 293
+  },
+  {
+    "name": "DailyInsightReport",
+    "file": "cognitive\\llm_trade_analyzer.py",
+    "line": 309
+  },
+  {
+    "name": "SymbolHistoricalStats",
+    "file": "cognitive\\llm_trade_analyzer.py",
+    "line": 332
+  },
+  {
+    "name": "HistoricalPerformance",
+    "file": "cognitive\\llm_trade_analyzer.py",
+    "line": 351
+  },
+  {
+    "name": "TechnicalContext",
+    "file": "cognitive\\llm_trade_analyzer.py",
+    "line": 371
+  },
+  {
+    "name": "SymbolNews",
+    "file": "cognitive\\llm_trade_analyzer.py",
+    "line": 390
+  },
+  {
+    "name": "ComprehensiveTOTDReport",
+    "file": "cognitive\\llm_trade_analyzer.py",
+    "line": 403
+  },
+  {
+    "name": "LLMTradeAnalyzer",
+    "file": "cognitive\\llm_trade_analyzer.py",
+    "line": 698
+  },
+  {
+    "name": "ValidationSeverity",
+    "file": "cognitive\\llm_validator.py",
+    "line": 38
+  },
+  {
+    "name": "ClaimType",
+    "file": "cognitive\\llm_validator.py",
+    "line": 46
+  },
+  {
+    "name": "ValidationIssue",
+    "file": "cognitive\\llm_validator.py",
+    "line": 58
+  },
+  {
+    "name": "ExtractedClaim",
+    "file": "cognitive\\llm_validator.py",
+    "line": 77
+  },
+  {
+    "name": "ValidationResult",
+    "file": "cognitive\\llm_validator.py",
+    "line": 89
+  },
+  {
+    "name": "LLMValidator",
+    "file": "cognitive\\llm_validator.py",
+    "line": 122
+  },
+  {
+    "name": "ProcessingMode",
+    "file": "cognitive\\metacognitive_governor.py",
+    "line": 57
+  },
+  {
+    "name": "EscalationReason",
+    "file": "cognitive\\metacognitive_governor.py",
+    "line": 65
+  },
+  {
+    "name": "StandDownReason",
+    "file": "cognitive\\metacognitive_governor.py",
+    "line": 77
+  },
+  {
+    "name": "RoutingDecision",
+    "file": "cognitive\\metacognitive_governor.py",
+    "line": 89
+  },
+  {
+    "name": "DecisionRecord",
+    "file": "cognitive\\metacognitive_governor.py",
+    "line": 120
+  },
+  {
+    "name": "MetacognitiveGovernor",
+    "file": "cognitive\\metacognitive_governor.py",
+    "line": 136
+  },
+  {
+    "name": "Reflection",
+    "file": "cognitive\\reflection_engine.py",
+    "line": 50
+  },
+  {
+    "name": "ReflectionEngine",
+    "file": "cognitive\\reflection_engine.py",
+    "line": 92
+  },
+  {
+    "name": "Capability",
+    "file": "cognitive\\self_model.py",
+    "line": 55
+  },
+  {
+    "name": "StrategyPerformance",
+    "file": "cognitive\\self_model.py",
+    "line": 66
+  },
+  {
+    "name": "Limitation",
+    "file": "cognitive\\self_model.py",
+    "line": 108
+  },
+  {
+    "name": "ConfidenceCalibration",
+    "file": "cognitive\\self_model.py",
+    "line": 127
+  },
+  {
+    "name": "CognitiveEfficiencyRecord",
+    "file": "cognitive\\self_model.py",
+    "line": 151
+  },
+  {
+    "name": "CognitiveAdjustmentRecord",
+    "file": "cognitive\\self_model.py",
+    "line": 197
+  },
+  {
+    "name": "SelfModel",
+    "file": "cognitive\\self_model.py",
+    "line": 224
+  },
+  {
+    "name": "SemanticRule",
+    "file": "cognitive\\semantic_memory.py",
+    "line": 59
+  },
+  {
+    "name": "ConditionMatcher",
+    "file": "cognitive\\semantic_memory.py",
+    "line": 122
+  },
+  {
+    "name": "SemanticMemory",
+    "file": "cognitive\\semantic_memory.py",
+    "line": 189
+  },
+  {
+    "name": "AdjudicatorConfig",
+    "file": "cognitive\\signal_adjudicator.py",
+    "line": 55
+  },
+  {
+    "name": "AdjudicationResult",
+    "file": "cognitive\\signal_adjudicator.py",
+    "line": 97
+  },
+  {
+    "name": "SignalAdjudicator",
+    "file": "cognitive\\signal_adjudicator.py",
+    "line": 159
+  },
+  {
+    "name": "EvaluatedSignal",
+    "file": "cognitive\\signal_processor.py",
+    "line": 66
+  },
+  {
+    "name": "CognitiveSignalProcessor",
+    "file": "cognitive\\signal_processor.py",
+    "line": 99
+  },
+  {
+    "name": "SocraticNarrative",
+    "file": "cognitive\\socratic_narrative.py",
+    "line": 36
+  },
+  {
+    "name": "MarketContext",
+    "file": "cognitive\\socratic_narrative.py",
+    "line": 166
+  },
+  {
+    "name": "SocraticNarrativeGenerator",
+    "file": "cognitive\\socratic_narrative.py",
+    "line": 178
+  },
+  {
+    "name": "SymbolicVerdictType",
+    "file": "cognitive\\symbolic_reasoner.py",
+    "line": 54
+  },
+  {
+    "name": "SymbolicRule",
+    "file": "cognitive\\symbolic_reasoner.py",
+    "line": 68
+  },
+  {
+    "name": "SymbolicVerdict",
+    "file": "cognitive\\symbolic_reasoner.py",
+    "line": 96
+  },
+  {
+    "name": "SymbolicReasoner",
+    "file": "cognitive\\symbolic_reasoner.py",
+    "line": 124
+  },
+  {
+    "name": "SymbolContext",
+    "file": "cognitive\\symbol_rag.py",
+    "line": 38
+  },
+  {
+    "name": "SymbolRAG",
+    "file": "cognitive\\symbol_rag.py",
+    "line": 117
+  },
+  {
+    "name": "VectorMemory",
+    "file": "cognitive\\vector_memory.py",
+    "line": 60
+  },
+  {
+    "name": "ProhibitedReason",
+    "file": "compliance\\prohibited_list.py",
+    "line": 21
+  },
+  {
+    "name": "RuleConfig",
+    "file": "compliance\\rules_engine.py",
+    "line": 39
+  },
+  {
+    "name": "SystemConfig",
+    "file": "config\\settings_schema.py",
+    "line": 55
+  },
+  {
+    "name": "ModeConfig",
+    "file": "config\\settings_schema.py",
+    "line": 65
+  },
+  {
+    "name": "ModesConfig",
+    "file": "config\\settings_schema.py",
+    "line": 93
+  },
+  {
+    "name": "DataConfig",
+    "file": "config\\settings_schema.py",
+    "line": 122
+  },
+  {
+    "name": "BacktestConfig",
+    "file": "config\\settings_schema.py",
+    "line": 128
+  },
+  {
+    "name": "RiskConfig",
+    "file": "config\\settings_schema.py",
+    "line": 133
+  },
+  {
+    "name": "ExecutionConfig",
+    "file": "config\\settings_schema.py",
+    "line": 142
+  },
+  {
+    "name": "VixConfig",
+    "file": "config\\settings_schema.py",
+    "line": 148
+  },
+  {
+    "name": "Settings",
+    "file": "config\\settings_schema.py",
+    "line": 156
+  },
+  {
+    "name": "Config",
+    "file": "config\\settings_schema.py",
+    "line": 167
+  },
+  {
+    "name": "Settings",
+    "file": "config\\settings_schema.py",
+    "line": 172
+  },
+  {
+    "name": "SettingsValidationError",
+    "file": "config\\settings_schema.py",
+    "line": 315
+  },
+  {
+    "name": "CircuitState",
+    "file": "core\\circuit_breaker.py",
+    "line": 51
+  },
+  {
+    "name": "CircuitStats",
+    "file": "core\\circuit_breaker.py",
+    "line": 59
+  },
+  {
+    "name": "CircuitOpenError",
+    "file": "core\\circuit_breaker.py",
+    "line": 100
+  },
+  {
+    "name": "CircuitBreaker",
+    "file": "core\\circuit_breaker.py",
+    "line": 109
+  },
+  {
+    "name": "MarketSnapshot",
+    "file": "core\\decision_packet.py",
+    "line": 56
+  },
+  {
+    "name": "IndicatorSnapshot",
+    "file": "core\\decision_packet.py",
+    "line": 73
+  },
+  {
+    "name": "MLSnapshot",
+    "file": "core\\decision_packet.py",
+    "line": 95
+  },
+  {
+    "name": "RiskSnapshot",
+    "file": "core\\decision_packet.py",
+    "line": 109
+  },
+  {
+    "name": "SignalSnapshot",
+    "file": "core\\decision_packet.py",
+    "line": 124
+  },
+  {
+    "name": "DecisionOutcome",
+    "file": "core\\decision_packet.py",
+    "line": 137
+  },
+  {
+    "name": "DecisionPacket",
+    "file": "core\\decision_packet.py",
+    "line": 151
+  },
+  {
+    "name": "EarningsData",
+    "file": "core\\earnings_filter.py",
+    "line": 40
+  },
+  {
+    "name": "HTTPClient",
+    "file": "core\\http_client.py",
+    "line": 39
+  },
+  {
+    "name": "KillSwitchActiveError",
+    "file": "core\\kill_switch.py",
+    "line": 37
+  },
+  {
+    "name": "LineageRecord",
+    "file": "core\\lineage.py",
+    "line": 19
+  },
+  {
+    "name": "LineageTracker",
+    "file": "core\\lineage.py",
+    "line": 151
+  },
+  {
+    "name": "TokenBucket",
+    "file": "core\\rate_limiter.py",
+    "line": 20
+  },
+  {
+    "name": "RateLimitExceeded",
+    "file": "core\\rate_limiter.py",
+    "line": 123
+  },
+  {
+    "name": "RestartBackoffConfig",
+    "file": "core\\restart_backoff.py",
+    "line": 44
+  },
+  {
+    "name": "RestartState",
+    "file": "core\\restart_backoff.py",
+    "line": 59
+  },
+  {
+    "name": "RestartBackoff",
+    "file": "core\\restart_backoff.py",
+    "line": 87
+  },
+  {
+    "name": "UnsafePathError",
+    "file": "core\\safe_pickle.py",
+    "line": 35
+  },
+  {
+    "name": "SecretsMaskingFilter",
+    "file": "core\\secrets.py",
+    "line": 178
+  },
+  {
+    "name": "FreshnessResult",
+    "file": "core\\signal_freshness.py",
+    "line": 22
+  },
+  {
+    "name": "VIXConfig",
+    "file": "core\\vix_monitor.py",
+    "line": 32
+  },
+  {
+    "name": "VIXReading",
+    "file": "core\\vix_monitor.py",
+    "line": 45
+  },
+  {
+    "name": "VIXMonitor",
+    "file": "core\\vix_monitor.py",
+    "line": 68
+  },
+  {
+    "name": "CryptoClock",
+    "file": "core\\clock\\crypto_clock.py",
+    "line": 19
+  },
+  {
+    "name": "EquitiesCalendar",
+    "file": "core\\clock\\equities_calendar.py",
+    "line": 76
+  },
+  {
+    "name": "MacroEventType",
+    "file": "core\\clock\\macro_events.py",
+    "line": 18
+  },
+  {
+    "name": "MacroEvent",
+    "file": "core\\clock\\macro_events.py",
+    "line": 30
+  },
+  {
+    "name": "MacroEventCalendar",
+    "file": "core\\clock\\macro_events.py",
+    "line": 78
+  },
+  {
+    "name": "AssetType",
+    "file": "core\\clock\\market_clock.py",
+    "line": 20
+  },
+  {
+    "name": "SessionType",
+    "file": "core\\clock\\market_clock.py",
+    "line": 27
+  },
+  {
+    "name": "MarketEvent",
+    "file": "core\\clock\\market_clock.py",
+    "line": 37
+  },
+  {
+    "name": "SessionInfo",
+    "file": "core\\clock\\market_clock.py",
+    "line": 49
+  },
+  {
+    "name": "MarketClock",
+    "file": "core\\clock\\market_clock.py",
+    "line": 59
+  },
+  {
+    "name": "OptionsEvent",
+    "file": "core\\clock\\options_event_clock.py",
+    "line": 21
+  },
+  {
+    "name": "OptionsEventClock",
+    "file": "core\\clock\\options_event_clock.py",
+    "line": 29
+  },
+  {
+    "name": "MLComponentStatus",
+    "file": "dashboard\\ml_confidence.py",
+    "line": 46
+  },
+  {
+    "name": "MLConfidenceDashboard",
+    "file": "dashboard\\ml_confidence.py",
+    "line": 65
+  },
+  {
+    "name": "ActionType",
+    "file": "data\\corporate_actions.py",
+    "line": 22
+  },
+  {
+    "name": "CorporateAction",
+    "file": "data\\corporate_actions.py",
+    "line": 33
+  },
+  {
+    "name": "CorporateActionsTracker",
+    "file": "data\\corporate_actions.py",
+    "line": 55
+  },
+  {
+    "name": "DataSource",
+    "file": "data\\quorum.py",
+    "line": 40
+  },
+  {
+    "name": "ConsensusMethod",
+    "file": "data\\quorum.py",
+    "line": 48
+  },
+  {
+    "name": "SourcePrice",
+    "file": "data\\quorum.py",
+    "line": 57
+  },
+  {
+    "name": "Discrepancy",
+    "file": "data\\quorum.py",
+    "line": 81
+  },
+  {
+    "name": "QuorumResult",
+    "file": "data\\quorum.py",
+    "line": 99
+  },
+  {
+    "name": "DataSourceAdapter",
+    "file": "data\\quorum.py",
+    "line": 143
+  },
+  {
+    "name": "PolygonAdapter",
+    "file": "data\\quorum.py",
+    "line": 157
+  },
+  {
+    "name": "StooqAdapter",
+    "file": "data\\quorum.py",
+    "line": 211
+  },
+  {
+    "name": "YFinanceAdapter",
+    "file": "data\\quorum.py",
+    "line": 265
+  },
+  {
+    "name": "DataQuorum",
+    "file": "data\\quorum.py",
+    "line": 319
+  },
+  {
+    "name": "ValidationSeverity",
+    "file": "data\\validation.py",
+    "line": 37
+  },
+  {
+    "name": "ValidationIssue",
+    "file": "data\\validation.py",
+    "line": 46
+  },
+  {
+    "name": "DataQualityReport",
+    "file": "data\\validation.py",
+    "line": 59
+  },
+  {
+    "name": "OHLCVValidator",
+    "file": "data\\validation.py",
+    "line": 101
+  },
+  {
+    "name": "AltDataSignal",
+    "file": "data\\alternative\\alt_data_aggregator.py",
+    "line": 35
+  },
+  {
+    "name": "AltDataAggregator",
+    "file": "data\\alternative\\alt_data_aggregator.py",
+    "line": 121
+  },
+  {
+    "name": "Chamber",
+    "file": "data\\alternative\\congress_trades.py",
+    "line": 35
+  },
+  {
+    "name": "Party",
+    "file": "data\\alternative\\congress_trades.py",
+    "line": 41
+  },
+  {
+    "name": "TradeType",
+    "file": "data\\alternative\\congress_trades.py",
+    "line": 48
+  },
+  {
+    "name": "CongressTrade",
+    "file": "data\\alternative\\congress_trades.py",
+    "line": 56
+  },
+  {
+    "name": "CongressSignal",
+    "file": "data\\alternative\\congress_trades.py",
+    "line": 104
+  },
+  {
+    "name": "CongressTradeMonitor",
+    "file": "data\\alternative\\congress_trades.py",
+    "line": 180
+  },
+  {
+    "name": "InsiderRole",
+    "file": "data\\alternative\\insider_trades.py",
+    "line": 35
+  },
+  {
+    "name": "TransactionType",
+    "file": "data\\alternative\\insider_trades.py",
+    "line": 48
+  },
+  {
+    "name": "InsiderTrade",
+    "file": "data\\alternative\\insider_trades.py",
+    "line": 58
+  },
+  {
+    "name": "InsiderSignal",
+    "file": "data\\alternative\\insider_trades.py",
+    "line": 113
+  },
+  {
+    "name": "InsiderTradeMonitor",
+    "file": "data\\alternative\\insider_trades.py",
+    "line": 196
+  },
+  {
+    "name": "SentimentLevel",
+    "file": "data\\alternative\\news_sentiment.py",
+    "line": 33
+  },
+  {
+    "name": "NewsArticle",
+    "file": "data\\alternative\\news_sentiment.py",
+    "line": 43
+  },
+  {
+    "name": "NewsSentiment",
+    "file": "data\\alternative\\news_sentiment.py",
+    "line": 56
+  },
+  {
+    "name": "NewsSentimentAnalyzer",
+    "file": "data\\alternative\\news_sentiment.py",
+    "line": 136
+  },
+  {
+    "name": "OptionType",
+    "file": "data\\alternative\\options_flow.py",
+    "line": 35
+  },
+  {
+    "name": "OrderType",
+    "file": "data\\alternative\\options_flow.py",
+    "line": 41
+  },
+  {
+    "name": "Sentiment",
+    "file": "data\\alternative\\options_flow.py",
+    "line": 49
+  },
+  {
+    "name": "OptionsFlow",
+    "file": "data\\alternative\\options_flow.py",
+    "line": 57
+  },
+  {
+    "name": "UnusualActivity",
+    "file": "data\\alternative\\options_flow.py",
+    "line": 112
+  },
+  {
+    "name": "OptionsFlowMonitor",
+    "file": "data\\alternative\\options_flow.py",
+    "line": 202
+  },
+  {
+    "name": "LakeWriter",
+    "file": "data\\lake\\io.py",
+    "line": 59
+  },
+  {
+    "name": "LakeReader",
+    "file": "data\\lake\\io.py",
+    "line": 202
+  },
+  {
+    "name": "FileRecord",
+    "file": "data\\lake\\manifest.py",
+    "line": 43
+  },
+  {
+    "name": "DatasetManifest",
+    "file": "data\\lake\\manifest.py",
+    "line": 61
+  },
+  {
+    "name": "ScenarioParams",
+    "file": "data\\ml\\generative_market_model.py",
+    "line": 64
+  },
+  {
+    "name": "CounterfactualParams",
+    "file": "data\\ml\\generative_market_model.py",
+    "line": 87
+  },
+  {
+    "name": "GenerativeMarketModel",
+    "file": "data\\ml\\generative_market_model.py",
+    "line": 105
+  },
+  {
+    "name": "IntradayBar",
+    "file": "data\\providers\\alpaca_intraday.py",
+    "line": 42
+  },
+  {
+    "name": "AlpacaDataConfig",
+    "file": "data\\providers\\alpaca_live.py",
+    "line": 29
+  },
+  {
+    "name": "QuoteData",
+    "file": "data\\providers\\alpaca_websocket.py",
+    "line": 42
+  },
+  {
+    "name": "TradeData",
+    "file": "data\\providers\\alpaca_websocket.py",
+    "line": 65
+  },
+  {
+    "name": "AlpacaWebSocketClient",
+    "file": "data\\providers\\alpaca_websocket.py",
+    "line": 85
+  },
+  {
+    "name": "BEAMacroProvider",
+    "file": "data\\providers\\bea_macro.py",
+    "line": 45
+  },
+  {
+    "name": "BinanceKlinesProvider",
+    "file": "data\\providers\\binance_klines.py",
+    "line": 67
+  },
+  {
+    "name": "CFTCCOTProvider",
+    "file": "data\\providers\\cftc_cot.py",
+    "line": 76
+  },
+  {
+    "name": "EIAEnergyProvider",
+    "file": "data\\providers\\eia_energy.py",
+    "line": 57
+  },
+  {
+    "name": "FREDMacroProvider",
+    "file": "data\\providers\\fred_macro.py",
+    "line": 98
+  },
+  {
+    "name": "_SuppressOutput",
+    "file": "data\\providers\\multi_source.py",
+    "line": 183
+  },
+  {
+    "name": "DataFetchError",
+    "file": "data\\providers\\multi_source.py",
+    "line": 498
+  },
+  {
+    "name": "PolygonConfig",
+    "file": "data\\providers\\polygon_eod.py",
+    "line": 27
+  },
+  {
+    "name": "IntradayBar",
+    "file": "data\\providers\\polygon_intraday.py",
+    "line": 38
+  },
+  {
+    "name": "StooqEODProvider",
+    "file": "data\\providers\\stooq_eod.py",
+    "line": 45
+  },
+  {
+    "name": "TreasuryYieldProvider",
+    "file": "data\\providers\\treasury_yields.py",
+    "line": 42
+  },
+  {
+    "name": "YFinanceEODProvider",
+    "file": "data\\providers\\yfinance_eod.py",
+    "line": 44
+  },
+  {
+    "name": "DiscontinuityEvent",
+    "file": "data\\quality\\corporate_actions_canary.py",
+    "line": 66
+  },
+  {
+    "name": "CanaryResult",
+    "file": "data\\quality\\corporate_actions_canary.py",
+    "line": 78
+  },
+  {
+    "name": "FeatureCategory",
+    "file": "data_exploration\\data_registry.py",
+    "line": 23
+  },
+  {
+    "name": "DataFrequency",
+    "file": "data_exploration\\data_registry.py",
+    "line": 35
+  },
+  {
+    "name": "FeatureDefinition",
+    "file": "data_exploration\\data_registry.py",
+    "line": 46
+  },
+  {
+    "name": "DataSource",
+    "file": "data_exploration\\data_registry.py",
+    "line": 91
+  },
+  {
+    "name": "DataRegistry",
+    "file": "data_exploration\\data_registry.py",
+    "line": 130
+  },
+  {
+    "name": "FeatureTransform",
+    "file": "data_exploration\\feature_discovery.py",
+    "line": 22
+  },
+  {
+    "name": "DiscoveredFeature",
+    "file": "data_exploration\\feature_discovery.py",
+    "line": 35
+  },
+  {
+    "name": "FeatureDiscovery",
+    "file": "data_exploration\\feature_discovery.py",
+    "line": 116
+  },
+  {
+    "name": "ImportanceMethod",
+    "file": "data_exploration\\feature_importance.py",
+    "line": 22
+  },
+  {
+    "name": "ImportanceResult",
+    "file": "data_exploration\\feature_importance.py",
+    "line": 31
+  },
+  {
+    "name": "FeatureImportance",
+    "file": "data_exploration\\feature_importance.py",
+    "line": 52
+  },
+  {
+    "name": "CloneCheckResult",
+    "file": "evolution\\clone_detector.py",
+    "line": 17
+  },
+  {
+    "name": "CloneDetector",
+    "file": "evolution\\clone_detector.py",
+    "line": 26
+  },
+  {
+    "name": "ParamType",
+    "file": "evolution\\genetic_optimizer.py",
+    "line": 27
+  },
+  {
+    "name": "ParamSpec",
+    "file": "evolution\\genetic_optimizer.py",
+    "line": 35
+  },
+  {
+    "name": "Individual",
+    "file": "evolution\\genetic_optimizer.py",
+    "line": 79
+  },
+  {
+    "name": "Population",
+    "file": "evolution\\genetic_optimizer.py",
+    "line": 105
+  },
+  {
+    "name": "GeneticOptimizer",
+    "file": "evolution\\genetic_optimizer.py",
+    "line": 138
+  },
+  {
+    "name": "PromotionThresholds",
+    "file": "evolution\\promotion_gate.py",
+    "line": 15
+  },
+  {
+    "name": "CandidateDecision",
+    "file": "evolution\\registry.py",
+    "line": 19
+  },
+  {
+    "name": "StrategyCandidate",
+    "file": "evolution\\registry.py",
+    "line": 28
+  },
+  {
+    "name": "EvolutionRun",
+    "file": "evolution\\registry.py",
+    "line": 67
+  },
+  {
+    "name": "EvolutionRegistry",
+    "file": "evolution\\registry.py",
+    "line": 80
+  },
+  {
+    "name": "Node",
+    "file": "evolution\\strategy_foundry.py",
+    "line": 53
+  },
+  {
+    "name": "TerminalNode",
+    "file": "evolution\\strategy_foundry.py",
+    "line": 77
+  },
+  {
+    "name": "OperatorNode",
+    "file": "evolution\\strategy_foundry.py",
+    "line": 180
+  },
+  {
+    "name": "StrategyIndividual",
+    "file": "evolution\\strategy_foundry.py",
+    "line": 239
+  },
+  {
+    "name": "StrategyFoundry",
+    "file": "evolution\\strategy_foundry.py",
+    "line": 280
+  },
+  {
+    "name": "MutationType",
+    "file": "evolution\\strategy_mutator.py",
+    "line": 25
+  },
+  {
+    "name": "MutationRecord",
+    "file": "evolution\\strategy_mutator.py",
+    "line": 37
+  },
+  {
+    "name": "StrategyVariant",
+    "file": "evolution\\strategy_mutator.py",
+    "line": 57
+  },
+  {
+    "name": "StrategyMutator",
+    "file": "evolution\\strategy_mutator.py",
+    "line": 78
+  },
+  {
+    "name": "PolicyGateError",
+    "file": "execution\\broker_alpaca.py",
+    "line": 33
+  },
+  {
+    "name": "ComplianceError",
+    "file": "execution\\broker_alpaca.py",
+    "line": 38
+  },
+  {
+    "name": "AlpacaConfig",
+    "file": "execution\\broker_alpaca.py",
+    "line": 186
+  },
+  {
+    "name": "BrokerExecutionResult",
+    "file": "execution\\broker_alpaca.py",
+    "line": 192
+  },
+  {
+    "name": "OrderResult",
+    "file": "execution\\broker_alpaca.py",
+    "line": 1092
+  },
+  {
+    "name": "BracketOrderResult",
+    "file": "execution\\broker_alpaca.py",
+    "line": 1278
+  },
+  {
+    "name": "AlpacaBroker",
+    "file": "execution\\broker_alpaca.py",
+    "line": 1459
+  },
+  {
+    "name": "BrokerType",
+    "file": "execution\\broker_base.py",
+    "line": 20
+  },
+  {
+    "name": "OrderSide",
+    "file": "execution\\broker_base.py",
+    "line": 28
+  },
+  {
+    "name": "OrderType",
+    "file": "execution\\broker_base.py",
+    "line": 34
+  },
+  {
+    "name": "TimeInForce",
+    "file": "execution\\broker_base.py",
+    "line": 42
+  },
+  {
+    "name": "BrokerOrderStatus",
+    "file": "execution\\broker_base.py",
+    "line": 52
+  },
+  {
+    "name": "Quote",
+    "file": "execution\\broker_base.py",
+    "line": 65
+  },
+  {
+    "name": "Position",
+    "file": "execution\\broker_base.py",
+    "line": 116
+  },
+  {
+    "name": "Account",
+    "file": "execution\\broker_base.py",
+    "line": 143
+  },
+  {
+    "name": "Order",
+    "file": "execution\\broker_base.py",
+    "line": 172
+  },
+  {
+    "name": "OrderResult",
+    "file": "execution\\broker_base.py",
+    "line": 206
+  },
+  {
+    "name": "BrokerBase",
+    "file": "execution\\broker_base.py",
+    "line": 238
+  },
+  {
+    "name": "CryptoBroker",
+    "file": "execution\\broker_crypto.py",
+    "line": 46
+  },
+  {
+    "name": "BrokerFactory",
+    "file": "execution\\broker_factory.py",
+    "line": 226
+  },
+  {
+    "name": "PaperBroker",
+    "file": "execution\\broker_paper.py",
+    "line": 38
+  },
+  {
+    "name": "ArmStats",
+    "file": "execution\\execution_bandit.py",
+    "line": 55
+  },
+  {
+    "name": "BanditStats",
+    "file": "execution\\execution_bandit.py",
+    "line": 99
+  },
+  {
+    "name": "ExecutionBandit",
+    "file": "execution\\execution_bandit.py",
+    "line": 116
+  },
+  {
+    "name": "GuardStatus",
+    "file": "execution\\execution_guard.py",
+    "line": 19
+  },
+  {
+    "name": "GuardCheckResult",
+    "file": "execution\\execution_guard.py",
+    "line": 27
+  },
+  {
+    "name": "QuoteData",
+    "file": "execution\\execution_guard.py",
+    "line": 60
+  },
+  {
+    "name": "ExecutionGuard",
+    "file": "execution\\execution_guard.py",
+    "line": 71
+  },
+  {
+    "name": "ExecutionResult",
+    "file": "execution\\intelligent_executor.py",
+    "line": 59
+  },
+  {
+    "name": "PipelineResult",
+    "file": "execution\\intelligent_executor.py",
+    "line": 93
+  },
+  {
+    "name": "IntelligentExecutor",
+    "file": "execution\\intelligent_executor.py",
+    "line": 121
+  },
+  {
+    "name": "TriggerMode",
+    "file": "execution\\intraday_trigger.py",
+    "line": 59
+  },
+  {
+    "name": "TriggerResult",
+    "file": "execution\\intraday_trigger.py",
+    "line": 68
+  },
+  {
+    "name": "IntradayTrigger",
+    "file": "execution\\intraday_trigger.py",
+    "line": 81
+  },
+  {
+    "name": "OrderManager",
+    "file": "execution\\order_manager.py",
+    "line": 68
+  },
+  {
+    "name": "OrderState",
+    "file": "execution\\order_state_machine.py",
+    "line": 35
+  },
+  {
+    "name": "OrderStateTransition",
+    "file": "execution\\order_state_machine.py",
+    "line": 74
+  },
+  {
+    "name": "ManagedOrder",
+    "file": "execution\\order_state_machine.py",
+    "line": 97
+  },
+  {
+    "name": "OrderStateMachineConfig",
+    "file": "execution\\order_state_machine.py",
+    "line": 167
+  },
+  {
+    "name": "OrderStateMachine",
+    "file": "execution\\order_state_machine.py",
+    "line": 176
+  },
+  {
+    "name": "InvalidTransitionError",
+    "file": "execution\\order_state_machine.py",
+    "line": 590
+  },
+  {
+    "name": "DiscrepancyType",
+    "file": "execution\\reconcile.py",
+    "line": 20
+  },
+  {
+    "name": "DiscrepancySeverity",
+    "file": "execution\\reconcile.py",
+    "line": 31
+  },
+  {
+    "name": "Discrepancy",
+    "file": "execution\\reconcile.py",
+    "line": 39
+  },
+  {
+    "name": "BrokerPosition",
+    "file": "execution\\reconcile.py",
+    "line": 68
+  },
+  {
+    "name": "BrokerOrder",
+    "file": "execution\\reconcile.py",
+    "line": 80
+  },
+  {
+    "name": "OMSPosition",
+    "file": "execution\\reconcile.py",
+    "line": 96
+  },
+  {
+    "name": "OMSOrder",
+    "file": "execution\\reconcile.py",
+    "line": 105
+  },
+  {
+    "name": "ReconciliationReport",
+    "file": "execution\\reconcile.py",
+    "line": 118
+  },
+  {
+    "name": "Reconciler",
+    "file": "execution\\reconcile.py",
+    "line": 150
+  },
+  {
+    "name": "ExecutionReport",
+    "file": "execution\\analytics\\execution_report.py",
+    "line": 33
+  },
+  {
+    "name": "ExecutionReporter",
+    "file": "execution\\analytics\\execution_report.py",
+    "line": 127
+  },
+  {
+    "name": "ImpactMetrics",
+    "file": "execution\\analytics\\market_impact.py",
+    "line": 34
+  },
+  {
+    "name": "ImpactModel",
+    "file": "execution\\analytics\\market_impact.py",
+    "line": 69
+  },
+  {
+    "name": "MarketImpactAnalyzer",
+    "file": "execution\\analytics\\market_impact.py",
+    "line": 117
+  },
+  {
+    "name": "SlippageMetrics",
+    "file": "execution\\analytics\\slippage_tracker.py",
+    "line": 34
+  },
+  {
+    "name": "AggregateSlippageMetrics",
+    "file": "execution\\analytics\\slippage_tracker.py",
+    "line": 61
+  },
+  {
+    "name": "SlippageTracker",
+    "file": "execution\\analytics\\slippage_tracker.py",
+    "line": 91
+  },
+  {
+    "name": "TimingMetrics",
+    "file": "execution\\analytics\\timing_analysis.py",
+    "line": 30
+  },
+  {
+    "name": "ExecutionWindow",
+    "file": "execution\\analytics\\timing_analysis.py",
+    "line": 51
+  },
+  {
+    "name": "TimingAnalyzer",
+    "file": "execution\\analytics\\timing_analysis.py",
+    "line": 61
+  },
+  {
+    "name": "TCARecord",
+    "file": "execution\\tca\\transaction_cost_analyzer.py",
+    "line": 56
+  },
+  {
+    "name": "TransactionCostAnalyzer",
+    "file": "execution\\tca\\transaction_cost_analyzer.py",
+    "line": 110
+  },
+  {
+    "name": "ExperimentStatus",
+    "file": "experiments\\registry.py",
+    "line": 56
+  },
+  {
+    "name": "ExperimentConfig",
+    "file": "experiments\\registry.py",
+    "line": 66
+  },
+  {
+    "name": "ExperimentResults",
+    "file": "experiments\\registry.py",
+    "line": 123
+  },
+  {
+    "name": "Experiment",
+    "file": "experiments\\registry.py",
+    "line": 157
+  },
+  {
+    "name": "ExperimentRegistry",
+    "file": "experiments\\registry.py",
+    "line": 224
+  },
+  {
+    "name": "RiskGateResult",
+    "file": "explainability\\decision_packet.py",
+    "line": 20
+  },
+  {
+    "name": "HistoricalAnalog",
+    "file": "explainability\\decision_packet.py",
+    "line": 30
+  },
+  {
+    "name": "ExecutionPlan",
+    "file": "explainability\\decision_packet.py",
+    "line": 43
+  },
+  {
+    "name": "DecisionPacket",
+    "file": "explainability\\decision_packet.py",
+    "line": 56
+  },
+  {
+    "name": "DecisionType",
+    "file": "explainability\\decision_tracker.py",
+    "line": 29
+  },
+  {
+    "name": "DecisionReason",
+    "file": "explainability\\decision_tracker.py",
+    "line": 39
+  },
+  {
+    "name": "DecisionContext",
+    "file": "explainability\\decision_tracker.py",
+    "line": 51
+  },
+  {
+    "name": "DecisionRecord",
+    "file": "explainability\\decision_tracker.py",
+    "line": 90
+  },
+  {
+    "name": "DecisionTracker",
+    "file": "explainability\\decision_tracker.py",
+    "line": 136
+  },
+  {
+    "name": "NarrativeStyle",
+    "file": "explainability\\narrative_generator.py",
+    "line": 43
+  },
+  {
+    "name": "Narrative",
+    "file": "explainability\\narrative_generator.py",
+    "line": 52
+  },
+  {
+    "name": "NarrativeGenerator",
+    "file": "explainability\\narrative_generator.py",
+    "line": 71
+  },
+  {
+    "name": "Playbook",
+    "file": "explainability\\playbook_generator.py",
+    "line": 21
+  },
+  {
+    "name": "PlaybookGenerator",
+    "file": "explainability\\playbook_generator.py",
+    "line": 34
+  },
+  {
+    "name": "ExplainConfig",
+    "file": "explainability\\trade_explainer.py",
+    "line": 30
+  },
+  {
+    "name": "TradeThesis",
+    "file": "explainability\\trade_thesis_builder.py",
+    "line": 44
+  },
+  {
+    "name": "TradeThesisBuilder",
+    "file": "explainability\\trade_thesis_builder.py",
+    "line": 105
+  },
+  {
+    "name": "AlertPriority",
+    "file": "guardian\\alert_manager.py",
+    "line": 29
+  },
+  {
+    "name": "AlertChannel",
+    "file": "guardian\\alert_manager.py",
+    "line": 40
+  },
+  {
+    "name": "Alert",
+    "file": "guardian\\alert_manager.py",
+    "line": 49
+  },
+  {
+    "name": "AlertManager",
+    "file": "guardian\\alert_manager.py",
+    "line": 135
+  },
+  {
+    "name": "DigestReport",
+    "file": "guardian\\daily_digest.py",
+    "line": 30
+  },
+  {
+    "name": "DailyDigest",
+    "file": "guardian\\daily_digest.py",
+    "line": 223
+  },
+  {
+    "name": "DecisionType",
+    "file": "guardian\\decision_engine.py",
+    "line": 30
+  },
+  {
+    "name": "DecisionOutcome",
+    "file": "guardian\\decision_engine.py",
+    "line": 51
+  },
+  {
+    "name": "EscalationLevel",
+    "file": "guardian\\decision_engine.py",
+    "line": 59
+  },
+  {
+    "name": "Decision",
+    "file": "guardian\\decision_engine.py",
+    "line": 68
+  },
+  {
+    "name": "DecisionRule",
+    "file": "guardian\\decision_engine.py",
+    "line": 97
+  },
+  {
+    "name": "DecisionEngine",
+    "file": "guardian\\decision_engine.py",
+    "line": 107
+  },
+  {
+    "name": "EmergencyLevel",
+    "file": "guardian\\emergency_protocol.py",
+    "line": 29
+  },
+  {
+    "name": "EmergencyType",
+    "file": "guardian\\emergency_protocol.py",
+    "line": 39
+  },
+  {
+    "name": "EmergencyAction",
+    "file": "guardian\\emergency_protocol.py",
+    "line": 52
+  },
+  {
+    "name": "EmergencyEvent",
+    "file": "guardian\\emergency_protocol.py",
+    "line": 63
+  },
+  {
+    "name": "EmergencyRule",
+    "file": "guardian\\emergency_protocol.py",
+    "line": 90
+  },
+  {
+    "name": "EmergencyProtocol",
+    "file": "guardian\\emergency_protocol.py",
+    "line": 102
+  },
+  {
+    "name": "GuardianMode",
+    "file": "guardian\\guardian.py",
+    "line": 38
+  },
+  {
+    "name": "GuardianState",
+    "file": "guardian\\guardian.py",
+    "line": 48
+  },
+  {
+    "name": "Guardian",
+    "file": "guardian\\guardian.py",
+    "line": 108
+  },
+  {
+    "name": "ChangeType",
+    "file": "guardian\\self_learner.py",
+    "line": 35
+  },
+  {
+    "name": "OutcomeType",
+    "file": "guardian\\self_learner.py",
+    "line": 46
+  },
+  {
+    "name": "ChangeRecord",
+    "file": "guardian\\self_learner.py",
+    "line": 56
+  },
+  {
+    "name": "ErrorPattern",
+    "file": "guardian\\self_learner.py",
+    "line": 89
+  },
+  {
+    "name": "SelfLearner",
+    "file": "guardian\\self_learner.py",
+    "line": 117
+  },
+  {
+    "name": "ComponentStatus",
+    "file": "guardian\\system_monitor.py",
+    "line": 36
+  },
+  {
+    "name": "ComponentHealth",
+    "file": "guardian\\system_monitor.py",
+    "line": 45
+  },
+  {
+    "name": "SystemHealth",
+    "file": "guardian\\system_monitor.py",
+    "line": 66
+  },
+  {
+    "name": "SystemMonitor",
+    "file": "guardian\\system_monitor.py",
+    "line": 129
+  },
+  {
+    "name": "TradeOutcomeEvent",
+    "file": "integration\\learning_hub.py",
+    "line": 51
+  },
+  {
+    "name": "LearningHub",
+    "file": "integration\\learning_hub.py",
+    "line": 114
+  },
+  {
+    "name": "AnthropicProvider",
+    "file": "llm\\provider_anthropic.py",
+    "line": 32
+  },
+  {
+    "name": "ResponseFormat",
+    "file": "llm\\provider_base.py",
+    "line": 18
+  },
+  {
+    "name": "LLMMessage",
+    "file": "llm\\provider_base.py",
+    "line": 26
+  },
+  {
+    "name": "ToolDefinition",
+    "file": "llm\\provider_base.py",
+    "line": 35
+  },
+  {
+    "name": "ToolCall",
+    "file": "llm\\provider_base.py",
+    "line": 51
+  },
+  {
+    "name": "LLMResponse",
+    "file": "llm\\provider_base.py",
+    "line": 59
+  },
+  {
+    "name": "ProviderBase",
+    "file": "llm\\provider_base.py",
+    "line": 82
+  },
+  {
+    "name": "OllamaProvider",
+    "file": "llm\\provider_ollama.py",
+    "line": 35
+  },
+  {
+    "name": "OpenAIProvider",
+    "file": "llm\\provider_openai.py",
+    "line": 32
+  },
+  {
+    "name": "VLLMProvider",
+    "file": "llm\\provider_openai.py",
+    "line": 255
+  },
+  {
+    "name": "TaskType",
+    "file": "llm\\router.py",
+    "line": 29
+  },
+  {
+    "name": "ProviderRouter",
+    "file": "llm\\router.py",
+    "line": 48
+  },
+  {
+    "name": "TokenBudget",
+    "file": "llm\\token_budget.py",
+    "line": 85
+  },
+  {
+    "name": "EventType",
+    "file": "messaging\\redis_pubsub.py",
+    "line": 36
+  },
+  {
+    "name": "Event",
+    "file": "messaging\\redis_pubsub.py",
+    "line": 72
+  },
+  {
+    "name": "RedisEventBus",
+    "file": "messaging\\redis_pubsub.py",
+    "line": 88
+  },
+  {
+    "name": "QuoteBroadcaster",
+    "file": "messaging\\redis_pubsub.py",
+    "line": 445
+  },
+  {
+    "name": "SignalDistributor",
+    "file": "messaging\\redis_pubsub.py",
+    "line": 485
+  },
+  {
+    "name": "LearningEventPublisher",
+    "file": "messaging\\redis_pubsub.py",
+    "line": 524
+  },
+  {
+    "name": "GateConfig",
+    "file": "ml\\confidence_gate.py",
+    "line": 14
+  },
+  {
+    "name": "FeatureImportanceReport",
+    "file": "ml\\alpha_discovery\\feature_discovery\\importance_analyzer.py",
+    "line": 33
+  },
+  {
+    "name": "FeatureImportanceAnalyzer",
+    "file": "ml\\alpha_discovery\\feature_discovery\\importance_analyzer.py",
+    "line": 88
+  },
+  {
+    "name": "DiscoveryResult",
+    "file": "ml\\alpha_discovery\\hybrid_pipeline\\orchestrator.py",
+    "line": 30
+  },
+  {
+    "name": "HybridPatternPipeline",
+    "file": "ml\\alpha_discovery\\hybrid_pipeline\\orchestrator.py",
+    "line": 80
+  },
+  {
+    "name": "PatternCluster",
+    "file": "ml\\alpha_discovery\\pattern_miner\\clustering.py",
+    "line": 32
+  },
+  {
+    "name": "PatternClusteringEngine",
+    "file": "ml\\alpha_discovery\\pattern_miner\\clustering.py",
+    "line": 83
+  },
+  {
+    "name": "PatternLibrary",
+    "file": "ml\\alpha_discovery\\pattern_miner\\pattern_library.py",
+    "line": 17
+  },
+  {
+    "name": "PatternNarrative",
+    "file": "ml\\alpha_discovery\\pattern_narrator\\narrator.py",
+    "line": 25
+  },
+  {
+    "name": "PatternPlaybook",
+    "file": "ml\\alpha_discovery\\pattern_narrator\\narrator.py",
+    "line": 59
+  },
+  {
+    "name": "PatternNarrator",
+    "file": "ml\\alpha_discovery\\pattern_narrator\\narrator.py",
+    "line": 87
+  },
+  {
+    "name": "RLAgentConfig",
+    "file": "ml\\alpha_discovery\\rl_agent\\agent.py",
+    "line": 30
+  },
+  {
+    "name": "RLTradingAgent",
+    "file": "ml\\alpha_discovery\\rl_agent\\agent.py",
+    "line": 44
+  },
+  {
+    "name": "TradingEnv",
+    "file": "ml\\alpha_discovery\\rl_agent\\trading_env.py",
+    "line": 43
+  },
+  {
+    "name": "MarketRegime",
+    "file": "ml_advanced\\hmm_regime_detector.py",
+    "line": 49
+  },
+  {
+    "name": "RegimeState",
+    "file": "ml_advanced\\hmm_regime_detector.py",
+    "line": 57
+  },
+  {
+    "name": "HMMRegimeDetector",
+    "file": "ml_advanced\\hmm_regime_detector.py",
+    "line": 69
+  },
+  {
+    "name": "AdaptiveRegimeDetector",
+    "file": "ml_advanced\\hmm_regime_detector.py",
+    "line": 734
+  },
+  {
+    "name": "TradeOutcome",
+    "file": "ml_advanced\\online_learning.py",
+    "line": 43
+  },
+  {
+    "name": "ExperienceReplayBuffer",
+    "file": "ml_advanced\\online_learning.py",
+    "line": 77
+  },
+  {
+    "name": "ConceptDriftDetector",
+    "file": "ml_advanced\\online_learning.py",
+    "line": 143
+  },
+  {
+    "name": "OnlineLearningManager",
+    "file": "ml_advanced\\online_learning.py",
+    "line": 197
+  },
+  {
+    "name": "EnsemblePrediction",
+    "file": "ml_advanced\\ensemble\\ensemble_predictor.py",
+    "line": 62
+  },
+  {
+    "name": "BaseModelWrapper",
+    "file": "ml_advanced\\ensemble\\ensemble_predictor.py",
+    "line": 83
+  },
+  {
+    "name": "XGBoostWrapper",
+    "file": "ml_advanced\\ensemble\\ensemble_predictor.py",
+    "line": 102
+  },
+  {
+    "name": "LightGBMWrapper",
+    "file": "ml_advanced\\ensemble\\ensemble_predictor.py",
+    "line": 138
+  },
+  {
+    "name": "EnsemblePredictor",
+    "file": "ml_advanced\\ensemble\\ensemble_predictor.py",
+    "line": 167
+  },
+  {
+    "name": "RegimePerformance",
+    "file": "ml_advanced\\ensemble\\regime_weights.py",
+    "line": 42
+  },
+  {
+    "name": "RegimeWeights",
+    "file": "ml_advanced\\ensemble\\regime_weights.py",
+    "line": 86
+  },
+  {
+    "name": "RegimeWeightAdjuster",
+    "file": "ml_advanced\\ensemble\\regime_weights.py",
+    "line": 101
+  },
+  {
+    "name": "LSTMConfig",
+    "file": "ml_advanced\\lstm_confidence\\config.py",
+    "line": 15
+  },
+  {
+    "name": "ModelPrediction",
+    "file": "ml_advanced\\lstm_confidence\\model.py",
+    "line": 47
+  },
+  {
+    "name": "LSTMConfidenceModel",
+    "file": "ml_advanced\\lstm_confidence\\model.py",
+    "line": 56
+  },
+  {
+    "name": "HigherOrderConfig",
+    "file": "ml_advanced\\markov_chain\\higher_order.py",
+    "line": 46
+  },
+  {
+    "name": "HigherOrderMarkov",
+    "file": "ml_advanced\\markov_chain\\higher_order.py",
+    "line": 55
+  },
+  {
+    "name": "PredictorConfig",
+    "file": "ml_advanced\\markov_chain\\predictor.py",
+    "line": 47
+  },
+  {
+    "name": "MarkovPrediction",
+    "file": "ml_advanced\\markov_chain\\predictor.py",
+    "line": 72
+  },
+  {
+    "name": "MarkovPredictor",
+    "file": "ml_advanced\\markov_chain\\predictor.py",
+    "line": 121
+  },
+  {
+    "name": "ScorerConfig",
+    "file": "ml_advanced\\markov_chain\\scorer.py",
+    "line": 47
+  },
+  {
+    "name": "AssetScore",
+    "file": "ml_advanced\\markov_chain\\scorer.py",
+    "line": 71
+  },
+  {
+    "name": "MarkovAssetScorer",
+    "file": "ml_advanced\\markov_chain\\scorer.py",
+    "line": 111
+  },
+  {
+    "name": "StateNames",
+    "file": "ml_advanced\\markov_chain\\state_classifier.py",
+    "line": 40
+  },
+  {
+    "name": "ClassifierParams",
+    "file": "ml_advanced\\markov_chain\\state_classifier.py",
+    "line": 61
+  },
+  {
+    "name": "StateClassifier",
+    "file": "ml_advanced\\markov_chain\\state_classifier.py",
+    "line": 84
+  },
+  {
+    "name": "StationaryDistribution",
+    "file": "ml_advanced\\markov_chain\\stationary_dist.py",
+    "line": 42
+  },
+  {
+    "name": "TransitionMatrixConfig",
+    "file": "ml_advanced\\markov_chain\\transition_matrix.py",
+    "line": 45
+  },
+  {
+    "name": "TransitionMatrix",
+    "file": "ml_advanced\\markov_chain\\transition_matrix.py",
+    "line": 53
+  },
+  {
+    "name": "TFTConfig",
+    "file": "ml_advanced\\tft\\temporal_fusion.py",
+    "line": 66
+  },
+  {
+    "name": "TFTForecaster",
+    "file": "ml_advanced\\tft\\temporal_fusion.py",
+    "line": 116
+  },
+  {
+    "name": "TFTSignalGenerator",
+    "file": "ml_advanced\\tft\\temporal_fusion.py",
+    "line": 582
+  },
+  {
+    "name": "AnomalyType",
+    "file": "ml_features\\anomaly_detection.py",
+    "line": 35
+  },
+  {
+    "name": "AnomalyConfig",
+    "file": "ml_features\\anomaly_detection.py",
+    "line": 45
+  },
+  {
+    "name": "Anomaly",
+    "file": "ml_features\\anomaly_detection.py",
+    "line": 62
+  },
+  {
+    "name": "AnomalyDetector",
+    "file": "ml_features\\anomaly_detection.py",
+    "line": 72
+  },
+  {
+    "name": "ConfidenceResult",
+    "file": "ml_features\\confidence_integrator.py",
+    "line": 37
+  },
+  {
+    "name": "ConfidenceIntegrator",
+    "file": "ml_features\\confidence_integrator.py",
+    "line": 61
+  },
+  {
+    "name": "ConvictionBreakdown",
+    "file": "ml_features\\conviction_scorer.py",
+    "line": 28
+  },
+  {
+    "name": "ConvictionScorer",
+    "file": "ml_features\\conviction_scorer.py",
+    "line": 55
+  },
+  {
+    "name": "PredictionResult",
+    "file": "ml_features\\ensemble_brain.py",
+    "line": 35
+  },
+  {
+    "name": "EnsembleBrain",
+    "file": "ml_features\\ensemble_brain.py",
+    "line": 60
+  },
+  {
+    "name": "QuickEnsemble",
+    "file": "ml_features\\ensemble_brain.py",
+    "line": 550
+  },
+  {
+    "name": "FeatureCategory",
+    "file": "ml_features\\feature_pipeline.py",
+    "line": 39
+  },
+  {
+    "name": "ScalingMethod",
+    "file": "ml_features\\feature_pipeline.py",
+    "line": 53
+  },
+  {
+    "name": "FeatureConfig",
+    "file": "ml_features\\feature_pipeline.py",
+    "line": 62
+  },
+  {
+    "name": "FeaturePipeline",
+    "file": "ml_features\\feature_pipeline.py",
+    "line": 101
+  },
+  {
+    "name": "MacroFeatureGenerator",
+    "file": "ml_features\\macro_features.py",
+    "line": 29
+  },
+  {
+    "name": "PCAConfig",
+    "file": "ml_features\\pca_reducer.py",
+    "line": 34
+  },
+  {
+    "name": "PCAReducer",
+    "file": "ml_features\\pca_reducer.py",
+    "line": 52
+  },
+  {
+    "name": "MarketRegime",
+    "file": "ml_features\\regime_hmm.py",
+    "line": 27
+  },
+  {
+    "name": "RegimeResult",
+    "file": "ml_features\\regime_hmm.py",
+    "line": 38
+  },
+  {
+    "name": "MarketRegimeDetector",
+    "file": "ml_features\\regime_hmm.py",
+    "line": 66
+  },
+  {
+    "name": "RegimeState",
+    "file": "ml_features\\regime_ml.py",
+    "line": 39
+  },
+  {
+    "name": "RegimeConfig",
+    "file": "ml_features\\regime_ml.py",
+    "line": 59
+  },
+  {
+    "name": "RegimeResult",
+    "file": "ml_features\\regime_ml.py",
+    "line": 82
+  },
+  {
+    "name": "RegimeDetectorML",
+    "file": "ml_features\\regime_ml.py",
+    "line": 92
+  },
+  {
+    "name": "SentimentConfig",
+    "file": "ml_features\\sentiment.py",
+    "line": 64
+  },
+  {
+    "name": "SentimentAnalyzer",
+    "file": "ml_features\\sentiment.py",
+    "line": 85
+  },
+  {
+    "name": "RuleBasedSentiment",
+    "file": "ml_features\\sentiment.py",
+    "line": 516
+  },
+  {
+    "name": "ConfidenceLevel",
+    "file": "ml_features\\signal_confidence.py",
+    "line": 27
+  },
+  {
+    "name": "ConfidenceConfig",
+    "file": "ml_features\\signal_confidence.py",
+    "line": 37
+  },
+  {
+    "name": "ConfidenceResult",
+    "file": "ml_features\\signal_confidence.py",
+    "line": 67
+  },
+  {
+    "name": "SignalConfidence",
+    "file": "ml_features\\signal_confidence.py",
+    "line": 76
+  },
+  {
+    "name": "StrategyProtocol",
+    "file": "ml_features\\strategy_enhancer.py",
+    "line": 34
+  },
+  {
+    "name": "EnhancerConfig",
+    "file": "ml_features\\strategy_enhancer.py",
+    "line": 47
+  },
+  {
+    "name": "StrategyEnhancer",
+    "file": "ml_features\\strategy_enhancer.py",
+    "line": 82
+  },
+  {
+    "name": "TechnicalConfig",
+    "file": "ml_features\\technical_features.py",
+    "line": 52
+  },
+  {
+    "name": "TechnicalFeatures",
+    "file": "ml_features\\technical_features.py",
+    "line": 85
+  },
+  {
+    "name": "TSFreshConfig",
+    "file": "ml_features\\tsfresh_features.py",
+    "line": 60
+  },
+  {
+    "name": "TSFreshExtractor",
+    "file": "ml_features\\tsfresh_features.py",
+    "line": 86
+  },
+  {
+    "name": "CalibrationResult",
+    "file": "ml_meta\\calibration.py",
+    "line": 247
+  },
+  {
+    "name": "IsotonicCalibrator",
+    "file": "ml_meta\\calibration.py",
+    "line": 281
+  },
+  {
+    "name": "PlattCalibrator",
+    "file": "ml_meta\\calibration.py",
+    "line": 364
+  },
+  {
+    "name": "ConformalResult",
+    "file": "ml_meta\\conformal.py",
+    "line": 46
+  },
+  {
+    "name": "ConformalStats",
+    "file": "ml_meta\\conformal.py",
+    "line": 60
+  },
+  {
+    "name": "ConformalPredictor",
+    "file": "ml_meta\\conformal.py",
+    "line": 77
+  },
+  {
+    "name": "AdaptiveConformalPredictor",
+    "file": "ml_meta\\conformal.py",
+    "line": 351
+  },
+  {
+    "name": "CircuitConfig",
+    "file": "monitor\\circuit_breaker.py",
+    "line": 20
+  },
+  {
+    "name": "DivergenceResult",
+    "file": "monitor\\divergence.py",
+    "line": 20
+  },
+  {
+    "name": "DivergenceLevel",
+    "file": "monitor\\divergence_monitor.py",
+    "line": 47
+  },
+  {
+    "name": "DivergenceCheck",
+    "file": "monitor\\divergence_monitor.py",
+    "line": 56
+  },
+  {
+    "name": "DivergenceMonitor",
+    "file": "monitor\\divergence_monitor.py",
+    "line": 124
+  },
+  {
+    "name": "DriftSeverity",
+    "file": "monitor\\drift_detector.py",
+    "line": 29
+  },
+  {
+    "name": "DriftThresholds",
+    "file": "monitor\\drift_detector.py",
+    "line": 39
+  },
+  {
+    "name": "DriftResult",
+    "file": "monitor\\drift_detector.py",
+    "line": 66
+  },
+  {
+    "name": "PerformanceSnapshot",
+    "file": "monitor\\drift_detector.py",
+    "line": 97
+  },
+  {
+    "name": "DriftDetector",
+    "file": "monitor\\drift_detector.py",
+    "line": 121
+  },
+  {
+    "name": "TokenBucketRateLimiter",
+    "file": "monitor\\health_endpoints.py",
+    "line": 22
+  },
+  {
+    "name": "_Handler",
+    "file": "monitor\\health_endpoints.py",
+    "line": 656
+  },
+  {
+    "name": "HeartbeatWriter",
+    "file": "monitor\\heartbeat.py",
+    "line": 31
+  },
+  {
+    "name": "NewsImpact",
+    "file": "news\\news_monitor.py",
+    "line": 28
+  },
+  {
+    "name": "NewsItem",
+    "file": "news\\news_monitor.py",
+    "line": 37
+  },
+  {
+    "name": "NewsMonitor",
+    "file": "news\\news_monitor.py",
+    "line": 49
+  },
+  {
+    "name": "TraceSpan",
+    "file": "observability\\langfuse_tracer.py",
+    "line": 63
+  },
+  {
+    "name": "Trace",
+    "file": "observability\\langfuse_tracer.py",
+    "line": 81
+  },
+  {
+    "name": "LLMTracer",
+    "file": "observability\\langfuse_tracer.py",
+    "line": 106
+  },
+  {
+    "name": "IdempotencyStore",
+    "file": "oms\\idempotency_store.py",
+    "line": 9
+  },
+  {
+    "name": "OrderStatus",
+    "file": "oms\\order_state.py",
+    "line": 9
+  },
+  {
+    "name": "OrderRecord",
+    "file": "oms\\order_state.py",
+    "line": 22
+  },
+  {
+    "name": "LockError",
+    "file": "ops\\locks.py",
+    "line": 28
+  },
+  {
+    "name": "FileLock",
+    "file": "ops\\locks.py",
+    "line": 33
+  },
+  {
+    "name": "SupervisorMode",
+    "file": "ops\\supervisor.py",
+    "line": 25
+  },
+  {
+    "name": "ComponentStatus",
+    "file": "ops\\supervisor.py",
+    "line": 32
+  },
+  {
+    "name": "HealthCheck",
+    "file": "ops\\supervisor.py",
+    "line": 41
+  },
+  {
+    "name": "SupervisorState",
+    "file": "ops\\supervisor.py",
+    "line": 51
+  },
+  {
+    "name": "Supervisor",
+    "file": "ops\\supervisor.py",
+    "line": 62
+  },
+  {
+    "name": "OptimizationResult",
+    "file": "optimization\\bayesian_hyperopt.py",
+    "line": 36
+  },
+  {
+    "name": "ParameterSpace",
+    "file": "optimization\\bayesian_hyperopt.py",
+    "line": 84
+  },
+  {
+    "name": "StrategyOptimizer",
+    "file": "optimization\\bayesian_hyperopt.py",
+    "line": 110
+  },
+  {
+    "name": "MultiObjectiveOptimizer",
+    "file": "optimization\\bayesian_hyperopt.py",
+    "line": 433
+  },
+  {
+    "name": "TradeAction",
+    "file": "options\\backtest.py",
+    "line": 30
+  },
+  {
+    "name": "OptionsTradeRecord",
+    "file": "options\\backtest.py",
+    "line": 42
+  },
+  {
+    "name": "OptionsPosition",
+    "file": "options\\backtest.py",
+    "line": 80
+  },
+  {
+    "name": "OptionsBacktestResult",
+    "file": "options\\backtest.py",
+    "line": 133
+  },
+  {
+    "name": "SyntheticOptionsBacktester",
+    "file": "options\\backtest.py",
+    "line": 188
+  },
+  {
+    "name": "OptionType",
+    "file": "options\\black_scholes.py",
+    "line": 17
+  },
+  {
+    "name": "OptionPricing",
+    "file": "options\\black_scholes.py",
+    "line": 24
+  },
+  {
+    "name": "BlackScholes",
+    "file": "options\\black_scholes.py",
+    "line": 73
+  },
+  {
+    "name": "OptionType",
+    "file": "options\\chain_fetcher.py",
+    "line": 28
+  },
+  {
+    "name": "OptionContract",
+    "file": "options\\chain_fetcher.py",
+    "line": 35
+  },
+  {
+    "name": "OptionsChain",
+    "file": "options\\chain_fetcher.py",
+    "line": 130
+  },
+  {
+    "name": "ChainFetcher",
+    "file": "options\\chain_fetcher.py",
+    "line": 258
+  },
+  {
+    "name": "IVSignalConfig",
+    "file": "options\\iv_signals.py",
+    "line": 48
+  },
+  {
+    "name": "IVPercentileCalculator",
+    "file": "options\\iv_signals.py",
+    "line": 68
+  },
+  {
+    "name": "TermStructureAnalyzer",
+    "file": "options\\iv_signals.py",
+    "line": 167
+  },
+  {
+    "name": "SkewAnalyzer",
+    "file": "options\\iv_signals.py",
+    "line": 261
+  },
+  {
+    "name": "PutCallRatioAnalyzer",
+    "file": "options\\iv_signals.py",
+    "line": 338
+  },
+  {
+    "name": "GEXCalculator",
+    "file": "options\\iv_signals.py",
+    "line": 405
+  },
+  {
+    "name": "MaxPainCalculator",
+    "file": "options\\iv_signals.py",
+    "line": 578
+  },
+  {
+    "name": "OptionsOrderType",
+    "file": "options\\order_router.py",
+    "line": 31
+  },
+  {
+    "name": "OptionsOrderSide",
+    "file": "options\\order_router.py",
+    "line": 39
+  },
+  {
+    "name": "OptionsOrderStatus",
+    "file": "options\\order_router.py",
+    "line": 47
+  },
+  {
+    "name": "OptionsOrderLeg",
+    "file": "options\\order_router.py",
+    "line": 59
+  },
+  {
+    "name": "OptionsOrder",
+    "file": "options\\order_router.py",
+    "line": 76
+  },
+  {
+    "name": "OptionsOrderResult",
+    "file": "options\\order_router.py",
+    "line": 136
+  },
+  {
+    "name": "OptionsOrderRouter",
+    "file": "options\\order_router.py",
+    "line": 154
+  },
+  {
+    "name": "PositionDirection",
+    "file": "options\\position_sizing.py",
+    "line": 28
+  },
+  {
+    "name": "PositionSizeResult",
+    "file": "options\\position_sizing.py",
+    "line": 35
+  },
+  {
+    "name": "OptionsPositionSizer",
+    "file": "options\\position_sizing.py",
+    "line": 70
+  },
+  {
+    "name": "StrikeSelection",
+    "file": "options\\selection.py",
+    "line": 20
+  },
+  {
+    "name": "StrikeSelector",
+    "file": "options\\selection.py",
+    "line": 43
+  },
+  {
+    "name": "SpreadType",
+    "file": "options\\spreads.py",
+    "line": 32
+  },
+  {
+    "name": "SpreadLeg",
+    "file": "options\\spreads.py",
+    "line": 59
+  },
+  {
+    "name": "OptionsSpread",
+    "file": "options\\spreads.py",
+    "line": 94
+  },
+  {
+    "name": "SpreadBuilder",
+    "file": "options\\spreads.py",
+    "line": 258
+  },
+  {
+    "name": "VolatilityMethod",
+    "file": "options\\volatility.py",
+    "line": 24
+  },
+  {
+    "name": "VolatilityResult",
+    "file": "options\\volatility.py",
+    "line": 33
+  },
+  {
+    "name": "RealizedVolatility",
+    "file": "options\\volatility.py",
+    "line": 59
+  },
+  {
+    "name": "BacktestPipeline",
+    "file": "pipelines\\backtest_pipeline.py",
+    "line": 21
+  },
+  {
+    "name": "PipelineResult",
+    "file": "pipelines\\base.py",
+    "line": 31
+  },
+  {
+    "name": "Pipeline",
+    "file": "pipelines\\base.py",
+    "line": 58
+  },
+  {
+    "name": "DataAuditPipeline",
+    "file": "pipelines\\data_audit_pipeline.py",
+    "line": 26
+  },
+  {
+    "name": "IdeaCard",
+    "file": "pipelines\\discovery_pipeline.py",
+    "line": 26
+  },
+  {
+    "name": "DiscoveryPipeline",
+    "file": "pipelines\\discovery_pipeline.py",
+    "line": 43
+  },
+  {
+    "name": "GatesPipeline",
+    "file": "pipelines\\gates_pipeline.py",
+    "line": 25
+  },
+  {
+    "name": "ImplementationPipeline",
+    "file": "pipelines\\implementation_pipeline.py",
+    "line": 21
+  },
+  {
+    "name": "{class_name}Params",
+    "file": "pipelines\\implementation_pipeline.py",
+    "line": 127
+  },
+  {
+    "name": "{class_name}",
+    "file": "pipelines\\implementation_pipeline.py",
+    "line": 139
+  },
+  {
+    "name": "PromotionPipeline",
+    "file": "pipelines\\promotion_pipeline.py",
+    "line": 21
+  },
+  {
+    "name": "PipelineRun",
+    "file": "pipelines\\quant_rd_pipeline.py",
+    "line": 36
+  },
+  {
+    "name": "ReportingPipeline",
+    "file": "pipelines\\reporting_pipeline.py",
+    "line": 24
+  },
+  {
+    "name": "SnapshotPipeline",
+    "file": "pipelines\\snapshot_pipeline.py",
+    "line": 22
+  },
+  {
+    "name": "StrategySpec",
+    "file": "pipelines\\spec_pipeline.py",
+    "line": 23
+  },
+  {
+    "name": "SpecPipeline",
+    "file": "pipelines\\spec_pipeline.py",
+    "line": 53
+  },
+  {
+    "name": "UniversePipeline",
+    "file": "pipelines\\universe_pipeline.py",
+    "line": 24
+  },
+  {
+    "name": "HeatLevel",
+    "file": "portfolio\\heat_monitor.py",
+    "line": 25
+  },
+  {
+    "name": "HeatStatus",
+    "file": "portfolio\\heat_monitor.py",
+    "line": 35
+  },
+  {
+    "name": "PortfolioHeatMonitor",
+    "file": "portfolio\\heat_monitor.py",
+    "line": 109
+  },
+  {
+    "name": "TradeDecision",
+    "file": "portfolio\\risk_manager.py",
+    "line": 37
+  },
+  {
+    "name": "PortfolioRiskManager",
+    "file": "portfolio\\risk_manager.py",
+    "line": 53
+  },
+  {
+    "name": "StateManager",
+    "file": "portfolio\\state_manager.py",
+    "line": 77
+  },
+  {
+    "name": "OptimalPortfolio",
+    "file": "portfolio\\optimizer\\mean_variance.py",
+    "line": 33
+  },
+  {
+    "name": "MeanVarianceOptimizer",
+    "file": "portfolio\\optimizer\\mean_variance.py",
+    "line": 103
+  },
+  {
+    "name": "OptimizationMethod",
+    "file": "portfolio\\optimizer\\portfolio_manager.py",
+    "line": 38
+  },
+  {
+    "name": "PortfolioState",
+    "file": "portfolio\\optimizer\\portfolio_manager.py",
+    "line": 47
+  },
+  {
+    "name": "PortfolioManager",
+    "file": "portfolio\\optimizer\\portfolio_manager.py",
+    "line": 137
+  },
+  {
+    "name": "RebalanceUrgency",
+    "file": "portfolio\\optimizer\\rebalancer.py",
+    "line": 29
+  },
+  {
+    "name": "TradeDirection",
+    "file": "portfolio\\optimizer\\rebalancer.py",
+    "line": 38
+  },
+  {
+    "name": "RebalanceTrade",
+    "file": "portfolio\\optimizer\\rebalancer.py",
+    "line": 46
+  },
+  {
+    "name": "RebalanceRecommendation",
+    "file": "portfolio\\optimizer\\rebalancer.py",
+    "line": 73
+  },
+  {
+    "name": "PortfolioRebalancer",
+    "file": "portfolio\\optimizer\\rebalancer.py",
+    "line": 128
+  },
+  {
+    "name": "RiskParityPortfolio",
+    "file": "portfolio\\optimizer\\risk_parity.py",
+    "line": 33
+  },
+  {
+    "name": "RiskParityOptimizer",
+    "file": "portfolio\\optimizer\\risk_parity.py",
+    "line": 92
+  },
+  {
+    "name": "CheckStatus",
+    "file": "preflight\\cognitive_preflight.py",
+    "line": 38
+  },
+  {
+    "name": "CheckResult",
+    "file": "preflight\\cognitive_preflight.py",
+    "line": 47
+  },
+  {
+    "name": "PreflightReport",
+    "file": "preflight\\cognitive_preflight.py",
+    "line": 66
+  },
+  {
+    "name": "CognitivePreflightCheck",
+    "file": "preflight\\cognitive_preflight.py",
+    "line": 134
+  },
+  {
+    "name": "DataQualityLevel",
+    "file": "preflight\\data_quality.py",
+    "line": 47
+  },
+  {
+    "name": "DataIssue",
+    "file": "preflight\\data_quality.py",
+    "line": 56
+  },
+  {
+    "name": "SymbolCoverage",
+    "file": "preflight\\data_quality.py",
+    "line": 71
+  },
+  {
+    "name": "DataQualityReport",
+    "file": "preflight\\data_quality.py",
+    "line": 91
+  },
+  {
+    "name": "DataQualityRequirements",
+    "file": "preflight\\data_quality.py",
+    "line": 160
+  },
+  {
+    "name": "DataQualityGate",
+    "file": "preflight\\data_quality.py",
+    "line": 172
+  },
+  {
+    "name": "EvidenceLevel",
+    "file": "preflight\\evidence_gate.py",
+    "line": 49
+  },
+  {
+    "name": "EvidenceRequirements",
+    "file": "preflight\\evidence_gate.py",
+    "line": 59
+  },
+  {
+    "name": "EvidenceReport",
+    "file": "preflight\\evidence_gate.py",
+    "line": 93
+  },
+  {
+    "name": "EvidenceGate",
+    "file": "preflight\\evidence_gate.py",
+    "line": 150
+  },
+  {
+    "name": "SanityResult",
+    "file": "quant_gates\\gate_0_sanity.py",
+    "line": 30
+  },
+  {
+    "name": "Gate0Sanity",
+    "file": "quant_gates\\gate_0_sanity.py",
+    "line": 41
+  },
+  {
+    "name": "BaselineResult",
+    "file": "quant_gates\\gate_1_baseline.py",
+    "line": 26
+  },
+  {
+    "name": "Gate1Baseline",
+    "file": "quant_gates\\gate_1_baseline.py",
+    "line": 38
+  },
+  {
+    "name": "RobustnessResult",
+    "file": "quant_gates\\gate_2_robustness.py",
+    "line": 24
+  },
+  {
+    "name": "Gate2Robustness",
+    "file": "quant_gates\\gate_2_robustness.py",
+    "line": 36
+  },
+  {
+    "name": "RiskResult",
+    "file": "quant_gates\\gate_3_risk.py",
+    "line": 26
+  },
+  {
+    "name": "Gate3RiskRealism",
+    "file": "quant_gates\\gate_3_risk.py",
+    "line": 38
+  },
+  {
+    "name": "MultipleTestingResult",
+    "file": "quant_gates\\gate_4_multiple_testing.py",
+    "line": 28
+  },
+  {
+    "name": "Gate4MultipleTesting",
+    "file": "quant_gates\\gate_4_multiple_testing.py",
+    "line": 39
+  },
+  {
+    "name": "GateStatus",
+    "file": "quant_gates\\pipeline.py",
+    "line": 36
+  },
+  {
+    "name": "GateResult",
+    "file": "quant_gates\\pipeline.py",
+    "line": 45
+  },
+  {
+    "name": "PipelineResult",
+    "file": "quant_gates\\pipeline.py",
+    "line": 56
+  },
+  {
+    "name": "QuantGatesPipeline",
+    "file": "quant_gates\\pipeline.py",
+    "line": 68
+  },
+  {
+    "name": "FeatureSpec",
+    "file": "research\\features.py",
+    "line": 17
+  },
+  {
+    "name": "SafetyError",
+    "file": "research_os\\approval_gate.py",
+    "line": 42
+  },
+  {
+    "name": "ApprovalRecord",
+    "file": "research_os\\approval_gate.py",
+    "line": 48
+  },
+  {
+    "name": "ApprovalGate",
+    "file": "research_os\\approval_gate.py",
+    "line": 69
+  },
+  {
+    "name": "DiscoveryType",
+    "file": "research_os\\knowledge_card.py",
+    "line": 18
+  },
+  {
+    "name": "CardStatus",
+    "file": "research_os\\knowledge_card.py",
+    "line": 28
+  },
+  {
+    "name": "KnowledgeCard",
+    "file": "research_os\\knowledge_card.py",
+    "line": 40
+  },
+  {
+    "name": "KnowledgeCardStore",
+    "file": "research_os\\knowledge_card.py",
+    "line": 161
+  },
+  {
+    "name": "DiscoveryCycleResult",
+    "file": "research_os\\orchestrator.py",
+    "line": 66
+  },
+  {
+    "name": "ResearchCycleResult",
+    "file": "research_os\\orchestrator.py",
+    "line": 77
+  },
+  {
+    "name": "ResearchOSOrchestrator",
+    "file": "research_os\\orchestrator.py",
+    "line": 87
+  },
+  {
+    "name": "ChangeType",
+    "file": "research_os\\proposal.py",
+    "line": 18
+  },
+  {
+    "name": "ProposalStatus",
+    "file": "research_os\\proposal.py",
+    "line": 27
+  },
+  {
+    "name": "ResearchProposal",
+    "file": "research_os\\proposal.py",
+    "line": 39
+  },
+  {
+    "name": "ProposalStore",
+    "file": "research_os\\proposal.py",
+    "line": 211
+  },
+  {
+    "name": "AllocationResult",
+    "file": "risk\\dynamic_position_sizer.py",
+    "line": 26
+  },
+  {
+    "name": "PositionSize",
+    "file": "risk\\equity_sizer.py",
+    "line": 23
+  },
+  {
+    "name": "KillZone",
+    "file": "risk\\kill_zone_gate.py",
+    "line": 33
+  },
+  {
+    "name": "KillZoneConfig",
+    "file": "risk\\kill_zone_gate.py",
+    "line": 45
+  },
+  {
+    "name": "KillZoneStatus",
+    "file": "risk\\kill_zone_gate.py",
+    "line": 76
+  },
+  {
+    "name": "KillZoneGate",
+    "file": "risk\\kill_zone_gate.py",
+    "line": 85
+  },
+  {
+    "name": "LiquidityConfig",
+    "file": "risk\\liquidity.py",
+    "line": 19
+  },
+  {
+    "name": "LiquidityIssue",
+    "file": "risk\\liquidity_gate.py",
+    "line": 38
+  },
+  {
+    "name": "LiquidityCheck",
+    "file": "risk\\liquidity_gate.py",
+    "line": 48
+  },
+  {
+    "name": "LiquidityGate",
+    "file": "risk\\liquidity_gate.py",
+    "line": 81
+  },
+  {
+    "name": "NetExposureLimits",
+    "file": "risk\\net_exposure_gate.py",
+    "line": 26
+  },
+  {
+    "name": "NetExposureCheck",
+    "file": "risk\\net_exposure_gate.py",
+    "line": 35
+  },
+  {
+    "name": "NetExposureGate",
+    "file": "risk\\net_exposure_gate.py",
+    "line": 65
+  },
+  {
+    "name": "RiskLimits",
+    "file": "risk\\policy_gate.py",
+    "line": 12
+  },
+  {
+    "name": "PolicyGate",
+    "file": "risk\\policy_gate.py",
+    "line": 69
+  },
+  {
+    "name": "PortfolioRiskStatus",
+    "file": "risk\\portfolio_risk.py",
+    "line": 21
+  },
+  {
+    "name": "PortfolioRiskLimits",
+    "file": "risk\\portfolio_risk.py",
+    "line": 29
+  },
+  {
+    "name": "PortfolioRiskCheck",
+    "file": "risk\\portfolio_risk.py",
+    "line": 41
+  },
+  {
+    "name": "PortfolioPosition",
+    "file": "risk\\portfolio_risk.py",
+    "line": 68
+  },
+  {
+    "name": "PortfolioState",
+    "file": "risk\\portfolio_risk.py",
+    "line": 90
+  },
+  {
+    "name": "SectorMapper",
+    "file": "risk\\portfolio_risk.py",
+    "line": 118
+  },
+  {
+    "name": "CorrelationAnalyzer",
+    "file": "risk\\portfolio_risk.py",
+    "line": 148
+  },
+  {
+    "name": "PortfolioRiskGate",
+    "file": "risk\\portfolio_risk.py",
+    "line": 242
+  },
+  {
+    "name": "PositionLimits",
+    "file": "risk\\position_limit_gate.py",
+    "line": 27
+  },
+  {
+    "name": "PositionLimitGate",
+    "file": "risk\\position_limit_gate.py",
+    "line": 53
+  },
+  {
+    "name": "QualityTier",
+    "file": "risk\\signal_quality_gate.py",
+    "line": 48
+  },
+  {
+    "name": "QualityScore",
+    "file": "risk\\signal_quality_gate.py",
+    "line": 62
+  },
+  {
+    "name": "QualityGateConfig",
+    "file": "risk\\signal_quality_gate.py",
+    "line": 116
+  },
+  {
+    "name": "SignalQualityGate",
+    "file": "risk\\signal_quality_gate.py",
+    "line": 157
+  },
+  {
+    "name": "StopState",
+    "file": "risk\\trailing_stops.py",
+    "line": 33
+  },
+  {
+    "name": "StopUpdate",
+    "file": "risk\\trailing_stops.py",
+    "line": 43
+  },
+  {
+    "name": "TrailingStopManager",
+    "file": "risk\\trailing_stops.py",
+    "line": 59
+  },
+  {
+    "name": "VolatilityTargetConfig",
+    "file": "risk\\volatility_targeting.py",
+    "line": 31
+  },
+  {
+    "name": "VolatilityTargetResult",
+    "file": "risk\\volatility_targeting.py",
+    "line": 47
+  },
+  {
+    "name": "VolatilityTargetingGate",
+    "file": "risk\\volatility_targeting.py",
+    "line": 79
+  },
+  {
+    "name": "PositionEntry",
+    "file": "risk\\weekly_exposure_gate.py",
+    "line": 33
+  },
+  {
+    "name": "WeeklyBudgetState",
+    "file": "risk\\weekly_exposure_gate.py",
+    "line": 46
+  },
+  {
+    "name": "WeeklyExposureGate",
+    "file": "risk\\weekly_exposure_gate.py",
+    "line": 82
+  },
+  {
+    "name": "RiskLevel",
+    "file": "risk\\advanced\\correlation_limits.py",
+    "line": 33
+  },
+  {
+    "name": "CorrelationCheckResult",
+    "file": "risk\\advanced\\correlation_limits.py",
+    "line": 42
+  },
+  {
+    "name": "PortfolioDiversificationMetrics",
+    "file": "risk\\advanced\\correlation_limits.py",
+    "line": 93
+  },
+  {
+    "name": "EnhancedCorrelationLimits",
+    "file": "risk\\advanced\\correlation_limits.py",
+    "line": 178
+  },
+  {
+    "name": "KellyPositionResult",
+    "file": "risk\\advanced\\kelly_position_sizer.py",
+    "line": 39
+  },
+  {
+    "name": "KellyPositionSizer",
+    "file": "risk\\advanced\\kelly_position_sizer.py",
+    "line": 185
+  },
+  {
+    "name": "StressScenario",
+    "file": "risk\\advanced\\monte_carlo_var.py",
+    "line": 27
+  },
+  {
+    "name": "VaRResult",
+    "file": "risk\\advanced\\monte_carlo_var.py",
+    "line": 37
+  },
+  {
+    "name": "StressTestResult",
+    "file": "risk\\advanced\\monte_carlo_var.py",
+    "line": 55
+  },
+  {
+    "name": "MonteCarloVaR",
+    "file": "risk\\advanced\\monte_carlo_var.py",
+    "line": 85
+  },
+  {
+    "name": "PortfolioConstraints",
+    "file": "risk\\advanced\\portfolio_optimizer.py",
+    "line": 45
+  },
+  {
+    "name": "Position",
+    "file": "risk\\advanced\\portfolio_optimizer.py",
+    "line": 70
+  },
+  {
+    "name": "PortfolioOptimizer",
+    "file": "risk\\advanced\\portfolio_optimizer.py",
+    "line": 80
+  },
+  {
+    "name": "BreakerAction",
+    "file": "risk\\circuit_breakers\\breaker_manager.py",
+    "line": 29
+  },
+  {
+    "name": "BreakerStatus",
+    "file": "risk\\circuit_breakers\\breaker_manager.py",
+    "line": 38
+  },
+  {
+    "name": "BreakerAlert",
+    "file": "risk\\circuit_breakers\\breaker_manager.py",
+    "line": 46
+  },
+  {
+    "name": "BreakerState",
+    "file": "risk\\circuit_breakers\\breaker_manager.py",
+    "line": 69
+  },
+  {
+    "name": "BreakerManager",
+    "file": "risk\\circuit_breakers\\breaker_manager.py",
+    "line": 89
+  },
+  {
+    "name": "CorrelationThresholds",
+    "file": "risk\\circuit_breakers\\correlation_breaker.py",
+    "line": 37
+  },
+  {
+    "name": "CorrelationBreaker",
+    "file": "risk\\circuit_breakers\\correlation_breaker.py",
+    "line": 55
+  },
+  {
+    "name": "DrawdownThresholds",
+    "file": "risk\\circuit_breakers\\drawdown_breaker.py",
+    "line": 32
+  },
+  {
+    "name": "DrawdownBreaker",
+    "file": "risk\\circuit_breakers\\drawdown_breaker.py",
+    "line": 45
+  },
+  {
+    "name": "ExecutionThresholds",
+    "file": "risk\\circuit_breakers\\execution_breaker.py",
+    "line": 37
+  },
+  {
+    "name": "ExecutionBreaker",
+    "file": "risk\\circuit_breakers\\execution_breaker.py",
+    "line": 57
+  },
+  {
+    "name": "StreakThresholds",
+    "file": "risk\\circuit_breakers\\streak_breaker.py",
+    "line": 32
+  },
+  {
+    "name": "StreakBreaker",
+    "file": "risk\\circuit_breakers\\streak_breaker.py",
+    "line": 47
+  },
+  {
+    "name": "VolatilityThresholds",
+    "file": "risk\\circuit_breakers\\volatility_breaker.py",
+    "line": 30
+  },
+  {
+    "name": "VolatilityBreaker",
+    "file": "risk\\circuit_breakers\\volatility_breaker.py",
+    "line": 43
+  },
+  {
+    "name": "FactorExposures",
+    "file": "risk\\factor_model\\factor_calculator.py",
+    "line": 32
+  },
+  {
+    "name": "FactorCalculator",
+    "file": "risk\\factor_model\\factor_calculator.py",
+    "line": 131
+  },
+  {
+    "name": "FactorRiskReport",
+    "file": "risk\\factor_model\\factor_report.py",
+    "line": 24
+  },
+  {
+    "name": "FactorRiskReporter",
+    "file": "risk\\factor_model\\factor_report.py",
+    "line": 142
+  },
+  {
+    "name": "SectorExposures",
+    "file": "risk\\factor_model\\sector_exposure.py",
+    "line": 71
+  },
+  {
+    "name": "SectorAnalyzer",
+    "file": "risk\\factor_model\\sector_exposure.py",
+    "line": 139
+  },
+  {
+    "name": "TradingMode",
+    "file": "safety\\mode.py",
+    "line": 32
+  },
+  {
+    "name": "SafetyViolationError",
+    "file": "safety\\mode.py",
+    "line": 39
+  },
+  {
+    "name": "BenchmarkMetrics",
+    "file": "scripts\\benchmark.py",
+    "line": 28
+  },
+  {
+    "name": "CorrelationWarning",
+    "file": "scripts\\correlation.py",
+    "line": 105
+  },
+  {
+    "name": "CorrelationAnalyzer",
+    "file": "scripts\\correlation.py",
+    "line": 186
+  },
+  {
+    "name": "DashboardHandler",
+    "file": "scripts\\dashboard.py",
+    "line": 25
+  },
+  {
+    "name": "ErrorRecord",
+    "file": "scripts\\debugger.py",
+    "line": 54
+  },
+  {
+    "name": "DrawdownEvent",
+    "file": "scripts\\drawdown.py",
+    "line": 38
+  },
+  {
+    "name": "DrawdownSummary",
+    "file": "scripts\\drawdown.py",
+    "line": 52
+  },
+  {
+    "name": "DrawdownAnalyzer",
+    "file": "scripts\\drawdown.py",
+    "line": 142
+  },
+  {
+    "name": "EODFinalizer",
+    "file": "scripts\\eod_finalize.py",
+    "line": 240
+  },
+  {
+    "name": "HealthStatus",
+    "file": "scripts\\health_monitor.py",
+    "line": 51
+  },
+  {
+    "name": "IntegrityIssue",
+    "file": "scripts\\integrity_check.py",
+    "line": 43
+  },
+  {
+    "name": "IntegrityReport",
+    "file": "scripts\\integrity_check.py",
+    "line": 56
+  },
+  {
+    "name": "TradeMetrics",
+    "file": "scripts\\metrics.py",
+    "line": 29
+  },
+  {
+    "name": "EquityMetrics",
+    "file": "scripts\\metrics.py",
+    "line": 48
+  },
+  {
+    "name": "PeriodReturns",
+    "file": "scripts\\metrics.py",
+    "line": 63
+  },
+  {
+    "name": "PositionState",
+    "file": "scripts\\position_manager.py",
+    "line": 63
+  },
+  {
+    "name": "PositionManager",
+    "file": "scripts\\position_manager.py",
+    "line": 247
+  },
+  {
+    "name": "CheckResult",
+    "file": "scripts\\preflight_live.py",
+    "line": 54
+  },
+  {
+    "name": "PreflightReport",
+    "file": "scripts\\preflight_live.py",
+    "line": 64
+  },
+  {
+    "name": "PremarketChecker",
+    "file": "scripts\\premarket_check.py",
+    "line": 203
+  },
+  {
+    "name": "ValidationStatus",
+    "file": "scripts\\premarket_validator.py",
+    "line": 41
+  },
+  {
+    "name": "CheckResult",
+    "file": "scripts\\quality_check.py",
+    "line": 61
+  },
+  {
+    "name": "AreaReport",
+    "file": "scripts\\quality_check.py",
+    "line": 74
+  },
+  {
+    "name": "RiskMetrics",
+    "file": "scripts\\quant_dashboard.py",
+    "line": 33
+  },
+  {
+    "name": "PerformanceRatios",
+    "file": "scripts\\quant_dashboard.py",
+    "line": 54
+  },
+  {
+    "name": "AlphaDecomposition",
+    "file": "scripts\\quant_dashboard.py",
+    "line": 78
+  },
+  {
+    "name": "StatisticalTests",
+    "file": "scripts\\quant_dashboard.py",
+    "line": 89
+  },
+  {
+    "name": "RegimeResult",
+    "file": "scripts\\regime.py",
+    "line": 36
+  },
+  {
+    "name": "RegimeDetector",
+    "file": "scripts\\regime.py",
+    "line": 125
+  },
+  {
+    "name": "TradeRecord",
+    "file": "scripts\\report.py",
+    "line": 34
+  },
+  {
+    "name": "StrategyStats",
+    "file": "scripts\\report.py",
+    "line": 47
+  },
+  {
+    "name": "ReportData",
+    "file": "scripts\\report.py",
+    "line": 64
+  },
+  {
+    "name": "ScheduleEntry",
+    "file": "scripts\\scheduler_kobe.py",
+    "line": 177
+  },
+  {
+    "name": "CheckResult",
+    "file": "scripts\\validate.py",
+    "line": 29
+  },
+  {
+    "name": "DataQualityValidator",
+    "file": "scripts\\validate_data_pipeline.py",
+    "line": 30
+  },
+  {
+    "name": "AnomalyConfig",
+    "file": "selfmonitor\\anomaly_detect.py",
+    "line": 16
+  },
+  {
+    "name": "AnomalyType",
+    "file": "selfmonitor\\anomaly_detector.py",
+    "line": 21
+  },
+  {
+    "name": "AnomalyAlert",
+    "file": "selfmonitor\\anomaly_detector.py",
+    "line": 33
+  },
+  {
+    "name": "AnomalyDetector",
+    "file": "selfmonitor\\anomaly_detector.py",
+    "line": 55
+  },
+  {
+    "name": "BreakerState",
+    "file": "selfmonitor\\circuit_breaker.py",
+    "line": 21
+  },
+  {
+    "name": "BreakerConfig",
+    "file": "selfmonitor\\circuit_breaker.py",
+    "line": 29
+  },
+  {
+    "name": "TripRecord",
+    "file": "selfmonitor\\circuit_breaker.py",
+    "line": 54
+  },
+  {
+    "name": "CircuitBreaker",
+    "file": "selfmonitor\\circuit_breaker.py",
+    "line": 62
+  },
+  {
+    "name": "MarketRegime",
+    "file": "strategies\\adaptive_selector.py",
+    "line": 32
+  },
+  {
+    "name": "StrategyConfig",
+    "file": "strategies\\adaptive_selector.py",
+    "line": 42
+  },
+  {
+    "name": "AdaptiveStrategySelector",
+    "file": "strategies\\adaptive_selector.py",
+    "line": 99
+  },
+  {
+    "name": "DualStrategyParams",
+    "file": "strategies\\dual_strategy\\combined.py",
+    "line": 96
+  },
+  {
+    "name": "DualStrategyScanner",
+    "file": "strategies\\dual_strategy\\combined.py",
+    "line": 144
+  },
+  {
+    "name": "IbsRsiParams",
+    "file": "strategies\\ibs_rsi\\strategy.py",
+    "line": 59
+  },
+  {
+    "name": "IbsRsiStrategy",
+    "file": "strategies\\ibs_rsi\\strategy.py",
+    "line": 70
+  },
+  {
+    "name": "MarketStructure",
+    "file": "strategies\\ict\\smart_money.py",
+    "line": 69
+  },
+  {
+    "name": "KillZone",
+    "file": "strategies\\ict\\smart_money.py",
+    "line": 76
+  },
+  {
+    "name": "SMCConfig",
+    "file": "strategies\\ict\\smart_money.py",
+    "line": 86
+  },
+  {
+    "name": "OrderBlockDetector",
+    "file": "strategies\\ict\\smart_money.py",
+    "line": 116
+  },
+  {
+    "name": "FairValueGapDetector",
+    "file": "strategies\\ict\\smart_money.py",
+    "line": 216
+  },
+  {
+    "name": "LiquiditySweepDetector",
+    "file": "strategies\\ict\\smart_money.py",
+    "line": 283
+  },
+  {
+    "name": "BreakOfStructureDetector",
+    "file": "strategies\\ict\\smart_money.py",
+    "line": 347
+  },
+  {
+    "name": "KillZoneDetector",
+    "file": "strategies\\ict\\smart_money.py",
+    "line": 428
+  },
+  {
+    "name": "SmartMoneyDetector",
+    "file": "strategies\\ict\\smart_money.py",
+    "line": 490
+  },
+  {
+    "name": "TurtleSoupParams",
+    "file": "strategies\\ict\\turtle_soup.py",
+    "line": 145
+  },
+  {
+    "name": "TurtleSoupStrategy",
+    "file": "strategies\\ict\\turtle_soup.py",
+    "line": 167
+  },
+  {
+    "name": "IndicatorDef",
+    "file": "strategy_specs\\spec.py",
+    "line": 22
+  },
+  {
+    "name": "ConditionDef",
+    "file": "strategy_specs\\spec.py",
+    "line": 31
+  },
+  {
+    "name": "EntryRules",
+    "file": "strategy_specs\\spec.py",
+    "line": 40
+  },
+  {
+    "name": "ExitRules",
+    "file": "strategy_specs\\spec.py",
+    "line": 49
+  },
+  {
+    "name": "SizingRules",
+    "file": "strategy_specs\\spec.py",
+    "line": 60
+  },
+  {
+    "name": "RiskLimits",
+    "file": "strategy_specs\\spec.py",
+    "line": 69
+  },
+  {
+    "name": "DataRequirements",
+    "file": "strategy_specs\\spec.py",
+    "line": 78
+  },
+  {
+    "name": "StrategySpec",
+    "file": "strategy_specs\\spec.py",
+    "line": 86
+  },
+  {
+    "name": "CostBasisMethod",
+    "file": "tax\\lot_accounting.py",
+    "line": 22
+  },
+  {
+    "name": "TaxLot",
+    "file": "tax\\lot_accounting.py",
+    "line": 31
+  },
+  {
+    "name": "WashSaleResult",
+    "file": "tax\\lot_accounting.py",
+    "line": 77
+  },
+  {
+    "name": "TaxLotAccountant",
+    "file": "tax\\lot_accounting.py",
+    "line": 93
+  },
+  {
+    "name": "TestConfigExists",
+    "file": "tests\\test_autonomous_config.py",
+    "line": 19
+  },
+  {
+    "name": "TestConfigLoading",
+    "file": "tests\\test_autonomous_config.py",
+    "line": 28
+  },
+  {
+    "name": "TestConfigValues",
+    "file": "tests\\test_autonomous_config.py",
+    "line": 97
+  },
+  {
+    "name": "TestKobeRunnerImport",
+    "file": "tests\\test_autonomous_run.py",
+    "line": 20
+  },
+  {
+    "name": "TestKobeRunnerInstantiation",
+    "file": "tests\\test_autonomous_run.py",
+    "line": 34
+  },
+  {
+    "name": "TestStatusCommand",
+    "file": "tests\\test_autonomous_run.py",
+    "line": 63
+  },
+  {
+    "name": "TestAwarenessCommand",
+    "file": "tests\\test_autonomous_run.py",
+    "line": 77
+  },
+  {
+    "name": "TestTourCommand",
+    "file": "tests\\test_autonomous_run.py",
+    "line": 95
+  },
+  {
+    "name": "TestHelperMethods",
+    "file": "tests\\test_autonomous_run.py",
+    "line": 109
+  },
+  {
+    "name": "TestVectorizedBacktester",
+    "file": "tests\\test_backtest_enhanced.py",
+    "line": 111
+  },
+  {
+    "name": "TestVectorizedNumba",
+    "file": "tests\\test_backtest_enhanced.py",
+    "line": 181
+  },
+  {
+    "name": "TestDataVersioner",
+    "file": "tests\\test_backtest_enhanced.py",
+    "line": 220
+  },
+  {
+    "name": "TestExperimentTracker",
+    "file": "tests\\test_backtest_enhanced.py",
+    "line": 282
+  },
+  {
+    "name": "TestBacktestPlotter",
+    "file": "tests\\test_backtest_enhanced.py",
+    "line": 343
+  },
+  {
+    "name": "TestMonteCarloSimulator",
+    "file": "tests\\test_backtest_enhanced.py",
+    "line": 445
+  },
+  {
+    "name": "TestMonteCarloConvenienceFunction",
+    "file": "tests\\test_backtest_enhanced.py",
+    "line": 523
+  },
+  {
+    "name": "TestBacktestIntegration",
+    "file": "tests\\test_backtest_enhanced.py",
+    "line": 545
+  },
+  {
+    "name": "TestStreakAnalyzer",
+    "file": "tests\\test_bounce.py",
+    "line": 21
+  },
+  {
+    "name": "TestBounceScore",
+    "file": "tests\\test_bounce.py",
+    "line": 81
+  },
+  {
+    "name": "TestBounceGates",
+    "file": "tests\\test_bounce.py",
+    "line": 129
+  },
+  {
+    "name": "TestValidation",
+    "file": "tests\\test_bounce.py",
+    "line": 185
+  },
+  {
+    "name": "TestStrategyIntegration",
+    "file": "tests\\test_bounce.py",
+    "line": 210
+  },
+  {
+    "name": "TestDataLoader",
+    "file": "tests\\test_bounce.py",
+    "line": 244
+  },
+  {
+    "name": "TestEventTable",
+    "file": "tests\\test_bounce.py",
+    "line": 268
+  },
+  {
+    "name": "TestLiquidityGateIntegration",
+    "file": "tests\\test_broker_liquidity_integration.py",
+    "line": 53
+  },
+  {
+    "name": "TestCheckLiquidityForOrder",
+    "file": "tests\\test_broker_liquidity_integration.py",
+    "line": 94
+  },
+  {
+    "name": "TestPlaceOrderWithLiquidityCheck",
+    "file": "tests\\test_broker_liquidity_integration.py",
+    "line": 160
+  },
+  {
+    "name": "TestExecuteSignal",
+    "file": "tests\\test_broker_liquidity_integration.py",
+    "line": 240
+  },
+  {
+    "name": "TestOrderResult",
+    "file": "tests\\test_broker_liquidity_integration.py",
+    "line": 334
+  },
+  {
+    "name": "TestGlobalWorkspace",
+    "file": "tests\\test_cognitive_system.py",
+    "line": 14
+  },
+  {
+    "name": "TestSelfModel",
+    "file": "tests\\test_cognitive_system.py",
+    "line": 50
+  },
+  {
+    "name": "TestMetacognitiveGovernor",
+    "file": "tests\\test_cognitive_system.py",
+    "line": 93
+  },
+  {
+    "name": "TestEpisodicMemory",
+    "file": "tests\\test_cognitive_system.py",
+    "line": 136
+  },
+  {
+    "name": "TestSemanticMemory",
+    "file": "tests\\test_cognitive_system.py",
+    "line": 175
+  },
+  {
+    "name": "TestKnowledgeBoundary",
+    "file": "tests\\test_cognitive_system.py",
+    "line": 208
+  },
+  {
+    "name": "TestReflectionEngine",
+    "file": "tests\\test_cognitive_system.py",
+    "line": 243
+  },
+  {
+    "name": "TestCuriosityEngine",
+    "file": "tests\\test_cognitive_system.py",
+    "line": 261
+  },
+  {
+    "name": "TestCognitiveBrain",
+    "file": "tests\\test_cognitive_system.py",
+    "line": 291
+  },
+  {
+    "name": "TestIntegration",
+    "file": "tests\\test_cognitive_system.py",
+    "line": 356
+  },
+  {
+    "name": "TestSignalProcessor",
+    "file": "tests\\test_cognitive_system.py",
+    "line": 410
+  },
+  {
+    "name": "TestComputeDatasetId",
+    "file": "tests\\test_data_lake.py",
+    "line": 23
+  },
+  {
+    "name": "TestComputeFileHash",
+    "file": "tests\\test_data_lake.py",
+    "line": 104
+  },
+  {
+    "name": "TestDatasetManifest",
+    "file": "tests\\test_data_lake.py",
+    "line": 140
+  },
+  {
+    "name": "TestFileRecord",
+    "file": "tests\\test_data_lake.py",
+    "line": 188
+  },
+  {
+    "name": "TestDataQualityGate",
+    "file": "tests\\test_data_quality.py",
+    "line": 80
+  },
+  {
+    "name": "TestDataQualityRequirements",
+    "file": "tests\\test_data_quality.py",
+    "line": 190
+  },
+  {
+    "name": "TestDataQualityReport",
+    "file": "tests\\test_data_quality.py",
+    "line": 213
+  },
+  {
+    "name": "TestConvenienceFunction",
+    "file": "tests\\test_data_quality.py",
+    "line": 257
+  },
+  {
+    "name": "TestExperimentConfig",
+    "file": "tests\\test_experiments.py",
+    "line": 20
+  },
+  {
+    "name": "TestExperimentResults",
+    "file": "tests\\test_experiments.py",
+    "line": 90
+  },
+  {
+    "name": "TestExperimentRegistry",
+    "file": "tests\\test_experiments.py",
+    "line": 146
+  },
+  {
+    "name": "TestFullIntegrationPipeline",
+    "file": "tests\\test_integration_pipeline.py",
+    "line": 38
+  },
+  {
+    "name": "TestLiquidityGate",
+    "file": "tests\\test_liquidity_gate.py",
+    "line": 17
+  },
+  {
+    "name": "TestConvenienceFunctions",
+    "file": "tests\\test_liquidity_gate.py",
+    "line": 231
+  },
+  {
+    "name": "TestLiquidityCheck",
+    "file": "tests\\test_liquidity_gate.py",
+    "line": 256
+  },
+  {
+    "name": "TestFREDMacroProvider",
+    "file": "tests\\test_macro_providers.py",
+    "line": 19
+  },
+  {
+    "name": "TestTreasuryYieldProvider",
+    "file": "tests\\test_macro_providers.py",
+    "line": 118
+  },
+  {
+    "name": "TestCFTCCOTProvider",
+    "file": "tests\\test_macro_providers.py",
+    "line": 173
+  },
+  {
+    "name": "TestMacroFeatureGenerator",
+    "file": "tests\\test_macro_providers.py",
+    "line": 209
+  },
+  {
+    "name": "TestConvenienceFunctions",
+    "file": "tests\\test_macro_providers.py",
+    "line": 294
+  },
+  {
+    "name": "TestBlackScholes",
+    "file": "tests\\test_options.py",
+    "line": 41
+  },
+  {
+    "name": "TestRealizedVolatility",
+    "file": "tests\\test_options.py",
+    "line": 177
+  },
+  {
+    "name": "TestStrikeSelection",
+    "file": "tests\\test_options.py",
+    "line": 224
+  },
+  {
+    "name": "TestPositionSizing",
+    "file": "tests\\test_options.py",
+    "line": 284
+  },
+  {
+    "name": "TestConvenienceFunctions",
+    "file": "tests\\test_options.py",
+    "line": 360
+  },
+  {
+    "name": "TestPipelineImports",
+    "file": "tests\\test_pipelines.py",
+    "line": 20
+  },
+  {
+    "name": "TestPipelineRegistry",
+    "file": "tests\\test_pipelines.py",
+    "line": 60
+  },
+  {
+    "name": "TestPipelineResult",
+    "file": "tests\\test_pipelines.py",
+    "line": 106
+  },
+  {
+    "name": "TestBasePipeline",
+    "file": "tests\\test_pipelines.py",
+    "line": 144
+  },
+  {
+    "name": "TestFeatureExtractor",
+    "file": "tests\\test_research.py",
+    "line": 61
+  },
+  {
+    "name": "TestAlphaLibrary",
+    "file": "tests\\test_research.py",
+    "line": 115
+  },
+  {
+    "name": "TestEvidenceGate",
+    "file": "tests\\test_research.py",
+    "line": 172
+  },
+  {
+    "name": "TestAlphaScreener",
+    "file": "tests\\test_research.py",
+    "line": 245
+  },
+  {
+    "name": "TestSafetyMode",
+    "file": "tests\\test_safety_mode.py",
+    "line": 20
+  },
+  {
+    "name": "TestKillSwitch",
+    "file": "tests\\test_safety_mode.py",
+    "line": 91
+  },
+  {
+    "name": "TestValidateOrderAllowed",
+    "file": "tests\\test_safety_mode.py",
+    "line": 110
+  },
+  {
+    "name": "TestScannerDeterminism",
+    "file": "tests\\test_scanner_determinism.py",
+    "line": 56
+  },
+  {
+    "name": "TestSortingDeterminism",
+    "file": "tests\\test_scanner_determinism.py",
+    "line": 94
+  },
+  {
+    "name": "TestExperienceReplayDeterminism",
+    "file": "tests\\test_scanner_determinism.py",
+    "line": 156
+  },
+  {
+    "name": "TestMoodState",
+    "file": "tests\\altdata\\test_market_mood_analyzer.py",
+    "line": 15
+  },
+  {
+    "name": "TestMarketMood",
+    "file": "tests\\altdata\\test_market_mood_analyzer.py",
+    "line": 27
+  },
+  {
+    "name": "TestMarketMoodAnalyzer",
+    "file": "tests\\altdata\\test_market_mood_analyzer.py",
+    "line": 64
+  },
+  {
+    "name": "TestVixToMoodScore",
+    "file": "tests\\altdata\\test_market_mood_analyzer.py",
+    "line": 94
+  },
+  {
+    "name": "TestDetermineMoodState",
+    "file": "tests\\altdata\\test_market_mood_analyzer.py",
+    "line": 142
+  },
+  {
+    "name": "TestGetMarketMood",
+    "file": "tests\\altdata\\test_market_mood_analyzer.py",
+    "line": 182
+  },
+  {
+    "name": "TestExtremeMoodDetection",
+    "file": "tests\\altdata\\test_market_mood_analyzer.py",
+    "line": 276
+  },
+  {
+    "name": "TestMoodDescription",
+    "file": "tests\\altdata\\test_market_mood_analyzer.py",
+    "line": 320
+  },
+  {
+    "name": "TestIntrospection",
+    "file": "tests\\altdata\\test_market_mood_analyzer.py",
+    "line": 342
+  },
+  {
+    "name": "TestSingleton",
+    "file": "tests\\altdata\\test_market_mood_analyzer.py",
+    "line": 357
+  },
+  {
+    "name": "TestEdgeCases",
+    "file": "tests\\altdata\\test_market_mood_analyzer.py",
+    "line": 372
+  },
+  {
+    "name": "TestVerdictDataclass",
+    "file": "tests\\cognitive\\test_adjudicator.py",
+    "line": 9
+  },
+  {
+    "name": "TestHeuristicFunction",
+    "file": "tests\\cognitive\\test_adjudicator.py",
+    "line": 39
+  },
+  {
+    "name": "TestAdjudicateFunction",
+    "file": "tests\\cognitive\\test_adjudicator.py",
+    "line": 143
+  },
+  {
+    "name": "TestScoreThresholds",
+    "file": "tests\\cognitive\\test_adjudicator.py",
+    "line": 198
+  },
+  {
+    "name": "TestEdgeCases",
+    "file": "tests\\cognitive\\test_adjudicator.py",
+    "line": 232
+  },
+  {
+    "name": "TestIntegration",
+    "file": "tests\\cognitive\\test_adjudicator.py",
+    "line": 272
+  },
+  {
+    "name": "TestCognitiveBrainInitialization",
+    "file": "tests\\cognitive\\test_cognitive_brain.py",
+    "line": 15
+  },
+  {
+    "name": "TestCognitiveBrainDeliberation",
+    "file": "tests\\cognitive\\test_cognitive_brain.py",
+    "line": 62
+  },
+  {
+    "name": "TestCognitiveBrainLearning",
+    "file": "tests\\cognitive\\test_cognitive_brain.py",
+    "line": 164
+  },
+  {
+    "name": "TestCognitiveBrainThinkDeeper",
+    "file": "tests\\cognitive\\test_cognitive_brain.py",
+    "line": 221
+  },
+  {
+    "name": "TestCognitiveBrainConsolidation",
+    "file": "tests\\cognitive\\test_cognitive_brain.py",
+    "line": 262
+  },
+  {
+    "name": "TestCognitiveBrainIntrospection",
+    "file": "tests\\cognitive\\test_cognitive_brain.py",
+    "line": 297
+  },
+  {
+    "name": "TestCognitiveBrainSizeMultiplier",
+    "file": "tests\\cognitive\\test_cognitive_brain.py",
+    "line": 330
+  },
+  {
+    "name": "TestCognitiveDecision",
+    "file": "tests\\cognitive\\test_cognitive_brain.py",
+    "line": 365
+  },
+  {
+    "name": "TestHypothesisStatusEnum",
+    "file": "tests\\cognitive\\test_curiosity_engine.py",
+    "line": 11
+  },
+  {
+    "name": "TestHypothesisDataclass",
+    "file": "tests\\cognitive\\test_curiosity_engine.py",
+    "line": 24
+  },
+  {
+    "name": "TestEdgeDataclass",
+    "file": "tests\\cognitive\\test_curiosity_engine.py",
+    "line": 59
+  },
+  {
+    "name": "TestCuriosityEngineInitialization",
+    "file": "tests\\cognitive\\test_curiosity_engine.py",
+    "line": 104
+  },
+  {
+    "name": "TestGetValidatedEdges",
+    "file": "tests\\cognitive\\test_curiosity_engine.py",
+    "line": 132
+  },
+  {
+    "name": "TestGetActiveHypotheses",
+    "file": "tests\\cognitive\\test_curiosity_engine.py",
+    "line": 146
+  },
+  {
+    "name": "TestTestAllPending",
+    "file": "tests\\cognitive\\test_curiosity_engine.py",
+    "line": 159
+  },
+  {
+    "name": "TestStatistics",
+    "file": "tests\\cognitive\\test_curiosity_engine.py",
+    "line": 174
+  },
+  {
+    "name": "TestIntrospection",
+    "file": "tests\\cognitive\\test_curiosity_engine.py",
+    "line": 188
+  },
+  {
+    "name": "TestStatePersistence",
+    "file": "tests\\cognitive\\test_curiosity_engine.py",
+    "line": 204
+  },
+  {
+    "name": "TestEpisodeOutcomeEnum",
+    "file": "tests\\cognitive\\test_episodic_memory.py",
+    "line": 13
+  },
+  {
+    "name": "TestEpisodeDataclass",
+    "file": "tests\\cognitive\\test_episodic_memory.py",
+    "line": 26
+  },
+  {
+    "name": "TestEpisodicMemoryInitialization",
+    "file": "tests\\cognitive\\test_episodic_memory.py",
+    "line": 114
+  },
+  {
+    "name": "TestEpisodeLifecycle",
+    "file": "tests\\cognitive\\test_episodic_memory.py",
+    "line": 139
+  },
+  {
+    "name": "TestFindingSimilarEpisodes",
+    "file": "tests\\cognitive\\test_episodic_memory.py",
+    "line": 260
+  },
+  {
+    "name": "TestLessonsForContext",
+    "file": "tests\\cognitive\\test_episodic_memory.py",
+    "line": 306
+  },
+  {
+    "name": "TestWinRateForContext",
+    "file": "tests\\cognitive\\test_episodic_memory.py",
+    "line": 335
+  },
+  {
+    "name": "TestRecentEpisodes",
+    "file": "tests\\cognitive\\test_episodic_memory.py",
+    "line": 381
+  },
+  {
+    "name": "TestPostmortem",
+    "file": "tests\\cognitive\\test_episodic_memory.py",
+    "line": 398
+  },
+  {
+    "name": "TestStatistics",
+    "file": "tests\\cognitive\\test_episodic_memory.py",
+    "line": 423
+  },
+  {
+    "name": "TestPruning",
+    "file": "tests\\cognitive\\test_episodic_memory.py",
+    "line": 455
+  },
+  {
+    "name": "TestPersistence",
+    "file": "tests\\cognitive\\test_episodic_memory.py",
+    "line": 476
+  },
+  {
+    "name": "TestSingletonFactory",
+    "file": "tests\\cognitive\\test_episodic_memory.py",
+    "line": 497
+  },
+  {
+    "name": "TestBriefingContext",
+    "file": "tests\\cognitive\\test_game_briefings.py",
+    "line": 33
+  },
+  {
+    "name": "TestPreGameBriefing",
+    "file": "tests\\cognitive\\test_game_briefings.py",
+    "line": 67
+  },
+  {
+    "name": "TestHalfTimeBriefing",
+    "file": "tests\\cognitive\\test_game_briefings.py",
+    "line": 94
+  },
+  {
+    "name": "TestPostGameBriefing",
+    "file": "tests\\cognitive\\test_game_briefings.py",
+    "line": 109
+  },
+  {
+    "name": "TestTradeOutcome",
+    "file": "tests\\cognitive\\test_game_briefings.py",
+    "line": 123
+  },
+  {
+    "name": "TestPositionStatus",
+    "file": "tests\\cognitive\\test_game_briefings.py",
+    "line": 165
+  },
+  {
+    "name": "TestGameBriefingEngine",
+    "file": "tests\\cognitive\\test_game_briefings.py",
+    "line": 188
+  },
+  {
+    "name": "TestGetBriefingEngine",
+    "file": "tests\\cognitive\\test_game_briefings.py",
+    "line": 270
+  },
+  {
+    "name": "TestIntegration",
+    "file": "tests\\cognitive\\test_game_briefings.py",
+    "line": 281
+  },
+  {
+    "name": "TestPriorityEnum",
+    "file": "tests\\cognitive\\test_global_workspace.py",
+    "line": 10
+  },
+  {
+    "name": "TestWorkspaceItemDataclass",
+    "file": "tests\\cognitive\\test_global_workspace.py",
+    "line": 23
+  },
+  {
+    "name": "TestGlobalWorkspaceInitialization",
+    "file": "tests\\cognitive\\test_global_workspace.py",
+    "line": 87
+  },
+  {
+    "name": "TestPublishSubscribe",
+    "file": "tests\\cognitive\\test_global_workspace.py",
+    "line": 106
+  },
+  {
+    "name": "TestGetData",
+    "file": "tests\\cognitive\\test_global_workspace.py",
+    "line": 173
+  },
+  {
+    "name": "TestGetContext",
+    "file": "tests\\cognitive\\test_global_workspace.py",
+    "line": 214
+  },
+  {
+    "name": "TestWorkingMemory",
+    "file": "tests\\cognitive\\test_global_workspace.py",
+    "line": 241
+  },
+  {
+    "name": "TestStatistics",
+    "file": "tests\\cognitive\\test_global_workspace.py",
+    "line": 307
+  },
+  {
+    "name": "TestCleanup",
+    "file": "tests\\cognitive\\test_global_workspace.py",
+    "line": 326
+  },
+  {
+    "name": "TestDumpState",
+    "file": "tests\\cognitive\\test_global_workspace.py",
+    "line": 352
+  },
+  {
+    "name": "TestSingletonFactory",
+    "file": "tests\\cognitive\\test_global_workspace.py",
+    "line": 370
+  },
+  {
+    "name": "TestTopicConstants",
+    "file": "tests\\cognitive\\test_global_workspace.py",
+    "line": 382
+  },
+  {
+    "name": "TestUncertaintyLevelEnum",
+    "file": "tests\\cognitive\\test_knowledge_boundary.py",
+    "line": 10
+  },
+  {
+    "name": "TestUncertaintySourceEnum",
+    "file": "tests\\cognitive\\test_knowledge_boundary.py",
+    "line": 22
+  },
+  {
+    "name": "TestInvalidatorDataclass",
+    "file": "tests\\cognitive\\test_knowledge_boundary.py",
+    "line": 35
+  },
+  {
+    "name": "TestKnowledgeAssessmentDataclass",
+    "file": "tests\\cognitive\\test_knowledge_boundary.py",
+    "line": 54
+  },
+  {
+    "name": "TestKnowledgeBoundaryInitialization",
+    "file": "tests\\cognitive\\test_knowledge_boundary.py",
+    "line": 95
+  },
+  {
+    "name": "TestAssessKnowledgeState",
+    "file": "tests\\cognitive\\test_knowledge_boundary.py",
+    "line": 118
+  },
+  {
+    "name": "TestWhatWouldChangeMind",
+    "file": "tests\\cognitive\\test_knowledge_boundary.py",
+    "line": 220
+  },
+  {
+    "name": "TestGetConfidenceCeiling",
+    "file": "tests\\cognitive\\test_knowledge_boundary.py",
+    "line": 240
+  },
+  {
+    "name": "TestIntrospection",
+    "file": "tests\\cognitive\\test_knowledge_boundary.py",
+    "line": 282
+  },
+  {
+    "name": "TestConfidenceAdjustment",
+    "file": "tests\\cognitive\\test_knowledge_boundary.py",
+    "line": 297
+  },
+  {
+    "name": "TestTimestampHandling",
+    "file": "tests\\cognitive\\test_knowledge_boundary.py",
+    "line": 318
+  },
+  {
+    "name": "TestStrategyIdeaParsing",
+    "file": "tests\\cognitive\\test_llm_narrative_analyzer.py",
+    "line": 126
+  },
+  {
+    "name": "TestShouldRequestStrategyIdeas",
+    "file": "tests\\cognitive\\test_llm_narrative_analyzer.py",
+    "line": 227
+  },
+  {
+    "name": "TestStrategyIdeaDataclass",
+    "file": "tests\\cognitive\\test_llm_narrative_analyzer.py",
+    "line": 277
+  },
+  {
+    "name": "TestLLMAnalysisResultDataclass",
+    "file": "tests\\cognitive\\test_llm_narrative_analyzer.py",
+    "line": 305
+  },
+  {
+    "name": "TestTradeNarrative",
+    "file": "tests\\cognitive\\test_llm_trade_analyzer.py",
+    "line": 17
+  },
+  {
+    "name": "TestDailyInsightReport",
+    "file": "tests\\cognitive\\test_llm_trade_analyzer.py",
+    "line": 59
+  },
+  {
+    "name": "TestLLMTradeAnalyzer",
+    "file": "tests\\cognitive\\test_llm_trade_analyzer.py",
+    "line": 105
+  },
+  {
+    "name": "TestDeterministicFallback",
+    "file": "tests\\cognitive\\test_llm_trade_analyzer.py",
+    "line": 137
+  },
+  {
+    "name": "TestTop3Analysis",
+    "file": "tests\\cognitive\\test_llm_trade_analyzer.py",
+    "line": 200
+  },
+  {
+    "name": "TestTOTDAnalysis",
+    "file": "tests\\cognitive\\test_llm_trade_analyzer.py",
+    "line": 241
+  },
+  {
+    "name": "TestMarketSummary",
+    "file": "tests\\cognitive\\test_llm_trade_analyzer.py",
+    "line": 279
+  },
+  {
+    "name": "TestSentimentInterpretation",
+    "file": "tests\\cognitive\\test_llm_trade_analyzer.py",
+    "line": 313
+  },
+  {
+    "name": "TestKeyFindings",
+    "file": "tests\\cognitive\\test_llm_trade_analyzer.py",
+    "line": 346
+  },
+  {
+    "name": "TestDailyInsightReportGeneration",
+    "file": "tests\\cognitive\\test_llm_trade_analyzer.py",
+    "line": 381
+  },
+  {
+    "name": "TestSingletonPattern",
+    "file": "tests\\cognitive\\test_llm_trade_analyzer.py",
+    "line": 418
+  },
+  {
+    "name": "TestEdgeDescriptions",
+    "file": "tests\\cognitive\\test_llm_trade_analyzer.py",
+    "line": 443
+  },
+  {
+    "name": "TestConfidenceRating",
+    "file": "tests\\cognitive\\test_llm_trade_analyzer.py",
+    "line": 472
+  },
+  {
+    "name": "TestRiskWarnings",
+    "file": "tests\\cognitive\\test_llm_trade_analyzer.py",
+    "line": 500
+  },
+  {
+    "name": "TestOpportunities",
+    "file": "tests\\cognitive\\test_llm_trade_analyzer.py",
+    "line": 525
+  },
+  {
+    "name": "TestMetacognitiveGovernorInitialization",
+    "file": "tests\\cognitive\\test_metacognitive_governor.py",
+    "line": 16
+  },
+  {
+    "name": "TestRoutingDecisions",
+    "file": "tests\\cognitive\\test_metacognitive_governor.py",
+    "line": 46
+  },
+  {
+    "name": "TestStandDownDecisions",
+    "file": "tests\\cognitive\\test_metacognitive_governor.py",
+    "line": 145
+  },
+  {
+    "name": "TestRoutingStatistics",
+    "file": "tests\\cognitive\\test_metacognitive_governor.py",
+    "line": 181
+  },
+  {
+    "name": "TestNovelSituationDetection",
+    "file": "tests\\cognitive\\test_metacognitive_governor.py",
+    "line": 245
+  },
+  {
+    "name": "TestIntrospection",
+    "file": "tests\\cognitive\\test_metacognitive_governor.py",
+    "line": 263
+  },
+  {
+    "name": "TestRoutingDecisionDataclass",
+    "file": "tests\\cognitive\\test_metacognitive_governor.py",
+    "line": 305
+  },
+  {
+    "name": "TestDecisionRecord",
+    "file": "tests\\cognitive\\test_metacognitive_governor.py",
+    "line": 335
+  },
+  {
+    "name": "TestProcessingModeEnum",
+    "file": "tests\\cognitive\\test_metacognitive_governor.py",
+    "line": 369
+  },
+  {
+    "name": "TestReflectionEngineInitialization",
+    "file": "tests\\cognitive\\test_reflection_engine.py",
+    "line": 16
+  },
+  {
+    "name": "TestReflectionDataclass",
+    "file": "tests\\cognitive\\test_reflection_engine.py",
+    "line": 48
+  },
+  {
+    "name": "TestReflectOnEpisode",
+    "file": "tests\\cognitive\\test_reflection_engine.py",
+    "line": 102
+  },
+  {
+    "name": "TestPeriodicReflection",
+    "file": "tests\\cognitive\\test_reflection_engine.py",
+    "line": 186
+  },
+  {
+    "name": "TestConsolidateLearnings",
+    "file": "tests\\cognitive\\test_reflection_engine.py",
+    "line": 215
+  },
+  {
+    "name": "TestIntrospection",
+    "file": "tests\\cognitive\\test_reflection_engine.py",
+    "line": 231
+  },
+  {
+    "name": "TestHelperMethods",
+    "file": "tests\\cognitive\\test_reflection_engine.py",
+    "line": 268
+  },
+  {
+    "name": "TestReflectionHistory",
+    "file": "tests\\cognitive\\test_reflection_engine.py",
+    "line": 301
+  },
+  {
+    "name": "TestApplyLearnings",
+    "file": "tests\\cognitive\\test_reflection_engine.py",
+    "line": 332
+  },
+  {
+    "name": "TestSelfModelInitialization",
+    "file": "tests\\cognitive\\test_self_model.py",
+    "line": 18
+  },
+  {
+    "name": "TestCapabilityEnum",
+    "file": "tests\\cognitive\\test_self_model.py",
+    "line": 44
+  },
+  {
+    "name": "TestStrategyPerformance",
+    "file": "tests\\cognitive\\test_self_model.py",
+    "line": 59
+  },
+  {
+    "name": "TestLimitation",
+    "file": "tests\\cognitive\\test_self_model.py",
+    "line": 149
+  },
+  {
+    "name": "TestConfidenceCalibration",
+    "file": "tests\\cognitive\\test_self_model.py",
+    "line": 185
+  },
+  {
+    "name": "TestRecordTradeOutcome",
+    "file": "tests\\cognitive\\test_self_model.py",
+    "line": 221
+  },
+  {
+    "name": "TestRecordLimitation",
+    "file": "tests\\cognitive\\test_self_model.py",
+    "line": 296
+  },
+  {
+    "name": "TestCalibrationTracking",
+    "file": "tests\\cognitive\\test_self_model.py",
+    "line": 341
+  },
+  {
+    "name": "TestShouldStandDown",
+    "file": "tests\\cognitive\\test_self_model.py",
+    "line": 378
+  },
+  {
+    "name": "TestStrengthsAndWeaknesses",
+    "file": "tests\\cognitive\\test_self_model.py",
+    "line": 421
+  },
+  {
+    "name": "TestSelfDescription",
+    "file": "tests\\cognitive\\test_self_model.py",
+    "line": 465
+  },
+  {
+    "name": "TestPersistence",
+    "file": "tests\\cognitive\\test_self_model.py",
+    "line": 501
+  },
+  {
+    "name": "TestGetStatus",
+    "file": "tests\\cognitive\\test_self_model.py",
+    "line": 527
+  },
+  {
+    "name": "TestSemanticRuleDataclass",
+    "file": "tests\\cognitive\\test_semantic_memory.py",
+    "line": 12
+  },
+  {
+    "name": "TestConditionMatcher",
+    "file": "tests\\cognitive\\test_semantic_memory.py",
+    "line": 97
+  },
+  {
+    "name": "TestSemanticMemoryInitialization",
+    "file": "tests\\cognitive\\test_semantic_memory.py",
+    "line": 144
+  },
+  {
+    "name": "TestAddingRules",
+    "file": "tests\\cognitive\\test_semantic_memory.py",
+    "line": 166
+  },
+  {
+    "name": "TestGetApplicableRules",
+    "file": "tests\\cognitive\\test_semantic_memory.py",
+    "line": 214
+  },
+  {
+    "name": "TestRecordRuleOutcome",
+    "file": "tests\\cognitive\\test_semantic_memory.py",
+    "line": 256
+  },
+  {
+    "name": "TestRuleStatistics",
+    "file": "tests\\cognitive\\test_semantic_memory.py",
+    "line": 304
+  },
+  {
+    "name": "TestGetAllRules",
+    "file": "tests\\cognitive\\test_semantic_memory.py",
+    "line": 331
+  },
+  {
+    "name": "TestPruneLowConfidence",
+    "file": "tests\\cognitive\\test_semantic_memory.py",
+    "line": 369
+  },
+  {
+    "name": "TestPersistence",
+    "file": "tests\\cognitive\\test_semantic_memory.py",
+    "line": 389
+  },
+  {
+    "name": "TestSingletonFactory",
+    "file": "tests\\cognitive\\test_semantic_memory.py",
+    "line": 408
+  },
+  {
+    "name": "TestAdjudicatorConfig",
+    "file": "tests\\cognitive\\test_signal_adjudicator.py",
+    "line": 119
+  },
+  {
+    "name": "TestSignalStrength",
+    "file": "tests\\cognitive\\test_signal_adjudicator.py",
+    "line": 153
+  },
+  {
+    "name": "TestPatternConfluence",
+    "file": "tests\\cognitive\\test_signal_adjudicator.py",
+    "line": 186
+  },
+  {
+    "name": "TestVolatilityContraction",
+    "file": "tests\\cognitive\\test_signal_adjudicator.py",
+    "line": 230
+  },
+  {
+    "name": "TestSectorStrength",
+    "file": "tests\\cognitive\\test_signal_adjudicator.py",
+    "line": 269
+  },
+  {
+    "name": "TestAdjudicatorIntegration",
+    "file": "tests\\cognitive\\test_signal_adjudicator.py",
+    "line": 325
+  },
+  {
+    "name": "TestConvenienceFunctions",
+    "file": "tests\\cognitive\\test_signal_adjudicator.py",
+    "line": 385
+  },
+  {
+    "name": "TestRSITiering",
+    "file": "tests\\cognitive\\test_signal_adjudicator.py",
+    "line": 422
+  },
+  {
+    "name": "TestCognitiveSignalProcessorInitialization",
+    "file": "tests\\cognitive\\test_signal_processor.py",
+    "line": 11
+  },
+  {
+    "name": "TestBuildMarketContext",
+    "file": "tests\\cognitive\\test_signal_processor.py",
+    "line": 31
+  },
+  {
+    "name": "TestEvaluateSignals",
+    "file": "tests\\cognitive\\test_signal_processor.py",
+    "line": 65
+  },
+  {
+    "name": "TestRecordOutcome",
+    "file": "tests\\cognitive\\test_signal_processor.py",
+    "line": 128
+  },
+  {
+    "name": "TestDailyMaintenance",
+    "file": "tests\\cognitive\\test_signal_processor.py",
+    "line": 160
+  },
+  {
+    "name": "TestIntrospection",
+    "file": "tests\\cognitive\\test_signal_processor.py",
+    "line": 173
+  },
+  {
+    "name": "TestGetCognitiveStatus",
+    "file": "tests\\cognitive\\test_signal_processor.py",
+    "line": 187
+  },
+  {
+    "name": "TestRecordOutcomeBySymbol",
+    "file": "tests\\cognitive\\test_signal_processor.py",
+    "line": 202
+  },
+  {
+    "name": "TestIntegrationWithBrain",
+    "file": "tests\\cognitive\\test_signal_processor.py",
+    "line": 221
+  },
+  {
+    "name": "TestSingletonFactory",
+    "file": "tests\\cognitive\\test_signal_processor.py",
+    "line": 243
+  },
+  {
+    "name": "TestErrorHandling",
+    "file": "tests\\cognitive\\test_signal_processor.py",
+    "line": 255
+  },
+  {
+    "name": "TestLoadValidatedSettings",
+    "file": "tests\\config\\test_settings_schema.py",
+    "line": 23
+  },
+  {
+    "name": "TestValidateSettingsForMode",
+    "file": "tests\\config\\test_settings_schema.py",
+    "line": 48
+  },
+  {
+    "name": "TestGetValidatedModeConfig",
+    "file": "tests\\config\\test_settings_schema.py",
+    "line": 112
+  },
+  {
+    "name": "TestRequireValidSettings",
+    "file": "tests\\config\\test_settings_schema.py",
+    "line": 148
+  },
+  {
+    "name": "TestSchemaDefaults",
+    "file": "tests\\config\\test_settings_schema.py",
+    "line": 176
+  },
+  {
+    "name": "TestSourceTagging",
+    "file": "tests\\core\\test_earnings_canary.py",
+    "line": 35
+  },
+  {
+    "name": "TestEarningsCanary",
+    "file": "tests\\core\\test_earnings_canary.py",
+    "line": 84
+  },
+  {
+    "name": "TestEarningsSourceHealth",
+    "file": "tests\\core\\test_earnings_canary.py",
+    "line": 153
+  },
+  {
+    "name": "TestRestartBackoffConfig",
+    "file": "tests\\core\\test_restart_backoff.py",
+    "line": 73
+  },
+  {
+    "name": "TestRestartState",
+    "file": "tests\\core\\test_restart_backoff.py",
+    "line": 102
+  },
+  {
+    "name": "TestRestartBackoff",
+    "file": "tests\\core\\test_restart_backoff.py",
+    "line": 138
+  },
+  {
+    "name": "TestCooldownReset",
+    "file": "tests\\core\\test_restart_backoff.py",
+    "line": 210
+  },
+  {
+    "name": "TestJitter",
+    "file": "tests\\core\\test_restart_backoff.py",
+    "line": 240
+  },
+  {
+    "name": "TestDisabled",
+    "file": "tests\\core\\test_restart_backoff.py",
+    "line": 266
+  },
+  {
+    "name": "TestGetStatus",
+    "file": "tests\\core\\test_restart_backoff.py",
+    "line": 290
+  },
+  {
+    "name": "TestSingleton",
+    "file": "tests\\core\\test_restart_backoff.py",
+    "line": 311
+  },
+  {
+    "name": "TestConvenienceFunctions",
+    "file": "tests\\core\\test_restart_backoff.py",
+    "line": 347
+  },
+  {
+    "name": "TestMaskSecrets",
+    "file": "tests\\core\\test_secrets.py",
+    "line": 26
+  },
+  {
+    "name": "TestSanitizeDict",
+    "file": "tests\\core\\test_secrets.py",
+    "line": 83
+  },
+  {
+    "name": "TestSanitizeException",
+    "file": "tests\\core\\test_secrets.py",
+    "line": 118
+  },
+  {
+    "name": "TestSecretsMaskingFilter",
+    "file": "tests\\core\\test_secrets.py",
+    "line": 137
+  },
+  {
+    "name": "TestGetSafeEnvSummary",
+    "file": "tests\\core\\test_secrets.py",
+    "line": 176
+  },
+  {
+    "name": "TestVIXConfig",
+    "file": "tests\\core\\test_vix_monitor.py",
+    "line": 72
+  },
+  {
+    "name": "TestVIXReading",
+    "file": "tests\\core\\test_vix_monitor.py",
+    "line": 101
+  },
+  {
+    "name": "TestVIXMonitor",
+    "file": "tests\\core\\test_vix_monitor.py",
+    "line": 135
+  },
+  {
+    "name": "TestShouldPauseTrading",
+    "file": "tests\\core\\test_vix_monitor.py",
+    "line": 192
+  },
+  {
+    "name": "TestRegimeAdjustment",
+    "file": "tests\\core\\test_vix_monitor.py",
+    "line": 238
+  },
+  {
+    "name": "TestGetStatus",
+    "file": "tests\\core\\test_vix_monitor.py",
+    "line": 278
+  },
+  {
+    "name": "TestSingleton",
+    "file": "tests\\core\\test_vix_monitor.py",
+    "line": 300
+  },
+  {
+    "name": "TestConvenienceFunctions",
+    "file": "tests\\core\\test_vix_monitor.py",
+    "line": 327
+  },
+  {
+    "name": "TestOvernightReturns",
+    "file": "tests\\data\\quality\\test_corporate_actions_canary.py",
+    "line": 41
+  },
+  {
+    "name": "TestClassifyDiscontinuity",
+    "file": "tests\\data\\quality\\test_corporate_actions_canary.py",
+    "line": 61
+  },
+  {
+    "name": "TestCheckSymbolForSplits",
+    "file": "tests\\data\\quality\\test_corporate_actions_canary.py",
+    "line": 91
+  },
+  {
+    "name": "TestRunPriceDiscontinuityCheck",
+    "file": "tests\\data\\quality\\test_corporate_actions_canary.py",
+    "line": 147
+  },
+  {
+    "name": "TestGetCanarySummary",
+    "file": "tests\\data\\quality\\test_corporate_actions_canary.py",
+    "line": 173
+  },
+  {
+    "name": "TestAlpacaBrokerFunctions",
+    "file": "tests\\execution\\test_broker_alpaca.py",
+    "line": 110
+  },
+  {
+    "name": "TestPlaceIOCLimit",
+    "file": "tests\\execution\\test_broker_alpaca.py",
+    "line": 145
+  },
+  {
+    "name": "TestPlaceOrderWithLiquidityCheck",
+    "file": "tests\\execution\\test_broker_alpaca.py",
+    "line": 190
+  },
+  {
+    "name": "TestExecuteSignal",
+    "file": "tests\\execution\\test_broker_alpaca.py",
+    "line": 231
+  },
+  {
+    "name": "TestIntelligentExecutorInitialization",
+    "file": "tests\\execution\\test_intelligent_executor.py",
+    "line": 100
+  },
+  {
+    "name": "TestExecuteSignalIntelligently",
+    "file": "tests\\execution\\test_intelligent_executor.py",
+    "line": 119
+  },
+  {
+    "name": "TestExecutePipeline",
+    "file": "tests\\execution\\test_intelligent_executor.py",
+    "line": 275
+  },
+  {
+    "name": "TestSingletonFactory",
+    "file": "tests\\execution\\test_intelligent_executor.py",
+    "line": 350
+  },
+  {
+    "name": "TestIntradayTriggerKillSwitch",
+    "file": "tests\\execution\\test_intraday_trigger.py",
+    "line": 23
+  },
+  {
+    "name": "TestIntradayTriggerModes",
+    "file": "tests\\execution\\test_intraday_trigger.py",
+    "line": 82
+  },
+  {
+    "name": "TestConvenienceFunctions",
+    "file": "tests\\execution\\test_intraday_trigger.py",
+    "line": 143
+  },
+  {
+    "name": "SynchronousExecutor",
+    "file": "tests\\execution\\test_order_manager.py",
+    "line": 14
+  },
+  {
+    "name": "FakeFuture",
+    "file": "tests\\execution\\test_order_manager.py",
+    "line": 18
+  },
+  {
+    "name": "TestOrderManagerInitialization",
+    "file": "tests\\execution\\test_order_manager.py",
+    "line": 95
+  },
+  {
+    "name": "TestSubmitOrder",
+    "file": "tests\\execution\\test_order_manager.py",
+    "line": 102
+  },
+  {
+    "name": "TestExecuteSimpleIOCLimit",
+    "file": "tests\\execution\\test_order_manager.py",
+    "line": 190
+  },
+  {
+    "name": "TestExecuteTWAP",
+    "file": "tests\\execution\\test_order_manager.py",
+    "line": 208
+  },
+  {
+    "name": "TestExecuteVWAP",
+    "file": "tests\\execution\\test_order_manager.py",
+    "line": 238
+  },
+  {
+    "name": "TestSingletonFactory",
+    "file": "tests\\execution\\test_order_manager.py",
+    "line": 245
+  },
+  {
+    "name": "TestTCARecord",
+    "file": "tests\\execution\\tca\\test_transaction_cost_analyzer.py",
+    "line": 47
+  },
+  {
+    "name": "TestTransactionCostAnalyzer",
+    "file": "tests\\execution\\tca\\test_transaction_cost_analyzer.py",
+    "line": 99
+  },
+  {
+    "name": "TestApiConnectivity",
+    "file": "tests\\integration\\test_api_connectivity.py",
+    "line": 148
+  },
+  {
+    "name": "TestDemoRun",
+    "file": "tests\\integration\\test_demo_run.py",
+    "line": 19
+  },
+  {
+    "name": "TestHealthCheck",
+    "file": "tests\\integration\\test_demo_run.py",
+    "line": 50
+  },
+  {
+    "name": "TestPipelineInstantiation",
+    "file": "tests\\integration\\test_pipeline_run.py",
+    "line": 16
+  },
+  {
+    "name": "TestPipelineRun",
+    "file": "tests\\integration\\test_pipeline_run.py",
+    "line": 52
+  },
+  {
+    "name": "TestScanToSignalWorkflow",
+    "file": "tests\\integration\\test_workflow.py",
+    "line": 15
+  },
+  {
+    "name": "TestBacktestWorkflow",
+    "file": "tests\\integration\\test_workflow.py",
+    "line": 33
+  },
+  {
+    "name": "TestRiskCheckWorkflow",
+    "file": "tests\\integration\\test_workflow.py",
+    "line": 63
+  },
+  {
+    "name": "TestStateManagementWorkflow",
+    "file": "tests\\integration\\test_workflow.py",
+    "line": 110
+  },
+  {
+    "name": "TestStateClassifier",
+    "file": "tests\\ml_advanced\\test_markov_chain.py",
+    "line": 71
+  },
+  {
+    "name": "TestTransitionMatrix",
+    "file": "tests\\ml_advanced\\test_markov_chain.py",
+    "line": 155
+  },
+  {
+    "name": "TestStationaryDistribution",
+    "file": "tests\\ml_advanced\\test_markov_chain.py",
+    "line": 256
+  },
+  {
+    "name": "TestHigherOrderMarkov",
+    "file": "tests\\ml_advanced\\test_markov_chain.py",
+    "line": 327
+  },
+  {
+    "name": "TestMarkovPredictor",
+    "file": "tests\\ml_advanced\\test_markov_chain.py",
+    "line": 397
+  },
+  {
+    "name": "TestMarkovAssetScorer",
+    "file": "tests\\ml_advanced\\test_markov_chain.py",
+    "line": 471
+  },
+  {
+    "name": "TestIntegration",
+    "file": "tests\\ml_advanced\\test_markov_chain.py",
+    "line": 545
+  },
+  {
+    "name": "TestTokenBucketRateLimiter",
+    "file": "tests\\monitor\\test_health_endpoints_rate_limit.py",
+    "line": 21
+  },
+  {
+    "name": "TestRateLimitingEnabled",
+    "file": "tests\\monitor\\test_health_endpoints_rate_limit.py",
+    "line": 68
+  },
+  {
+    "name": "TestGetMetricsRateLimiter",
+    "file": "tests\\monitor\\test_health_endpoints_rate_limit.py",
+    "line": 82
+  },
+  {
+    "name": "TestOrderRecord",
+    "file": "tests\\oms\\test_order_state.py",
+    "line": 5
+  },
+  {
+    "name": "TestStateManagerBasics",
+    "file": "tests\\portfolio\\test_state_manager.py",
+    "line": 34
+  },
+  {
+    "name": "TestAtomicWrites",
+    "file": "tests\\portfolio\\test_state_manager.py",
+    "line": 92
+  },
+  {
+    "name": "TestWeeklyBudget",
+    "file": "tests\\portfolio\\test_state_manager.py",
+    "line": 118
+  },
+  {
+    "name": "TestBrainState",
+    "file": "tests\\portfolio\\test_state_manager.py",
+    "line": 141
+  },
+  {
+    "name": "TestReconciliation",
+    "file": "tests\\portfolio\\test_state_manager.py",
+    "line": 161
+  },
+  {
+    "name": "TestGenericState",
+    "file": "tests\\portfolio\\test_state_manager.py",
+    "line": 173
+  },
+  {
+    "name": "TestConcurrency",
+    "file": "tests\\portfolio\\test_state_manager.py",
+    "line": 189
+  },
+  {
+    "name": "TestGlobalInstance",
+    "file": "tests\\portfolio\\test_state_manager.py",
+    "line": 241
+  },
+  {
+    "name": "TestErrorHandling",
+    "file": "tests\\portfolio\\test_state_manager.py",
+    "line": 268
+  },
+  {
+    "name": "TestCheckKillSwitch",
+    "file": "tests\\scripts\\test_preflight_live.py",
+    "line": 25
+  },
+  {
+    "name": "TestCheckBrokerKeys",
+    "file": "tests\\scripts\\test_preflight_live.py",
+    "line": 44
+  },
+  {
+    "name": "TestCheckWebhookHmac",
+    "file": "tests\\scripts\\test_preflight_live.py",
+    "line": 67
+  },
+  {
+    "name": "TestRunPreflight",
+    "file": "tests\\scripts\\test_preflight_live.py",
+    "line": 94
+  },
+  {
+    "name": "TestBacktester",
+    "file": "tests\\unit\\test_backtest.py",
+    "line": 16
+  },
+  {
+    "name": "TestWalkForward",
+    "file": "tests\\unit\\test_backtest.py",
+    "line": 67
+  },
+  {
+    "name": "TestEquityCurve",
+    "file": "tests\\unit\\test_backtest.py",
+    "line": 112
+  },
+  {
+    "name": "TestHashChain",
+    "file": "tests\\unit\\test_core.py",
+    "line": 17
+  },
+  {
+    "name": "TestStructuredLog",
+    "file": "tests\\unit\\test_core.py",
+    "line": 90
+  },
+  {
+    "name": "TestIdempotencyStore",
+    "file": "tests\\unit\\test_core.py",
+    "line": 164
+  },
+  {
+    "name": "TestPolygonProvider",
+    "file": "tests\\unit\\test_data.py",
+    "line": 16
+  },
+  {
+    "name": "TestUniverseLoader",
+    "file": "tests\\unit\\test_data.py",
+    "line": 63
+  },
+  {
+    "name": "TestDataValidation",
+    "file": "tests\\unit\\test_data.py",
+    "line": 148
+  },
+  {
+    "name": "TestExecutionPlan",
+    "file": "tests\\unit\\test_decision_packet.py",
+    "line": 20
+  },
+  {
+    "name": "TestRiskGateResult",
+    "file": "tests\\unit\\test_decision_packet.py",
+    "line": 38
+  },
+  {
+    "name": "TestDecisionPacket",
+    "file": "tests\\unit\\test_decision_packet.py",
+    "line": 53
+  },
+  {
+    "name": "TestBuildDecisionPacket",
+    "file": "tests\\unit\\test_decision_packet.py",
+    "line": 182
+  },
+  {
+    "name": "TestFetchEarningsDates",
+    "file": "tests\\unit\\test_earnings_filter.py",
+    "line": 25
+  },
+  {
+    "name": "TestIsNearEarnings",
+    "file": "tests\\unit\\test_earnings_filter.py",
+    "line": 91
+  },
+  {
+    "name": "TestFilterSignalsByEarnings",
+    "file": "tests\\unit\\test_earnings_filter.py",
+    "line": 158
+  },
+  {
+    "name": "TestGetBlackoutDates",
+    "file": "tests\\unit\\test_earnings_filter.py",
+    "line": 211
+  },
+  {
+    "name": "TestClearCache",
+    "file": "tests\\unit\\test_earnings_filter.py",
+    "line": 250
+  },
+  {
+    "name": "TestQuoteFreshness",
+    "file": "tests\\unit\\test_execution_guard.py",
+    "line": 19
+  },
+  {
+    "name": "TestSpreadValidation",
+    "file": "tests\\unit\\test_execution_guard.py",
+    "line": 46
+  },
+  {
+    "name": "TestQuoteValidity",
+    "file": "tests\\unit\\test_execution_guard.py",
+    "line": 76
+  },
+  {
+    "name": "TestSizeLimits",
+    "file": "tests\\unit\\test_execution_guard.py",
+    "line": 102
+  },
+  {
+    "name": "TestFullCheck",
+    "file": "tests\\unit\\test_execution_guard.py",
+    "line": 128
+  },
+  {
+    "name": "TestGuardCheckResult",
+    "file": "tests\\unit\\test_execution_guard.py",
+    "line": 216
+  },
+  {
+    "name": "TestAlwaysFillModel",
+    "file": "tests\\unit\\test_fill_models.py",
+    "line": 19
+  },
+  {
+    "name": "TestLimitOrderFillModel",
+    "file": "tests\\unit\\test_fill_models.py",
+    "line": 52
+  },
+  {
+    "name": "TestProbabilisticFillModel",
+    "file": "tests\\unit\\test_fill_models.py",
+    "line": 130
+  },
+  {
+    "name": "TestPartialFillModel",
+    "file": "tests\\unit\\test_fill_models.py",
+    "line": 188
+  },
+  {
+    "name": "TestFillModelFactory",
+    "file": "tests\\unit\\test_fill_models.py",
+    "line": 242
+  },
+  {
+    "name": "TestFillResult",
+    "file": "tests\\unit\\test_fill_models.py",
+    "line": 269
+  },
+  {
+    "name": "TestHashFunctions",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 22
+  },
+  {
+    "name": "TestLineageTracker",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 96
+  },
+  {
+    "name": "TestLinkLineage",
+    "file": "tests\\unit\\test_lineage.py",
+    "line": 202
+  },
+  {
+    "name": "TestEquitiesCalendar",
+    "file": "tests\\unit\\test_market_clock.py",
+    "line": 24
+  },
+  {
+    "name": "TestCryptoClock",
+    "file": "tests\\unit\\test_market_clock.py",
+    "line": 93
+  },
+  {
+    "name": "TestOptionsEventClock",
+    "file": "tests\\unit\\test_market_clock.py",
+    "line": 122
+  },
+  {
+    "name": "TestMacroEventCalendar",
+    "file": "tests\\unit\\test_market_clock.py",
+    "line": 149
+  },
+  {
+    "name": "TestMarketClock",
+    "file": "tests\\unit\\test_market_clock.py",
+    "line": 180
+  },
+  {
+    "name": "TestMarketEvent",
+    "file": "tests\\unit\\test_market_clock.py",
+    "line": 227
+  },
+  {
+    "name": "TestTechnicalFeatures",
+    "file": "tests\\unit\\test_ml_features.py",
+    "line": 52
+  },
+  {
+    "name": "TestAnomalyDetection",
+    "file": "tests\\unit\\test_ml_features.py",
+    "line": 161
+  },
+  {
+    "name": "TestFeaturePipeline",
+    "file": "tests\\unit\\test_ml_features.py",
+    "line": 257
+  },
+  {
+    "name": "TestSignalConfidence",
+    "file": "tests\\unit\\test_ml_features.py",
+    "line": 332
+  },
+  {
+    "name": "TestRegimeML",
+    "file": "tests\\unit\\test_ml_features.py",
+    "line": 417
+  },
+  {
+    "name": "TestStrategyEnhancer",
+    "file": "tests\\unit\\test_ml_features.py",
+    "line": 510
+  },
+  {
+    "name": "MockStrategy",
+    "file": "tests\\unit\\test_ml_features.py",
+    "line": 524
+  },
+  {
+    "name": "MockStrategy",
+    "file": "tests\\unit\\test_ml_features.py",
+    "line": 547
+  },
+  {
+    "name": "MockStrategy",
+    "file": "tests\\unit\\test_ml_features.py",
+    "line": 575
+  },
+  {
+    "name": "MockStrategy",
+    "file": "tests\\unit\\test_ml_features.py",
+    "line": 604
+  },
+  {
+    "name": "MockStrategy",
+    "file": "tests\\unit\\test_ml_features.py",
+    "line": 623
+  },
+  {
+    "name": "TestConvenienceFunctions",
+    "file": "tests\\unit\\test_ml_features.py",
+    "line": 635
+  },
+  {
+    "name": "TestPlaybook",
+    "file": "tests\\unit\\test_playbook_generator.py",
+    "line": 25
+  },
+  {
+    "name": "TestPlaybookGenerator",
+    "file": "tests\\unit\\test_playbook_generator.py",
+    "line": 44
+  },
+  {
+    "name": "TestPlaybookWithHistoricalAnalogs",
+    "file": "tests\\unit\\test_playbook_generator.py",
+    "line": 169
+  },
+  {
+    "name": "TestPlaybookChecklist",
+    "file": "tests\\unit\\test_playbook_generator.py",
+    "line": 211
+  },
+  {
+    "name": "TestPortfolioRiskLimits",
+    "file": "tests\\unit\\test_portfolio_risk.py",
+    "line": 23
+  },
+  {
+    "name": "TestPortfolioState",
+    "file": "tests\\unit\\test_portfolio_risk.py",
+    "line": 42
+  },
+  {
+    "name": "TestSectorMapper",
+    "file": "tests\\unit\\test_portfolio_risk.py",
+    "line": 65
+  },
+  {
+    "name": "TestCorrelationAnalyzer",
+    "file": "tests\\unit\\test_portfolio_risk.py",
+    "line": 90
+  },
+  {
+    "name": "TestPortfolioRiskGate",
+    "file": "tests\\unit\\test_portfolio_risk.py",
+    "line": 126
+  },
+  {
+    "name": "TestTokenBucket",
+    "file": "tests\\unit\\test_rate_limiter.py",
+    "line": 24
+  },
+  {
+    "name": "TestRateLimitedDecorator",
+    "file": "tests\\unit\\test_rate_limiter.py",
+    "line": 100
+  },
+  {
+    "name": "TestWaitForRateLimit",
+    "file": "tests\\unit\\test_rate_limiter.py",
+    "line": 127
+  },
+  {
+    "name": "TestWithRetry",
+    "file": "tests\\unit\\test_rate_limiter.py",
+    "line": 141
+  },
+  {
+    "name": "TestRateLimitExceeded",
+    "file": "tests\\unit\\test_rate_limiter.py",
+    "line": 233
+  },
+  {
+    "name": "TestBrokerPosition",
+    "file": "tests\\unit\\test_reconciliation.py",
+    "line": 25
+  },
+  {
+    "name": "TestOMSPosition",
+    "file": "tests\\unit\\test_reconciliation.py",
+    "line": 43
+  },
+  {
+    "name": "TestDiscrepancy",
+    "file": "tests\\unit\\test_reconciliation.py",
+    "line": 57
+  },
+  {
+    "name": "TestReconciler",
+    "file": "tests\\unit\\test_reconciliation.py",
+    "line": 88
+  },
+  {
+    "name": "TestReconciliationReport",
+    "file": "tests\\unit\\test_reconciliation.py",
+    "line": 271
+  },
+  {
+    "name": "TestComputeRegimeMask",
+    "file": "tests\\unit\\test_regime_filter.py",
+    "line": 45
+  },
+  {
+    "name": "TestGetAllowedTimestamps",
+    "file": "tests\\unit\\test_regime_filter.py",
+    "line": 119
+  },
+  {
+    "name": "TestFilterSignalsByRegime",
+    "file": "tests\\unit\\test_regime_filter.py",
+    "line": 150
+  },
+  {
+    "name": "TestConfigFunctions",
+    "file": "tests\\unit\\test_regime_filter.py",
+    "line": 199
+  },
+  {
+    "name": "TestEdgeCases",
+    "file": "tests\\unit\\test_regime_filter.py",
+    "line": 217
+  },
+  {
+    "name": "TestPolicyGate",
+    "file": "tests\\unit\\test_risk.py",
+    "line": 14
+  },
+  {
+    "name": "TestKillSwitch",
+    "file": "tests\\unit\\test_risk.py",
+    "line": 131
+  },
+  {
+    "name": "TestPositionSizing",
+    "file": "tests\\unit\\test_risk.py",
+    "line": 162
+  },
+  {
+    "name": "TestPositionLimitGate",
+    "file": "tests\\unit\\test_risk.py",
+    "line": 195
+  },
+  {
+    "name": "TestZeroSlippage",
+    "file": "tests\\unit\\test_slippage_models.py",
+    "line": 20
+  },
+  {
+    "name": "TestFixedBpsSlippage",
+    "file": "tests\\unit\\test_slippage_models.py",
+    "line": 31
+  },
+  {
+    "name": "TestATRFractionSlippage",
+    "file": "tests\\unit\\test_slippage_models.py",
+    "line": 57
+  },
+  {
+    "name": "TestSpreadPercentileSlippage",
+    "file": "tests\\unit\\test_slippage_models.py",
+    "line": 80
+  },
+  {
+    "name": "TestVolumeImpactSlippage",
+    "file": "tests\\unit\\test_slippage_models.py",
+    "line": 103
+  },
+  {
+    "name": "TestSlippageFactory",
+    "file": "tests\\unit\\test_slippage_models.py",
+    "line": 134
+  },
+  {
+    "name": "TestSlippageResult",
+    "file": "tests\\unit\\test_slippage_models.py",
+    "line": 167
+  },
+  {
+    "name": "TestDualStrategyScanner",
+    "file": "tests\\unit\\test_strategies.py",
+    "line": 16
+  },
+  {
+    "name": "TestStrategyRegistry",
+    "file": "tests\\unit\\test_strategies.py",
+    "line": 40
+  },
+  {
+    "name": "TestDashboardEndpoints",
+    "file": "tests\\web\\test_main.py",
+    "line": 61
+  },
+  {
+    "name": "AliveChecker",
+    "file": "tools\\verify_alive.py",
+    "line": 51
+  },
+  {
+    "name": "Colors",
+    "file": "tools\\verify_repo.py",
+    "line": 26
+  },
+  {
+    "name": "RobotVerifier",
+    "file": "tools\\verify_robot.py",
+    "line": 31
+  },
+  {
+    "name": "TradePlan",
+    "file": "trade_logging\\decision_card_logger.py",
+    "line": 65
+  },
+  {
+    "name": "SignalDriver",
+    "file": "trade_logging\\decision_card_logger.py",
+    "line": 84
+  },
+  {
+    "name": "ExecutionContext",
+    "file": "trade_logging\\decision_card_logger.py",
+    "line": 93
+  },
+  {
+    "name": "RiskCheck",
+    "file": "trade_logging\\decision_card_logger.py",
+    "line": 104
+  },
+  {
+    "name": "ModelInfo",
+    "file": "trade_logging\\decision_card_logger.py",
+    "line": 114
+  },
+  {
+    "name": "TCAResult",
+    "file": "trade_logging\\decision_card_logger.py",
+    "line": 125
+  },
+  {
+    "name": "TradeResult",
+    "file": "trade_logging\\decision_card_logger.py",
+    "line": 135
+  },
+  {
+    "name": "DecisionCard",
+    "file": "trade_logging\\decision_card_logger.py",
+    "line": 155
+  },
+  {
+    "name": "DecisionCardLogger",
+    "file": "trade_logging\\decision_card_logger.py",
+    "line": 249
+  },
+  {
+    "name": "NoOpMetric",
+    "file": "trade_logging\\prometheus_metrics.py",
+    "line": 185
+  },
+  {
+    "name": "ConnectionManager",
+    "file": "web\\dashboard.py",
+    "line": 53
+  },
+  {
+    "name": "AlpacaBroker",
+    "file": "web\\dashboard_pro.py",
+    "line": 99
+  },
+  {
+    "name": "EdgeMasterService",
+    "file": "web\\dashboard_pro.py",
+    "line": 153
+  },
+  {
+    "name": "ProDashboardData",
+    "file": "web\\dashboard_pro.py",
+    "line": 177
+  },
+  {
+    "name": "QuantDashboardDataProvider",
+    "file": "web\\dashboard_pro.py",
+    "line": 1335
+  },
+  {
+    "name": "PerformanceMetrics",
+    "file": "web\\data_provider.py",
+    "line": 29
+  },
+  {
+    "name": "KillSwitchStatus",
+    "file": "web\\data_provider.py",
+    "line": 67
+  },
+  {
+    "name": "MarketContext",
+    "file": "web\\data_provider.py",
+    "line": 128
+  },
+  {
+    "name": "SignalData",
+    "file": "web\\data_provider.py",
+    "line": 157
+  },
+  {
+    "name": "DashboardDataProvider",
+    "file": "web\\data_provider.py",
+    "line": 192
+  },
+  {
+    "name": "APIRateLimiter",
+    "file": "web\\main.py",
+    "line": 117
+  },
+  {
+    "name": "SignalSource",
+    "file": "web\\api\\signal_queue.py",
+    "line": 30
+  },
+  {
+    "name": "SignalStatus",
+    "file": "web\\api\\signal_queue.py",
+    "line": 39
+  },
+  {
+    "name": "ExternalSignal",
+    "file": "web\\api\\signal_queue.py",
+    "line": 50
+  },
+  {
+    "name": "SignalQueue",
+    "file": "web\\api\\signal_queue.py",
+    "line": 149
+  },
+  {
+    "name": "TradingViewAlert",
+    "file": "web\\api\\webhooks.py",
+    "line": 115
+  },
+  {
+    "name": "CustomSignalPayload",
+    "file": "web\\api\\webhooks.py",
+    "line": 173
+  },
+  {
+    "name": "WebhookResponse",
+    "file": "web\\api\\webhooks.py",
+    "line": 192
+  }
+]
