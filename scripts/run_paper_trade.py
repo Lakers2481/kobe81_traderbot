@@ -33,6 +33,67 @@ from core.structured_log import jlog
 from monitor.health_endpoints import update_request_counter
 from core.config_pin import sha256_file
 
+import json
+
+# Position state file for position_manager.py to track time-based exits
+POSITION_STATE_FILE = ROOT / 'state' / 'position_state.json'
+
+
+def register_position_entry(
+    symbol: str,
+    entry_price: float,
+    qty: int,
+    side: str,
+    stop_loss: float,
+    strategy: str,
+) -> None:
+    """
+    Register a new position in position_state.json for time-based exit tracking.
+
+    This allows position_manager.py to know:
+    - Entry date (for bars held calculation)
+    - Strategy (for correct time stop: 3-bar for Turtle Soup, 7-bar for IBS+RSI)
+    - Stop loss (for price stop checking)
+    """
+    POSITION_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+    # Load existing state
+    state = {}
+    if POSITION_STATE_FILE.exists():
+        try:
+            with open(POSITION_STATE_FILE, 'r') as f:
+                state = json.load(f)
+        except Exception:
+            state = {}
+
+    # Add/update position
+    state[symbol] = {
+        'symbol': symbol,
+        'entry_date': datetime.utcnow().strftime('%Y-%m-%d'),
+        'entry_price': entry_price,
+        'qty': qty,
+        'side': side,
+        'stop_loss': stop_loss,
+        'initial_stop': stop_loss,
+        'strategy': strategy,
+        'bars_held': 0,
+        'last_check': datetime.utcnow().isoformat(),
+        'current_price': None,
+        'unrealized_pnl': None,
+        'r_multiple': 0.0,
+        'stop_state': 'initial',
+        'should_exit': False,
+        'exit_reason': None,
+    }
+
+    # Save state
+    try:
+        with open(POSITION_STATE_FILE, 'w') as f:
+            json.dump(state, f, indent=2)
+        jlog('position_state_registered', symbol=symbol, strategy=strategy, stop_loss=stop_loss)
+    except Exception as e:
+        jlog('position_state_register_error', symbol=symbol, error=str(e), level='WARN')
+
 # Decision Card logging
 try:
     from trade_logging.decision_card_logger import (
@@ -435,6 +496,18 @@ def main():
             )
             jlog('weekly_entry_recorded', symbol=sym, notional=notional,
                  new_exposure_pct=weekly_gate.get_status()['current_exposure_pct'])
+
+            # Register position for time-based exit tracking (position_manager.py)
+            # This ensures correct time stops: 3-bar for TurtleSoup, 7-bar for IBS_RSI
+            strategy_name = row.get('strategy', 'IBS_RSI')
+            register_position_entry(
+                symbol=sym,
+                entry_price=limit_px,
+                qty=max_qty,
+                side='long' if side == 'BUY' else 'short',
+                stop_loss=float(stop_loss),
+                strategy=strategy_name,
+            )
 
         # Create Decision Card for audit trail
         if DECISION_CARDS_AVAILABLE:

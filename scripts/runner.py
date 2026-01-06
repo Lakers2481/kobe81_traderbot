@@ -348,7 +348,156 @@ def check_live_trading_approved(require_flag: bool = True) -> tuple[bool, str]:
     return True, "Live trading approved"
 
 
-def run_submit(mode: str, universe: Path, cap: int, start_days: int, dotenv: Path) -> int:
+# ==============================================================================
+# DAILY CYCLE SCRIPTS (Professional Execution Flow)
+# ==============================================================================
+# These scripts run at specific times to prepare for trading:
+# - 15:30 (3:30 PM): overnight_watchlist.py - Build Top 5 for next day
+# - 08:00 (8:00 AM): premarket_validator.py - Validate gaps/news
+# - 09:30 (9:30 AM): opening_range_observer.py - First observation (NO TRADES)
+# - 09:45 (9:45 AM): opening_range_observer.py - Second observation (NO TRADES)
+
+DAILY_CYCLE_TIMES = {
+    'overnight_watchlist': dtime(15, 30),  # 3:30 PM - Build tomorrow's Top 5
+    'premarket_validator': dtime(8, 0),    # 8:00 AM - Validate gaps/news
+    'opening_range_1': dtime(9, 30),       # 9:30 AM - First observation
+    'opening_range_2': dtime(9, 45),       # 9:45 AM - Second observation
+}
+
+# Position monitor runs every N minutes during market hours
+POSITION_MONITOR_INTERVAL_MINUTES = 15  # Check positions every 15 minutes
+
+# Track last position monitor run
+_last_position_monitor: datetime | None = None
+
+
+def run_position_monitor(dotenv: Path) -> int:
+    """
+    Run position monitor to check time-based exits (3-bar rule for Turtle Soup, 7-bar for IBS+RSI).
+
+    Returns: returncode from subprocess
+    """
+    global _last_position_monitor
+
+    # Check kill switch
+    if is_kill_switch_active():
+        info = get_kill_switch_info()
+        jlog('position_monitor_blocked_by_kill_switch', level='WARNING',
+             reason=info.get('reason') if info else 'Unknown')
+        return -1
+
+    script_path = ROOT / 'scripts' / 'position_manager.py'
+    if not script_path.exists():
+        jlog('position_monitor_script_not_found', level='WARNING')
+        return -1
+
+    cmd = [sys.executable, str(script_path)]
+    if dotenv.exists():
+        cmd.extend(['--dotenv', str(dotenv)])
+
+    jlog('position_monitor_execute', cmd=' '.join(cmd))
+
+    try:
+        p = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+        if p.stdout:
+            # Only print if there's something interesting
+            if 'EXIT' in p.stdout or 'TIME STOP' in p.stdout or 'STOP LOSS' in p.stdout:
+                print(f"[position_monitor] {p.stdout}")
+        if p.stderr:
+            print(f"[position_monitor] {p.stderr}", file=sys.stderr)
+
+        _last_position_monitor = now_et()
+        jlog('position_monitor_complete', returncode=p.returncode)
+        return p.returncode
+
+    except subprocess.TimeoutExpired:
+        jlog('position_monitor_timeout', level='ERROR')
+        return -1
+    except Exception as e:
+        jlog('position_monitor_error', level='ERROR', error=str(e))
+        return -1
+
+
+def should_run_position_monitor() -> bool:
+    """Check if it's time to run position monitor."""
+    global _last_position_monitor
+
+    if _last_position_monitor is None:
+        return True
+
+    now = now_et()
+    minutes_since_last = (now - _last_position_monitor).total_seconds() / 60
+
+    return minutes_since_last >= POSITION_MONITOR_INTERVAL_MINUTES
+
+
+def run_daily_cycle_script(script_name: str, universe: Path, cap: int, dotenv: Path) -> int:
+    """
+    Run a daily cycle script (overnight watchlist, premarket validator, opening range observer).
+
+    Returns: returncode from subprocess
+    """
+    # Check kill switch before running
+    if is_kill_switch_active():
+        info = get_kill_switch_info()
+        jlog('daily_cycle_blocked_by_kill_switch', level='WARNING',
+             script=script_name, reason=info.get('reason') if info else 'Unknown')
+        return -1
+
+    script_map = {
+        'overnight_watchlist': ROOT / 'scripts' / 'overnight_watchlist.py',
+        'premarket_validator': ROOT / 'scripts' / 'premarket_validator.py',
+        'opening_range_1': ROOT / 'scripts' / 'opening_range_observer.py',
+        'opening_range_2': ROOT / 'scripts' / 'opening_range_observer.py',
+    }
+
+    script_path = script_map.get(script_name)
+    if not script_path or not script_path.exists():
+        jlog('daily_cycle_script_not_found', level='WARNING', script=script_name)
+        return -1
+
+    # Build command based on script
+    cmd = [sys.executable, str(script_path)]
+
+    if script_name == 'overnight_watchlist':
+        cmd.extend(['--cap', str(cap)])
+    elif script_name == 'premarket_validator':
+        pass  # No special args
+    elif script_name.startswith('opening_range'):
+        pass  # No special args
+
+    if dotenv.exists():
+        cmd.extend(['--dotenv', str(dotenv)])
+
+    jlog('daily_cycle_execute', script=script_name, cmd=' '.join(cmd))
+
+    try:
+        p = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        if p.stdout:
+            print(f"[{script_name}] {p.stdout}")
+        if p.stderr:
+            print(f"[{script_name}] {p.stderr}", file=sys.stderr)
+
+        jlog('daily_cycle_complete', script=script_name, returncode=p.returncode)
+        return p.returncode
+
+    except subprocess.TimeoutExpired:
+        jlog('daily_cycle_timeout', level='ERROR', script=script_name)
+        return -1
+    except Exception as e:
+        jlog('daily_cycle_error', level='ERROR', script=script_name, error=str(e))
+        return -1
+
+
+def run_submit(mode: str, universe: Path, cap: int, start_days: int, dotenv: Path, scan_time: dtime = None) -> int:
+    """
+    Run trading script with appropriate flags based on scan time.
+
+    Scan Time Strategy:
+    - 10:00 AM: --watchlist-only (trade from validated watchlist only)
+    - 10:30 AM: --fallback-enabled (fallback to full scan if watchlist fails)
+    - 14:30 PM: Normal scan (power hour)
+    """
     # Check kill switch before submission
     if is_kill_switch_active():
         info = get_kill_switch_info()
@@ -363,8 +512,22 @@ def run_submit(mode: str, universe: Path, cap: int, start_days: int, dotenv: Pat
         script = ROOT / 'scripts' / 'run_paper_trade.py'
     else:
         script = ROOT / 'scripts' / 'run_live_trade_micro.py'
+
     cmd = [*base_cmd, str(script), '--universe', str(universe), '--start', start, '--end', end, '--cap', str(cap), '--dotenv', str(dotenv)]
-    jlog('runner_execute', mode=mode, script=str(script), universe=str(universe), start=start, end=end, cap=cap)
+
+    # Add flags based on scan time (Professional Execution Flow)
+    if scan_time:
+        if scan_time.hour == 10 and scan_time.minute == 0:
+            # 10:00 AM - Primary window: Trade from validated watchlist only
+            cmd.append('--watchlist-only')
+            jlog('runner_using_watchlist_only', scan_time='10:00')
+        elif scan_time.hour == 10 and scan_time.minute == 30:
+            # 10:30 AM - Fallback window: If watchlist fails, scan full universe with higher bar
+            cmd.append('--fallback-enabled')
+            jlog('runner_using_fallback', scan_time='10:30')
+        # 14:30 PM - Power hour: Normal scan (no special flags)
+
+    jlog('runner_execute', mode=mode, script=str(script), universe=str(universe), start=start, end=end, cap=cap, scan_time=scan_time.strftime('%H:%M') if scan_time else None)
     p = subprocess.run(cmd, capture_output=True, text=True)
     if p.stdout:
         print(p.stdout)
@@ -380,7 +543,7 @@ def main():
     ap.add_argument('--mode', type=str, choices=['paper','live'], default='paper')
     ap.add_argument('--universe', type=str, required=True)
     ap.add_argument('--cap', type=int, default=50)
-    ap.add_argument('--scan-times', type=str, default='09:35,10:30,15:55', help='Local HH:MM times, comma separated')
+    ap.add_argument('--scan-times', type=str, default='10:00,10:30,14:30', help='Local HH:MM times (ET), comma separated. Default respects kill zones.')
     ap.add_argument('--lookback-days', type=int, default=540)
     ap.add_argument('--dotenv', type=str, default='./.env')
     ap.add_argument('--once', action='store_true', help='Run once immediately and exit')
@@ -598,8 +761,57 @@ def main():
 
             last_reconcile_date = now.date()
 
+        # ==================================================================
+        # DAILY CYCLE SCRIPTS (Professional Execution Flow)
+        # ==================================================================
+        # These run at specific times regardless of trading (except overnight)
+        today_str = now.date().isoformat()
+
+        # Premarket Validator (8:00 AM) - Run on market days
         if within_market_day(now):
-            today_str = now.date().isoformat()
+            premarket_tag = 'premarket_validator'
+            premarket_time = DAILY_CYCLE_TIMES['premarket_validator']
+            premarket_dt = datetime.combine(now.date(), premarket_time, tzinfo=ET)
+            if now >= premarket_dt and not already_ran(premarket_tag, today_str):
+                _heartbeat.update(f"running_{premarket_tag}")
+                rc = run_daily_cycle_script(premarket_tag, universe, args.cap, dotenv)
+                mark_ran(premarket_tag, today_str)
+                jlog('daily_cycle_done', script=premarket_tag, returncode=rc)
+
+        # Opening Range Observer (9:30 AM, 9:45 AM) - Run on market days
+        if within_market_day(now):
+            for obs_tag in ['opening_range_1', 'opening_range_2']:
+                if _shutdown_requested:
+                    break
+                obs_time = DAILY_CYCLE_TIMES[obs_tag]
+                obs_dt = datetime.combine(now.date(), obs_time, tzinfo=ET)
+                if now >= obs_dt and not already_ran(obs_tag, today_str):
+                    _heartbeat.update(f"running_{obs_tag}")
+                    rc = run_daily_cycle_script(obs_tag, universe, args.cap, dotenv)
+                    mark_ran(obs_tag, today_str)
+                    jlog('daily_cycle_done', script=obs_tag, returncode=rc)
+
+        # Overnight Watchlist (3:30 PM) - Run on market days to build next day's watchlist
+        if within_market_day(now):
+            overnight_tag = 'overnight_watchlist'
+            overnight_time = DAILY_CYCLE_TIMES['overnight_watchlist']
+            overnight_dt = datetime.combine(now.date(), overnight_time, tzinfo=ET)
+            if now >= overnight_dt and not already_ran(overnight_tag, today_str):
+                _heartbeat.update(f"running_{overnight_tag}")
+                rc = run_daily_cycle_script(overnight_tag, universe, args.cap, dotenv)
+                mark_ran(overnight_tag, today_str)
+                jlog('daily_cycle_done', script=overnight_tag, returncode=rc)
+                try:
+                    now2 = now_et()
+                    stamp2 = f"{fmt_ct(now2)} | {now2.strftime('%I:%M %p').lstrip('0')} ET"
+                    send_telegram(f"Kobe overnight watchlist built for tomorrow [{stamp2}]")
+                except Exception:
+                    pass
+
+        # ==================================================================
+        # TRADING EXECUTION (Scan + Trade)
+        # ==================================================================
+        if within_market_day(now):
             # Respect early close: skip schedule items after close
             _open, early_close = get_market_hours(now)
             for t in times:
@@ -611,7 +823,7 @@ def main():
                     continue
                 if now >= target_dt and not already_ran(tag, today_str):
                     _heartbeat.update(f"running_{tag}")
-                    rc = run_submit(args.mode, universe, args.cap, args.lookback_days, dotenv)
+                    rc = run_submit(args.mode, universe, args.cap, args.lookback_days, dotenv, scan_time=t)
                     update_request_counter('total', 1)
                     mark_ran(tag, today_str)
                     jlog('runner_done', mode=args.mode, schedule=tag, returncode=rc)
@@ -620,6 +832,23 @@ def main():
                         send_telegram(f"Kobe run {tag} completed rc={rc} [{stamp2}]")
                     except Exception:
                         send_telegram(f"Kobe run {tag} completed rc={rc}")
+
+        # ==================================================================
+        # POSITION MONITOR (Time-Based Exits)
+        # ==================================================================
+        # Run every 15 minutes during market hours to check:
+        # - 3-bar time stop for Turtle Soup
+        # - 7-bar time stop for IBS+RSI
+        # - Trailing stop updates
+        if within_market_day(now) and should_run_position_monitor():
+            # Only run during trading hours (10:00 AM - 4:00 PM)
+            market_open_dt = datetime.combine(now.date(), dtime(10, 0), tzinfo=ET)
+            market_close_dt = datetime.combine(now.date(), dtime(16, 0), tzinfo=ET)
+            if market_open_dt <= now <= market_close_dt:
+                _heartbeat.update("running_position_monitor")
+                rc = run_position_monitor(dotenv)
+                if rc == 0:
+                    jlog('position_monitor_done', returncode=rc)
 
         # Sleep in small intervals for faster shutdown response
         for _ in range(30):
