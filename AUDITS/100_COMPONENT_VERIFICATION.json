@@ -1,0 +1,654 @@
+{
+  "summary": {
+    "total": 100,
+    "passed": 100,
+    "failed": 0,
+    "pass_rate": "100.0%",
+    "by_category": {
+      "1. Safety": {
+        "passed": 10,
+        "failed": 0
+      },
+      "2. Strategies": {
+        "passed": 10,
+        "failed": 0
+      },
+      "3. Execution": {
+        "passed": 10,
+        "failed": 0
+      },
+      "4. Risk": {
+        "passed": 10,
+        "failed": 0
+      },
+      "5. Data": {
+        "passed": 10,
+        "failed": 0
+      },
+      "6. Cognitive": {
+        "passed": 10,
+        "failed": 0
+      },
+      "7. Autonomous": {
+        "passed": 10,
+        "failed": 0
+      },
+      "8. ML/AI": {
+        "passed": 10,
+        "failed": 0
+      },
+      "9. Alerts": {
+        "passed": 10,
+        "failed": 0
+      },
+      "10. Backtest": {
+        "passed": 10,
+        "failed": 0
+      }
+    },
+    "timestamp": "2026-01-06T01:45:06.477391",
+    "verdict": "PASS"
+  },
+  "results": [
+    {
+      "category": "1. Safety",
+      "name": "PAPER_ONLY constant",
+      "status": "PASS",
+      "message": "Loaded from safety.mode"
+    },
+    {
+      "category": "1. Safety",
+      "name": "LIVE_TRADING_ENABLED",
+      "status": "PASS",
+      "message": "Loaded from safety.mode"
+    },
+    {
+      "category": "1. Safety",
+      "name": "get_trading_mode()",
+      "status": "PASS",
+      "message": "Loaded from safety.mode"
+    },
+    {
+      "category": "1. Safety",
+      "name": "assert_paper_only()",
+      "status": "PASS",
+      "message": "Loaded from safety.mode"
+    },
+    {
+      "category": "1. Safety",
+      "name": "is_kill_switch_active()",
+      "status": "PASS",
+      "message": "Loaded from core.kill_switch"
+    },
+    {
+      "category": "1. Safety",
+      "name": "activate_kill_switch()",
+      "status": "PASS",
+      "message": "Loaded from core.kill_switch"
+    },
+    {
+      "category": "1. Safety",
+      "name": "deactivate_kill_switch()",
+      "status": "PASS",
+      "message": "Loaded from core.kill_switch"
+    },
+    {
+      "category": "1. Safety",
+      "name": "@require_no_kill_switch",
+      "status": "PASS",
+      "message": "Loaded from core.kill_switch"
+    },
+    {
+      "category": "1. Safety",
+      "name": "APPROVE_LIVE_ACTION",
+      "status": "PASS",
+      "message": "Loaded from research_os.approval_gate"
+    },
+    {
+      "category": "1. Safety",
+      "name": "ApprovalGate",
+      "status": "PASS",
+      "message": "Loaded from research_os.approval_gate"
+    },
+    {
+      "category": "2. Strategies",
+      "name": "DualStrategyScanner",
+      "status": "PASS",
+      "message": "Loaded from strategies.dual_strategy"
+    },
+    {
+      "category": "2. Strategies",
+      "name": "DualStrategyParams",
+      "status": "PASS",
+      "message": "Loaded from strategies.dual_strategy"
+    },
+    {
+      "category": "2. Strategies",
+      "name": "get_production_scanner()",
+      "status": "PASS",
+      "message": "Loaded from strategies.registry"
+    },
+    {
+      "category": "2. Strategies",
+      "name": "IbsRsiStrategy",
+      "status": "PASS",
+      "message": "Loaded from strategies.ibs_rsi.strategy"
+    },
+    {
+      "category": "2. Strategies",
+      "name": "IbsRsiParams",
+      "status": "PASS",
+      "message": "Loaded from strategies.ibs_rsi.strategy"
+    },
+    {
+      "category": "2. Strategies",
+      "name": "TurtleSoupStrategy",
+      "status": "PASS",
+      "message": "Loaded from strategies.ict.turtle_soup"
+    },
+    {
+      "category": "2. Strategies",
+      "name": "TurtleSoupParams",
+      "status": "PASS",
+      "message": "Loaded from strategies.ict.turtle_soup"
+    },
+    {
+      "category": "2. Strategies",
+      "name": "validate_strategy_import()",
+      "status": "PASS",
+      "message": "Loaded from strategies.registry"
+    },
+    {
+      "category": "2. Strategies",
+      "name": "CANONICAL_STRATEGY",
+      "status": "PASS",
+      "message": "Loaded from strategies.dual_strategy"
+    },
+    {
+      "category": "2. Strategies",
+      "name": "generate_signals()",
+      "status": "PASS",
+      "message": "Loaded from strategies.dual_strategy.combined"
+    },
+    {
+      "category": "3. Execution",
+      "name": "execute_signal()",
+      "status": "PASS",
+      "message": "Loaded from execution.broker_alpaca"
+    },
+    {
+      "category": "3. Execution",
+      "name": "place_order_with_liquidity_check()",
+      "status": "PASS",
+      "message": "Loaded from execution.broker_alpaca"
+    },
+    {
+      "category": "3. Execution",
+      "name": "place_ioc_limit()",
+      "status": "PASS",
+      "message": "Loaded from execution.broker_alpaca"
+    },
+    {
+      "category": "3. Execution",
+      "name": "get_best_ask()",
+      "status": "PASS",
+      "message": "Loaded from execution.broker_alpaca"
+    },
+    {
+      "category": "3. Execution",
+      "name": "PaperBroker",
+      "status": "PASS",
+      "message": "Loaded from execution.broker_paper"
+    },
+    {
+      "category": "3. Execution",
+      "name": "OrderManager",
+      "status": "PASS",
+      "message": "Loaded from execution.order_manager"
+    },
+    {
+      "category": "3. Execution",
+      "name": "OrderRecord",
+      "status": "PASS",
+      "message": "Loaded from oms.order_state"
+    },
+    {
+      "category": "3. Execution",
+      "name": "OrderStatus",
+      "status": "PASS",
+      "message": "Loaded from oms.order_state"
+    },
+    {
+      "category": "3. Execution",
+      "name": "IdempotencyStore",
+      "status": "PASS",
+      "message": "Loaded from oms.idempotency_store"
+    },
+    {
+      "category": "3. Execution",
+      "name": "IntelligentExecutor",
+      "status": "PASS",
+      "message": "Loaded from execution.intelligent_executor"
+    },
+    {
+      "category": "4. Risk",
+      "name": "PolicyGate",
+      "status": "PASS",
+      "message": "Loaded from risk.policy_gate"
+    },
+    {
+      "category": "4. Risk",
+      "name": "SignalQualityGate",
+      "status": "PASS",
+      "message": "Loaded from risk.signal_quality_gate"
+    },
+    {
+      "category": "4. Risk",
+      "name": "can_trade_now()",
+      "status": "PASS",
+      "message": "Loaded from risk.kill_zone_gate"
+    },
+    {
+      "category": "4. Risk",
+      "name": "get_current_zone()",
+      "status": "PASS",
+      "message": "Loaded from risk.kill_zone_gate"
+    },
+    {
+      "category": "4. Risk",
+      "name": "calculate_position_size()",
+      "status": "PASS",
+      "message": "Loaded from risk.equity_sizer"
+    },
+    {
+      "category": "4. Risk",
+      "name": "calculate_dynamic_allocations()",
+      "status": "PASS",
+      "message": "Loaded from risk.dynamic_position_sizer"
+    },
+    {
+      "category": "4. Risk",
+      "name": "MonteCarloVaR",
+      "status": "PASS",
+      "message": "Loaded from risk.advanced.monte_carlo_var"
+    },
+    {
+      "category": "4. Risk",
+      "name": "KellyPositionSizer",
+      "status": "PASS",
+      "message": "Loaded from risk.advanced.kelly_position_sizer"
+    },
+    {
+      "category": "4. Risk",
+      "name": "EnhancedCorrelationLimits",
+      "status": "PASS",
+      "message": "Loaded from risk.advanced.correlation_limits"
+    },
+    {
+      "category": "4. Risk",
+      "name": "TrailingStopManager",
+      "status": "PASS",
+      "message": "Loaded from risk.trailing_stops"
+    },
+    {
+      "category": "5. Data",
+      "name": "fetch_daily_bars_polygon()",
+      "status": "PASS",
+      "message": "Loaded from data.providers.polygon_eod"
+    },
+    {
+      "category": "5. Data",
+      "name": "load_universe()",
+      "status": "PASS",
+      "message": "Loaded from data.universe.loader"
+    },
+    {
+      "category": "5. Data",
+      "name": "StooqEODProvider",
+      "status": "PASS",
+      "message": "Loaded from data.providers.stooq_eod"
+    },
+    {
+      "category": "5. Data",
+      "name": "YFinanceEODProvider",
+      "status": "PASS",
+      "message": "Loaded from data.providers.yfinance_eod"
+    },
+    {
+      "category": "5. Data",
+      "name": "BinanceKlinesProvider",
+      "status": "PASS",
+      "message": "Loaded from data.providers.binance_klines"
+    },
+    {
+      "category": "5. Data",
+      "name": "LakeWriter",
+      "status": "PASS",
+      "message": "Loaded from data.lake.io"
+    },
+    {
+      "category": "5. Data",
+      "name": "LakeReader",
+      "status": "PASS",
+      "message": "Loaded from data.lake.io"
+    },
+    {
+      "category": "5. Data",
+      "name": "DatasetManifest",
+      "status": "PASS",
+      "message": "Loaded from data.lake.manifest"
+    },
+    {
+      "category": "5. Data",
+      "name": "PolygonConfig",
+      "status": "PASS",
+      "message": "Loaded from data.providers.polygon_eod"
+    },
+    {
+      "category": "5. Data",
+      "name": "DataQuorum",
+      "status": "PASS",
+      "message": "Loaded from data.quorum"
+    },
+    {
+      "category": "6. Cognitive",
+      "name": "CognitiveBrain",
+      "status": "PASS",
+      "message": "Loaded from cognitive.cognitive_brain"
+    },
+    {
+      "category": "6. Cognitive",
+      "name": "MetacognitiveGovernor",
+      "status": "PASS",
+      "message": "Loaded from cognitive.metacognitive_governor"
+    },
+    {
+      "category": "6. Cognitive",
+      "name": "ReflectionEngine",
+      "status": "PASS",
+      "message": "Loaded from cognitive.reflection_engine"
+    },
+    {
+      "category": "6. Cognitive",
+      "name": "CuriosityEngine",
+      "status": "PASS",
+      "message": "Loaded from cognitive.curiosity_engine"
+    },
+    {
+      "category": "6. Cognitive",
+      "name": "EpisodicMemory",
+      "status": "PASS",
+      "message": "Loaded from cognitive.episodic_memory"
+    },
+    {
+      "category": "6. Cognitive",
+      "name": "SemanticMemory",
+      "status": "PASS",
+      "message": "Loaded from cognitive.semantic_memory"
+    },
+    {
+      "category": "6. Cognitive",
+      "name": "SelfModel",
+      "status": "PASS",
+      "message": "Loaded from cognitive.self_model"
+    },
+    {
+      "category": "6. Cognitive",
+      "name": "KnowledgeBoundary",
+      "status": "PASS",
+      "message": "Loaded from cognitive.knowledge_boundary"
+    },
+    {
+      "category": "6. Cognitive",
+      "name": "Adjudicator",
+      "status": "PASS",
+      "message": "Loaded from cognitive.adjudicator"
+    },
+    {
+      "category": "6. Cognitive",
+      "name": "CognitiveDecision",
+      "status": "PASS",
+      "message": "Loaded from cognitive.cognitive_brain"
+    },
+    {
+      "category": "7. Autonomous",
+      "name": "get_context()",
+      "status": "PASS",
+      "message": "Loaded from autonomous.awareness"
+    },
+    {
+      "category": "7. Autonomous",
+      "name": "TimeAwareness",
+      "status": "PASS",
+      "message": "Loaded from autonomous.awareness"
+    },
+    {
+      "category": "7. Autonomous",
+      "name": "MarketPhase",
+      "status": "PASS",
+      "message": "Loaded from autonomous.awareness"
+    },
+    {
+      "category": "7. Autonomous",
+      "name": "FullScheduler",
+      "status": "PASS",
+      "message": "Loaded from autonomous.scheduler_full"
+    },
+    {
+      "category": "7. Autonomous",
+      "name": "MasterBrainFull",
+      "status": "PASS",
+      "message": "Loaded from autonomous.master_brain_full"
+    },
+    {
+      "category": "7. Autonomous",
+      "name": "WorkMode",
+      "status": "PASS",
+      "message": "Loaded from autonomous.awareness"
+    },
+    {
+      "category": "7. Autonomous",
+      "name": "Season",
+      "status": "PASS",
+      "message": "Loaded from autonomous.awareness"
+    },
+    {
+      "category": "7. Autonomous",
+      "name": "MarketContext",
+      "status": "PASS",
+      "message": "Loaded from autonomous.awareness"
+    },
+    {
+      "category": "7. Autonomous",
+      "name": "run_autonomous()",
+      "status": "PASS",
+      "message": "Loaded from autonomous.run"
+    },
+    {
+      "category": "7. Autonomous",
+      "name": "ContextBuilder",
+      "status": "PASS",
+      "message": "Loaded from autonomous.awareness"
+    },
+    {
+      "category": "8. ML/AI",
+      "name": "HMMRegimeDetector",
+      "status": "PASS",
+      "message": "Loaded from ml_advanced.hmm_regime_detector"
+    },
+    {
+      "category": "8. ML/AI",
+      "name": "FeaturePipeline",
+      "status": "PASS",
+      "message": "Loaded from ml_features.feature_pipeline"
+    },
+    {
+      "category": "8. ML/AI",
+      "name": "TechnicalFeatures",
+      "status": "PASS",
+      "message": "Loaded from ml_features.technical_features"
+    },
+    {
+      "category": "8. ML/AI",
+      "name": "PCAReducer",
+      "status": "PASS",
+      "message": "Loaded from ml_features.pca_reducer"
+    },
+    {
+      "category": "8. ML/AI",
+      "name": "EnsemblePredictor",
+      "status": "PASS",
+      "message": "Loaded from ml_advanced.ensemble.ensemble_predictor"
+    },
+    {
+      "category": "8. ML/AI",
+      "name": "OnlineLearningManager",
+      "status": "PASS",
+      "message": "Loaded from ml_advanced.online_learning"
+    },
+    {
+      "category": "8. ML/AI",
+      "name": "LSTMConfidenceModel",
+      "status": "PASS",
+      "message": "Loaded from ml_advanced.lstm_confidence.model"
+    },
+    {
+      "category": "8. ML/AI",
+      "name": "AnomalyDetector",
+      "status": "PASS",
+      "message": "Loaded from ml_features.anomaly_detection"
+    },
+    {
+      "category": "8. ML/AI",
+      "name": "RegimeDetectorML",
+      "status": "PASS",
+      "message": "Loaded from ml_features.regime_ml"
+    },
+    {
+      "category": "8. ML/AI",
+      "name": "EnsembleBrain",
+      "status": "PASS",
+      "message": "Loaded from ml_features.ensemble_brain"
+    },
+    {
+      "category": "9. Alerts",
+      "name": "TelegramAlerter",
+      "status": "PASS",
+      "message": "Loaded from alerts.telegram_alerter"
+    },
+    {
+      "category": "9. Alerts",
+      "name": "get_alerter()",
+      "status": "PASS",
+      "message": "Loaded from alerts.telegram_alerter"
+    },
+    {
+      "category": "9. Alerts",
+      "name": "alert_signal()",
+      "status": "PASS",
+      "message": "Loaded from alerts.telegram_alerter"
+    },
+    {
+      "category": "9. Alerts",
+      "name": "ProfessionalAlerts",
+      "status": "PASS",
+      "message": "Loaded from alerts.professional_alerts"
+    },
+    {
+      "category": "9. Alerts",
+      "name": "check_regime_transition()",
+      "status": "PASS",
+      "message": "Loaded from alerts.regime_alerts"
+    },
+    {
+      "category": "9. Alerts",
+      "name": "start_health_server()",
+      "status": "PASS",
+      "message": "Loaded from monitor.health_endpoints"
+    },
+    {
+      "category": "9. Alerts",
+      "name": "CircuitBreaker",
+      "status": "PASS",
+      "message": "Loaded from selfmonitor.circuit_breaker"
+    },
+    {
+      "category": "9. Alerts",
+      "name": "AnomalyDetector (self)",
+      "status": "PASS",
+      "message": "Loaded from selfmonitor.anomaly_detector"
+    },
+    {
+      "category": "9. Alerts",
+      "name": "jlog()",
+      "status": "PASS",
+      "message": "Loaded from core.structured_log"
+    },
+    {
+      "category": "9. Alerts",
+      "name": "verify_chain()",
+      "status": "PASS",
+      "message": "Loaded from core.hash_chain"
+    },
+    {
+      "category": "10. Backtest",
+      "name": "Backtester",
+      "status": "PASS",
+      "message": "Loaded from backtest.engine"
+    },
+    {
+      "category": "10. Backtest",
+      "name": "BacktestConfig",
+      "status": "PASS",
+      "message": "Loaded from backtest.engine"
+    },
+    {
+      "category": "10. Backtest",
+      "name": "WalkForwardCV",
+      "status": "PASS",
+      "message": "Loaded from backtest.purged_cv"
+    },
+    {
+      "category": "10. Backtest",
+      "name": "VectorizedBacktester",
+      "status": "PASS",
+      "message": "Loaded from backtest.vectorized"
+    },
+    {
+      "category": "10. Backtest",
+      "name": "SyntheticOptionsBacktester",
+      "status": "PASS",
+      "message": "Loaded from options.backtest"
+    },
+    {
+      "category": "10. Backtest",
+      "name": "BlackScholes",
+      "status": "PASS",
+      "message": "Loaded from options.black_scholes"
+    },
+    {
+      "category": "10. Backtest",
+      "name": "HistoricalPatterns",
+      "status": "PASS",
+      "message": "Loaded from analysis.historical_patterns"
+    },
+    {
+      "category": "10. Backtest",
+      "name": "ExpectedMoveCalculator",
+      "status": "PASS",
+      "message": "Loaded from analysis.options_expected_move"
+    },
+    {
+      "category": "10. Backtest",
+      "name": "TradeThesisBuilder",
+      "status": "PASS",
+      "message": "Loaded from explainability.trade_thesis_builder"
+    },
+    {
+      "category": "10. Backtest",
+      "name": "ExperimentRegistry",
+      "status": "PASS",
+      "message": "Loaded from experiments.registry"
+    }
+  ]
+}
