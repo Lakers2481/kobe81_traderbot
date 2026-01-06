@@ -24,6 +24,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from options.chain_fetcher import OptionContract, OptionsChain, OptionType
 from options.spreads import OptionsSpread, SpreadLeg, SpreadType
+from safety.execution_choke import evaluate_safety_gates, SafetyViolationError
 
 logger = logging.getLogger(__name__)
 
@@ -319,24 +320,33 @@ class OptionsOrderRouter:
         )
         return order
 
-    def submit_order(self, order: OptionsOrder) -> OptionsOrderResult:
+    def submit_order(self, order: OptionsOrder, ack_token: str = None) -> OptionsOrderResult:
         """
-        Submit an options order.
+        Submit an options order with full safety gate enforcement.
 
         Args:
             order: OptionsOrder to submit
+            ack_token: Runtime acknowledgment token for live orders
 
         Returns:
             OptionsOrderResult with status
         """
-        # Check kill switch
-        if self._check_kill_switch():
+        # FULL SAFETY GATE CHECK - Required for all order submissions
+        # (Replaces simple kill switch check with comprehensive 7-flag check)
+        gate_result = evaluate_safety_gates(
+            is_paper_order=self.paper_mode,
+            ack_token=ack_token,
+            context=f"options_order:{order.symbol}"
+        )
+
+        if not gate_result.allowed:
             order.status = OptionsOrderStatus.REJECTED
+            logger.warning(f"Safety gate blocked options order for {order.symbol}: {gate_result.reason}")
             return OptionsOrderResult(
                 success=False,
                 order=order,
-                message="Kill switch active",
-                errors=["KILL_SWITCH file exists"],
+                message=f"Safety gate blocked: {gate_result.reason}",
+                errors=[gate_result.reason],
             )
 
         # Track order
@@ -344,9 +354,11 @@ class OptionsOrderRouter:
 
         # Paper mode simulation
         if self.paper_mode:
+            logger.info(f"Options order (mode: {gate_result.mode}): {order.order_id}")
             return self._simulate_order(order)
 
         # Live execution via Alpaca
+        logger.info(f"Options LIVE order (mode: {gate_result.mode}): {order.order_id}")
         return self._execute_alpaca_order(order)
 
     def _simulate_order(self, order: OptionsOrder) -> OptionsOrderResult:

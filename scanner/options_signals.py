@@ -191,7 +191,7 @@ class OptionsSignalGenerator:
         """Generate a single option signal (call or put)."""
         symbol = str(equity_signal.get('symbol', ''))
         entry_price = float(equity_signal.get('entry_price', 0))
-        conf_score = float(equity_signal.get('conf_score', 0.5))
+        parent_conf_score = float(equity_signal.get('conf_score', 0.5))
         strategy = str(equity_signal.get('strategy', 'unknown'))
         timestamp = equity_signal.get('timestamp', datetime.now().isoformat())
 
@@ -231,6 +231,33 @@ class OptionsSignalGenerator:
 
         type_str = option_type.value.upper()
 
+        # === ADJUSTED CONF_SCORE FOR OPTIONS ===
+        # Options have additional risks vs equity: theta decay, wider spreads, leverage
+        # Adjustment ensures parent equity always ranks above its derivative options
+        #
+        # Base adjustment by option type:
+        #   CALL: 0.92 multiplier (8% haircut - directional bet aligned with bullish)
+        #   PUT:  0.88 multiplier (12% haircut - opposite direction or hedge)
+        #
+        # Delta adjustment (higher delta = more like stock = less reduction):
+        #   Add back up to 0.03 for high-delta options (delta >= 0.50)
+        #
+        # DTE adjustment (shorter DTE = more theta risk = more reduction):
+        #   Subtract up to 0.02 for short-dated options (DTE < 14 days)
+        #
+        base_multiplier = 0.92 if type_str == 'CALL' else 0.88
+        actual_delta = abs(strike_result.delta)
+
+        # Delta bonus: high-delta options are more like stock
+        delta_bonus = min(0.03, max(0.0, (actual_delta - 0.30) * 0.10))
+
+        # DTE penalty: short-dated options have more theta risk
+        dte_penalty = 0.02 if dte < 14 else (0.01 if dte < 21 else 0.0)
+
+        # Calculate adjusted conf_score
+        adjusted_conf = parent_conf_score * base_multiplier + delta_bonus - dte_penalty
+        adjusted_conf = max(0.10, min(0.99, adjusted_conf))  # Clamp to valid range
+
         # Build options signal
         return OptionsSignal(
             symbol=symbol,
@@ -246,7 +273,7 @@ class OptionsSignalGenerator:
             action='BUY_TO_OPEN',
             quantity=1,
             max_risk=round(option_price * 100, 2),  # Per contract
-            conf_score=conf_score,
+            conf_score=round(adjusted_conf, 4),  # Adjusted, not parent's raw score
             strategy=f"{strategy}_{type_str}",
             reason=f"BUY {type_str} @ {self.target_delta*100:.0f}Δ, ${strike_result.strike:.2f} strike",
             timestamp=str(timestamp),

@@ -25,6 +25,7 @@ from config.settings_loader import (
 )
 from risk.liquidity_gate import LiquidityGate, LiquidityCheck
 from execution.utils import normalize_side, normalize_side_lowercase, is_buy_side
+from safety.execution_choke import evaluate_safety_gates
 from functools import wraps
 
 logger = logging.getLogger(__name__)
@@ -1682,14 +1683,35 @@ class AlpacaBroker(BrokerBase):
 
     # === Orders ===
 
-    def place_order(self, order: BrokerOrder) -> BrokerOrderResult:
-        """Place an order via Alpaca."""
-        # Check kill switch first
-        if is_kill_switch_active():
+    def place_order(self, order: BrokerOrder, ack_token: str = None) -> BrokerOrderResult:
+        """
+        Place an order via Alpaca with unified safety gate enforcement.
+
+        Args:
+            order: The order to place
+            ack_token: Runtime acknowledgment token for live orders
+
+        Returns:
+            BrokerOrderResult with execution details
+        """
+        # UNIFIED SAFETY GATE CHECK - Required for all order submissions
+        gate_result = evaluate_safety_gates(
+            is_paper_order=self.paper,
+            ack_token=ack_token,
+            context=f"alpaca_place_order:{order.symbol}"
+        )
+
+        if not gate_result.allowed:
+            logger.warning(
+                f"Safety gate blocked order for {order.symbol}: {gate_result.reason}"
+            )
             return BrokerOrderResult(
                 success=False,
+                broker_order_id=None,
                 status=BrokerOrderStatus.REJECTED,
-                error_message="kill_switch_active",
+                filled_qty=0,
+                fill_price=None,
+                error_message=f"safety_gate_blocked: {gate_result.reason}",
             )
 
         # Get current quote for TCA

@@ -43,6 +43,7 @@ from risk.weekly_exposure_gate import get_weekly_exposure_gate
 from oms.order_state import OrderRecord, OrderStatus
 from core.kill_switch import is_kill_switch_active
 from core.structured_log import get_logger
+from safety.execution_choke import evaluate_safety_gates, SafetyViolationError
 
 # Setup logging
 logger = get_logger(__name__)
@@ -216,10 +217,32 @@ def get_time_stop_bars(strategy: str) -> int:
     return TIME_STOPS["DEFAULT"]
 
 
-def close_position(symbol: str, qty: int, side: str) -> bool:
-    """Close a position via market order."""
-    if is_kill_switch_active():
-        logger.warning(f"Kill switch active - cannot close {symbol}")
+def close_position(symbol: str, qty: int, side: str, ack_token: str = None) -> bool:
+    """
+    Close a position via market order.
+
+    Args:
+        symbol: Stock symbol
+        qty: Number of shares
+        side: Position side (long/buy or short/sell)
+        ack_token: Runtime acknowledgment token for live orders
+
+    Returns:
+        True if order submitted successfully, False otherwise
+    """
+    # Check if this is a paper or live order based on environment
+    base_url = os.getenv("ALPACA_BASE_URL", "")
+    is_paper = "paper" in base_url.lower()
+
+    # SAFETY GATE CHECK - Required for all order submissions
+    gate_result = evaluate_safety_gates(
+        is_paper_order=is_paper,
+        ack_token=ack_token,
+        context=f"close_position:{symbol}"
+    )
+
+    if not gate_result.allowed:
+        logger.warning(f"Safety gate blocked close_position for {symbol}: {gate_result.reason}")
         return False
 
     # Determine exit side
@@ -233,7 +256,7 @@ def close_position(symbol: str, qty: int, side: str) -> bool:
         "time_in_force": "day"
     }
 
-    logger.info(f"Closing position: {symbol} {exit_side} {qty} shares")
+    logger.info(f"Closing position: {symbol} {exit_side} {qty} shares (mode: {gate_result.mode})")
     result = alpaca_request("/v2/orders", method="POST", data=payload)
 
     if result["success"]:

@@ -72,11 +72,17 @@
 | 35 | DATA EXPLORATION | REAL | 5 |
 | 36 | CONFIG | REAL | 4 |
 | 37 | KEY SCRIPTS | REAL | 110+ |
-| 38 | **SCANNER** | **NEW** | 3 |
+| 38 | **SCANNER** | **REAL** | 3 |
 
-**New Scanner Module** (scanner/):
-- `options_signals.py` - Generates CALLS + PUTS from equity signals
-- `crypto_signals.py` - Generates crypto signals (BTC, ETH, SOL, etc.)
+**Scanner Module** (scanner/) - **UNIFIED MULTI-ASSET v2.0**:
+- `options_signals.py` - Generates CALLS + PUTS with adjusted conf_score (0.88-0.92x)
+- `crypto_signals.py` - Generates crypto signals (BTC, ETH, SOL, etc.) through same AI pipeline
 - `__init__.py` - Module exports
 
-**Summary**: 35 REAL, 3 PARTIAL, 1 STUB
+**Key Features**:
+- ALL asset classes go through SAME 9-stage AI pipeline
+- Options generated AFTER quality gate (inherit enriched conf_score)
+- Crypto fetched EARLY (before AI stages)
+- Strict ranking by conf_score (validated at runtime)
+
+**Summary**: 36 REAL, 3 PARTIAL, 1 STUB

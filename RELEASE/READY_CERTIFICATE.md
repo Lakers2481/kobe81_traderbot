@@ -123,6 +123,22 @@ Skips: ccxt not installed (FAIL-CLOSED behavior OK)
 
 ## OPTIONS & CRYPTO STATUS
 
+### Unified Multi-Asset Scanner (v2.0)
+
+**ALL asset classes now go through the SAME 9-stage AI pipeline:**
+
+| Stage | Equities | Crypto | Options |
+|-------|----------|--------|---------|
+| 1. HMM Regime Detection | ✅ | ⏭️ skip | ⏭️ (from parent) |
+| 2. Regime/Earnings Filters | ✅ | ⏭️ skip | ⏭️ (from parent) |
+| 3. Markov Chain Scoring | ✅ | ✅ | ✅ |
+| 4. ML Meta-Features | ✅ | ✅ | ✅ |
+| 5. Sentiment Blending | ✅ | ✅ | ✅ |
+| 6. Quality Gate | ✅ | ✅ | ✅ |
+| 7. Signal Adjudicator | ✅ | ✅ | ✅ |
+| 8. Cognitive Brain | ✅ | ✅ | ✅ |
+| 9. Portfolio Filters | ✅ | ✅ | ✅ |
+
 ### Options Trading
 | Component | Status |
 |-----------|--------|
@@ -131,14 +147,9 @@ Skips: ccxt not installed (FAIL-CLOSED behavior OK)
 | Order router | ✅ COMPLETE |
 | Safety gate integration | ✅ WIRED |
 | Scanner integration | ✅ **WIRED** (--options flag) |
+| AI Pipeline integration | ✅ **WIRED** (9-stage pipeline) |
 | Signal types | ✅ CALLS + PUTS |
-
-**Scanner Command**:
-```bash
-python scripts/scan.py --cap 900 --options --options-delta 0.30 --options-dte 21
-```
-
-**Output**: `logs/options_signals.csv` with both CALL and PUT options
+| Conf_score adjustment | ✅ CALL=0.92x, PUT=0.88x (ranks below parent) |
 
 ### Crypto Trading
 | Component | Status |
@@ -148,23 +159,36 @@ python scripts/scan.py --cap 900 --options --options-delta 0.30 --options-dte 21
 | Safety gate integration | ✅ WIRED |
 | CCXT missing handling | ✅ FAIL-CLOSED |
 | Scanner integration | ✅ **WIRED** (--crypto flag) |
+| AI Pipeline integration | ✅ **WIRED** (9-stage pipeline) |
+| Symbols | BTC, ETH, SOL, AVAX, LINK, DOGE, MATIC, ADA |
 
-**Scanner Command**:
+### Multi-Asset Scan Command
 ```bash
-python scripts/scan.py --cap 900 --crypto --crypto-max 3
+python scripts/scan.py --cap 900 --options --crypto --top5
 ```
 
-**Output**: `logs/crypto_signals.csv` with BTC, ETH, SOL, etc.
-
-### Multi-Asset Scan (All Three)
-```bash
-python scripts/scan.py --cap 900 --options --crypto --top3
+### Pipeline Flow
+```
+1. Fetch equity data (900 stocks) + crypto data (8 pairs)
+2. Run DualStrategyScanner on COMBINED data
+3. Propagate asset_class (EQUITY/CRYPTO) to signals
+4. Run ALL signals through 9-stage AI pipeline
+5. Generate OPTIONS from enriched equity signals (after quality gate)
+6. Unified ranking by conf_score (strict - no exceptions)
+7. TOP 5 to study → TOP 2 to trade (any asset mix)
 ```
 
-**Outputs**:
-- `logs/daily_picks.csv` - Equity signals (shares)
-- `logs/options_signals.csv` - Options signals (calls + puts)
-- `logs/crypto_signals.csv` - Crypto signals
+### Unified Outputs
+| File | Contents |
+|------|----------|
+| `logs/unified_signals.csv` | All signals with unified rank |
+| `logs/top5_unified.csv` | TOP 5 to study (any asset class) |
+| `logs/top2_trade.csv` | TOP 2 to trade (execute these) |
+
+### Ranking Validation
+- Strict ranking by conf_score (no exceptions)
+- Options ranked BELOW parent equity (0.88-0.92x multiplier)
+- Math validation check prints error if ranking is wrong
 
 ---
 

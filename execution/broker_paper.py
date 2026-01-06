@@ -31,6 +31,7 @@ from execution.broker_base import (
     BrokerOrderStatus,
 )
 from execution.broker_factory import register_broker
+from safety.execution_choke import evaluate_safety_gates
 
 logger = logging.getLogger(__name__)
 
@@ -219,8 +220,38 @@ class PaperBroker(BrokerBase):
 
     # === Orders ===
 
-    def place_order(self, order: Order) -> OrderResult:
+    def place_order(self, order: Order, ack_token: str = None) -> OrderResult:
+        """
+        Place a simulated order with safety gate enforcement.
+
+        Args:
+            order: The order to place
+            ack_token: Runtime acknowledgment token (for consistency with live brokers)
+
+        Returns:
+            OrderResult with simulated execution details
+        """
         import random
+
+        # UNIFIED SAFETY GATE CHECK - Paper broker is always paper mode
+        gate_result = evaluate_safety_gates(
+            is_paper_order=True,  # Paper broker is always paper
+            ack_token=ack_token,
+            context=f"paper_place_order:{order.symbol}"
+        )
+
+        if not gate_result.allowed:
+            logger.warning(
+                f"Safety gate blocked paper order for {order.symbol}: {gate_result.reason}"
+            )
+            return OrderResult(
+                success=False,
+                broker_order_id=None,
+                status=BrokerOrderStatus.REJECTED,
+                filled_qty=0,
+                fill_price=None,
+                error_message=f"safety_gate_blocked: {gate_result.reason}",
+            )
 
         symbol = order.symbol.upper()
 

@@ -38,6 +38,20 @@ To enable live action implementation, a human must:
 The system will NEVER change this flag automatically.
 """
 
+# ============================================================================
+# SECONDARY APPROVAL FLAG - ADDITIONAL SAFETY LAYER
+# ============================================================================
+APPROVE_LIVE_ACTION_2 = False
+"""
+Secondary approval flag for live trading - NEVER CHANGE PROGRAMMATICALLY.
+
+This is a SECOND independent approval required for live orders.
+Both APPROVE_LIVE_ACTION and APPROVE_LIVE_ACTION_2 must be True.
+
+This provides defense in depth - if one flag is accidentally set,
+the other still blocks live trading.
+"""
+
 
 class SafetyError(Exception):
     """Raised when safety constraints are violated."""

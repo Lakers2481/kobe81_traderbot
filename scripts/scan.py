@@ -95,9 +95,16 @@ except ImportError:
 
 # Crypto Signal Generator (BTC, ETH, etc.)
 try:
-    from scanner.crypto_signals import generate_crypto_signals, scan_crypto, CRYPTO_DATA_AVAILABLE
+    from scanner.crypto_signals import (
+        generate_crypto_signals,
+        scan_crypto,
+        fetch_crypto_universe_data,
+        DEFAULT_CRYPTO_UNIVERSE,
+        CRYPTO_DATA_AVAILABLE,
+    )
 except ImportError:
     CRYPTO_DATA_AVAILABLE = False
+    DEFAULT_CRYPTO_UNIVERSE = []
 
 
 def get_last_trading_day(reference_date: datetime = None) -> tuple[str, bool, str]:
@@ -574,7 +581,10 @@ def run_strategies(
     """Run Dual Strategy Scanner and return combined signals."""
     try:
         sel_cfg = get_selection_config()
-        params = DualStrategyParams(min_price=float(sel_cfg.get('min_price', 10.0)))
+        # Crypto has no min_price filter (BTC is $40k+)
+        has_crypto = 'asset_class' in data.columns and (data['asset_class'] == 'CRYPTO').any()
+        min_price = 0.0 if has_crypto else float(sel_cfg.get('min_price', 10.0))
+        params = DualStrategyParams(min_price=min_price)
         scanner = DualStrategyScanner(params, preview_mode=preview_mode)
 
         # Generate signals (IBS+RSI + Turtle Soup combined)
@@ -583,18 +593,46 @@ def run_strategies(
         if signals.empty:
             return pd.DataFrame()
 
-        # Apply regime/earnings filters if requested
-        if apply_filters and spy_bars is not None and not spy_bars.empty:
-            try:
-                signals = filter_signals_by_regime(signals, spy_bars, get_regime_filter_config())
-            except Exception:
-                pass
-        if apply_filters and not signals.empty:
-            try:
-                recs = signals.to_dict('records')
-                signals = pd.DataFrame(filter_signals_by_earnings(recs))
-            except Exception:
-                pass
+        # === ASSET-AWARE: Propagate asset_class to signals ===
+        # Build lookup from source data
+        if 'asset_class' in data.columns:
+            asset_lookup = data.groupby('symbol')['asset_class'].first().to_dict()
+            signals['asset_class'] = signals['symbol'].map(asset_lookup).fillna('EQUITY')
+        else:
+            signals['asset_class'] = 'EQUITY'
+
+        # === ASSET-AWARE: Apply regime/earnings filters ONLY to equities ===
+        # Crypto doesn't have SPY regime correlation or earnings
+        if apply_filters and spy_bars is not None and not spy_bars.empty and not signals.empty:
+            # Separate by asset class
+            equity_mask = signals['asset_class'] == 'EQUITY'
+            equity_signals = signals[equity_mask].copy()
+            crypto_signals = signals[~equity_mask].copy()
+
+            # Apply regime filter only to equities
+            if not equity_signals.empty:
+                try:
+                    equity_signals = filter_signals_by_regime(
+                        equity_signals, spy_bars, get_regime_filter_config()
+                    )
+                except Exception:
+                    pass
+
+            # Apply earnings filter only to equities
+            if not equity_signals.empty:
+                try:
+                    recs = equity_signals.to_dict('records')
+                    equity_signals = pd.DataFrame(filter_signals_by_earnings(recs))
+                except Exception:
+                    pass
+
+            # Recombine: filtered equities + unfiltered crypto
+            all_parts = []
+            if not equity_signals.empty:
+                all_parts.append(equity_signals)
+            if not crypto_signals.empty:
+                all_parts.append(crypto_signals)
+            signals = pd.concat(all_parts, ignore_index=True) if all_parts else pd.DataFrame()
 
         return signals
 
@@ -1198,9 +1236,38 @@ Examples:
         print("Error: No data fetched for any symbols.", file=sys.stderr)
         return 1
 
-    # Combine all data
+    # Combine all equity data
     combined = pd.concat(all_data, ignore_index=True)
-    print(f"Total bars: {len(combined):,}")
+
+    # Add asset_class column to track source (EQUITY vs CRYPTO)
+    combined['asset_class'] = 'EQUITY'
+    print(f"Equity bars: {len(combined):,}")
+
+    # === CRYPTO DATA FETCHING (EARLY - before AI pipeline) ===
+    # Crypto goes through the SAME pipeline as equities for unified ranking
+    if args.crypto and CRYPTO_DATA_AVAILABLE and DEFAULT_CRYPTO_UNIVERSE:
+        try:
+            print(f"\nFetching crypto data ({len(DEFAULT_CRYPTO_UNIVERSE[:8])} pairs)...")
+            crypto_bars = fetch_crypto_universe_data(
+                symbols=DEFAULT_CRYPTO_UNIVERSE[:8],
+                start=start_date,
+                end=end_date,
+                cache_dir=CACHE_DIR,
+            )
+            if not crypto_bars.empty:
+                # Add asset_class column for crypto
+                crypto_bars['asset_class'] = 'CRYPTO'
+                # Combine with equity data
+                combined = pd.concat([combined, crypto_bars], ignore_index=True)
+                print(f"Added {len(crypto_bars):,} crypto bars")
+            else:
+                print("  No crypto data fetched")
+        except Exception as e:
+            print(f"  [WARN] Crypto fetch failed: {e}")
+    elif args.crypto and not CRYPTO_DATA_AVAILABLE:
+        print("[WARN] --crypto requested but crypto provider not available")
+
+    print(f"Total bars (equity + crypto): {len(combined):,}")
 
     # === MARKOV PRE-FILTER (optional) ===
     # Rank stocks by stationary pi(Up) and filter to top N before detailed scan
@@ -1297,6 +1364,27 @@ Examples:
 
     signals = run_strategies(combined, strategies, apply_filters=apply_filters, spy_bars=spy_bars, preview_mode=use_preview)
 
+    # === PROPAGATE ASSET_CLASS TO SIGNALS ===
+    # Ensure signals have asset_class column from source data
+    if not signals.empty and 'asset_class' not in signals.columns:
+        # Build asset_class lookup from combined data
+        asset_class_map = {}
+        if 'asset_class' in combined.columns:
+            for sym in combined['symbol'].unique():
+                sym_class = combined[combined['symbol'] == sym]['asset_class'].iloc[0]
+                asset_class_map[sym] = sym_class
+
+        # Apply to signals
+        if asset_class_map:
+            signals['asset_class'] = signals['symbol'].map(asset_class_map).fillna('EQUITY')
+        else:
+            signals['asset_class'] = 'EQUITY'
+
+        # Report asset class mix
+        if args.verbose and 'asset_class' in signals.columns:
+            by_class = signals.groupby('asset_class').size()
+            print(f"  Signals by asset class: {dict(by_class)}")
+
     # === QUALITY GATE (v2.0) ===
     # Reduces ~50 signals/week to ~5/week with higher win rate
     if QUALITY_GATE_AVAILABLE and not args.no_quality_gate and not signals.empty:
@@ -1337,6 +1425,53 @@ Examples:
         except Exception as e:
             if args.verbose:
                 print(f"  [WARN] Signal adjudication failed: {e}", file=sys.stderr)
+
+    # === OPTIONS GENERATION (AFTER QUALITY GATE) ===
+    # Generate CALL and PUT options from enriched equity signals
+    # Options inherit adjusted conf_score from parent (see options_signals.py)
+    # This ensures options go through remaining AI stages (Markov, ML, Cognitive)
+    all_bars = combined  # Save reference for options generation
+    if args.options and OPTIONS_AVAILABLE and not signals.empty:
+        try:
+            # Only generate options from EQUITY signals (not crypto)
+            equity_signals = signals[signals.get('asset_class', 'EQUITY') == 'EQUITY'].copy()
+
+            if not equity_signals.empty:
+                print(f"\n[OPTIONS] Generating calls/puts from {len(equity_signals)} equity signal(s)...")
+                options_df = generate_options_signals(
+                    equity_signals=equity_signals,
+                    price_data=all_bars,
+                    max_signals=args.options_max * 2,  # calls + puts
+                    target_delta=args.options_delta,
+                    target_dte=args.options_dte,
+                )
+
+                if not options_df.empty:
+                    # Add asset_class if not present
+                    if 'asset_class' not in options_df.columns:
+                        options_df['asset_class'] = 'OPTIONS'
+
+                    # Add to signal pool (will go through Markov/ML/Cognitive)
+                    signals = pd.concat([signals, options_df], ignore_index=True)
+
+                    calls = len(options_df[options_df.get('option_type', '') == 'CALL'])
+                    puts = len(options_df[options_df.get('option_type', '') == 'PUT'])
+                    print(f"[OPTIONS] Generated {len(options_df)} options: {calls} CALLs, {puts} PUTs")
+
+                    if args.verbose:
+                        for _, opt in options_df.iterrows():
+                            adj_conf = opt.get('conf_score', 0)
+                            print(f"  {opt['symbol']} {opt.get('option_type', '?')} @ ${opt.get('strike', 0):.2f}: conf={adj_conf:.4f}")
+                else:
+                    print("[OPTIONS] No options generated (check volatility/premium constraints)")
+
+        except Exception as e:
+            print(f"[OPTIONS] Generation failed: {e}")
+            if args.verbose:
+                import traceback
+                traceback.print_exc()
+    elif args.options and not OPTIONS_AVAILABLE:
+        print("[WARN] --options requested but options module not available")
 
     # === MARKOV CHAIN SCORING ===
     # Add Markov metrics to signals for confidence adjustment
@@ -2080,166 +2215,35 @@ Examples:
         log_signals(signals, scan_id)
         print(f"\nSignals logged to: {SIGNALS_LOG}")
 
-    # === OPTIONS SIGNAL GENERATION (CALLS + PUTS) ===
-    options_signals = pd.DataFrame()
-    if args.options and OPTIONS_AVAILABLE and not signals.empty:
-        print("\n" + "=" * 60)
-        print("GENERATING OPTIONS SIGNALS (CALLS + PUTS)")
-        print("=" * 60)
-
-        try:
-            options_signals = generate_options_signals(
-                equity_signals=signals,
-                price_data=all_bars,
-                max_signals=args.options_max * 2,  # calls + puts
-                target_delta=args.options_delta,
-                target_dte=args.options_dte,
-            )
-
-            if not options_signals.empty:
-                # Add asset class if not present
-                if 'asset_class' not in options_signals.columns:
-                    options_signals['asset_class'] = 'OPTIONS'
-
-                # Write options signals to CSV
-                options_path = ROOT / 'logs' / 'options_signals.csv'
-                options_path.parent.mkdir(parents=True, exist_ok=True)
-                options_signals.to_csv(options_path, index=False)
-
-                # Print options summary
-                calls = options_signals[options_signals['option_type'] == 'CALL']
-                puts = options_signals[options_signals['option_type'] == 'PUT']
-
-                print(f"\nGenerated {len(options_signals)} options signals:")
-                print(f"  CALLS: {len(calls)} | PUTS: {len(puts)}")
-                print(f"\n{'Symbol':<8} {'Type':<5} {'Strike':>8} {'Exp':>12} {'Price':>8} {'Delta':>6} {'Action'}")
-                print("-" * 65)
-
-                for _, opt in options_signals.iterrows():
-                    print(f"{opt['symbol']:<8} {opt['option_type']:<5} ${opt['strike']:>7.2f} {opt['expiration']:>12} ${opt['option_price']:>6.2f} {opt['delta']:>6.2f} {opt['action']}")
-
-                print(f"\nOptions signals saved: {options_path}")
-            else:
-                print("  No options signals generated (check volatility/premium constraints)")
-
-        except Exception as e:
-            print(f"  [WARN] Options generation failed: {e}", file=sys.stderr)
-            if args.verbose:
-                import traceback
-                traceback.print_exc()
-
-    elif args.options and not OPTIONS_AVAILABLE:
-        print("\n  [WARN] Options modules not available (install options dependencies)")
-
-    # === CRYPTO SIGNAL GENERATION ===
-    crypto_signals = pd.DataFrame()
-    if args.crypto and CRYPTO_DATA_AVAILABLE:
-        print("\n" + "=" * 60)
-        print("GENERATING CRYPTO SIGNALS (BTC, ETH, SOL, etc.)")
-        print("=" * 60)
-
-        try:
-            crypto_signals = scan_crypto(
-                cap=8,
-                max_signals=args.crypto_max,
-                verbose=args.verbose,
-            )
-
-            if not crypto_signals.empty:
-                # Write crypto signals to CSV
-                crypto_path = ROOT / 'logs' / 'crypto_signals.csv'
-                crypto_path.parent.mkdir(parents=True, exist_ok=True)
-                crypto_signals.to_csv(crypto_path, index=False)
-
-                # Print crypto summary
-                print(f"\nGenerated {len(crypto_signals)} crypto signals:")
-                cols = ['symbol', 'side', 'entry_price', 'stop_loss', 'take_profit', 'conf_score']
-                avail_cols = [c for c in cols if c in crypto_signals.columns]
-                if avail_cols:
-                    print(crypto_signals[avail_cols].to_string(index=False))
-                print(f"\nCrypto signals saved: {crypto_path}")
-            else:
-                print("  No crypto signals generated")
-
-        except Exception as e:
-            print(f"  [WARN] Crypto generation failed: {e}", file=sys.stderr)
-            if args.verbose:
-                import traceback
-                traceback.print_exc()
-
-    elif args.crypto and not CRYPTO_DATA_AVAILABLE:
-        print("\n  [WARN] Crypto data provider not available")
-
     # === UNIFIED MULTI-ASSET RANKING ===
-    # Combine ALL signals into single pool, rank by conf_score, pick TOP 5 → TOP 2
+    # signals now contains ALL asset classes: EQUITY, CRYPTO, OPTIONS
+    # All have been through the same AI pipeline with proper conf_scores
     print("\n" + "=" * 70)
     print("UNIFIED MULTI-ASSET RANKING")
     print("=" * 70)
 
-    # Prepare equity signals with asset_class marker
-    equity_pool = pd.DataFrame()
     if not signals.empty:
-        equity_pool = signals.copy()
-        if 'asset_class' not in equity_pool.columns:
-            equity_pool['asset_class'] = 'EQUITY'
-        # Ensure required columns exist
-        if 'trade_type' not in equity_pool.columns:
-            equity_pool['trade_type'] = 'shares'
+        unified_signals = signals.copy()
 
-    # Prepare options signals
-    options_pool = pd.DataFrame()
-    if not options_signals.empty:
-        options_pool = options_signals.copy()
-        if 'asset_class' not in options_pool.columns:
-            options_pool['asset_class'] = 'OPTIONS'
-        # Add trade_type for options (CALL or PUT)
-        if 'trade_type' not in options_pool.columns and 'option_type' in options_pool.columns:
-            options_pool['trade_type'] = options_pool['option_type'].str.lower()
-
-    # Prepare crypto signals
-    crypto_pool = pd.DataFrame()
-    if not crypto_signals.empty:
-        crypto_pool = crypto_signals.copy()
-        if 'asset_class' not in crypto_pool.columns:
-            crypto_pool['asset_class'] = 'CRYPTO'
-        if 'trade_type' not in crypto_pool.columns:
-            crypto_pool['trade_type'] = 'crypto'
-
-    # Combine all signals into unified pool
-    all_pools = [df for df in [equity_pool, options_pool, crypto_pool] if not df.empty]
-
-    if all_pools:
-        # Identify common columns for merging
-        common_cols = set(all_pools[0].columns)
-        for df in all_pools[1:]:
-            common_cols &= set(df.columns)
-
-        # Add essential columns if missing
-        essential = ['symbol', 'side', 'entry_price', 'conf_score', 'asset_class', 'trade_type', 'strategy']
-        for col in essential:
-            common_cols.add(col)
-
-        # Normalize each pool to have the same columns
-        normalized_pools = []
-        for df in all_pools:
-            norm_df = df.copy()
-            for col in essential:
-                if col not in norm_df.columns:
-                    if col == 'conf_score':
-                        norm_df[col] = 0.5
-                    elif col == 'side':
-                        norm_df[col] = 'long'
-                    else:
-                        norm_df[col] = ''
-            normalized_pools.append(norm_df)
-
-        # Concatenate all signals
-        unified_signals = pd.concat(normalized_pools, ignore_index=True)
+        # Add trade_type column based on asset_class
+        if 'trade_type' not in unified_signals.columns:
+            def get_trade_type(row):
+                asset = str(row.get('asset_class', 'EQUITY'))
+                if asset == 'EQUITY':
+                    return 'shares'
+                elif asset == 'OPTIONS':
+                    return str(row.get('option_type', 'option')).lower()
+                elif asset == 'CRYPTO':
+                    return 'crypto'
+                return 'unknown'
+            unified_signals['trade_type'] = unified_signals.apply(get_trade_type, axis=1)
 
         # Ensure conf_score is numeric
         unified_signals['conf_score'] = pd.to_numeric(unified_signals['conf_score'], errors='coerce').fillna(0.5)
 
         # Sort by conf_score (descending) for unified ranking
+        # STRICT RANKING: conf_score is the ONLY primary sort key
+        # Ties broken by symbol (alphabetical) for determinism
         unified_signals = unified_signals.sort_values(
             ['conf_score', 'symbol'],
             ascending=[False, True],
@@ -2248,6 +2252,28 @@ Examples:
 
         # Add unified rank
         unified_signals['unified_rank'] = range(1, len(unified_signals) + 1)
+
+        # === RANKING VALIDATION ===
+        # Verify that ranking is strictly by conf_score (no errors in the math)
+        if len(unified_signals) > 1:
+            prev_conf = float(unified_signals.iloc[0]['conf_score'])
+            validation_errors = []
+            for i in range(1, len(unified_signals)):
+                curr_conf = float(unified_signals.iloc[i]['conf_score'])
+                if curr_conf > prev_conf + 0.0001:  # Allow tiny floating point tolerance
+                    validation_errors.append(
+                        f"Rank {i}: {unified_signals.iloc[i]['symbol']} (conf={curr_conf:.4f}) > "
+                        f"Rank {i-1}: {unified_signals.iloc[i-1]['symbol']} (conf={prev_conf:.4f})"
+                    )
+                prev_conf = curr_conf
+
+            if validation_errors:
+                print("\n[RANKING ERROR] Math validation FAILED:")
+                for err in validation_errors[:5]:
+                    print(f"  {err}")
+                print("  This is a bug - ranking should be strictly by conf_score!")
+            elif args.verbose:
+                print(f"[RANKING VALID] All {len(unified_signals)} signals correctly ranked by conf_score")
 
         # === TOP 5 STUDY SIGNALS (across ALL asset classes) ===
         top5_unified = unified_signals.head(5).copy()

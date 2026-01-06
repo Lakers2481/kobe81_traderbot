@@ -31,6 +31,7 @@ from execution.broker_base import (
     BrokerOrderStatus,
 )
 from execution.broker_factory import register_broker
+from safety.execution_choke import evaluate_safety_gates, SafetyViolationError
 
 logger = logging.getLogger(__name__)
 
@@ -354,8 +355,38 @@ class CryptoBroker(BrokerBase):
 
     # === Orders ===
 
-    def place_order(self, order: Order) -> OrderResult:
+    def place_order(self, order: Order, ack_token: str = None) -> OrderResult:
+        """
+        Place an order with safety gate enforcement.
+
+        Args:
+            order: The order to place
+            ack_token: Runtime acknowledgment token for live orders
+
+        Returns:
+            OrderResult with success/failure status
+        """
         try:
+            # SAFETY GATE CHECK - Required for all order submissions
+            # Crypto broker uses sandbox flag to determine paper vs live
+            is_paper = self.sandbox
+            gate_result = evaluate_safety_gates(
+                is_paper_order=is_paper,
+                ack_token=ack_token,
+                context=f"crypto_place_order:{order.symbol}"
+            )
+
+            if not gate_result.allowed:
+                logger.warning(f"Safety gate blocked crypto order for {order.symbol}: {gate_result.reason}")
+                return OrderResult(
+                    success=False,
+                    broker_order_id=None,
+                    status=BrokerOrderStatus.REJECTED,
+                    filled_qty=0,
+                    fill_price=None,
+                    error_message=f"safety_gate_blocked: {gate_result.reason}",
+                )
+
             symbol = self._normalize_symbol(order.symbol)
 
             # Map order type
@@ -369,7 +400,8 @@ class CryptoBroker(BrokerBase):
             # Get quote for TCA
             quote = self.get_quote(symbol)
 
-            # Place order
+            # Place order (safety gate already passed)
+            logger.info(f"Placing crypto order (mode: {gate_result.mode}): {ccxt_side} {order.qty} {symbol}")
             result = self._exchange.create_order(
                 symbol=symbol,
                 type=ccxt_type,
