@@ -55,7 +55,7 @@ except ImportError:
     logger.warning("ExperimentRegistry not available")
 
 try:
-    from autonomous.source_manager import SourceManager
+    from autonomous.scrapers.source_manager import SourceManager
     SOURCES_AVAILABLE = True
 except ImportError:
     SOURCES_AVAILABLE = False

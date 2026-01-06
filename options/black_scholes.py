@@ -358,3 +358,55 @@ def calculate_iv(
     opt_type = OptionType.CALL if option_type.upper() == "CALL" else OptionType.PUT
     time = days_to_expiry / 365.0
     return _bs.calculate_implied_volatility(opt_type, market_price, spot, strike, time, rate)
+
+
+# Convenience wrapper functions for backward compatibility
+def bs_call_price(spot: float, strike: float, time: float, rate: float, volatility: float) -> float:
+    """Calculate Black-Scholes call price."""
+    result = _bs.price_option(OptionType.CALL, spot, strike, time, rate, volatility)
+    return result.price
+
+
+def bs_put_price(spot: float, strike: float, time: float, rate: float, volatility: float) -> float:
+    """Calculate Black-Scholes put price."""
+    result = _bs.price_option(OptionType.PUT, spot, strike, time, rate, volatility)
+    return result.price
+
+
+def bs_delta(option_type: str, spot: float, strike: float, time: float, rate: float, volatility: float) -> float:
+    """Calculate option delta."""
+    opt_type = OptionType.CALL if option_type.upper() == "CALL" else OptionType.PUT
+    result = _bs.price_option(opt_type, spot, strike, time, rate, volatility)
+    return result.delta
+
+
+def bs_gamma(spot: float, strike: float, time: float, rate: float, volatility: float) -> float:
+    """Calculate option gamma (same for calls and puts)."""
+    result = _bs.price_option(OptionType.CALL, spot, strike, time, rate, volatility)
+    return result.gamma
+
+
+def bs_vega(spot: float, strike: float, time: float, rate: float, volatility: float) -> float:
+    """Calculate option vega (same for calls and puts)."""
+    result = _bs.price_option(OptionType.CALL, spot, strike, time, rate, volatility)
+    return result.vega
+
+
+def bs_theta(option_type: str, spot: float, strike: float, time: float, rate: float, volatility: float) -> float:
+    """Calculate option theta."""
+    opt_type = OptionType.CALL if option_type.upper() == "CALL" else OptionType.PUT
+    result = _bs.price_option(opt_type, spot, strike, time, rate, volatility)
+    return result.theta
+
+
+def implied_volatility(
+    option_type: str,
+    market_price: float,
+    spot: float,
+    strike: float,
+    time: float,
+    rate: float
+) -> Optional[float]:
+    """Calculate implied volatility from market price."""
+    opt_type = OptionType.CALL if option_type.upper() == "CALL" else OptionType.PUT
+    return _bs.calculate_implied_volatility(opt_type, market_price, spot, strike, time, rate)
