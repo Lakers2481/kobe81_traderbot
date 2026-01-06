@@ -2170,25 +2170,177 @@ Examples:
     elif args.crypto and not CRYPTO_DATA_AVAILABLE:
         print("\n  [WARN] Crypto data provider not available")
 
-    # === COMBINED MULTI-ASSET SUMMARY ===
-    total_equities = len(signals) if not signals.empty else 0
-    total_options = len(options_signals) if not options_signals.empty else 0
-    total_crypto = len(crypto_signals) if not crypto_signals.empty else 0
-    total_signals = total_equities + total_options + total_crypto
+    # === UNIFIED MULTI-ASSET RANKING ===
+    # Combine ALL signals into single pool, rank by conf_score, pick TOP 5 → TOP 2
+    print("\n" + "=" * 70)
+    print("UNIFIED MULTI-ASSET RANKING")
+    print("=" * 70)
 
-    # Summary
-    print("\n" + "=" * 60)
-    print(f"SCAN COMPLETE - MULTI-ASSET SUMMARY")
-    print("=" * 60)
-    print(f"  EQUITIES:  {total_equities:>3} signal(s) (shares)")
-    if args.options:
-        calls_count = len(options_signals[options_signals['option_type'] == 'CALL']) if not options_signals.empty else 0
-        puts_count = len(options_signals[options_signals['option_type'] == 'PUT']) if not options_signals.empty else 0
-        print(f"  OPTIONS:   {total_options:>3} signal(s) ({calls_count} calls, {puts_count} puts)")
-    if args.crypto:
-        print(f"  CRYPTO:    {total_crypto:>3} signal(s)")
-    print("-" * 60)
-    print(f"  TOTAL:     {total_signals:>3} signal(s)")
+    # Prepare equity signals with asset_class marker
+    equity_pool = pd.DataFrame()
+    if not signals.empty:
+        equity_pool = signals.copy()
+        if 'asset_class' not in equity_pool.columns:
+            equity_pool['asset_class'] = 'EQUITY'
+        # Ensure required columns exist
+        if 'trade_type' not in equity_pool.columns:
+            equity_pool['trade_type'] = 'shares'
+
+    # Prepare options signals
+    options_pool = pd.DataFrame()
+    if not options_signals.empty:
+        options_pool = options_signals.copy()
+        if 'asset_class' not in options_pool.columns:
+            options_pool['asset_class'] = 'OPTIONS'
+        # Add trade_type for options (CALL or PUT)
+        if 'trade_type' not in options_pool.columns and 'option_type' in options_pool.columns:
+            options_pool['trade_type'] = options_pool['option_type'].str.lower()
+
+    # Prepare crypto signals
+    crypto_pool = pd.DataFrame()
+    if not crypto_signals.empty:
+        crypto_pool = crypto_signals.copy()
+        if 'asset_class' not in crypto_pool.columns:
+            crypto_pool['asset_class'] = 'CRYPTO'
+        if 'trade_type' not in crypto_pool.columns:
+            crypto_pool['trade_type'] = 'crypto'
+
+    # Combine all signals into unified pool
+    all_pools = [df for df in [equity_pool, options_pool, crypto_pool] if not df.empty]
+
+    if all_pools:
+        # Identify common columns for merging
+        common_cols = set(all_pools[0].columns)
+        for df in all_pools[1:]:
+            common_cols &= set(df.columns)
+
+        # Add essential columns if missing
+        essential = ['symbol', 'side', 'entry_price', 'conf_score', 'asset_class', 'trade_type', 'strategy']
+        for col in essential:
+            common_cols.add(col)
+
+        # Normalize each pool to have the same columns
+        normalized_pools = []
+        for df in all_pools:
+            norm_df = df.copy()
+            for col in essential:
+                if col not in norm_df.columns:
+                    if col == 'conf_score':
+                        norm_df[col] = 0.5
+                    elif col == 'side':
+                        norm_df[col] = 'long'
+                    else:
+                        norm_df[col] = ''
+            normalized_pools.append(norm_df)
+
+        # Concatenate all signals
+        unified_signals = pd.concat(normalized_pools, ignore_index=True)
+
+        # Ensure conf_score is numeric
+        unified_signals['conf_score'] = pd.to_numeric(unified_signals['conf_score'], errors='coerce').fillna(0.5)
+
+        # Sort by conf_score (descending) for unified ranking
+        unified_signals = unified_signals.sort_values(
+            ['conf_score', 'symbol'],
+            ascending=[False, True],
+            kind='mergesort'
+        ).reset_index(drop=True)
+
+        # Add unified rank
+        unified_signals['unified_rank'] = range(1, len(unified_signals) + 1)
+
+        # === TOP 5 STUDY SIGNALS (across ALL asset classes) ===
+        top5_unified = unified_signals.head(5).copy()
+
+        # === TOP 2 TRADE SIGNALS (across ALL asset classes) ===
+        top2_unified = unified_signals.head(2).copy()
+
+        # Count by asset class
+        equity_count = len(unified_signals[unified_signals['asset_class'] == 'EQUITY'])
+        options_count = len(unified_signals[unified_signals['asset_class'] == 'OPTIONS'])
+        crypto_count = len(unified_signals[unified_signals['asset_class'] == 'CRYPTO'])
+
+        print(f"\nTotal Signal Pool: {len(unified_signals)} signals")
+        print(f"  EQUITIES: {equity_count} | OPTIONS: {options_count} | CRYPTO: {crypto_count}")
+
+        # Show TOP 5 (unified across all asset classes)
+        print(f"\n{'='*70}")
+        print("TOP 5 TO STUDY (Unified Across All Asset Classes)")
+        print("="*70)
+        display_cols = ['unified_rank', 'asset_class', 'trade_type', 'symbol', 'side', 'entry_price', 'conf_score']
+        available_cols = [c for c in display_cols if c in top5_unified.columns]
+        if available_cols:
+            print(top5_unified[available_cols].to_string(index=False))
+        else:
+            print(top5_unified.head().to_string(index=False))
+
+        # Show TOP 2 (what we actually trade)
+        print(f"\n{'='*70}")
+        print("TOP 2 TO TRADE (Execute These - Any Asset Class)")
+        print("="*70)
+        if not top2_unified.empty:
+            for idx, row in top2_unified.iterrows():
+                asset = row.get('asset_class', 'UNKNOWN')
+                trade_type = row.get('trade_type', 'unknown')
+                symbol = row.get('symbol', '???')
+                side = row.get('side', 'long')
+                price = row.get('entry_price', 0)
+                conf = row.get('conf_score', 0)
+                rank = row.get('unified_rank', '?')
+
+                if asset == 'EQUITY':
+                    print(f"  #{rank} [{asset}] BUY {symbol} shares @ ${price:.2f} (conf: {conf:.2f})")
+                elif asset == 'OPTIONS':
+                    opt_type = row.get('option_type', trade_type.upper())
+                    strike = row.get('strike', 0)
+                    exp = row.get('expiration', 'N/A')
+                    print(f"  #{rank} [{asset}] BUY {symbol} {opt_type} ${strike:.0f} exp {exp} @ ${price:.2f} (conf: {conf:.2f})")
+                elif asset == 'CRYPTO':
+                    print(f"  #{rank} [{asset}] BUY {symbol} @ ${price:.2f} (conf: {conf:.2f})")
+                else:
+                    print(f"  #{rank} [{asset}] {side.upper()} {symbol} @ ${price:.2f} (conf: {conf:.2f})")
+
+        # Write unified outputs
+        unified_path = ROOT / 'logs' / 'unified_signals.csv'
+        unified_path.parent.mkdir(parents=True, exist_ok=True)
+        unified_signals.to_csv(unified_path, index=False)
+
+        top5_path = ROOT / 'logs' / 'top5_unified.csv'
+        top5_unified.to_csv(top5_path, index=False)
+
+        top2_path = ROOT / 'logs' / 'top2_trade.csv'
+        top2_unified.to_csv(top2_path, index=False)
+
+        print(f"\n{'='*70}")
+        print("OUTPUT FILES")
+        print("="*70)
+        print(f"  All signals:  {unified_path}")
+        print(f"  Top 5 study:  {top5_path}")
+        print(f"  Top 2 trade:  {top2_path}")
+
+        # Final summary
+        print(f"\n{'='*70}")
+        print("KOBE PIPELINE: 900 STOCKS + OPTIONS + CRYPTO → TOP 5 → TOP 2")
+        print("="*70)
+
+        # Show asset mix in top 2
+        top2_equities = len(top2_unified[top2_unified['asset_class'] == 'EQUITY'])
+        top2_options = len(top2_unified[top2_unified['asset_class'] == 'OPTIONS'])
+        top2_crypto = len(top2_unified[top2_unified['asset_class'] == 'CRYPTO'])
+
+        mix_parts = []
+        if top2_equities > 0:
+            mix_parts.append(f"{top2_equities} shares")
+        if top2_options > 0:
+            mix_parts.append(f"{top2_options} options")
+        if top2_crypto > 0:
+            mix_parts.append(f"{top2_crypto} crypto")
+
+        print(f"  TODAY'S MIX: {' + '.join(mix_parts) if mix_parts else 'No signals'}")
+        print(f"  TRADE COUNT: {len(top2_unified)}")
+
+    else:
+        print("\n  No signals generated across any asset class")
 
     return 0
 
