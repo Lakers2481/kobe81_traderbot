@@ -36,6 +36,16 @@ from .quant_rd_pipeline import (
 # New pipeline architecture
 from .base import Pipeline, PipelineResult, run_pipeline
 from .universe_pipeline import UniversePipeline
+
+# Unified Signal Enrichment Pipeline (ALL COMPONENTS WIRED)
+from .unified_signal_enrichment import (
+    run_full_enrichment,
+    get_unified_pipeline,
+    UnifiedSignalEnrichmentPipeline,
+    ComponentRegistry,
+    EnrichedSignal,
+    TradeThesis,
+)
 from .data_audit_pipeline import DataAuditPipeline
 from .snapshot_pipeline import SnapshotPipeline
 from .discovery_pipeline import DiscoveryPipeline
@@ -67,6 +77,13 @@ __all__ = [
     "GatesPipeline",
     "PromotionPipeline",
     "ReportingPipeline",
+    # Unified Signal Enrichment
+    "run_full_enrichment",
+    "get_unified_pipeline",
+    "UnifiedSignalEnrichmentPipeline",
+    "ComponentRegistry",
+    "EnrichedSignal",
+    "TradeThesis",
 ]
 
 # Pipeline registry for dynamic lookup

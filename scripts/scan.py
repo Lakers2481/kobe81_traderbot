@@ -106,6 +106,17 @@ except ImportError:
     CRYPTO_DATA_AVAILABLE = False
     DEFAULT_CRYPTO_UNIVERSE = []
 
+# Unified Signal Enrichment Pipeline (ALL COMPONENTS WIRED)
+try:
+    from pipelines.unified_signal_enrichment import (
+        run_full_enrichment,
+        get_unified_pipeline,
+        ComponentRegistry,
+    )
+    UNIFIED_PIPELINE_AVAILABLE = True
+except ImportError:
+    UNIFIED_PIPELINE_AVAILABLE = False
+
 
 def get_last_trading_day(reference_date: datetime = None) -> tuple[str, bool, str]:
     """
@@ -1002,6 +1013,36 @@ Examples:
         default=3,
         help="Maximum crypto signals to generate (default: 3)",
     )
+    # === UNIFIED ENRICHMENT PIPELINE (ALL 250+ COMPONENTS) ===
+    ap.add_argument(
+        "--unified",
+        action="store_true",
+        default=True,
+        help="Enable unified enrichment pipeline (ALL AI/ML/Data components wired). ON by default.",
+    )
+    ap.add_argument(
+        "--no-unified",
+        action="store_true",
+        help="Disable unified enrichment pipeline (use legacy flow)",
+    )
+    ap.add_argument(
+        "--out-unified",
+        type=str,
+        default=str(ROOT / 'logs' / 'unified_signals.csv'),
+        help="Output CSV for unified enriched signals",
+    )
+    ap.add_argument(
+        "--out-thesis",
+        type=str,
+        default=str(ROOT / 'logs' / 'trade_thesis'),
+        help="Output directory for TOP 2 trade thesis markdown files",
+    )
+    ap.add_argument(
+        "--out-top2",
+        type=str,
+        default=str(ROOT / 'logs' / 'top2_trade.csv'),
+        help="Output CSV for TOP 2 trades with full analysis",
+    )
     args = ap.parse_args()
 
     # Handle --no-* override flags for ML and cognitive defaults
@@ -1009,6 +1050,8 @@ Examples:
         args.ml = False
     if args.no_cognitive:
         args.cognitive = False
+    if args.no_unified:
+        args.unified = False
 
     # Load environment
     dotenv_path = Path(args.dotenv)
@@ -1634,6 +1677,115 @@ Examples:
                 traceback.print_exc()
     elif args.cognitive and not COGNITIVE_AVAILABLE:
         print("  [WARN] Cognitive system not available (import failed)")
+
+    # === UNIFIED ENRICHMENT PIPELINE (ALL 250+ COMPONENTS) ===
+    # This runs ALL AI/ML/Data components through 18 stages to produce
+    # fully-enriched signals and comprehensive trade theses for TOP 2
+    enriched_signals = []
+    top2_theses = []
+
+    if args.unified and UNIFIED_PIPELINE_AVAILABLE and not signals.empty:
+        print("\n" + "=" * 70)
+        print("UNIFIED ENRICHMENT PIPELINE - ALL COMPONENTS WIRED")
+        print("=" * 70)
+
+        try:
+            # Run the full enrichment pipeline
+            enriched_signals, top2_theses = run_full_enrichment(
+                signals=signals,
+                price_data=combined,
+                spy_data=spy_bars,
+                verbose=args.verbose,
+            )
+
+            print(f"\n[UNIFIED PIPELINE] Enriched {len(enriched_signals)} signals through 18 stages")
+            print(f"[UNIFIED PIPELINE] Generated {len(top2_theses)} comprehensive trade theses")
+
+            # Save enriched signals to CSV
+            if enriched_signals:
+                unified_path = Path(args.out_unified)
+                unified_path.parent.mkdir(parents=True, exist_ok=True)
+
+                # Convert to DataFrame
+                enriched_df = pd.DataFrame([s.to_dict() for s in enriched_signals])
+                enriched_df.to_csv(unified_path, index=False)
+                print(f"[UNIFIED PIPELINE] Wrote enriched signals: {unified_path}")
+
+                # Get TOP 5 for study
+                top5_unified = enriched_df.head(5)
+                top5_path = Path(args.out_unified).parent / 'top5_unified.csv'
+                top5_unified.to_csv(top5_path, index=False)
+                print(f"[UNIFIED PIPELINE] Wrote TOP 5 for study: {top5_path}")
+
+                # Get TOP 2 for trading
+                top2_df = enriched_df.head(2)
+                top2_path = Path(args.out_top2)
+                top2_path.parent.mkdir(parents=True, exist_ok=True)
+                top2_df.to_csv(top2_path, index=False)
+                print(f"[UNIFIED PIPELINE] Wrote TOP 2 for trading: {top2_path}")
+
+            # Save trade theses as markdown
+            if top2_theses:
+                thesis_dir = Path(args.out_thesis)
+                thesis_dir.mkdir(parents=True, exist_ok=True)
+
+                for i, thesis in enumerate(top2_theses, 1):
+                    thesis_path = thesis_dir / f"thesis_{thesis.signal.symbol}_{end_date}.md"
+                    with open(thesis_path, 'w', encoding='utf-8') as f:
+                        f.write(thesis.to_markdown())
+                    print(f"[UNIFIED PIPELINE] Wrote thesis #{i}: {thesis_path}")
+
+            # Display TOP 2 with comprehensive analysis
+            print("\n" + "=" * 70)
+            print(f"TOP 2 TRADES OF THE DAY - FULL ANALYSIS | {end_date}")
+            print("=" * 70)
+
+            for i, thesis in enumerate(top2_theses, 1):
+                s = thesis.signal
+                print(f"\n{'─' * 70}")
+                print(f"TRADE #{i}: {s.symbol} ({s.asset_class}) - {s.strategy.upper()}")
+                print(f"{'─' * 70}")
+                print(f"  Side: {s.side.upper()} | Entry: ${s.entry_price:.2f} | Stop: ${s.stop_loss:.2f}")
+                print(f"  Final Confidence: {s.final_conf_score:.2%} | Rank: #{s.final_rank}")
+
+                print(f"\n  CONFIDENCE BREAKDOWN:")
+                print(f"    ML Meta (XGB/LGBM): {s.ml_meta_conf:.2%}")
+                print(f"    LSTM Success Prob:  {s.lstm_success:.2%}")
+                print(f"    Ensemble Conf:      {s.ensemble_conf:.2%}")
+                print(f"    Markov pi(Up):      {s.markov_pi_up:.2%} {'✓' if s.markov_agrees else '✗'}")
+                print(f"    Conviction Score:   {s.conviction_score}/100 ({s.conviction_tier})")
+                print(f"    Cognitive Approved: {'YES' if s.cognitive_approved else 'NO'} ({s.cognitive_confidence:.0%})")
+
+                print(f"\n  HISTORICAL PATTERN:")
+                print(f"    Consecutive Days:   {s.streak_length}")
+                print(f"    Historical Samples: {s.streak_samples}")
+                print(f"    Win Rate:           {s.streak_win_rate:.0%}")
+                print(f"    Avg Bounce:         {s.streak_avg_bounce:+.1%}")
+                print(f"    Auto-Pass Eligible: {'YES' if s.qualifies_auto_pass else 'NO'}")
+
+                print(f"\n  ALT DATA:")
+                print(f"    News Sentiment: {s.news_sentiment:+.2f} ({s.news_article_count} articles)")
+                print(f"    Insider Signal: {s.insider_signal.upper()}")
+                print(f"    Congress:       {s.congress_signal.upper()} ({s.congress_buys} buys / {s.congress_sells} sells)")
+                print(f"    Options Flow:   {s.options_flow_signal.upper()}")
+
+                print(f"\n  RISK ANALYSIS:")
+                print(f"    Kelly Optimal:  {s.kelly_optimal_pct:.1%}")
+                print(f"    VaR Contrib:    ${s.var_contribution:,.0f}")
+                print(f"    Correlation:    {s.correlation_with_portfolio:.2f}")
+                print(f"    Expected Move:  {s.expected_move_weekly:.1%} (weekly)")
+
+                print(f"\n  VERDICT: {thesis.verdict}")
+                print(f"  CONVICTION: {thesis.conviction_level}")
+
+        except Exception as e:
+            print(f"[UNIFIED PIPELINE] Error: {e}")
+            if args.verbose:
+                import traceback
+                traceback.print_exc()
+
+    elif args.unified and not UNIFIED_PIPELINE_AVAILABLE:
+        print("[WARN] Unified pipeline requested but module not available")
 
     # Output results
     if args.json:
