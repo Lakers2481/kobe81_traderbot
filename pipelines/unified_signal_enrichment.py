@@ -103,11 +103,14 @@ class ComponentRegistry:
             self.components['ml_meta'] = ComponentStatus('ML Meta (XGBoost/LightGBM)', False, error=str(e))
 
         try:
-            from ml_meta.calibration import CalibratedModel
-            self.calibrated_model = CalibratedModel
+            from ml_meta.calibration import IsotonicCalibrator, PlattCalibrator, get_calibrator, calibrate_probability
+            self.isotonic_calibrator = IsotonicCalibrator
+            self.platt_calibrator = PlattCalibrator
+            self.get_calibrator = get_calibrator
+            self.calibrate_probability = calibrate_probability
             self.components['ml_calibration'] = ComponentStatus('ML Calibration', True, True)
         except ImportError as e:
-            self.calibrated_model = None
+            self.isotonic_calibrator = None
             self.components['ml_calibration'] = ComponentStatus('ML Calibration', False, error=str(e))
 
         try:
@@ -175,8 +178,10 @@ class ComponentRegistry:
             self.components['conviction_scorer'] = ComponentStatus('Conviction Scorer', False, error=str(e))
 
         try:
-            from ml_features.confidence_integrator import MLConfidenceIntegrator
-            self.confidence_integrator = MLConfidenceIntegrator
+            from ml_features.confidence_integrator import ConfidenceIntegrator, get_confidence_integrator, get_ml_confidence
+            self.confidence_integrator = ConfidenceIntegrator
+            self.get_confidence_integrator = get_confidence_integrator
+            self.get_ml_confidence = get_ml_confidence
             self.components['confidence_integrator'] = ComponentStatus('Confidence Integrator', True, True)
         except ImportError as e:
             self.confidence_integrator = None
@@ -372,27 +377,30 @@ class ComponentRegistry:
             self.components['news_processor'] = ComponentStatus('News Processor', False, error=str(e))
 
         try:
-            from altdata.insider_activity import InsiderActivityTracker
-            self.insider_tracker = InsiderActivityTracker
+            from altdata.insider_activity import InsiderActivityClient, get_insider_client
+            self.insider_client = InsiderActivityClient
+            self.get_insider_client = get_insider_client
             self.components['insider_activity'] = ComponentStatus('Insider Activity', True, True)
         except ImportError as e:
-            self.insider_tracker = None
+            self.insider_client = None
             self.components['insider_activity'] = ComponentStatus('Insider Activity', False, error=str(e))
 
         try:
-            from altdata.congressional_trades import CongressionalTradeTracker
-            self.congress_tracker = CongressionalTradeTracker
+            from altdata.congressional_trades import CongressionalTradesClient, get_congressional_client
+            self.congress_client = CongressionalTradesClient
+            self.get_congressional_client = get_congressional_client
             self.components['congressional_trades'] = ComponentStatus('Congressional Trades', True, True)
         except ImportError as e:
-            self.congress_tracker = None
+            self.congress_client = None
             self.components['congressional_trades'] = ComponentStatus('Congressional Trades', False, error=str(e))
 
         try:
-            from altdata.options_flow import OptionsFlowAnalyzer
-            self.options_flow = OptionsFlowAnalyzer
+            from altdata.options_flow import OptionsFlowClient, get_options_flow_client
+            self.options_flow_client = OptionsFlowClient
+            self.get_options_flow_client = get_options_flow_client
             self.components['options_flow'] = ComponentStatus('Options Flow', True, True)
         except ImportError as e:
-            self.options_flow = None
+            self.options_flow_client = None
             self.components['options_flow'] = ComponentStatus('Options Flow', False, error=str(e))
 
         # =====================================================================
@@ -472,30 +480,52 @@ class ComponentRegistry:
             self.components['auto_standdown'] = ComponentStatus('Auto Standdown', False, error=str(e))
 
         try:
-            from analytics.edge_decomposition import EdgeDecomposer
-            self.edge_decomposer = EdgeDecomposer
+            from analytics.edge_decomposition import EdgeDecomposition, DimensionStats, DecompositionResult
+            self.edge_decomposition = EdgeDecomposition
+            self.dimension_stats = DimensionStats
+            self.decomposition_result = DecompositionResult
             self.components['edge_decomposition'] = ComponentStatus('Edge Decomposition', True, True)
         except ImportError as e:
-            self.edge_decomposer = None
+            self.edge_decomposition = None
             self.components['edge_decomposition'] = ComponentStatus('Edge Decomposition', False, error=str(e))
 
         # =====================================================================
         # CATEGORY 12: BOUNCE/STREAK ANALYSIS
         # =====================================================================
         try:
-            from bounce.bounce_score import BounceScorer
-            self.bounce_scorer = BounceScorer
+            from bounce.bounce_score import (
+                calculate_bounce_score,
+                apply_bounce_gates,
+                get_bounce_profile_for_signal,
+                adjust_signal_for_bounce,
+                rank_signals_by_bounce,
+            )
+            self.calculate_bounce_score = calculate_bounce_score
+            self.apply_bounce_gates = apply_bounce_gates
+            self.get_bounce_profile = get_bounce_profile_for_signal
+            self.adjust_signal_bounce = adjust_signal_for_bounce
+            self.rank_by_bounce = rank_signals_by_bounce
             self.components['bounce_scorer'] = ComponentStatus('Bounce Scorer', True, True)
         except ImportError as e:
-            self.bounce_scorer = None
+            self.calculate_bounce_score = None
             self.components['bounce_scorer'] = ComponentStatus('Bounce Scorer', False, error=str(e))
 
         try:
-            from bounce.streak_analyzer import StreakAnalyzer
-            self.streak_analyzer = StreakAnalyzer
+            from bounce.streak_analyzer import (
+                calculate_streaks_vectorized,
+                calculate_forward_metrics,
+                detect_events,
+                analyze_ticker,
+                get_current_streaks,
+            )
+            self.calculate_streaks = calculate_streaks_vectorized
+            self.calculate_forward_metrics = calculate_forward_metrics
+            self.detect_events = detect_events
+            self.analyze_ticker = analyze_ticker
+            self.get_current_streaks = get_current_streaks
             self.components['streak_analyzer'] = ComponentStatus('Streak Analyzer', True, True)
         except ImportError as e:
-            self.streak_analyzer = None
+            self.calculate_streaks = None
             self.components['streak_analyzer'] = ComponentStatus('Streak Analyzer', False, error=str(e))
 
         # =====================================================================
@@ -533,6 +563,546 @@ class ComponentRegistry:
         except ImportError as e:
             self.filter_by_earnings = None
             self.components['earnings_filter'] = ComponentStatus('Earnings Filter', False, error=str(e))
+
+        # =====================================================================
+        # CATEGORY 14: MORE COGNITIVE COMPONENTS
+        # =====================================================================
+        try:
+            from cognitive.global_workspace import GlobalWorkspace
+            self.global_workspace = GlobalWorkspace
+            self.components['global_workspace'] = ComponentStatus('Global Workspace', True, True)
+        except ImportError as e:
+            self.global_workspace = None
+            self.components['global_workspace'] = ComponentStatus('Global Workspace', False, error=str(e))
+
+        try:
+            from cognitive.symbolic_reasoner import SymbolicReasoner
+            self.symbolic_reasoner = SymbolicReasoner
+            self.components['symbolic_reasoner'] = ComponentStatus('Symbolic Reasoner', True, True)
+        except ImportError as e:
+            self.symbolic_reasoner = None
+            self.components['symbolic_reasoner'] = ComponentStatus('Symbolic Reasoner', False, error=str(e))
+
+        try:
+            from cognitive.dynamic_policy_generator import DynamicPolicyGenerator
+            self.dynamic_policy_generator = DynamicPolicyGenerator
+            self.components['dynamic_policy_generator'] = ComponentStatus('Dynamic Policy Generator', True, True)
+        except ImportError as e:
+            self.dynamic_policy_generator = None
+            self.components['dynamic_policy_generator'] = ComponentStatus('Dynamic Policy Generator', False, error=str(e))
+
+        try:
+            from cognitive.self_model import SelfModel
+            self.self_model = SelfModel
+            self.components['self_model'] = ComponentStatus('Self Model', True, True)
+        except ImportError as e:
+            self.self_model = None
+            self.components['self_model'] = ComponentStatus('Self Model', False, error=str(e))
+
+        try:
+            from cognitive.llm_validator import LLMValidator, get_validator
+            self.llm_validator = get_validator
+            self.components['llm_validator'] = ComponentStatus('LLM Validator', True, True)
+        except ImportError as e:
+            self.llm_validator = None
+            self.components['llm_validator'] = ComponentStatus('LLM Validator', False, error=str(e))
+
+        try:
+            from cognitive.vector_memory import VectorMemory
+            self.vector_memory = VectorMemory
+            self.components['vector_memory'] = ComponentStatus('Vector Memory', True, True)
+        except ImportError as e:
+            self.vector_memory = None
+            self.components['vector_memory'] = ComponentStatus('Vector Memory', False, error=str(e))
+
+        # =====================================================================
+        # CATEGORY 15: MORE RISK COMPONENTS
+        # =====================================================================
+        try:
+            from risk.policy_gate import PolicyGate
+            self.policy_gate = PolicyGate
+            self.components['policy_gate'] = ComponentStatus('Policy Gate', True, True)
+        except ImportError as e:
+            self.policy_gate = None
+            self.components['policy_gate'] = ComponentStatus('Policy Gate', False, error=str(e))
+
+        try:
+            from risk.weekly_exposure_gate import WeeklyExposureGate
+            self.weekly_exposure_gate = WeeklyExposureGate
+            self.components['weekly_exposure_gate'] = ComponentStatus('Weekly Exposure Gate', True, True)
+        except ImportError as e:
+            self.weekly_exposure_gate = None
+            self.components['weekly_exposure_gate'] = ComponentStatus('Weekly Exposure Gate', False, error=str(e))
+
+        try:
+            from risk.dynamic_position_sizer import AllocationResult, calculate_dynamic_allocations
+            self.dynamic_position_sizer = calculate_dynamic_allocations
+            self.components['dynamic_position_sizer'] = ComponentStatus('Dynamic Position Sizer', True, True)
+        except ImportError as e:
+            self.dynamic_position_sizer = None
+            self.components['dynamic_position_sizer'] = ComponentStatus('Dynamic Position Sizer', False, error=str(e))
+
+        try:
+            from risk.equity_sizer import PositionSize, calculate_position_size, get_account_equity
+            self.equity_sizer = calculate_position_size
+            self.components['equity_sizer'] = ComponentStatus('Equity Sizer', True, True)
+        except ImportError as e:
+            self.equity_sizer = None
+            self.components['equity_sizer'] = ComponentStatus('Equity Sizer', False, error=str(e))
+
+        try:
+            from risk.circuit_breakers.drawdown_breaker import DrawdownBreaker
+            self.drawdown_breaker = DrawdownBreaker
+            self.components['drawdown_breaker'] = ComponentStatus('Drawdown Breaker', True, True)
+        except ImportError as e:
+            self.drawdown_breaker = None
+            self.components['drawdown_breaker'] = ComponentStatus('Drawdown Breaker', False, error=str(e))
+
+        try:
+            from risk.circuit_breakers.volatility_breaker import VolatilityBreaker
+            self.volatility_breaker = VolatilityBreaker
+            self.components['volatility_breaker'] = ComponentStatus('Volatility Breaker', True, True)
+        except ImportError as e:
+            self.volatility_breaker = None
+            self.components['volatility_breaker'] = ComponentStatus('Volatility Breaker', False, error=str(e))
+
+        try:
+            from risk.circuit_breakers.streak_breaker import StreakBreaker
+            self.streak_breaker = StreakBreaker
+            self.components['streak_breaker'] = ComponentStatus('Streak Breaker', True, True)
+        except ImportError as e:
+            self.streak_breaker = None
+            self.components['streak_breaker'] = ComponentStatus('Streak Breaker', False, error=str(e))
+
+        try:
+            from risk.factor_model.factor_calculator import FactorCalculator
+            self.factor_calculator = FactorCalculator
+            self.components['factor_calculator'] = ComponentStatus('Factor Calculator', True, True)
+        except ImportError as e:
+            self.factor_calculator = None
+            self.components['factor_calculator'] = ComponentStatus('Factor Calculator', False, error=str(e))
+
+        try:
+            from risk.factor_model.sector_exposure import SectorAnalyzer, SectorExposures
+            self.sector_exposure = SectorAnalyzer
+            self.components['sector_exposure'] = ComponentStatus('Sector Exposure', True, True)
+        except ImportError as e:
+            self.sector_exposure = None
+            self.components['sector_exposure'] = ComponentStatus('Sector Exposure', False, error=str(e))
+
+        # =====================================================================
+        # CATEGORY 16: MORE ML COMPONENTS
+        # =====================================================================
+        try:
+            from ml_features.pca_reducer import PCAReducer
+            self.pca_reducer = PCAReducer
+            self.components['pca_reducer'] = ComponentStatus('PCA Reducer', True, True)
+        except ImportError as e:
+            self.pca_reducer = None
+            self.components['pca_reducer'] = ComponentStatus('PCA Reducer', False, error=str(e))
+
+        try:
+            from ml_features.technical_features import TechnicalFeatures
+            self.technical_features = TechnicalFeatures
+            self.components['technical_features'] = ComponentStatus('Technical Features', True, True)
+        except ImportError as e:
+            self.technical_features = None
+            self.components['technical_features'] = ComponentStatus('Technical Features', False, error=str(e))
+
+        try:
+            from ml_features.macro_features import MacroFeatureGenerator, get_macro_features
+            self.macro_features = MacroFeatureGenerator
+            self.components['macro_features'] = ComponentStatus('Macro Features', True, True)
+        except ImportError as e:
+            self.macro_features = None
+            self.components['macro_features'] = ComponentStatus('Macro Features', False, error=str(e))
+
+        try:
+            from ml_features.regime_ml import RegimeDetectorML, detect_regime_ml
+            self.regime_ml = RegimeDetectorML
+            self.components['regime_ml'] = ComponentStatus('Regime ML', True, True)
+        except ImportError as e:
+            self.regime_ml = None
+            self.components['regime_ml'] = ComponentStatus('Regime ML', False, error=str(e))
+
+        try:
+            from ml.confidence_gate import GateConfig, approve as confidence_approve
+            self.confidence_gate = confidence_approve
+            self.components['confidence_gate'] = ComponentStatus('Confidence Gate', True, True)
+        except ImportError as e:
+            self.confidence_gate = None
+            self.components['confidence_gate'] = ComponentStatus('Confidence Gate', False, error=str(e))
+
+        try:
+            from ml_advanced.markov_chain.scorer import MarkovAssetScorer
+            self.markov_detailed_scorer = MarkovAssetScorer
+            self.components['markov_scorer'] = ComponentStatus('Markov Scorer', True, True)
+        except ImportError as e:
+            self.markov_detailed_scorer = None
+            self.components['markov_scorer'] = ComponentStatus('Markov Scorer', False, error=str(e))
+
+        try:
+            from ml_advanced.ensemble.regime_weights import RegimeWeights
+            self.regime_weights = RegimeWeights
+            self.components['regime_weights'] = ComponentStatus('Regime Weights', True, True)
+        except ImportError as e:
+            self.regime_weights = None
+            self.components['regime_weights'] = ComponentStatus('Regime Weights', False, error=str(e))
+
+        # =====================================================================
+        # CATEGORY 17: DATA PROVIDERS & UNIVERSE
+        # =====================================================================
+        try:
+            from data.providers.polygon_eod import fetch_daily_bars_polygon, PolygonConfig
+            self.polygon_eod = fetch_daily_bars_polygon
+            self.components['polygon_eod'] = ComponentStatus('Polygon EOD Provider', True, True)
+        except ImportError as e:
+            self.polygon_eod = None
+            self.components['polygon_eod'] = ComponentStatus('Polygon EOD Provider', False, error=str(e))
+
+        try:
+            from data.providers.alpaca_live import get_latest_quote, fetch_bars_alpaca, get_current_price
+            self.alpaca_live = fetch_bars_alpaca
+            self.components['alpaca_live'] = ComponentStatus('Alpaca Live Provider', True, True)
+        except ImportError as e:
+            self.alpaca_live = None
+            self.components['alpaca_live'] = ComponentStatus('Alpaca Live Provider', False, error=str(e))
+
+        try:
+            from data.universe.loader import load_universe, load_canonical_900
+            self.universe_loader = load_universe
+            self.components['universe_loader'] = ComponentStatus('Universe Loader', True, True)
+        except ImportError as e:
+            self.universe_loader = None
+            self.components['universe_loader'] = ComponentStatus('Universe Loader', False, error=str(e))
+
+        try:
+            from data.validation import OHLCVValidator, validate_ohlcv, DataQualityReport
+            self.data_validator = OHLCVValidator
+            self.components['data_validator'] = ComponentStatus('Data Validator', True, True)
+        except ImportError as e:
+            self.data_validator = None
+            self.components['data_validator'] = ComponentStatus('Data Validator', False, error=str(e))
+
+        try:
+            from data.corporate_actions import CorporateActionsTracker, get_tracker
+            self.corporate_actions = CorporateActionsTracker
+            self.components['corporate_actions'] = ComponentStatus('Corporate Actions', True, True)
+        except ImportError as e:
+            self.corporate_actions = None
+            self.components['corporate_actions'] = ComponentStatus('Corporate Actions', False, error=str(e))
+
+        # =====================================================================
+        # CATEGORY 18: QUANT GATES
+        # =====================================================================
+        try:
+            from quant_gates.gate_0_sanity import Gate0Sanity, SanityResult
+            self.sanity_gate = Gate0Sanity
+            self.components['sanity_gate'] = ComponentStatus('Sanity Gate', True, True)
+        except ImportError as e:
+            self.sanity_gate = None
+            self.components['sanity_gate'] = ComponentStatus('Sanity Gate', False, error=str(e))
+
+        try:
+            from quant_gates.gate_1_baseline import Gate1Baseline, BaselineResult
+            self.baseline_gate = Gate1Baseline
+            self.components['baseline_gate'] = ComponentStatus('Baseline Gate', True, True)
+        except ImportError as e:
+            self.baseline_gate = None
+            self.components['baseline_gate'] = ComponentStatus('Baseline Gate', False, error=str(e))
+
+        try:
+            from quant_gates.gate_2_robustness import Gate2Robustness, RobustnessResult
+            self.robustness_gate = Gate2Robustness
+            self.components['robustness_gate'] = ComponentStatus('Robustness Gate', True, True)
+        except ImportError as e:
+            self.robustness_gate = None
+            self.components['robustness_gate'] = ComponentStatus('Robustness Gate', False, error=str(e))
+
+        try:
+            from quant_gates.gate_3_risk import Gate3RiskRealism, RiskResult
+            self.risk_gate = Gate3RiskRealism
+            self.components['risk_gate'] = ComponentStatus('Risk Gate', True, True)
+        except ImportError as e:
+            self.risk_gate = None
+            self.components['risk_gate'] = ComponentStatus('Risk Gate', False, error=str(e))
+
+        try:
+            from quant_gates.pipeline import QuantGatesPipeline, GateResult, PipelineResult
+            self.quant_gate_pipeline = QuantGatesPipeline
+            self.components['quant_gate_pipeline'] = ComponentStatus('Quant Gate Pipeline', True, True)
+        except ImportError as e:
+            self.quant_gate_pipeline = None
+            self.components['quant_gate_pipeline'] = ComponentStatus('Quant Gate Pipeline', False, error=str(e))
+
+        # =====================================================================
+        # CATEGORY 19: AUTONOMOUS BRAIN COMPONENTS
+        # =====================================================================
+        try:
+            from autonomous.brain import AutonomousBrain
+            self.autonomous_brain = AutonomousBrain
+            self.components['autonomous_brain'] = ComponentStatus('Autonomous Brain', True, True)
+        except ImportError as e:
+            self.autonomous_brain = None
+            self.components['autonomous_brain'] = ComponentStatus('Autonomous Brain', False, error=str(e))
+
+        try:
+            from autonomous.research import ResearchEngine
+            self.research_engine = ResearchEngine
+            self.components['research_engine'] = ComponentStatus('Research Engine', True, True)
+        except ImportError as e:
+            self.research_engine = None
+            self.components['research_engine'] = ComponentStatus('Research Engine', False, error=str(e))
+
+        try:
+            from autonomous.learning import LearningEngine
+            self.learning_engine = LearningEngine
+            self.components['learning_engine'] = ComponentStatus('Learning Engine', True, True)
+        except ImportError as e:
+            self.learning_engine = None
+            self.components['learning_engine'] = ComponentStatus('Learning Engine', False, error=str(e))
+
+        try:
+            from autonomous.awareness import TimeAwareness, MarketCalendarAwareness, SeasonalAwareness
+            self.time_awareness = TimeAwareness
+            self.market_calendar = MarketCalendarAwareness
+            self.seasonal_awareness = SeasonalAwareness
+            self.components['awareness'] = ComponentStatus('Awareness System', True, True)
+        except ImportError as e:
+            self.time_awareness = None
+            self.components['awareness'] = ComponentStatus('Awareness System', False, error=str(e))
+
+        try:
+            from autonomous.scheduler import AutonomousScheduler, get_scheduler
+            self.task_scheduler = AutonomousScheduler
+            self.components['task_scheduler'] = ComponentStatus('Task Scheduler', True, True)
+        except ImportError as e:
+            self.task_scheduler = None
+            self.components['task_scheduler'] = ComponentStatus('Task Scheduler', False, error=str(e))
+
+        try:
+            from autonomous.maintenance import MaintenanceEngine
+            self.maintenance_engine = MaintenanceEngine
+            self.components['maintenance_engine'] = ComponentStatus('Maintenance Engine', True, True)
+        except ImportError as e:
+            self.maintenance_engine = None
+            self.components['maintenance_engine'] = ComponentStatus('Maintenance Engine', False, error=str(e))
+
+        try:
+            from autonomous.integrity import IntegrityGuardian
+            self.integrity_guardian = IntegrityGuardian
+            self.components['integrity_guardian'] = ComponentStatus('Integrity Guardian', True, True)
+        except ImportError as e:
+            self.integrity_guardian = None
+            self.components['integrity_guardian'] = ComponentStatus('Integrity Guardian', False, error=str(e))
+
+        try:
+            from autonomous.pattern_rhymes import PatternRhymesEngine
+            self.pattern_rhymes = PatternRhymesEngine
+            self.components['pattern_rhymes'] = ComponentStatus('Pattern Rhymes Engine', True, True)
+        except ImportError as e:
+            self.pattern_rhymes = None
+            self.components['pattern_rhymes'] = ComponentStatus('Pattern Rhymes Engine', False, error=str(e))
+
+        # =====================================================================
+        # CATEGORY 20: BACKTEST COMPONENTS
+        # =====================================================================
+        try:
+            from backtest.vectorized import VectorizedBacktester
+            self.vectorized_backtester = VectorizedBacktester
+            self.components['vectorized_backtester'] = ComponentStatus('Vectorized Backtester', True, True)
+        except ImportError as e:
+            self.vectorized_backtester = None
+            self.components['vectorized_backtester'] = ComponentStatus('Vectorized Backtester', False, error=str(e))
+
+        try:
+            from backtest.walk_forward import generate_splits, run_walk_forward, WFSplit
+            self.walk_forward = run_walk_forward
+            self.components['walk_forward'] = ComponentStatus('Walk Forward Analyzer', True, True)
+        except ImportError as e:
+            self.walk_forward = None
+            self.components['walk_forward'] = ComponentStatus('Walk Forward Analyzer', False, error=str(e))
+
+        try:
+            from backtest.monte_carlo import MonteCarloSimulator
+            self.monte_carlo_sim = MonteCarloSimulator
+            self.components['monte_carlo_sim'] = ComponentStatus('Monte Carlo Simulator', True, True)
+        except ImportError as e:
+            self.monte_carlo_sim = None
+            self.components['monte_carlo_sim'] = ComponentStatus('Monte Carlo Simulator', False, error=str(e))
+
+        try:
+            from backtest.slippage import SlippageModel
+            self.slippage_model = SlippageModel
+            self.components['slippage_model'] = ComponentStatus('Slippage Model', True, True)
+        except ImportError as e:
+            self.slippage_model = None
+            self.components['slippage_model'] = ComponentStatus('Slippage Model', False, error=str(e))
+
+        try:
+            from backtest.reproducibility import ExperimentTracker
+            self.experiment_tracker = ExperimentTracker
+            self.components['experiment_tracker'] = ComponentStatus('Experiment Tracker', True, True)
+        except ImportError as e:
+            self.experiment_tracker = None
+            self.components['experiment_tracker'] = ComponentStatus('Experiment Tracker', False, error=str(e))
+
+        # =====================================================================
+        # CATEGORY 21: ALERTS & NOTIFICATIONS
+        # =====================================================================
+        try:
+            from alerts.professional_alerts import ProfessionalAlerts
+            self.professional_alerts = ProfessionalAlerts
+            self.components['professional_alerts'] = ComponentStatus('Professional Alerts', True, True)
+        except ImportError as e:
+            self.professional_alerts = None
+            self.components['professional_alerts'] = ComponentStatus('Professional Alerts', False, error=str(e))
+
+        try:
+            from alerts.telegram_alerter import TelegramAlerter
+            self.telegram_alerter = TelegramAlerter
+            self.components['telegram_alerter'] = ComponentStatus('Telegram Alerter', True, True)
+        except ImportError as e:
+            self.telegram_alerter = None
+            self.components['telegram_alerter'] = ComponentStatus('Telegram Alerter', False, error=str(e))
+
+        # =====================================================================
+        # CATEGORY 22: AGENTS
+        # =====================================================================
+        try:
+            from agents.orchestrator import AgentOrchestrator
+            self.agent_orchestrator = AgentOrchestrator
+            self.components['agent_orchestrator'] = ComponentStatus('Agent Orchestrator', True, True)
+        except ImportError as e:
+            self.agent_orchestrator = None
+            self.components['agent_orchestrator'] = ComponentStatus('Agent Orchestrator', False, error=str(e))
+
+        try:
+            from agents.scout_agent import ScoutAgent
+            self.scout_agent = ScoutAgent
+            self.components['scout_agent'] = ComponentStatus('Scout Agent', True, True)
+        except ImportError as e:
+            self.scout_agent = None
+            self.components['scout_agent'] = ComponentStatus('Scout Agent', False, error=str(e))
+
+        try:
+            from agents.risk_agent import RiskAgent
+            self.risk_agent = RiskAgent
+            self.components['risk_agent'] = ComponentStatus('Risk Agent', True, True)
+        except ImportError as e:
+            self.risk_agent = None
+            self.components['risk_agent'] = ComponentStatus('Risk Agent', False, error=str(e))
+
+        # =====================================================================
+        # CATEGORY 23: COMPLIANCE & RULES
+        # =====================================================================
+        try:
+            from compliance.rules_engine import RuleConfig, evaluate as rules_evaluate
+            self.rules_engine = rules_evaluate
+            self.components['rules_engine'] = ComponentStatus('Rules Engine', True, True)
+        except ImportError as e:
+            self.rules_engine = None
+            self.components['rules_engine'] = ComponentStatus('Rules Engine', False, error=str(e))
+
+        try:
+            from compliance.prohibited_list import is_prohibited, prohibited_reasons, ProhibitedReason
+            self.prohibited_assets = is_prohibited
+            self.components['prohibited_assets'] = ComponentStatus('Prohibited Assets', True, True)
+        except ImportError as e:
+            self.prohibited_assets = None
+            self.components['prohibited_assets'] = ComponentStatus('Prohibited Assets', False, error=str(e))
+
+        # =====================================================================
+        # CATEGORY 24: MARKET MOOD & SENTIMENT
+        # =====================================================================
+        try:
+            from altdata.market_mood_analyzer import MarketMoodAnalyzer
+            self.market_mood_analyzer = MarketMoodAnalyzer
+            self.components['market_mood_analyzer'] = ComponentStatus('Market Mood Analyzer', True, True)
+        except ImportError as e:
+            self.market_mood_analyzer = None
+            self.components['market_mood_analyzer'] = ComponentStatus('Market Mood Analyzer', False, error=str(e))
+
+        # =====================================================================
+        # CATEGORY 25: PORTFOLIO OPTIMIZATION
+        # =====================================================================
+        try:
+            from portfolio.optimizer.mean_variance import MeanVarianceOptimizer
+            self.mean_variance_optimizer = MeanVarianceOptimizer
+            self.components['mean_variance_optimizer'] = ComponentStatus('Mean Variance Optimizer', True, True)
+        except ImportError as e:
+            self.mean_variance_optimizer = None
+            self.components['mean_variance_optimizer'] = ComponentStatus('Mean Variance Optimizer', False, error=str(e))
+
+        try:
+            from portfolio.optimizer.risk_parity import RiskParityOptimizer
+            self.risk_parity_optimizer = RiskParityOptimizer
+            self.components['risk_parity_optimizer'] = ComponentStatus('Risk Parity Optimizer', True, True)
+        except ImportError as e:
+            self.risk_parity_optimizer = None
+            self.components['risk_parity_optimizer'] = ComponentStatus('Risk Parity Optimizer', False, error=str(e))
+
+        try:
+            from portfolio.optimizer.rebalancer import PortfolioRebalancer, get_rebalancer
+            self.rebalancer = PortfolioRebalancer
+            self.components['rebalancer'] = ComponentStatus('Rebalancer', True, True)
+        except ImportError as e:
+            self.rebalancer = None
+            self.components['rebalancer'] = ComponentStatus('Rebalancer', False, error=str(e))
+
+        try:
+            from portfolio.state_manager import StateManager
+            self.portfolio_state_manager = StateManager
+            self.components['portfolio_state_manager'] = ComponentStatus('Portfolio State Manager', True, True)
+        except ImportError as e:
+            self.portfolio_state_manager = None
+            self.components['portfolio_state_manager'] = ComponentStatus('Portfolio State Manager', False, error=str(e))
+
+        # =====================================================================
+        # CATEGORY 26: ANALYTICS - P&L ATTRIBUTION
+        # =====================================================================
+        try:
+            from analytics.attribution.daily_pnl import DailyPnLTracker
+            self.daily_pnl_tracker = DailyPnLTracker
+            self.components['daily_pnl_tracker'] = ComponentStatus('Daily P&L Tracker', True, True)
+        except ImportError as e:
+            self.daily_pnl_tracker = None
+            self.components['daily_pnl_tracker'] = ComponentStatus('Daily P&L Tracker', False, error=str(e))
+
+        try:
+            from analytics.attribution.strategy_attribution import StrategyAttributor
+            self.strategy_attributor = StrategyAttributor
+            self.components['strategy_attributor'] = ComponentStatus('Strategy Attributor', True, True)
+        except ImportError as e:
+            self.strategy_attributor = None
+            self.components['strategy_attributor'] = ComponentStatus('Strategy Attributor', False, error=str(e))
+
+        try:
+            from analytics.duckdb_engine import DuckDBEngine
+            self.duckdb_engine = DuckDBEngine
+            self.components['duckdb_engine'] = ComponentStatus('DuckDB Engine', True, True)
+        except ImportError as e:
+            self.duckdb_engine = None
+            self.components['duckdb_engine'] = ComponentStatus('DuckDB Engine', False, error=str(e))
+
+        # =====================================================================
+        # CATEGORY 27: RL AGENT
+        # =====================================================================
+        try:
+            from ml.alpha_discovery.rl_agent.trading_env import TradingEnv
+            self.trading_env = TradingEnv
+            self.components['trading_env'] = ComponentStatus('Trading Environment (RL)', True, True)
+        except ImportError as e:
+            self.trading_env = None
+            self.components['trading_env'] = ComponentStatus('Trading Environment (RL)', False, error=str(e))
+
+        try:
+            from ml.alpha_discovery.rl_agent.agent import RLTradingAgent
+            self.rl_agent = RLTradingAgent
+            self.components['rl_agent'] = ComponentStatus('RL Trading Agent', True, True)
+        except ImportError as e:
+            self.rl_agent = None
+            self.components['rl_agent'] = ComponentStatus('RL Trading Agent', False, error=str(e))
 
     def get_summary(self) -> Dict[str, Any]:
         """Get summary of component availability."""
