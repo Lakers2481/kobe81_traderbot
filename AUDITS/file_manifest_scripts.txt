@@ -1,0 +1,15 @@
+ops\start_paper.ps1
+ops\windows\live_dashboard.ps1
+ops\windows\register_all_tasks.ps1
+ops\windows\register_master_scheduler.ps1
+ops\windows\run_full_wf_now.ps1
+ops\windows\start_runner.ps1
+ops\windows\watch_status.ps1
+scripts\install_tasks.bat
+scripts\ops\scan_top3.ps1
+scripts\ops\trade_top3.ps1
+scripts\run_all_checks.ps1
+scripts\setup_task_scheduler.ps1
+scripts\start_robot.bat
+scripts\start_runner.bat
+scripts\stop_robot.bat

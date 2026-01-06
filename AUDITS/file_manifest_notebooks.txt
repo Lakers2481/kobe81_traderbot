@@ -1,0 +1,4 @@
+# Jupyter Notebooks (1 total)
+# Generated: 2026-01-05T19:56:33.407561
+
+.\notebooks\cognitive_tutorial.ipynb

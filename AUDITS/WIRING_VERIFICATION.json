@@ -1,0 +1,290 @@
+{
+  "timestamp": "2026-01-06T03:34:50.462659",
+  "verdict": "PASS",
+  "grade": "A+",
+  "score": 100,
+  "critical_issues": [],
+  "recommendations": [],
+  "checks": [
+    {
+      "name": "Bypass Vulnerability Scan",
+      "passed": true,
+      "notes": "SEV-0: 0, SEV-1: 0",
+      "evidence": [
+        {
+          "source": "Bypass Scanner",
+          "claim": "No SEV-0 bypass paths",
+          "evidence": "Scanned 3 known patterns, 0 SEV-0 found",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "Bypass Scanner",
+          "claim": "No SEV-1 bypass paths",
+          "evidence": "Scanned 3 known patterns, 0 SEV-1 found",
+          "verified": true,
+          "severity": "INFO"
+        }
+      ]
+    },
+    {
+      "name": "Repo Census",
+      "passed": true,
+      "notes": "Comprehensive file inventory",
+      "evidence": [
+        {
+          "source": "AUDITS/00_REPO_CENSUS.md",
+          "claim": "Repo census completed",
+          "evidence": "File exists, 2122 bytes",
+          "verified": true,
+          "severity": "INFO"
+        }
+      ]
+    },
+    {
+      "name": "Entrypoints Discovery",
+      "passed": true,
+      "notes": "",
+      "evidence": [
+        {
+          "source": "AUDITS/01_ENTRYPOINTS.json",
+          "claim": "Entrypoints discovered",
+          "evidence": "193 entrypoints documented",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "AUDITS/01_ENTRYPOINTS.json",
+          "claim": "Critical entrypoints identified",
+          "evidence": "8 critical scripts marked",
+          "verified": true,
+          "severity": "INFO"
+        }
+      ]
+    },
+    {
+      "name": "Component Inventory",
+      "passed": true,
+      "notes": "",
+      "evidence": [
+        {
+          "source": "AUDITS/02_COMPONENT_INVENTORY.json",
+          "claim": "Classes discovered",
+          "evidence": "1452 classes found",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "AUDITS/02_COMPONENT_INVENTORY.json",
+          "claim": "Functions discovered",
+          "evidence": "7460 functions found",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "AUDITS/02_COMPONENT_INVENTORY.json",
+          "claim": "Stubs identified",
+          "evidence": "51 stub implementations found",
+          "verified": true,
+          "severity": "INFO"
+        }
+      ]
+    },
+    {
+      "name": "Truth Table",
+      "passed": true,
+      "notes": "",
+      "evidence": [
+        {
+          "source": "AUDITS/TRUTH_TABLE.csv",
+          "claim": "Components classified",
+          "evidence": "8912 components: 7378 REAL, 1433 PARTIAL, 101 STUB",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "AUDITS/TRUTH_TABLE.csv",
+          "claim": "High REAL percentage",
+          "evidence": "82.8% components are REAL",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "AUDITS/TRUTH_TABLE.csv",
+          "claim": "Low STUB percentage",
+          "evidence": "1.1% are STUB",
+          "verified": true,
+          "severity": "INFO"
+        }
+      ]
+    },
+    {
+      "name": "Runtime Traces (STRICT)",
+      "passed": true,
+      "notes": "Min events: 50, Min functions: 5",
+      "evidence": [
+        {
+          "source": "AUDITS/TRACES/*.jsonl",
+          "claim": "Trace events >= 50",
+          "evidence": "214 events (need 50+)",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "AUDITS/TRACES/*.jsonl",
+          "claim": "Functions traced >= 5",
+          "evidence": "6 unique functions (need 5+)",
+          "verified": true,
+          "severity": "INFO"
+        }
+      ]
+    },
+    {
+      "name": "Safety Execution Choke",
+      "passed": true,
+      "notes": "SINGLE enforcement point for all orders",
+      "evidence": [
+        {
+          "source": "safety/execution_choke.py",
+          "claim": "evaluate_safety_gates function",
+          "evidence": "FOUND",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "safety/execution_choke.py",
+          "claim": "SafetyViolationError class",
+          "evidence": "FOUND",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "safety/execution_choke.py",
+          "claim": "6 required checks",
+          "evidence": "FOUND",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "safety/execution_choke.py",
+          "claim": "Runtime token validation",
+          "evidence": "FOUND",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "safety/execution_choke.py",
+          "claim": "Kill switch check",
+          "evidence": "FOUND",
+          "verified": true,
+          "severity": "INFO"
+        }
+      ]
+    },
+    {
+      "name": "Bypass Prevention Tests",
+      "passed": true,
+      "notes": "",
+      "evidence": [
+        {
+          "source": "tests/security/test_live_bypass.py",
+          "claim": "Bypass tests exist",
+          "evidence": "14 test methods found",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "tests/security/test_live_bypass.py",
+          "claim": "Tests live blocking",
+          "evidence": "FOUND",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "tests/security/test_live_bypass.py",
+          "claim": "Tests wrong token",
+          "evidence": "FOUND",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "tests/security/test_live_bypass.py",
+          "claim": "Tests kill switch",
+          "evidence": "FOUND",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "tests/security/test_live_bypass.py",
+          "claim": "Tests all flags",
+          "evidence": "FOUND",
+          "verified": true,
+          "severity": "INFO"
+        }
+      ]
+    },
+    {
+      "name": "Critical Paths",
+      "passed": true,
+      "notes": "",
+      "evidence": [
+        {
+          "source": "data/providers/polygon_eod.py",
+          "claim": "Polygon data provider exists",
+          "evidence": "EXISTS",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "data/universe/loader.py",
+          "claim": "Universe loader exists",
+          "evidence": "EXISTS",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "strategies/dual_strategy/combined.py",
+          "claim": "DualStrategyScanner exists",
+          "evidence": "EXISTS",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "strategies/ibs_rsi/strategy.py",
+          "claim": "IBS+RSI Strategy exists",
+          "evidence": "EXISTS",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "strategies/ict/turtle_soup.py",
+          "claim": "Turtle Soup Strategy exists",
+          "evidence": "EXISTS",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "execution/broker_alpaca.py",
+          "claim": "Alpaca broker exists",
+          "evidence": "EXISTS",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "risk/policy_gate.py",
+          "claim": "Policy gate exists",
+          "evidence": "EXISTS",
+          "verified": true,
+          "severity": "INFO"
+        },
+        {
+          "source": "oms/order_state.py",
+          "claim": "Order state tracker exists",
+          "evidence": "EXISTS",
+          "verified": true,
+          "severity": "INFO"
+        }
+      ]
+    }
+  ]
+}

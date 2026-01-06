@@ -1,0 +1,35 @@
+{
+  "generated_at": "2026-01-06T02:48:34.611844",
+  "session_id": "trace_20260106_024824",
+  "mode": "all",
+  "results": {
+    "scan": {
+      "trace_file": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AUDITS\\TRACES\\trace_20260106_024824.jsonl",
+      "patched_count": 22,
+      "failed_count": 0,
+      "total_events": 0,
+      "by_event_type": {}
+    },
+    "backtest": {
+      "trace_file": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AUDITS\\TRACES\\trace_20260106_024824.jsonl",
+      "patched_count": 22,
+      "failed_count": 0,
+      "total_events": 0,
+      "by_event_type": {}
+    },
+    "safety": {
+      "trace_file": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AUDITS\\TRACES\\trace_20260106_024824.jsonl",
+      "patched_count": 22,
+      "failed_count": 0,
+      "total_events": 0,
+      "by_event_type": {}
+    },
+    "risk": {
+      "trace_file": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AUDITS\\TRACES\\trace_20260106_024824.jsonl",
+      "patched_count": 22,
+      "failed_count": 0,
+      "total_events": 0,
+      "by_event_type": {}
+    }
+  }
+}

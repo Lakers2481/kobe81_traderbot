@@ -87,6 +87,18 @@ try:
 except ImportError:
     MARKOV_AVAILABLE = False
 
+# Options Signal Generator (calls/puts from equity signals)
+try:
+    from scanner.options_signals import generate_options_signals, OPTIONS_AVAILABLE
+except ImportError:
+    OPTIONS_AVAILABLE = False
+
+# Crypto Signal Generator (BTC, ETH, etc.)
+try:
+    from scanner.crypto_signals import generate_crypto_signals, scan_crypto, CRYPTO_DATA_AVAILABLE
+except ImportError:
+    CRYPTO_DATA_AVAILABLE = False
+
 
 def get_last_trading_day(reference_date: datetime = None) -> tuple[str, bool, str]:
     """
@@ -915,6 +927,42 @@ Examples:
         type=float,
         default=0.35,
         help="Minimum stationary pi(Up) for Markov pre-filter (default: 0.35)",
+    )
+    # === Options Integration (calls/puts from equity signals) ===
+    ap.add_argument(
+        "--options",
+        action="store_true",
+        help="Generate options signals (calls/puts) from equity signals",
+    )
+    ap.add_argument(
+        "--options-delta",
+        type=float,
+        default=0.30,
+        help="Target delta for options strikes (default: 0.30 = 30-delta)",
+    )
+    ap.add_argument(
+        "--options-dte",
+        type=int,
+        default=21,
+        help="Target days to expiration for options (default: 21)",
+    )
+    ap.add_argument(
+        "--options-max",
+        type=int,
+        default=3,
+        help="Maximum options signals to generate (default: 3)",
+    )
+    # === Crypto Integration (BTC, ETH, etc.) ===
+    ap.add_argument(
+        "--crypto",
+        action="store_true",
+        help="Include crypto signals (BTC, ETH, SOL, etc.) in scan output",
+    )
+    ap.add_argument(
+        "--crypto-max",
+        type=int,
+        default=3,
+        help="Maximum crypto signals to generate (default: 3)",
     )
     args = ap.parse_args()
 
@@ -2032,9 +2080,115 @@ Examples:
         log_signals(signals, scan_id)
         print(f"\nSignals logged to: {SIGNALS_LOG}")
 
+    # === OPTIONS SIGNAL GENERATION (CALLS + PUTS) ===
+    options_signals = pd.DataFrame()
+    if args.options and OPTIONS_AVAILABLE and not signals.empty:
+        print("\n" + "=" * 60)
+        print("GENERATING OPTIONS SIGNALS (CALLS + PUTS)")
+        print("=" * 60)
+
+        try:
+            options_signals = generate_options_signals(
+                equity_signals=signals,
+                price_data=all_bars,
+                max_signals=args.options_max * 2,  # calls + puts
+                target_delta=args.options_delta,
+                target_dte=args.options_dte,
+            )
+
+            if not options_signals.empty:
+                # Add asset class if not present
+                if 'asset_class' not in options_signals.columns:
+                    options_signals['asset_class'] = 'OPTIONS'
+
+                # Write options signals to CSV
+                options_path = ROOT / 'logs' / 'options_signals.csv'
+                options_path.parent.mkdir(parents=True, exist_ok=True)
+                options_signals.to_csv(options_path, index=False)
+
+                # Print options summary
+                calls = options_signals[options_signals['option_type'] == 'CALL']
+                puts = options_signals[options_signals['option_type'] == 'PUT']
+
+                print(f"\nGenerated {len(options_signals)} options signals:")
+                print(f"  CALLS: {len(calls)} | PUTS: {len(puts)}")
+                print(f"\n{'Symbol':<8} {'Type':<5} {'Strike':>8} {'Exp':>12} {'Price':>8} {'Delta':>6} {'Action'}")
+                print("-" * 65)
+
+                for _, opt in options_signals.iterrows():
+                    print(f"{opt['symbol']:<8} {opt['option_type']:<5} ${opt['strike']:>7.2f} {opt['expiration']:>12} ${opt['option_price']:>6.2f} {opt['delta']:>6.2f} {opt['action']}")
+
+                print(f"\nOptions signals saved: {options_path}")
+            else:
+                print("  No options signals generated (check volatility/premium constraints)")
+
+        except Exception as e:
+            print(f"  [WARN] Options generation failed: {e}", file=sys.stderr)
+            if args.verbose:
+                import traceback
+                traceback.print_exc()
+
+    elif args.options and not OPTIONS_AVAILABLE:
+        print("\n  [WARN] Options modules not available (install options dependencies)")
+
+    # === CRYPTO SIGNAL GENERATION ===
+    crypto_signals = pd.DataFrame()
+    if args.crypto and CRYPTO_DATA_AVAILABLE:
+        print("\n" + "=" * 60)
+        print("GENERATING CRYPTO SIGNALS (BTC, ETH, SOL, etc.)")
+        print("=" * 60)
+
+        try:
+            crypto_signals = scan_crypto(
+                cap=8,
+                max_signals=args.crypto_max,
+                verbose=args.verbose,
+            )
+
+            if not crypto_signals.empty:
+                # Write crypto signals to CSV
+                crypto_path = ROOT / 'logs' / 'crypto_signals.csv'
+                crypto_path.parent.mkdir(parents=True, exist_ok=True)
+                crypto_signals.to_csv(crypto_path, index=False)
+
+                # Print crypto summary
+                print(f"\nGenerated {len(crypto_signals)} crypto signals:")
+                cols = ['symbol', 'side', 'entry_price', 'stop_loss', 'take_profit', 'conf_score']
+                avail_cols = [c for c in cols if c in crypto_signals.columns]
+                if avail_cols:
+                    print(crypto_signals[avail_cols].to_string(index=False))
+                print(f"\nCrypto signals saved: {crypto_path}")
+            else:
+                print("  No crypto signals generated")
+
+        except Exception as e:
+            print(f"  [WARN] Crypto generation failed: {e}", file=sys.stderr)
+            if args.verbose:
+                import traceback
+                traceback.print_exc()
+
+    elif args.crypto and not CRYPTO_DATA_AVAILABLE:
+        print("\n  [WARN] Crypto data provider not available")
+
+    # === COMBINED MULTI-ASSET SUMMARY ===
+    total_equities = len(signals) if not signals.empty else 0
+    total_options = len(options_signals) if not options_signals.empty else 0
+    total_crypto = len(crypto_signals) if not crypto_signals.empty else 0
+    total_signals = total_equities + total_options + total_crypto
+
     # Summary
     print("\n" + "=" * 60)
-    print(f"Scan complete: {len(signals)} signal(s) generated")
+    print(f"SCAN COMPLETE - MULTI-ASSET SUMMARY")
+    print("=" * 60)
+    print(f"  EQUITIES:  {total_equities:>3} signal(s) (shares)")
+    if args.options:
+        calls_count = len(options_signals[options_signals['option_type'] == 'CALL']) if not options_signals.empty else 0
+        puts_count = len(options_signals[options_signals['option_type'] == 'PUT']) if not options_signals.empty else 0
+        print(f"  OPTIONS:   {total_options:>3} signal(s) ({calls_count} calls, {puts_count} puts)")
+    if args.crypto:
+        print(f"  CRYPTO:    {total_crypto:>3} signal(s)")
+    print("-" * 60)
+    print(f"  TOTAL:     {total_signals:>3} signal(s)")
 
     return 0
 

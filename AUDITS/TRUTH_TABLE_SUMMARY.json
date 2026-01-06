@@ -1,0 +1,15 @@
+{
+  "generated_at": "2026-01-06T02:35:18.694604",
+  "total_components": 8912,
+  "by_status": {
+    "STUB": 101,
+    "PARTIAL": 1433,
+    "REAL": 7378
+  },
+  "with_tests": 335,
+  "with_docstrings": 7400,
+  "execution_traced": 18,
+  "classes": 1452,
+  "functions": 7460,
+  "stubs": 51
+}

@@ -1,0 +1,1616 @@
+{
+  "audit_metadata": {
+    "generated_at": "2026-01-05T00:00:00Z",
+    "total_entrypoints": 193,
+    "categories": {
+      "core_trading": 12,
+      "backtesting": 8,
+      "scanning": 6,
+      "web_apps": 4,
+      "schedulers_daemons": 8,
+      "autonomous_brain": 7,
+      "ml_training": 10,
+      "data_management": 12,
+      "risk_management": 6,
+      "monitoring": 8,
+      "utilities": 45,
+      "testing": 15,
+      "tools": 12,
+      "guardian": 6,
+      "portfolio": 4,
+      "analytics": 6,
+      "cognitive": 4,
+      "docker_services": 4,
+      "other": 16
+    }
+  },
+  "entrypoints": [
+    {
+      "file_path": "scripts/runner.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["scan", "trade", "reconcile"],
+      "category": "core_trading",
+      "description": "24/7 multi-asset scheduled trading execution with heartbeat, kill zones, drift detection",
+      "daemon_loop": true,
+      "docker_service": true,
+      "critical": true
+    },
+    {
+      "file_path": "scripts/run_paper_trade.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper"],
+      "pipeline_triggered": ["scan", "trade"],
+      "category": "core_trading",
+      "description": "Paper trading runner with IOC LIMIT orders, cognitive brain, kill zones",
+      "critical": true
+    },
+    {
+      "file_path": "scripts/run_live_trade_micro.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["live"],
+      "pipeline_triggered": ["scan", "trade"],
+      "category": "core_trading",
+      "description": "Live micro trading (real money) with IOC LIMIT only",
+      "critical": true
+    },
+    {
+      "file_path": "scripts/start.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["startup"],
+      "category": "core_trading",
+      "description": "System startup with preflight checks, kill switch validation"
+    },
+    {
+      "file_path": "scripts/stop.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["shutdown"],
+      "category": "core_trading",
+      "description": "Graceful shutdown of trading system"
+    },
+    {
+      "file_path": "scripts/kill.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["emergency_halt"],
+      "category": "core_trading",
+      "description": "Emergency halt - creates KILL_SWITCH file",
+      "critical": true
+    },
+    {
+      "file_path": "scripts/resume.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["resume"],
+      "category": "core_trading",
+      "description": "Deactivate kill switch after safe check"
+    },
+    {
+      "file_path": "scripts/restart.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["restart"],
+      "category": "core_trading",
+      "description": "Clean restart of trading system"
+    },
+    {
+      "file_path": "scripts/positions.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["query"],
+      "category": "core_trading",
+      "description": "Show open positions with live P&L"
+    },
+    {
+      "file_path": "scripts/orders.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["query"],
+      "category": "core_trading",
+      "description": "Order history and fill details"
+    },
+    {
+      "file_path": "scripts/pnl.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["query"],
+      "category": "core_trading",
+      "description": "Daily/weekly/total P&L summary"
+    },
+    {
+      "file_path": "scripts/exit_manager.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["exit_management"],
+      "category": "core_trading",
+      "description": "Manage position exits with stops and targets"
+    },
+    {
+      "file_path": "scripts/scan.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live", "backtest"],
+      "pipeline_triggered": ["scan"],
+      "category": "scanning",
+      "description": "Daily stock scanner using DualStrategyScanner (IBS+RSI + Turtle Soup)",
+      "critical": true
+    },
+    {
+      "file_path": "scripts/overnight_watchlist.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["watchlist"],
+      "category": "scanning",
+      "description": "Build Top 5 watchlist for next day (3:30 PM)"
+    },
+    {
+      "file_path": "scripts/premarket_validator.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["validation"],
+      "category": "scanning",
+      "description": "Validate gaps/news for watchlist (8:00 AM)"
+    },
+    {
+      "file_path": "scripts/opening_range_observer.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["observation"],
+      "category": "scanning",
+      "description": "Observe opening range 9:30-10:00 (NO TRADES)"
+    },
+    {
+      "file_path": "scripts/watchlist.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["watchlist"],
+      "category": "scanning",
+      "description": "Manage custom watchlists"
+    },
+    {
+      "file_path": "scripts/signals.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["query"],
+      "category": "scanning",
+      "description": "View raw generated signals"
+    },
+    {
+      "file_path": "scripts/backtest_dual_strategy.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["backtest"],
+      "pipeline_triggered": ["backtest"],
+      "category": "backtesting",
+      "description": "Canonical backtest for IBS+RSI + Turtle Soup strategies",
+      "critical": true
+    },
+    {
+      "file_path": "scripts/run_wf_polygon.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["backtest"],
+      "pipeline_triggered": ["walk_forward"],
+      "category": "backtesting",
+      "description": "Walk-forward backtest with Polygon data"
+    },
+    {
+      "file_path": "scripts/run_backtest.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["backtest"],
+      "pipeline_triggered": ["backtest"],
+      "category": "backtesting",
+      "description": "Generic backtest runner"
+    },
+    {
+      "file_path": "scripts/run_backtest_polygon.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["backtest"],
+      "pipeline_triggered": ["backtest"],
+      "category": "backtesting",
+      "description": "Backtest with Polygon EOD data"
+    },
+    {
+      "file_path": "scripts/run_backtest_options_synth.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["backtest"],
+      "pipeline_triggered": ["options_backtest"],
+      "category": "backtesting",
+      "description": "Synthetic options backtest with Black-Scholes"
+    },
+    {
+      "file_path": "scripts/run_showdown_polygon.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["backtest"],
+      "pipeline_triggered": ["strategy_comparison"],
+      "category": "backtesting",
+      "description": "Strategy comparison showdown with Polygon data"
+    },
+    {
+      "file_path": "scripts/run_showdown_crypto.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["backtest"],
+      "pipeline_triggered": ["strategy_comparison"],
+      "category": "backtesting",
+      "description": "Crypto strategy comparison"
+    },
+    {
+      "file_path": "scripts/mini_backtest.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["backtest"],
+      "pipeline_triggered": ["quick_backtest"],
+      "category": "backtesting",
+      "description": "Quick mini backtest for validation"
+    },
+    {
+      "file_path": "web/main.py",
+      "main_function": "uvicorn.run(app)",
+      "cli_framework": "FastAPI",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["web_dashboard"],
+      "category": "web_apps",
+      "description": "FastAPI web dashboard with API endpoints",
+      "web_framework": "FastAPI"
+    },
+    {
+      "file_path": "web/dashboard_pro.py",
+      "main_function": "uvicorn.run(app)",
+      "cli_framework": "FastAPI",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["web_dashboard"],
+      "category": "web_apps",
+      "description": "Bloomberg Terminal-style professional dashboard with WebSocket",
+      "web_framework": "FastAPI",
+      "daemon_loop": true
+    },
+    {
+      "file_path": "web/dashboard.py",
+      "main_function": "main()",
+      "cli_framework": "Streamlit",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["web_dashboard"],
+      "category": "web_apps",
+      "description": "Streamlit dashboard for trading status",
+      "web_framework": "Streamlit"
+    },
+    {
+      "file_path": "scripts/dashboard.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["dashboard"],
+      "category": "web_apps",
+      "description": "Launch/manage web dashboard"
+    },
+    {
+      "file_path": "scripts/scheduler_kobe.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["scheduler"],
+      "category": "schedulers_daemons",
+      "description": "Master scheduler v2.0 (24/7) with 80+ scheduled tasks",
+      "daemon_loop": true,
+      "critical": true
+    },
+    {
+      "file_path": "scripts/run_autonomous.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["autonomous_brain"],
+      "category": "schedulers_daemons",
+      "description": "24/7 autonomous brain runner (always learning)",
+      "daemon_loop": true
+    },
+    {
+      "file_path": "scripts/overnight_runner.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["overnight_tasks"],
+      "category": "schedulers_daemons",
+      "description": "Overnight task runner"
+    },
+    {
+      "file_path": "scripts/supervisor.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["process_supervision"],
+      "category": "schedulers_daemons",
+      "description": "Process supervisor for all services"
+    },
+    {
+      "file_path": "scripts/watchdog.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["monitoring"],
+      "category": "schedulers_daemons",
+      "description": "System watchdog for health monitoring"
+    },
+    {
+      "file_path": "scripts/heartbeat.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["heartbeat"],
+      "category": "schedulers_daemons",
+      "description": "Heartbeat tracking for process monitoring"
+    },
+    {
+      "file_path": "scripts/scheduler_ctl.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["scheduler_control"],
+      "category": "schedulers_daemons",
+      "description": "Scheduler control interface"
+    },
+    {
+      "file_path": "scripts/run_daily_pipeline.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["daily_pipeline"],
+      "category": "schedulers_daemons",
+      "description": "Run complete daily pipeline"
+    },
+    {
+      "file_path": "autonomous/brain.py",
+      "main_function": "AutonomousBrain",
+      "cli_framework": null,
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["autonomous"],
+      "category": "autonomous_brain",
+      "description": "Autonomous brain orchestrator (24/7 self-aware core)",
+      "daemon_loop": true
+    },
+    {
+      "file_path": "autonomous/run.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["autonomous"],
+      "category": "autonomous_brain",
+      "description": "Alternative autonomous brain runner"
+    },
+    {
+      "file_path": "autonomous/master_brain.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["autonomous"],
+      "category": "autonomous_brain",
+      "description": "Master brain orchestrator",
+      "daemon_loop": true
+    },
+    {
+      "file_path": "autonomous/master_brain_full.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["autonomous"],
+      "category": "autonomous_brain",
+      "description": "Full master brain with all capabilities",
+      "daemon_loop": true
+    },
+    {
+      "file_path": "autonomous/comprehensive_brain.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["autonomous"],
+      "category": "autonomous_brain",
+      "description": "Comprehensive brain implementation",
+      "daemon_loop": true
+    },
+    {
+      "file_path": "autonomous/scheduler.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["scheduler"],
+      "category": "autonomous_brain",
+      "description": "Autonomous task scheduler"
+    },
+    {
+      "file_path": "autonomous/__main__.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["autonomous"],
+      "category": "autonomous_brain",
+      "description": "Autonomous module entry point (python -m autonomous)"
+    },
+    {
+      "file_path": "scripts/train_hmm_regime.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["training"],
+      "pipeline_triggered": ["ml_training"],
+      "category": "ml_training",
+      "description": "Train HMM regime detector"
+    },
+    {
+      "file_path": "scripts/train_lstm_confidence.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["training"],
+      "pipeline_triggered": ["ml_training"],
+      "category": "ml_training",
+      "description": "Train LSTM confidence model"
+    },
+    {
+      "file_path": "scripts/train_ensemble_models.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["training"],
+      "pipeline_triggered": ["ml_training"],
+      "category": "ml_training",
+      "description": "Train ensemble models (XGBoost, LightGBM)"
+    },
+    {
+      "file_path": "scripts/train_ensemble.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["training"],
+      "pipeline_triggered": ["ml_training"],
+      "category": "ml_training",
+      "description": "Train ensemble predictor"
+    },
+    {
+      "file_path": "scripts/train_rl_agent.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["training"],
+      "pipeline_triggered": ["rl_training"],
+      "category": "ml_training",
+      "description": "Train RL trading agent (PPO/DQN/A2C)"
+    },
+    {
+      "file_path": "scripts/train_meta.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["training"],
+      "pipeline_triggered": ["ml_training"],
+      "category": "ml_training",
+      "description": "Train meta model"
+    },
+    {
+      "file_path": "scripts/run_weekly_training.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["training"],
+      "pipeline_triggered": ["weekly_training"],
+      "category": "ml_training",
+      "description": "Weekly ML model retraining"
+    },
+    {
+      "file_path": "scripts/generate_training_data.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["training"],
+      "pipeline_triggered": ["data_generation"],
+      "category": "ml_training",
+      "description": "Generate training data for ML models"
+    },
+    {
+      "file_path": "scripts/promote_models.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["training"],
+      "pipeline_triggered": ["model_promotion"],
+      "category": "ml_training",
+      "description": "Promote trained models to production"
+    },
+    {
+      "file_path": "scripts/feature_experiment.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["research"],
+      "pipeline_triggered": ["feature_engineering"],
+      "category": "ml_training",
+      "description": "Feature engineering experiments"
+    },
+    {
+      "file_path": "scripts/build_universe_polygon.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["data"],
+      "pipeline_triggered": ["universe_build"],
+      "category": "data_management",
+      "description": "Build 900-stock universe from Polygon data"
+    },
+    {
+      "file_path": "scripts/build_universe_900.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["data"],
+      "pipeline_triggered": ["universe_build"],
+      "category": "data_management",
+      "description": "Build optimized 900-stock universe"
+    },
+    {
+      "file_path": "scripts/prefetch_polygon_universe.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["data"],
+      "pipeline_triggered": ["data_prefetch"],
+      "category": "data_management",
+      "description": "Prefetch EOD bars for faster walk-forward"
+    },
+    {
+      "file_path": "scripts/freeze_equities_eod.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["data"],
+      "pipeline_triggered": ["data_freeze"],
+      "category": "data_management",
+      "description": "Freeze equities EOD data from Stooq"
+    },
+    {
+      "file_path": "scripts/freeze_crypto_ohlcv.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["data"],
+      "pipeline_triggered": ["data_freeze"],
+      "category": "data_management",
+      "description": "Freeze crypto OHLCV from Binance"
+    },
+    {
+      "file_path": "scripts/backfill_yfinance.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["data"],
+      "pipeline_triggered": ["data_backfill"],
+      "category": "data_management",
+      "description": "Backfill historical data from Yahoo Finance"
+    },
+    {
+      "file_path": "scripts/validate_lake.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["data"],
+      "pipeline_triggered": ["data_validation"],
+      "category": "data_management",
+      "description": "Validate frozen data lake integrity"
+    },
+    {
+      "file_path": "scripts/validate_universe_coverage.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["data"],
+      "pipeline_triggered": ["data_validation"],
+      "category": "data_management",
+      "description": "Validate universe coverage"
+    },
+    {
+      "file_path": "scripts/check_data_quality.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["data"],
+      "pipeline_triggered": ["data_validation"],
+      "category": "data_management",
+      "description": "Check data quality for backtesting"
+    },
+    {
+      "file_path": "scripts/universe.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["data"],
+      "pipeline_triggered": ["universe_management"],
+      "category": "data_management",
+      "description": "Manage 900-stock universe"
+    },
+    {
+      "file_path": "scripts/data.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["data"],
+      "pipeline_triggered": ["data_status"],
+      "category": "data_management",
+      "description": "Data fetch status, cache health"
+    },
+    {
+      "file_path": "scripts/risk_cli.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["risk_check"],
+      "category": "risk_management",
+      "description": "Risk management CLI"
+    },
+    {
+      "file_path": "scripts/exposure.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["exposure_analysis"],
+      "category": "risk_management",
+      "description": "Sector/market cap/factor exposure analysis"
+    },
+    {
+      "file_path": "scripts/correlation.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["correlation_analysis"],
+      "category": "risk_management",
+      "description": "Position correlation matrix"
+    },
+    {
+      "file_path": "scripts/correlation_check.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["correlation_check"],
+      "category": "risk_management",
+      "description": "Check correlation limits"
+    },
+    {
+      "file_path": "scripts/drawdown.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["drawdown_analysis"],
+      "category": "risk_management",
+      "description": "Drawdown analysis and recovery stats"
+    },
+    {
+      "file_path": "scripts/monte_carlo.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["backtest"],
+      "pipeline_triggered": ["monte_carlo"],
+      "category": "risk_management",
+      "description": "Monte Carlo simulation for forward testing"
+    },
+    {
+      "file_path": "scripts/preflight.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["preflight"],
+      "category": "monitoring",
+      "description": "Run 10 critical checks before trading",
+      "critical": true
+    },
+    {
+      "file_path": "scripts/status.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["status"],
+      "category": "monitoring",
+      "description": "Show system health dashboard"
+    },
+    {
+      "file_path": "scripts/health_monitor.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["health_monitoring"],
+      "category": "monitoring",
+      "description": "Health monitoring service"
+    },
+    {
+      "file_path": "scripts/start_health.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["health_server"],
+      "category": "monitoring",
+      "description": "Start health check server"
+    },
+    {
+      "file_path": "scripts/logs.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["log_viewing"],
+      "category": "monitoring",
+      "description": "View recent events (errors, trades, alerts)"
+    },
+    {
+      "file_path": "scripts/alerts.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["alerts"],
+      "category": "monitoring",
+      "description": "Manage alert thresholds and channels"
+    },
+    {
+      "file_path": "scripts/telegram.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["notifications"],
+      "category": "monitoring",
+      "description": "Telegram bot alerts and notifications"
+    },
+    {
+      "file_path": "scripts/performance.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["performance_monitoring"],
+      "category": "monitoring",
+      "description": "Real-time system performance monitoring"
+    },
+    {
+      "file_path": "scripts/reconcile_alpaca.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["reconciliation"],
+      "category": "utilities",
+      "description": "Compare broker vs local positions"
+    },
+    {
+      "file_path": "scripts/broker.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["broker_status"],
+      "category": "utilities",
+      "description": "Broker connection status"
+    },
+    {
+      "file_path": "scripts/audit.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["audit"],
+      "category": "utilities",
+      "description": "Verify hash chain (tamper detection)"
+    },
+    {
+      "file_path": "scripts/verify_hash_chain.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["audit"],
+      "category": "utilities",
+      "description": "Verify audit hash chain integrity"
+    },
+    {
+      "file_path": "scripts/config_utils.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["config"],
+      "category": "utilities",
+      "description": "View/modify config with signature"
+    },
+    {
+      "file_path": "scripts/env.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["environment"],
+      "category": "utilities",
+      "description": "Environment variable management"
+    },
+    {
+      "file_path": "scripts/state.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["state_viewing"],
+      "category": "utilities",
+      "description": "View all state files"
+    },
+    {
+      "file_path": "scripts/backup.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["backup"],
+      "category": "utilities",
+      "description": "Backup state, logs, configs"
+    },
+    {
+      "file_path": "scripts/backup_state.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["backup"],
+      "category": "utilities",
+      "description": "Backup state directory"
+    },
+    {
+      "file_path": "scripts/backup_snapshot.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["backup"],
+      "category": "utilities",
+      "description": "Full state snapshot backup"
+    },
+    {
+      "file_path": "scripts/snapshot.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["snapshot"],
+      "category": "utilities",
+      "description": "Full state snapshot for recovery"
+    },
+    {
+      "file_path": "scripts/cleanup.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["cleanup"],
+      "category": "utilities",
+      "description": "Purge old logs, cache, temp files"
+    },
+    {
+      "file_path": "scripts/rebuild_state.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["state_rebuild"],
+      "category": "utilities",
+      "description": "Rebuild state from backups"
+    },
+    {
+      "file_path": "scripts/idempotency.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["idempotency"],
+      "category": "utilities",
+      "description": "View/clear idempotency store"
+    },
+    {
+      "file_path": "scripts/version.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["version"],
+      "category": "utilities",
+      "description": "Show Kobe version, last update"
+    },
+    {
+      "file_path": "scripts/deploy.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["deployment"],
+      "category": "utilities",
+      "description": "Safe deployment with rollback"
+    },
+    {
+      "file_path": "scripts/journal.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["journal"],
+      "category": "utilities",
+      "description": "Trading notes, lessons, trade reviews"
+    },
+    {
+      "file_path": "scripts/market_calendar.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["calendar"],
+      "category": "utilities",
+      "description": "Market hours, holidays, early closes"
+    },
+    {
+      "file_path": "scripts/earnings.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["earnings"],
+      "category": "utilities",
+      "description": "Earnings calendar, avoid/target earnings"
+    },
+    {
+      "file_path": "scripts/polygon.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["data_validation"],
+      "category": "utilities",
+      "description": "Validate Polygon data source & 900 coverage"
+    },
+    {
+      "file_path": "scripts/manage_secrets.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["secrets"],
+      "category": "utilities",
+      "description": "Validate/rotate API keys"
+    },
+    {
+      "file_path": "scripts/show_config_pin.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["config"],
+      "category": "utilities",
+      "description": "Show config pin (hash)"
+    },
+    {
+      "file_path": "scripts/test.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["testing"],
+      "pipeline_triggered": ["testing"],
+      "category": "testing",
+      "description": "Run unit tests and integration tests"
+    },
+    {
+      "file_path": "scripts/validate.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["testing"],
+      "pipeline_triggered": ["validation"],
+      "category": "testing",
+      "description": "Run tests + type checks"
+    },
+    {
+      "file_path": "scripts/smoke_test.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["testing"],
+      "pipeline_triggered": ["smoke_test"],
+      "category": "testing",
+      "description": "Run smoke tests"
+    },
+    {
+      "file_path": "scripts/integrity_check.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["testing"],
+      "pipeline_triggered": ["integrity"],
+      "category": "testing",
+      "description": "Detect lookahead, bias, bugs, fake data"
+    },
+    {
+      "file_path": "scripts/quality_check.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["testing"],
+      "pipeline_triggered": ["quality"],
+      "category": "testing",
+      "description": "Run code, data, test, system quality checks"
+    },
+    {
+      "file_path": "scripts/verify_system.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["testing"],
+      "pipeline_triggered": ["verification"],
+      "category": "testing",
+      "description": "Full system verification"
+    },
+    {
+      "file_path": "scripts/verify_architecture.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["testing"],
+      "pipeline_triggered": ["architecture_verification"],
+      "category": "testing",
+      "description": "Verify architecture matches docs"
+    },
+    {
+      "file_path": "scripts/verify_scan_consistency.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["testing"],
+      "pipeline_triggered": ["scan_verification"],
+      "category": "testing",
+      "description": "Verify scanner determinism"
+    },
+    {
+      "file_path": "scripts/validate_data_pipeline.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["testing"],
+      "pipeline_triggered": ["data_validation"],
+      "category": "testing",
+      "description": "Validate data pipeline integrity"
+    },
+    {
+      "file_path": "scripts/readiness_check.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["testing"],
+      "pipeline_triggered": ["readiness"],
+      "category": "testing",
+      "description": "Production readiness check"
+    },
+    {
+      "file_path": "scripts/interview_quick_test.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["testing"],
+      "pipeline_triggered": ["quick_test"],
+      "category": "testing",
+      "description": "Quick test for quant interviews"
+    },
+    {
+      "file_path": "testing/stress_test.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["testing"],
+      "pipeline_triggered": ["stress_test"],
+      "category": "testing",
+      "description": "System stress testing"
+    },
+    {
+      "file_path": "testing/monte_carlo.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["testing"],
+      "pipeline_triggered": ["monte_carlo"],
+      "category": "testing",
+      "description": "Monte Carlo testing module"
+    },
+    {
+      "file_path": "tools/verify_repo.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["testing"],
+      "pipeline_triggered": ["repo_verification"],
+      "category": "tools",
+      "description": "Comprehensive repository verification"
+    },
+    {
+      "file_path": "tools/verify_robot.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["testing"],
+      "pipeline_triggered": ["robot_verification"],
+      "category": "tools",
+      "description": "Verify robot functionality"
+    },
+    {
+      "file_path": "tools/verify_alive.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["testing"],
+      "pipeline_triggered": ["liveness_check"],
+      "category": "tools",
+      "description": "Verify system is alive"
+    },
+    {
+      "file_path": "tools/verify_100_components.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["testing"],
+      "pipeline_triggered": ["component_verification"],
+      "category": "tools",
+      "description": "Verify all 100+ components"
+    },
+    {
+      "file_path": "tools/cleanup_cache.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["cleanup"],
+      "category": "tools",
+      "description": "Clean up cache files"
+    },
+    {
+      "file_path": "tools/bounce_profile.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["research"],
+      "pipeline_triggered": ["bounce_analysis"],
+      "category": "tools",
+      "description": "Build bounce profiles"
+    },
+    {
+      "file_path": "tools/build_bounce_db.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["research"],
+      "pipeline_triggered": ["bounce_database"],
+      "category": "tools",
+      "description": "Build bounce database"
+    },
+    {
+      "file_path": "tools/build_bounce_profiles_all.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["research"],
+      "pipeline_triggered": ["bounce_profiles"],
+      "category": "tools",
+      "description": "Build all bounce profiles"
+    },
+    {
+      "file_path": "tools/today_bounce_watchlist.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["bounce_watchlist"],
+      "category": "tools",
+      "description": "Today's bounce watchlist"
+    },
+    {
+      "file_path": "tools/super_audit_verifier.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["testing"],
+      "pipeline_triggered": ["super_audit"],
+      "category": "tools",
+      "description": "Super audit verification"
+    },
+    {
+      "file_path": "guardian/guardian.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["guardian"],
+      "category": "guardian",
+      "description": "System guardian (watchdog)",
+      "daemon_loop": true
+    },
+    {
+      "file_path": "guardian/system_monitor.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["monitoring"],
+      "category": "guardian",
+      "description": "System monitoring service"
+    },
+    {
+      "file_path": "guardian/alert_manager.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["alerts"],
+      "category": "guardian",
+      "description": "Alert management service"
+    },
+    {
+      "file_path": "guardian/decision_engine.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["decision_engine"],
+      "category": "guardian",
+      "description": "Automated decision engine"
+    },
+    {
+      "file_path": "guardian/self_learner.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["learning"],
+      "category": "guardian",
+      "description": "Self-learning module"
+    },
+    {
+      "file_path": "guardian/daily_digest.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["daily_digest"],
+      "category": "guardian",
+      "description": "Daily digest generator"
+    },
+    {
+      "file_path": "portfolio/optimizer/portfolio_manager.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["portfolio_management"],
+      "category": "portfolio",
+      "description": "Portfolio management"
+    },
+    {
+      "file_path": "portfolio/optimizer/rebalancer.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["rebalancing"],
+      "category": "portfolio",
+      "description": "Portfolio rebalancing"
+    },
+    {
+      "file_path": "portfolio/optimizer/risk_parity.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["risk_parity"],
+      "category": "portfolio",
+      "description": "Risk parity optimization"
+    },
+    {
+      "file_path": "portfolio/optimizer/mean_variance.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["mean_variance"],
+      "category": "portfolio",
+      "description": "Mean-variance optimization"
+    },
+    {
+      "file_path": "analytics/alpha_decay/alpha_monitor.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["alpha_monitoring"],
+      "category": "analytics",
+      "description": "Alpha decay monitoring"
+    },
+    {
+      "file_path": "analytics/attribution/daily_pnl.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["pnl_attribution"],
+      "category": "analytics",
+      "description": "Daily P&L attribution"
+    },
+    {
+      "file_path": "analytics/attribution/factor_attribution.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["factor_attribution"],
+      "category": "analytics",
+      "description": "Factor attribution analysis"
+    },
+    {
+      "file_path": "analytics/attribution/strategy_attribution.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["strategy_attribution"],
+      "category": "analytics",
+      "description": "Strategy attribution analysis"
+    },
+    {
+      "file_path": "analytics/attribution/attribution_report.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["attribution_report"],
+      "category": "analytics",
+      "description": "Attribution report generation"
+    },
+    {
+      "file_path": "risk/factor_model/factor_report.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["factor_report"],
+      "category": "analytics",
+      "description": "Factor model report"
+    },
+    {
+      "file_path": "scripts/learn.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["learning"],
+      "category": "cognitive",
+      "description": "Show what Kobe learned from recent trades"
+    },
+    {
+      "file_path": "scripts/explain.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["explainability"],
+      "category": "cognitive",
+      "description": "Explain why a signal was generated"
+    },
+    {
+      "file_path": "scripts/suggest.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["suggestions"],
+      "category": "cognitive",
+      "description": "AI suggests next actions based on state"
+    },
+    {
+      "file_path": "scripts/cognitive_learn.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["cognitive_learning"],
+      "category": "cognitive",
+      "description": "Daily hypothesis testing & edge discovery"
+    },
+    {
+      "file_path": "scripts/generate_pregame_blueprint.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["pregame_analysis"],
+      "category": "other",
+      "description": "Comprehensive Pre-Game Blueprint generation"
+    },
+    {
+      "file_path": "scripts/generate_pregame.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["pregame_analysis"],
+      "category": "other",
+      "description": "Generate pre-game analysis"
+    },
+    {
+      "file_path": "scripts/pre_game_plan.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["pregame_plan"],
+      "category": "other",
+      "description": "Pre-game trading plan"
+    },
+    {
+      "file_path": "scripts/pregame_report.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["pregame_report"],
+      "category": "other",
+      "description": "Pre-game report generation"
+    },
+    {
+      "file_path": "scripts/morning_report.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["morning_report"],
+      "category": "other",
+      "description": "Morning report generation"
+    },
+    {
+      "file_path": "scripts/morning_check.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["morning_check"],
+      "category": "other",
+      "description": "Morning system checks"
+    },
+    {
+      "file_path": "scripts/eod_report.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["eod_report"],
+      "category": "other",
+      "description": "End-of-day report generation"
+    },
+    {
+      "file_path": "scripts/eod_finalize.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["eod_finalize"],
+      "category": "other",
+      "description": "Finalize EOD data"
+    },
+    {
+      "file_path": "scripts/report.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["reporting"],
+      "category": "other",
+      "description": "Generate performance reports"
+    },
+    {
+      "file_path": "scripts/aggregate_wf_report.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["backtest"],
+      "pipeline_triggered": ["wf_reporting"],
+      "category": "other",
+      "description": "Aggregate walk-forward reports"
+    },
+    {
+      "file_path": "scripts/metrics.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["metrics"],
+      "category": "other",
+      "description": "Performance stats (win rate, PF, Sharpe)"
+    },
+    {
+      "file_path": "scripts/benchmark.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["benchmarking"],
+      "category": "other",
+      "description": "Compare performance vs SPY"
+    },
+    {
+      "file_path": "scripts/regime.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["regime_detection"],
+      "category": "other",
+      "description": "Market regime detection (bull/bear/chop)"
+    },
+    {
+      "file_path": "scripts/strategy.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["strategy_view"],
+      "category": "other",
+      "description": "View/compare strategy parameters"
+    },
+    {
+      "file_path": "scripts/optimize.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["backtest"],
+      "pipeline_triggered": ["optimization"],
+      "category": "other",
+      "description": "Parameter optimization with grid search"
+    },
+    {
+      "file_path": "scripts/research_os_cli.py",
+      "main_function": "main()",
+      "cli_framework": "argparse",
+      "modes_supported": ["paper", "live"],
+      "pipeline_triggered": ["research_os"],
+      "category": "other",
+      "description": "Research OS CLI (DISCOVER -> RESEARCH -> ENGINEER)"
+    }
+  ],
+  "docker_services": [
+    {
+      "service_name": "kobe-paper",
+      "file_path": "docker-compose.yml",
+      "command": "python scripts/runner.py --mode paper --cap 50 --scan-times 09:35,10:30,15:55",
+      "description": "Paper trading runner (24/7 scheduler)",
+      "ports": ["8080:8080"]
+    },
+    {
+      "service_name": "kobe-scanner",
+      "file_path": "docker-compose.yml",
+      "command": "python scripts/scan.py --top3 --cap 200",
+      "description": "Daily scanner (on-demand)",
+      "profile": "scanner"
+    },
+    {
+      "service_name": "kobe-preflight",
+      "file_path": "docker-compose.yml",
+      "command": "python scripts/preflight.py",
+      "description": "Preflight check utility",
+      "profile": "utils"
+    },
+    {
+      "service_name": "kobe-verify",
+      "file_path": "docker-compose.yml",
+      "command": "python scripts/verify_system.py",
+      "description": "System verification utility",
+      "profile": "utils"
+    }
+  ],
+  "web_apps": {
+    "fastapi": [
+      {
+        "file_path": "web/main.py",
+        "app_variable": "app",
+        "run_command": "uvicorn web.main:app --reload --port 8000",
+        "description": "Main FastAPI dashboard with cognitive status, TCA, morning briefing"
+      },
+      {
+        "file_path": "web/dashboard_pro.py",
+        "app_variable": "app",
+        "run_command": "uvicorn web.dashboard_pro:app --port 8080",
+        "description": "Bloomberg Terminal-style professional dashboard with WebSocket"
+      }
+    ],
+    "streamlit": [
+      {
+        "file_path": "web/dashboard.py",
+        "run_command": "streamlit run web/dashboard.py",
+        "description": "Streamlit dashboard for trading status"
+      },
+      {
+        "file_path": "scripts/quant_dashboard.py",
+        "run_command": "streamlit run scripts/quant_dashboard.py",
+        "description": "Quant analysis dashboard"
+      }
+    ]
+  },
+  "daemon_loops": [
+    {
+      "file_path": "scripts/runner.py",
+      "loop_type": "while_not_shutdown",
+      "description": "24/7 trading scheduler with 30-second sleep intervals"
+    },
+    {
+      "file_path": "scripts/scheduler_kobe.py",
+      "loop_type": "schedule_based",
+      "description": "Master scheduler with 80+ scheduled tasks"
+    },
+    {
+      "file_path": "autonomous/brain.py",
+      "loop_type": "while_true",
+      "description": "Autonomous brain continuous operation"
+    },
+    {
+      "file_path": "autonomous/master_brain.py",
+      "loop_type": "while_true",
+      "description": "Master brain continuous operation"
+    },
+    {
+      "file_path": "autonomous/master_brain_full.py",
+      "loop_type": "while_true",
+      "description": "Full master brain continuous operation"
+    },
+    {
+      "file_path": "autonomous/comprehensive_brain.py",
+      "loop_type": "while_true",
+      "description": "Comprehensive brain continuous operation"
+    },
+    {
+      "file_path": "guardian/guardian.py",
+      "loop_type": "while_true",
+      "description": "Guardian watchdog continuous monitoring"
+    },
+    {
+      "file_path": "web/dashboard_pro.py",
+      "loop_type": "asyncio_run",
+      "description": "WebSocket background scanner loop"
+    }
+  ],
+  "cli_frameworks": {
+    "argparse": 173,
+    "FastAPI": 2,
+    "Streamlit": 2,
+    "typer": 0,
+    "click": 0
+  },
+  "critical_entrypoints": [
+    "scripts/runner.py",
+    "scripts/run_paper_trade.py",
+    "scripts/run_live_trade_micro.py",
+    "scripts/scan.py",
+    "scripts/kill.py",
+    "scripts/preflight.py",
+    "scripts/backtest_dual_strategy.py",
+    "scripts/scheduler_kobe.py"
+  ]
+}
