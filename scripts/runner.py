@@ -386,12 +386,12 @@ def run_position_monitor(dotenv: Path) -> int:
              reason=info.get('reason') if info else 'Unknown')
         return -1
 
-    script_path = ROOT / 'scripts' / 'position_manager.py'
+    script_path = ROOT / 'scripts' / 'exit_manager.py'
     if not script_path.exists():
-        jlog('position_monitor_script_not_found', level='WARNING')
+        jlog('position_monitor_script_not_found', level='WARNING', path=str(script_path))
         return -1
 
-    cmd = [sys.executable, str(script_path)]
+    cmd = [sys.executable, str(script_path), '--check-time-exits']
     if dotenv.exists():
         cmd.extend(['--dotenv', str(dotenv)])
 
@@ -469,10 +469,13 @@ def run_daily_cycle_script(script_name: str, universe: Path, cap: int, dotenv: P
     if dotenv.exists():
         cmd.extend(['--dotenv', str(dotenv)])
 
-    jlog('daily_cycle_execute', script=script_name, cmd=' '.join(cmd))
+    # overnight_watchlist needs more time (scans 900 stocks)
+    timeout = 600 if script_name == 'overnight_watchlist' else 300
+
+    jlog('daily_cycle_execute', script=script_name, cmd=' '.join(cmd), timeout=timeout)
 
     try:
-        p = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
         if p.stdout:
             print(f"[{script_name}] {p.stdout}")
         if p.stderr:
@@ -482,7 +485,7 @@ def run_daily_cycle_script(script_name: str, universe: Path, cap: int, dotenv: P
         return p.returncode
 
     except subprocess.TimeoutExpired:
-        jlog('daily_cycle_timeout', level='ERROR', script=script_name)
+        jlog('daily_cycle_timeout', level='ERROR', script=script_name, timeout=timeout)
         return -1
     except Exception as e:
         jlog('daily_cycle_error', level='ERROR', script=script_name, error=str(e))
