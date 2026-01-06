@@ -340,7 +340,10 @@ def fetch_daily_bars_stooq(symbol: str, start: str, end: str, cache_dir: Optiona
 def fetch_daily_bars_multi(symbol: str, start: str, end: str, cache_dir: Optional[Path] = None) -> pd.DataFrame:
     """
     Combined fetcher: use Polygon for the requested window; if Polygon coverage
-    starts after `start`, backfill the earlier missing segment from Yahoo Finance.
+    starts after `start`, backfill the earlier missing segment from Stooq.
+
+    FIX (2026-01-06): REMOVED yfinance fallback. yfinance is too slow, rate-limited,
+    and causes "possibly delisted" errors. Now only uses Polygon + Stooq.
     """
     # Fetch from Polygon first (preferred)
     dfp = fetch_daily_bars_polygon(symbol, start, end, cache_dir=cache_dir)
@@ -358,9 +361,9 @@ def fetch_daily_bars_multi(symbol: str, start: str, end: str, cache_dir: Optiona
             missing_end = (earliest - pd.Timedelta(days=1)).date().isoformat()
 
     if need_backfill:
-        dfo = fetch_daily_bars_yfinance(symbol, start, missing_end, cache_dir=cache_dir)
-        if dfo is None or dfo.empty:
-            dfo = fetch_daily_bars_stooq(symbol, start, missing_end, cache_dir=cache_dir)
+        # FIX: Skip yfinance entirely - go straight to stooq for backfill
+        # yfinance causes "possibly delisted" errors and is rate-limited
+        dfo = fetch_daily_bars_stooq(symbol, start, missing_end, cache_dir=cache_dir)
     else:
         dfo = pd.DataFrame(columns=['timestamp','symbol','open','high','low','close','volume'])
 
@@ -407,12 +410,15 @@ def fetch_daily_bars_resilient(
     - Tracks provider success/failure rates
     - Falls back to next provider on failure
 
+    FIX (2026-01-06): Removed yfinance from default order - too slow, rate-limited,
+    causes "possibly delisted" errors. Use Polygon + Stooq only.
+
     Args:
         symbol: Stock symbol
         start: Start date (YYYY-MM-DD)
         end: End date (YYYY-MM-DD)
         cache_dir: Optional cache directory for file-based caching
-        provider_order: List of providers to try ["polygon", "yfinance", "stooq"]
+        provider_order: List of providers to try ["polygon", "stooq"]
         retry_config: Retry configuration dict
         use_ttl_cache: Whether to use in-memory TTL cache
 
@@ -423,7 +429,8 @@ def fetch_daily_bars_resilient(
         DataFetchError: If all providers fail
     """
     if provider_order is None:
-        provider_order = ["polygon", "yfinance", "stooq"]
+        # FIX: Removed yfinance - causes rate limit errors and "possibly delisted" spam
+        provider_order = ["polygon", "stooq"]
     if retry_config is None:
         retry_config = DEFAULT_RETRY_CONFIG
 

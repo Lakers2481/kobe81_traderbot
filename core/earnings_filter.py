@@ -8,10 +8,14 @@ IV crush and gap risk.
 FIX (2026-01-04): Updated to use correct Polygon events endpoint
 (/v3/reference/tickers/{ticker}/events?types=earnings) instead of
 financials endpoint (which gives filing dates, not earnings dates).
-Added yfinance fallback for users without Polygon API key.
 
 FIX (2026-01-05): Added source tagging for data provenance tracking
 and canary function to detect when sources return zero events.
+
+FIX (2026-01-06): REMOVED yfinance fallback entirely. yfinance is too
+slow, rate-limited, and causes "possibly delisted" errors during scans.
+Now ONLY uses Polygon API. If Polygon fails, returns empty (no earnings check).
+This ensures fast, reliable scans without yfinance HTTP errors.
 """
 from __future__ import annotations
 
@@ -197,13 +201,12 @@ def _fetch_from_polygon_with_source(symbol: str) -> tuple[List[datetime], Earnin
 
     FIX (2026-01-05): Returns tuple of (dates, source) for provenance tracking.
 
-    Falls back to yfinance if Polygon API key is not available.
+    IMPORTANT: Only uses Polygon. Does NOT fall back to yfinance (too slow, rate limited).
     """
     api_key = os.getenv("POLYGON_API_KEY")
     if not api_key:
-        logger.debug(f"No POLYGON_API_KEY, falling back to yfinance for {symbol}")
-        dates = _fetch_from_yfinance(symbol)
-        return (dates, "yfinance" if dates else "none")
+        logger.debug(f"No POLYGON_API_KEY for {symbol}, skipping earnings check")
+        return ([], "none")
 
     # Use events endpoint for actual earnings announcement dates
     url = f"https://api.polygon.io/v3/reference/tickers/{symbol}/events"
@@ -216,9 +219,8 @@ def _fetch_from_polygon_with_source(symbol: str) -> tuple[List[datetime], Earnin
     try:
         resp = requests.get(url, params=params, timeout=10)
         if resp.status_code != 200:
-            logger.warning(f"Polygon events API returned {resp.status_code} for {symbol}")
-            dates = _fetch_from_yfinance(symbol)
-            return (dates, "yfinance" if dates else "none")
+            logger.warning(f"Polygon events API returned {resp.status_code} for {symbol}, skipping earnings")
+            return ([], "none")
 
         data = resp.json()
         results = data.get("results", {})
@@ -242,17 +244,15 @@ def _fetch_from_polygon_with_source(symbol: str) -> tuple[List[datetime], Earnin
                     continue
 
         if not earnings_dates:
-            # Fallback if Polygon returns empty
-            logger.debug(f"Polygon returned no earnings for {symbol}, trying yfinance")
-            dates = _fetch_from_yfinance(symbol)
-            return (dates, "yfinance" if dates else "none")
+            # Polygon returned no earnings - just return empty (no yfinance fallback)
+            logger.debug(f"Polygon returned no earnings for {symbol}")
+            return ([], "none")
 
         return (sorted(set(earnings_dates)), "polygon")
 
     except Exception as e:
-        logger.warning(f"Polygon earnings fetch failed for {symbol}: {e}")
-        dates = _fetch_from_yfinance(symbol)
-        return (dates, "yfinance" if dates else "none")
+        logger.warning(f"Polygon earnings fetch failed for {symbol}: {e}, skipping earnings")
+        return ([], "none")
 
 
 def _fetch_from_yfinance(symbol: str) -> List[datetime]:
