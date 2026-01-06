@@ -1,0 +1,36 @@
+{
+  "report_date": "2026-01-05",
+  "report_type": "daily",
+  "gross_pnl": 0.0,
+  "net_pnl": 0.0,
+  "realized_pnl": 0.0,
+  "unrealized_pnl": 0.0,
+  "pnl_by_strategy": {},
+  "total_trades": 0,
+  "winning_trades": 0,
+  "losing_trades": 0,
+  "win_rate": 0.0,
+  "average_win": 0.0,
+  "average_loss": 0.0,
+  "largest_win": 0.0,
+  "largest_loss": 0.0,
+  "open_positions": 0,
+  "position_value": 0.0,
+  "cash_available": 50000.0,
+  "max_drawdown": 0.0,
+  "current_drawdown": 0.0,
+  "risk_budget_used": 0.0,
+  "circuit_breakers_tripped": [],
+  "system_health": "HEALTHY",
+  "uptime_pct": 99.9,
+  "alerts_count": 5,
+  "critical_alerts": 0,
+  "recommendations": [
+    "Win rate below 50% - consider tightening entry criteria"
+  ],
+  "next_actions": [
+    "Review overnight watchlist for tomorrow",
+    "Run system health check before market open"
+  ],
+  "generated_at": "2026-01-05T16:30:07.055049"
+}
