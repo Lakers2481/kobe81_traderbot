@@ -147,9 +147,45 @@ def build_overnight_watchlist(
 
     logger.info(f"Scan complete: {scanned} stocks, {len(all_signals)} signals, {errors} errors")
 
-    # Score and rank signals
-    scored_signals = []
+    # FROZEN PIPELINE QUALITY GATE (2026-01-07)
+    # Filter signals by R:R >= 1.5:1 BEFORE scoring
+    # This is CRITICAL - we do NOT trade bad risk/reward setups
+    MIN_RR_RATIO = 1.5
+
+    filtered_signals = []
     for sig in all_signals:
+        entry = sig.get('entry_price', 0)
+        stop = sig.get('stop_loss', 0)
+        target = sig.get('take_profit', 0)
+
+        # Calculate R:R ratio
+        if entry and stop and entry != stop:
+            risk = abs(entry - stop)
+
+            # If no target, use 2:1 as default (entry + 2*risk) to meet 1.5:1 minimum
+            # This is standard for mean reversion strategies
+            if not target or pd.isna(target):
+                target = entry + (2 * risk)  # 2:1 R:R default
+                sig['take_profit'] = target
+                sig['target_source'] = 'default_2x_risk'
+
+            reward = abs(target - entry)
+            rr_ratio = reward / risk if risk > 0 else 0
+            sig['rr_ratio'] = round(rr_ratio, 2)
+
+            # ENFORCE R:R >= 1.5:1
+            if rr_ratio >= MIN_RR_RATIO:
+                filtered_signals.append(sig)
+            else:
+                logger.debug(f"Rejected {sig.get('symbol')}: R:R {rr_ratio:.2f}:1 < {MIN_RR_RATIO}:1")
+        else:
+            logger.debug(f"Rejected {sig.get('symbol')}: Missing entry/stop prices")
+
+    logger.info(f"R:R filter: {len(all_signals)} -> {len(filtered_signals)} signals (min {MIN_RR_RATIO}:1)")
+
+    # Score and rank FILTERED signals
+    scored_signals = []
+    for sig in filtered_signals:
         # Calculate quality score
         score = calculate_overnight_score(sig)
         sig['overnight_score'] = score
@@ -188,6 +224,7 @@ def build_overnight_watchlist(
                 'entry_price': sig.get('entry_price', 0),
                 'stop_loss': sig.get('stop_loss', 0),
                 'take_profit': sig.get('take_profit', 0),
+                'rr_ratio': sig.get('rr_ratio', 0),  # FIX (2026-01-07): Include R:R ratio
                 'reason': sig.get('reason', ''),
             }
             for i, sig in enumerate(watchlist)
@@ -321,8 +358,9 @@ def main():
 
     print("TOP 5 WATCHLIST:")
     for stock in result['watchlist']:
-        print(f"  {stock['rank']}. {stock['symbol']} (score: {stock['score']:.1f})")
-        print(f"     Entry: ${stock['entry_price']:.2f} | Stop: ${stock['stop_loss']:.2f}")
+        rr = stock.get('rr_ratio', 0)
+        print(f"  {stock['rank']}. {stock['symbol']} (score: {stock['score']:.1f}, R:R {rr:.1f}:1)")
+        print(f"     Entry: ${stock['entry_price']:.2f} | Stop: ${stock['stop_loss']:.2f} | Target: ${stock.get('take_profit', 0):.2f}")
 
     print()
     print(f"Generated: {result['generated_at']}")

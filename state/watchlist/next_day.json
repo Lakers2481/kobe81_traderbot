@@ -1,66 +1,71 @@
 {
-  "generated_at": "2026-01-07T14:41:54.106612-05:00",
+  "generated_at": "2026-01-07T18:36:37.376185-05:00",
   "for_date": "2026-01-08",
   "universe_size": 900,
   "signals_found": 30,
   "watchlist_size": 5,
   "totd": {
-    "symbol": "AEP",
-    "score": 87.96,
-    "strategy": "TurtleSoup",
-    "entry_price": 114.07,
-    "stop_loss": 112.24,
-    "take_profit": 115.45
+    "symbol": "AGG",
+    "score": 83.4,
+    "strategy": "IBS_RSI",
+    "entry_price": 99.85,
+    "stop_loss": 99.35,
+    "take_profit": 100.85
   },
   "watchlist": [
     {
       "rank": 1,
-      "symbol": "AEP",
-      "score": 87.96,
-      "strategy": "TurtleSoup",
-      "entry_price": 114.07,
-      "stop_loss": 112.24,
-      "take_profit": 115.45,
-      "reason": "TurtleSoup[sweep=0.77ATR]"
-    },
-    {
-      "rank": 2,
       "symbol": "AGG",
-      "score": 68.4,
+      "score": 83.4,
       "strategy": "IBS_RSI",
       "entry_price": 99.85,
       "stop_loss": 99.35,
-      "take_profit": null,
+      "take_profit": 100.85,
+      "rr_ratio": 2.0,
+      "reason": "IBS_RSI[ibs=0.00,rsi=0.0]"
+    },
+    {
+      "rank": 2,
+      "symbol": "NVDA",
+      "score": 83.33,
+      "strategy": "IBS_RSI",
+      "entry_price": 188.85,
+      "stop_loss": 178.27,
+      "take_profit": 210.00999999999996,
+      "rr_ratio": 2.0,
       "reason": "IBS_RSI[ibs=0.00,rsi=0.0]"
     },
     {
       "rank": 3,
-      "symbol": "NVDA",
-      "score": 68.33,
-      "strategy": "IBS_RSI",
-      "entry_price": 188.85,
-      "stop_loss": 178.27,
-      "take_profit": NaN,
-      "reason": "IBS_RSI[ibs=0.00,rsi=0.0]"
-    },
-    {
-      "rank": 4,
       "symbol": "ACWI",
-      "score": 68.19,
+      "score": 83.19,
       "strategy": "IBS_RSI",
       "entry_price": 142.49,
       "stop_loss": 140.04,
-      "take_profit": NaN,
+      "take_profit": 147.39000000000004,
+      "rr_ratio": 2.0,
       "reason": "IBS_RSI[ibs=0.01,rsi=0.0]"
     },
     {
-      "rank": 5,
+      "rank": 4,
       "symbol": "A",
-      "score": 67.94,
+      "score": 82.94,
       "strategy": "IBS_RSI",
       "entry_price": 137.95,
       "stop_loss": 132.75,
-      "take_profit": NaN,
+      "take_profit": 148.34999999999997,
+      "rr_ratio": 2.0,
+      "reason": "IBS_RSI[ibs=0.02,rsi=0.0]"
+    },
+    {
+      "rank": 5,
+      "symbol": "ADI",
+      "score": 82.76,
+      "strategy": "IBS_RSI",
+      "entry_price": 273.74,
+      "stop_loss": 263.23,
+      "take_profit": 294.76,
+      "rr_ratio": 2.0,
       "reason": "IBS_RSI[ibs=0.02,rsi=0.0]"
     }
   ],
