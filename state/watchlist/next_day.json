@@ -1,59 +1,69 @@
 {
-  "generated_at": "2026-01-05T19:53:39.791481-05:00",
-  "for_date": "2026-01-06",
-  "universe_size": 30,
-  "signals_found": 4,
-  "watchlist_size": 4,
+  "generated_at": "2026-01-07T14:41:54.106612-05:00",
+  "for_date": "2026-01-08",
+  "universe_size": 900,
+  "signals_found": 30,
+  "watchlist_size": 5,
   "totd": {
-    "symbol": "AAPL",
-    "score": 74.28,
+    "symbol": "AEP",
+    "score": 87.96,
     "strategy": "TurtleSoup",
-    "entry_price": 219.61,
-    "stop_loss": 215.28,
-    "take_profit": 222.87
+    "entry_price": 114.07,
+    "stop_loss": 112.24,
+    "take_profit": 115.45
   },
   "watchlist": [
     {
       "rank": 1,
-      "symbol": "AAPL",
-      "score": 74.28,
+      "symbol": "AEP",
+      "score": 87.96,
       "strategy": "TurtleSoup",
-      "entry_price": 219.61,
-      "stop_loss": 215.28,
-      "take_profit": 222.87,
-      "reason": "TurtleSoup[sweep=0.31ATR]"
+      "entry_price": 114.07,
+      "stop_loss": 112.24,
+      "take_profit": 115.45,
+      "reason": "TurtleSoup[sweep=0.77ATR]"
     },
     {
       "rank": 2,
-      "symbol": "AMD",
-      "score": 68.23,
+      "symbol": "AGG",
+      "score": 68.4,
       "strategy": "IBS_RSI",
-      "entry_price": 155.77,
-      "stop_loss": 140.57,
+      "entry_price": 99.85,
+      "stop_loss": 99.35,
+      "take_profit": null,
+      "reason": "IBS_RSI[ibs=0.00,rsi=0.0]"
+    },
+    {
+      "rank": 3,
+      "symbol": "NVDA",
+      "score": 68.33,
+      "strategy": "IBS_RSI",
+      "entry_price": 188.85,
+      "stop_loss": 178.27,
+      "take_profit": NaN,
+      "reason": "IBS_RSI[ibs=0.00,rsi=0.0]"
+    },
+    {
+      "rank": 4,
+      "symbol": "ACWI",
+      "score": 68.19,
+      "strategy": "IBS_RSI",
+      "entry_price": 142.49,
+      "stop_loss": 140.04,
       "take_profit": NaN,
       "reason": "IBS_RSI[ibs=0.01,rsi=0.0]"
     },
     {
-      "rank": 3,
-      "symbol": "SPY",
-      "score": 67.35,
+      "rank": 5,
+      "symbol": "A",
+      "score": 67.94,
       "strategy": "IBS_RSI",
-      "entry_price": 584.29,
-      "stop_loss": 573.27,
+      "entry_price": 137.95,
+      "stop_loss": 132.75,
       "take_profit": NaN,
-      "reason": "IBS_RSI[ibs=0.03,rsi=0.0]"
-    },
-    {
-      "rank": 4,
-      "symbol": "AMZN",
-      "score": 67.31,
-      "strategy": "IBS_RSI",
-      "entry_price": 223.29,
-      "stop_loss": 212.3,
-      "take_profit": NaN,
-      "reason": "IBS_RSI[ibs=0.04,rsi=0.0]"
+      "reason": "IBS_RSI[ibs=0.02,rsi=0.0]"
     }
   ],
   "status": "READY",
-  "notes": "Scanned 30 stocks, found 4 setups"
+  "notes": "Scanned 898 stocks, found 30 setups"
 }

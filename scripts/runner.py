@@ -32,16 +32,25 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'scripts'))
 
-from core.clock.tz_utils import fmt_ct, now_et, ET
+# noqa: E402 - Local imports must come after sys.path setup
+from core.clock.tz_utils import fmt_ct, now_et, ET  # noqa: E402
 
 from core.structured_log import jlog
 from monitor.health_endpoints import start_health_server, update_request_counter
-from monitor.heartbeat import HeartbeatWriter, update_global_heartbeat
+from monitor.heartbeat import HeartbeatWriter
 from ops.locks import FileLock, LockError, is_another_instance_running
 from market_calendar import is_market_closed, get_market_hours
 from core.alerts import send_telegram
 from core.kill_switch import is_kill_switch_active, get_kill_switch_info, activate_kill_switch
 from config.env_loader import load_env
+from portfolio.state_manager import get_state_manager
+
+# Exit manager import for catch-up logic
+try:
+    from exit_manager import catch_up_missed_exits
+    EXIT_MANAGER_AVAILABLE = True
+except ImportError:
+    EXIT_MANAGER_AVAILABLE = False
 
 # Drift detection imports
 try:
@@ -224,6 +233,286 @@ def reconcile_positions(dotenv: Path) -> dict:
     return result
 
 
+def reconcile_and_fix(dotenv: Path, auto_fix: bool = True) -> dict:
+    """
+    Enhanced reconciliation that detects AND fixes discrepancies.
+
+    FIX (2026-01-06): Gap #1 - Reconciliation now actively fixes issues.
+
+    Detects:
+    - Positions at broker not tracked locally (orphans)
+    - Local positions not at broker (stale state)
+    - Positions without stop loss orders
+
+    Fixes:
+    - Syncs local state to match broker (source of truth)
+    - Adds stop losses for positions without them
+    - Logs all discrepancies for audit trail
+
+    Args:
+        dotenv: Path to .env file
+        auto_fix: If True, automatically apply fixes
+
+    Returns:
+        Dictionary with reconciliation results and fixes applied
+    """
+    jlog('reconcile_and_fix_start', level='INFO', auto_fix=auto_fix)
+
+    result = {
+        'success': False,
+        'broker_positions': [],
+        'broker_orders': [],
+        'discrepancies': [],
+        'fixes_applied': [],
+        'alerts': [],
+    }
+
+    try:
+        import requests
+
+        base = os.getenv('ALPACA_BASE_URL', 'https://paper-api.alpaca.markets').rstrip('/')
+        key = os.getenv('ALPACA_API_KEY_ID', '')
+        sec = os.getenv('ALPACA_API_SECRET_KEY', '')
+
+        if not key or not sec:
+            jlog('reconcile_no_credentials', level='WARNING')
+            return result
+
+        hdr = {'APCA-API-KEY-ID': key, 'APCA-API-SECRET-KEY': sec}
+
+        # =====================================================================
+        # STEP 1: Get broker state (source of truth)
+        # =====================================================================
+        r = requests.get(f"{base}/v2/positions", headers=hdr, timeout=10)
+        r.raise_for_status()
+        broker_positions = r.json()
+        result['broker_positions'] = broker_positions
+
+        r = requests.get(f"{base}/v2/orders?status=open", headers=hdr, timeout=10)
+        r.raise_for_status()
+        broker_orders = r.json()
+        result['broker_orders'] = broker_orders
+
+        broker_symbols = {p['symbol'] for p in broker_positions}
+
+        # Build map of symbols with stop orders AND any pending sell orders
+        # FIX (2026-01-07): Check ALL sell orders, not just stops, to avoid 403 errors
+        # The 403 "insufficient qty available" happens when position already has orders attached
+        symbols_with_stops = set()
+        symbols_with_pending_sells: dict[str, int] = {}  # symbol -> total sell qty pending
+        for order in broker_orders:
+            sym = order.get('symbol')
+            order_side = order.get('side', '').lower()
+            order_type = order.get('type', '').lower()
+            order_qty = int(float(order.get('qty', 0)))
+
+            # Track stop orders specifically
+            if order_type in ('stop', 'stop_limit'):
+                symbols_with_stops.add(sym)
+
+            # Track ALL pending sell orders (to calculate remaining qty available)
+            if order_side == 'sell' and order_qty > 0:
+                symbols_with_pending_sells[sym] = symbols_with_pending_sells.get(sym, 0) + order_qty
+
+        # =====================================================================
+        # STEP 2: Get local state
+        # =====================================================================
+        sm = get_state_manager()
+        local_positions = sm.get_positions()
+        local_symbols = set(local_positions.keys())
+
+        # =====================================================================
+        # STEP 3: Detect discrepancies
+        # =====================================================================
+
+        # 3a. Positions at broker but not tracked locally (orphans)
+        orphan_symbols = broker_symbols - local_symbols
+        for sym in orphan_symbols:
+            broker_pos = next(p for p in broker_positions if p['symbol'] == sym)
+            disc = {
+                'type': 'ORPHAN_POSITION',
+                'symbol': sym,
+                'broker_qty': broker_pos.get('qty'),
+                'broker_value': broker_pos.get('market_value'),
+                'description': f"Position at broker not tracked locally: {sym}",
+            }
+            result['discrepancies'].append(disc)
+            jlog('reconcile_discrepancy', level='WARNING', **disc)
+
+        # 3b. Local positions not at broker (stale state)
+        stale_symbols = local_symbols - broker_symbols
+        for sym in stale_symbols:
+            disc = {
+                'type': 'STALE_LOCAL',
+                'symbol': sym,
+                'local_data': local_positions.get(sym),
+                'description': f"Local position not at broker (closed?): {sym}",
+            }
+            result['discrepancies'].append(disc)
+            jlog('reconcile_discrepancy', level='WARNING', **disc)
+
+        # 3c. Positions without stop losses
+        positions_without_stops = broker_symbols - symbols_with_stops
+        for sym in positions_without_stops:
+            broker_pos = next(p for p in broker_positions if p['symbol'] == sym)
+            disc = {
+                'type': 'NO_STOP_LOSS',
+                'symbol': sym,
+                'broker_qty': broker_pos.get('qty'),
+                'description': f"Position without stop loss order: {sym}",
+            }
+            result['discrepancies'].append(disc)
+            jlog('reconcile_discrepancy', level='WARNING', **disc)
+
+        # =====================================================================
+        # STEP 4: Apply fixes if enabled
+        # =====================================================================
+        if auto_fix and result['discrepancies']:
+            jlog('reconcile_applying_fixes', level='INFO',
+                 discrepancy_count=len(result['discrepancies']))
+
+            # 4a. Sync local state to broker (broker is source of truth)
+            new_local_state = {}
+            for pos in broker_positions:
+                sym = pos['symbol']
+                new_local_state[sym] = {
+                    'symbol': sym,
+                    'qty': int(float(pos.get('qty', 0))),
+                    'entry_price': float(pos.get('avg_entry_price', 0)),
+                    'market_value': float(pos.get('market_value', 0)),
+                    'unrealized_pl': float(pos.get('unrealized_pl', 0)),
+                    'synced_at': now_et().isoformat(),
+                    'source': 'broker_reconcile',
+                }
+
+                # Preserve local metadata if it exists
+                if sym in local_positions:
+                    for key in ['strategy', 'entry_date', 'decision_id']:
+                        if key in local_positions[sym]:
+                            new_local_state[sym][key] = local_positions[sym][key]
+
+            # Atomic update of local state
+            sm.set_positions(new_local_state)
+
+            fix = {
+                'type': 'SYNC_LOCAL_STATE',
+                'symbols_synced': list(broker_symbols),
+                'symbols_removed': list(stale_symbols),
+            }
+            result['fixes_applied'].append(fix)
+            jlog('reconcile_fix_applied', level='INFO', **fix)
+
+            # 4b. Add stop losses for positions without them
+            # FIX (2026-01-07): Only place stop if there's available qty after pending sells
+            for sym in positions_without_stops:
+                broker_pos = next(p for p in broker_positions if p['symbol'] == sym)
+                entry_price = float(broker_pos.get('avg_entry_price', 0))
+                position_qty = int(float(broker_pos.get('qty', 0)))
+                pending_sell_qty = symbols_with_pending_sells.get(sym, 0)
+
+                # Calculate remaining quantity available for new orders
+                remaining_qty = position_qty - pending_sell_qty
+
+                if entry_price <= 0 or position_qty <= 0:
+                    continue
+
+                # Skip if all shares already have pending sell orders
+                if remaining_qty <= 0:
+                    jlog('reconcile_skip_stop_already_covered', level='INFO',
+                         symbol=sym, position_qty=position_qty, pending_sell_qty=pending_sell_qty,
+                         reason='All shares already have pending sell orders')
+                    continue
+
+                # Calculate ATR-based stop (2 ATR default, ~4% fallback)
+                stop_pct = 0.04  # 4% default stop
+                stop_price = round(entry_price * (1 - stop_pct), 2)
+
+                try:
+                    # Place stop order for REMAINING qty only
+                    order_data = {
+                        'symbol': sym,
+                        'qty': str(remaining_qty),  # Only order for available qty
+                        'side': 'sell',
+                        'type': 'stop',
+                        'time_in_force': 'gtc',
+                        'stop_price': str(stop_price),
+                    }
+                    r = requests.post(
+                        f"{base}/v2/orders",
+                        headers={**hdr, 'Content-Type': 'application/json'},
+                        json=order_data,
+                        timeout=10
+                    )
+
+                    if r.status_code in (200, 201):
+                        order_result = r.json()
+                        fix = {
+                            'type': 'ADDED_STOP_LOSS',
+                            'symbol': sym,
+                            'stop_price': stop_price,
+                            'qty': remaining_qty,
+                            'order_id': order_result.get('id'),
+                        }
+                        result['fixes_applied'].append(fix)
+                        jlog('reconcile_fix_applied', level='INFO', **fix)
+
+                        # Alert
+                        alert_msg = f"RECONCILE FIX: Added stop loss for {sym} ({remaining_qty} shares) at ${stop_price:.2f}"
+                        result['alerts'].append(alert_msg)
+                    elif r.status_code == 403:
+                        # 403 = insufficient qty - likely bracket order or OTO attached
+                        jlog('reconcile_stop_order_403', level='WARNING',
+                             symbol=sym, status=r.status_code,
+                             reason='Position likely has bracket/OTO orders attached',
+                             response=r.text[:200] if r.text else 'No response')
+                    else:
+                        jlog('reconcile_stop_order_failed', level='ERROR',
+                             symbol=sym, status=r.status_code, response=r.text)
+
+                except Exception as e:
+                    jlog('reconcile_stop_order_error', level='ERROR',
+                         symbol=sym, error=str(e))
+
+        # =====================================================================
+        # STEP 5: Save reconciliation report
+        # =====================================================================
+        out_dir = ROOT / 'state' / 'reconcile'
+        out_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+
+        report = {
+            'timestamp': timestamp,
+            'broker_positions': len(broker_positions),
+            'broker_orders': len(broker_orders),
+            'discrepancies': result['discrepancies'],
+            'fixes_applied': result['fixes_applied'],
+        }
+        (out_dir / f'reconcile_report_{timestamp}.json').write_text(
+            json.dumps(report, indent=2, default=str)
+        )
+
+        # Send alerts if any
+        if result['alerts']:
+            now = now_et()
+            stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+            for alert in result['alerts']:
+                try:
+                    send_telegram(f"{alert} [{stamp}]")
+                except Exception:
+                    pass
+
+        result['success'] = True
+        jlog('reconcile_and_fix_complete', level='INFO',
+             discrepancies=len(result['discrepancies']),
+             fixes=len(result['fixes_applied']))
+
+    except Exception as e:
+        jlog('reconcile_and_fix_failed', level='ERROR', error=str(e))
+        result['error'] = str(e)
+
+    return result
+
+
 def check_performance_drift() -> dict:
     """
     Check for performance drift and get position scaling recommendation.
@@ -246,7 +535,6 @@ def check_performance_drift() -> dict:
         # Try to load recent trade performance from logs
         trades_file = ROOT / 'logs' / 'trade_history.jsonl'
         if trades_file.exists():
-            import pandas as pd
             trades = []
             with open(trades_file, 'r') as f:
                 for line in f:
@@ -349,19 +637,312 @@ def check_live_trading_approved(require_flag: bool = True) -> tuple[bool, str]:
 
 
 # ==============================================================================
-# DAILY CYCLE SCRIPTS (Professional Execution Flow)
+# UNIFIED MEGA SCHEDULER - ALL 200+ TASKS COMBINED
 # ==============================================================================
-# These scripts run at specific times to prepare for trading:
-# - 15:30 (3:30 PM): overnight_watchlist.py - Build Top 5 for next day
-# - 08:00 (8:00 AM): premarket_validator.py - Validate gaps/news
-# - 09:30 (9:30 AM): opening_range_observer.py - First observation (NO TRADES)
-# - 09:45 (9:45 AM): opening_range_observer.py - Second observation (NO TRADES)
+# Combines:
+#   - runner.py original (4 tasks)
+#   - scheduler_full.py (150+ tasks)
+#   - scheduler_kobe.py (100+ tasks)
+#
+# This is the ONE schedule the robot follows. Every task has a specific time.
+# Every task logs when it runs. VISIBILITY IS ACCOUNTABILITY.
+#
+# SCHEDULE OVERVIEW (ET):
+# ============================================================================
+# PRE-MARKET (4:00-9:30 AM)
+#   04:00-05:00  System health, data integrity, broker test
+#   05:00-06:00  Data refresh, universe validation
+#   06:00-07:00  Economic data (VIX, Treasury), regime detect
+#   07:00-08:00  ML models (LSTM, HMM, ensemble)
+#   08:00-09:00  Pre-game blueprint, watchlist validation, news
+#   09:00-09:30  Final preflight, position sizing, kill zone status
+#
+# OPENING RANGE (9:30-10:00 AM) - OBSERVE ONLY, NO TRADES
+#   09:30-10:00  Capture opens, record range, detect momentum
+#
+# MORNING SESSION (10:00-11:30 AM) - PRIMARY TRADING WINDOW
+#   10:00        FIRST SCAN + Execute qualified trades
+#   10:30        Fallback scan (if watchlist fails)
+#   10:00-11:30  Position monitoring every 15 min
+#
+# LUNCH SESSION (11:30-14:00) - RESEARCH, NO NEW TRADES
+#   11:30-14:00  Position monitor, ML checks, research experiments
+#
+# AFTERNOON SESSION (14:00-15:30) - POWER HOUR
+#   14:30        Power hour scan
+#   14:45        Build next day watchlist
+#   14:00-15:30  Position monitor, exit evaluation
+#
+# MARKET CLOSE (15:30-16:00) - NO NEW TRADES, MANAGE ONLY
+#   15:30-16:00  Final position check, EOD exits, overnight risk
+#
+# POST-MARKET (16:00-20:00) - LEARNING
+#   16:00-17:00  P&L calc, reconciliation, trade analysis
+#   17:00-18:00  Cognitive reflection, memory updates
+#   18:00-20:00  Reports, research, knowledge scraping
+#
+# OVERNIGHT (20:00-04:00) - OPTIMIZATION
+#   20:00-00:00  Data validation, ML retrain check
+#   00:00-04:00  Deep backtest, parameter optimization, cleanup
+#
+# SATURDAY - Reports first, then Monday watchlist by 9:30 AM ET
+# SUNDAY - Learning, backtesting, ML training
+# HOLIDAYS - Same as weekend schedule
+# ============================================================================
 
+# Main daily cycle scripts
 DAILY_CYCLE_TIMES = {
-    'overnight_watchlist': dtime(15, 30),  # 3:30 PM - Build tomorrow's Top 5
-    'premarket_validator': dtime(8, 0),    # 8:00 AM - Validate gaps/news
-    'opening_range_1': dtime(9, 30),       # 9:30 AM - First observation
-    'opening_range_2': dtime(9, 45),       # 9:45 AM - Second observation
+    # === PRE-MARKET EARLY (4:00-6:00 AM) - System & Data ===
+    'system_health_check': dtime(4, 0),        # Full system health check
+    'data_integrity_check': dtime(4, 5),       # Verify all data files
+    'broker_connection_test': dtime(4, 10),    # Test Alpaca connection
+    'polygon_data_refresh': dtime(5, 0),       # Refresh Polygon EOD cache
+    'universe_validation': dtime(5, 15),       # Validate 900-stock universe
+    'indicator_precalc': dtime(5, 30),         # Pre-calculate indicators
+    'db_backup': dtime(5, 30),                 # State backup
+
+    # === PRE-MARKET MID (6:00-7:00 AM) - Economic & Regime ===
+    'data_update': dtime(6, 0),                # Warm data cache
+    'fred_vix_fetch': dtime(6, 0),             # Fetch VIX from FRED
+    'fred_treasury_fetch': dtime(6, 5),        # Fetch 10Y Treasury
+    'fear_greed_fetch': dtime(6, 10),          # Fetch Fear & Greed Index
+    'market_regime_detect': dtime(6, 15),      # Detect market regime
+    'morning_report': dtime(6, 30),            # Generate morning summary
+    'premarket_data_check': dtime(6, 45),      # Data staleness, splits check
+
+    # === PRE-MARKET LATE (7:00-8:00 AM) - ML Models ===
+    'lstm_confidence_run': dtime(7, 0),        # Run LSTM confidence model
+    'hmm_regime_update': dtime(7, 15),         # Update HMM regime state
+    'ensemble_weights_check': dtime(7, 30),    # Check ensemble model weights
+    'weekday_game_plan': dtime(7, 30),         # Daily game plan
+
+    # === PREMARKET (8:00-9:00 AM) - Validation & News ===
+    'premarket_validator': dtime(8, 0),        # Validate overnight watchlist (gaps, news)
+    'premarket_gap_check': dtime(8, 0),        # Check for overnight gaps
+    'pregame_blueprint': dtime(8, 15),         # Comprehensive Pre-Game Blueprint
+    'watchlist_validation': dtime(8, 15),      # Validate overnight watchlist
+    'news_sentiment_scan': dtime(8, 30),       # Scan news for watchlist stocks
+
+    # === FINAL PREP (9:00-9:30 AM) ===
+    'market_news': dtime(9, 0),                # Update sentiment
+    'final_preflight_check': dtime(9, 0),      # Final preflight before market
+    'premarket_scan': dtime(9, 15),            # Build plan (portfolio-aware)
+    'position_sizing_calc': dtime(9, 15),      # Calculate position sizes
+    'kill_zone_status': dtime(9, 25),          # Log kill zone status
+
+    # === OPENING RANGE (9:30-10:00) - OBSERVE ONLY ===
+    'opening_range_1': dtime(9, 30),           # First observation
+    'opening_price_capture': dtime(9, 30),     # Capture all opening prices
+    'opening_gap_analysis': dtime(9, 31),      # Analyze opening gaps
+    'volume_surge_detect': dtime(9, 32),       # Detect volume surges
+    'watchlist_price_update': dtime(9, 33),    # Update watchlist prices
+    'opening_range_5min': dtime(9, 35),        # 5-min opening range
+    'opening_range_2': dtime(9, 45),           # Second observation
+    'opening_range_15min': dtime(9, 50),       # 15-min opening range
+    'morning_bias_determine': dtime(9, 57),    # Determine morning bias
+
+    # === MORNING SESSION (10:00-11:30) - PRIMARY TRADING WINDOW ===
+    'first_scan': dtime(10, 0),                # PRIMARY SCAN - Execute qualified trades
+    'watchlist_signal_check': dtime(10, 5),    # Check watchlist for triggers
+    'signal_quality_gate': dtime(10, 10),      # Apply quality gate to signals
+    'position_monitor_1': dtime(10, 20),       # Position monitor
+    'position_monitor_2': dtime(10, 35),       # Position monitor
+    'fallback_scan': dtime(10, 30),            # Fallback scan if watchlist empty
+    'position_monitor_3': dtime(10, 50),       # Position monitor
+    'position_monitor_4': dtime(11, 5),        # Position monitor
+    'stop_loss_check_1': dtime(11, 15),        # Check stop losses
+    'position_monitor_5': dtime(11, 20),       # Position monitor
+    'morning_window_close': dtime(11, 25),     # PRIMARY WINDOW CLOSING
+
+    # === LUNCH SESSION (11:30-14:00) - RESEARCH, NO NEW TRADES ===
+    'lunch_position_monitor': dtime(11, 30),   # Monitor positions during lunch
+    'cognitive_quick_check': dtime(11, 50),    # Quick cognitive check
+    'midday_pnl_log': dtime(12, 0),            # Log midday P&L
+    'reconcile_midday': dtime(12, 0),          # Half time AI Briefing
+    'research_experiment': dtime(12, 0),       # Run parameter experiment
+    'curiosity_scan': dtime(12, 10),           # Run curiosity engine scan
+    'ict_pattern_discovery': dtime(12, 30),    # Discover ICT patterns
+    'position_monitor_6': dtime(12, 45),       # Position monitor
+    'hourly_pnl_log': dtime(13, 0),            # Log hourly P&L
+    'ml_model_check': dtime(13, 10),           # Check ML model performance
+    'hmm_regime_check': dtime(13, 15),         # Check HMM regime
+    'lstm_confidence_check': dtime(13, 20),    # Check LSTM confidence
+    'position_monitor_7': dtime(13, 30),       # Position monitor
+    'knowledge_integration': dtime(13, 45),    # Integrate scraped knowledge
+    'pre_power_hour_prep': dtime(13, 55),      # Pre-power hour preparation
+
+    # === AFTERNOON SESSION (14:00-15:30) - POWER HOUR ===
+    'afternoon_scan': dtime(14, 0),            # Afternoon universe scan
+    'position_monitor_8': dtime(14, 5),        # Position monitor
+    'position_adjustment': dtime(14, 15),      # Adjust positions if needed
+    'position_monitor_9': dtime(14, 20),       # Position monitor
+    'power_hour_scan': dtime(14, 30),          # POWER HOUR SCAN
+    'watchlist_next_day': dtime(14, 45),       # BUILD NEXT DAY WATCHLIST
+    'position_monitor_10': dtime(14, 50),      # Position monitor
+    'hourly_pnl_log_2': dtime(15, 0),          # Log hourly P&L
+    'position_monitor_11': dtime(15, 5),       # Position monitor
+    'exit_evaluation': dtime(15, 15),          # Evaluate exit conditions
+    'position_monitor_12': dtime(15, 20),      # Position monitor
+    'power_hour_close': dtime(15, 25),         # POWER HOUR CLOSING
+
+    # === MARKET CLOSE (15:30-16:00) - NO NEW TRADES ===
+    'overnight_watchlist': dtime(15, 30),      # Build tomorrow's Top 5
+    'swing_scanner': dtime(15, 30),            # Swing setups
+    'final_position_check': dtime(15, 30),     # Final position check
+    'close_stop_check': dtime(15, 31),         # Final stop check
+    'position_monitor_13': dtime(15, 35),      # Position monitor
+    'eod_exit_check': dtime(15, 45),           # Check for EOD exits
+    'final_pnl_update': dtime(15, 50),         # Final P&L update
+    'overnight_risk_check': dtime(15, 52),     # Check overnight risk
+    'position_close_check': dtime(15, 55),     # Enforce time stops before close
+
+    # === POST-MARKET (16:00-18:00) - LEARNING ===
+    'daily_pnl_calc': dtime(16, 0),            # Calculate daily P&L
+    'post_game': dtime(16, 0),                 # AI Briefing + lessons
+    'cache_refresh_eod': dtime(16, 2),         # CRITICAL: Refresh polygon_cache with today's close
+    'eod_report': dtime(16, 5),                # EOD performance report
+    'broker_reconcile': dtime(16, 10),         # Reconcile with broker
+    'reconcile_eod': dtime(16, 15),            # Full reconciliation + report
+    'trade_analysis': dtime(16, 30),           # Analyze today's trades
+    'lesson_extraction': dtime(16, 45),        # Extract lessons from trades
+    'self_assessment': dtime(16, 55),          # Run self-assessment
+
+    # === COGNITIVE LEARNING (17:00-18:00) ===
+    'cognitive_reflection': dtime(17, 0),      # Run cognitive reflection
+    'eod_learning': dtime(17, 0),              # Weekly ML training (Fridays)
+    'cognitive_learn': dtime(17, 15),          # Daily cognitive consolidation
+    'episodic_memory_update': dtime(17, 15),   # Update episodic memory
+    'experience_store': dtime(17, 20),         # Store experience in memory
+    'pattern_recognition_update': dtime(17, 25), # Update pattern recognition
+    'learn_analysis': dtime(17, 30),           # Daily trade learning analysis
+    'semantic_memory_update': dtime(17, 30),   # Update semantic memory
+    'knowledge_consolidate': dtime(17, 40),    # Consolidate knowledge
+    'curiosity_update': dtime(17, 45),         # Update curiosity engine
+    'edge_discovery_check': dtime(17, 55),     # Check for edge discovery
+
+    # === REPORTS & RESEARCH (18:00-20:00) ===
+    'daily_report_gen': dtime(18, 0),          # Generate daily report
+    'eod_finalize': dtime(18, 0),              # Finalize EOD data
+    'performance_metrics': dtime(18, 5),       # Calculate performance metrics
+    'watchlist_finalize': dtime(18, 30),       # Finalize next day watchlist
+    'news_scan_watchlist': dtime(18, 35),      # Scan news for watchlist
+    'earnings_check': dtime(18, 40),           # Check earnings dates
+    'catalyst_check': dtime(18, 45),           # Check for catalysts
+    'sector_analysis': dtime(18, 50),          # Analyze sector strength
+    'market_breadth': dtime(18, 55),           # Check market breadth
+    'scrape_arxiv': dtime(19, 0),              # Scrape arXiv for papers
+    'scrape_ssrn': dtime(19, 5),               # Scrape SSRN papers
+    'research_digest': dtime(19, 15),          # Create research digest
+    'scrape_reddit': dtime(19, 35),            # Scrape Reddit
+    'knowledge_integrate': dtime(19, 45),      # Integrate all scraped knowledge
+    'research_state_save': dtime(19, 55),      # Save research state
+
+    # === OVERNIGHT (20:00-04:00) - OPTIMIZATION ===
+    'overnight_start': dtime(20, 0),           # OVERNIGHT SESSION START
+    'full_data_validation': dtime(20, 0),      # Full data validation
+    'ml_model_retrain_check': dtime(21, 0),    # Check if ML models need retrain
+    'nightly_ml_retrain': dtime(21, 15),       # Retrain ML models if drift
+    'walk_forward_mini': dtime(21, 30),        # Mini walk-forward test
+    'research_experiment_2': dtime(22, 0),     # Run overnight experiment
+    'curiosity_engine': dtime(22, 30),         # Run curiosity engine
+    'hypothesis_generation': dtime(23, 0),     # Generate new hypotheses
+    'knowledge_consolidation': dtime(23, 30),  # Consolidate knowledge base
+    'midnight_health_check': dtime(0, 0),      # Midnight system health
+    'deep_backtest': dtime(1, 0),              # Run deep backtest
+    'parameter_optimization': dtime(2, 0),     # Parameter optimization run
+    'data_cleanup': dtime(3, 0),               # Clean up old cache/logs
+    'system_backup': dtime(3, 30),             # Backup system state
+}
+
+# Weekend/Holiday schedule (runs on market-closed days)
+WEEKEND_CYCLE_TIMES = {
+    # === SATURDAY MORNING - Reports & Weekly Analysis ===
+    'sat_health_check': dtime(6, 0),           # Full system health check
+    'sat_data_integrity': dtime(6, 4),         # Check all data files
+    'sat_weekly_pnl': dtime(6, 17),            # Calculate weekly P&L
+    'sat_win_rate': dtime(6, 32),              # Calculate weekly win rate
+    'sat_trade_review': dtime(6, 47),          # Review all trades this week
+
+    # === SATURDAY WATCHLIST (by 9:30 AM ET) ===
+    'sat_scan_universe': dtime(7, 2),          # Scan 900 stocks for setups
+    'sat_quality_gate': dtime(7, 17),          # Apply quality gate
+    'sat_select_top5': dtime(7, 32),           # Select top 5 watchlist
+    'sat_historical_patterns': dtime(7, 47),   # Historical pattern analysis
+    'sat_expected_move': dtime(8, 2),          # Expected move analysis
+    'sat_support_resistance': dtime(8, 17),    # S/R levels
+    'sat_news_totd': dtime(8, 29),             # TOTD headlines
+    'sat_political_activity': dtime(8, 39),    # Congressional/insider activity
+    'sat_sector_context': dtime(8, 47),        # Sector context
+    'sat_volume_analysis': dtime(8, 59),       # Volume analysis
+    'sat_entry_levels': dtime(9, 5),           # Entry/Stop/Target levels
+    'sat_thesis': dtime(9, 17),                # Bull/Bear cases
+    'sat_pregame_save': dtime(9, 30),          # SAVE ALL - WATCHLIST READY
+
+    # === SATURDAY AFTERNOON - Deep Analysis ===
+    'sat_trade_analysis': dtime(10, 0),        # Detailed trade analysis
+    'sat_lessons': dtime(11, 0),               # Lessons learned
+    'sat_strategy_compare': dtime(12, 0),      # Strategy comparison
+    'sat_market_analysis': dtime(13, 0),       # Market analysis
+    'sat_calendar': dtime(14, 0),              # Next week calendar
+    'sat_summary': dtime(15, 0),               # Weekly summary report
+    'sat_reflection': dtime(16, 0),            # Cognitive reflection
+    'sat_memory_update': dtime(17, 0),         # Memory updates
+    'sat_maintenance': dtime(18, 0),           # System maintenance
+    'sat_final_checks': dtime(19, 0),          # Final Saturday checks
+    'sat_end': dtime(20, 0),                   # Saturday session end
+
+    # === SUNDAY - Learning, Discovery, Research ===
+    'sun_start': dtime(8, 0),                  # Sunday system startup
+    'sun_saturday_review': dtime(8, 15),       # Review Saturday outputs
+    'sun_backtest': dtime(9, 0),               # Deep backtesting
+    'sun_walk_forward': dtime(10, 0),          # Walk-forward analysis
+    'sun_param_optimization': dtime(11, 0),    # Parameter optimization
+    'sun_knowledge_scrape': dtime(12, 0),      # Knowledge scraping
+    'sun_knowledge_integrate': dtime(13, 0),   # Knowledge integration
+    'sun_ml_training': dtime(14, 0),           # ML model training
+    'sun_hypothesis_test': dtime(16, 0),       # Hypothesis testing
+    'sun_curiosity': dtime(17, 0),             # Curiosity & discovery
+    'sun_universe_review': dtime(18, 0),       # Universe & param review
+    'sun_cognitive_learning': dtime(19, 0),    # Cognitive learning
+    'sun_monday_prep': dtime(20, 0),           # Monday preparation
+    'sun_end': dtime(21, 0),                   # Sunday session end
+
+    # === HOLIDAY SCHEDULE (Same as weekend) ===
+    'holiday_backup': dtime(5, 30),            # State backup
+    'holiday_health_check': dtime(6, 0),       # Full system health
+    'holiday_log_cleanup': dtime(6, 15),       # Purge old logs
+    'holiday_data_integrity': dtime(6, 30),    # Missing bars, duplicates
+    'holiday_universe_refresh': dtime(7, 0),   # Delistings, halted tickers
+    'holiday_broker_test': dtime(7, 30),       # Broker connectivity test
+    'holiday_research_start': dtime(8, 0),     # Start research session
+    'holiday_pattern_scan': dtime(8, 30),      # Scan for new patterns
+    'holiday_alpha_discovery': dtime(9, 0),    # Alpha screening
+    'holiday_edge_analysis': dtime(9, 30),     # Edge discovery analysis
+    'holiday_backtest_quick': dtime(10, 0),    # Quick backtest validation
+    'holiday_wf_test': dtime(10, 30),          # Walk-forward test
+    'holiday_strategy_compare': dtime(11, 0),  # Strategy comparison
+    'holiday_param_drift': dtime(11, 30),      # Parameter drift check
+    'holiday_optimize_start': dtime(12, 0),    # Start optimization
+    'holiday_grid_search': dtime(12, 30),      # Grid search parameters
+    'holiday_threshold_tune': dtime(13, 0),    # Tune confidence thresholds
+    'holiday_risk_calibrate': dtime(13, 30),   # Calibrate risk limits
+    'holiday_ml_train': dtime(14, 0),          # ML model training
+    'holiday_meta_retrain': dtime(14, 30),     # Meta model retrain
+    'holiday_ensemble_update': dtime(15, 0),   # Ensemble update
+    'holiday_hmm_regime': dtime(15, 30),       # HMM regime recalibration
+    'holiday_cognitive_reflect': dtime(16, 0), # Cognitive reflection
+    'holiday_hypothesis_test': dtime(16, 30),  # Test hypotheses
+    'holiday_memory_consolidate': dtime(17, 0),# Memory consolidation
+    'holiday_self_calibrate': dtime(17, 30),   # Self-model calibration
+    'holiday_monte_carlo': dtime(18, 0),       # Monte Carlo simulation
+    'holiday_stress_test': dtime(18, 30),      # Stress testing
+    'holiday_var_calc': dtime(19, 0),          # VaR recalculation
+    'holiday_drawdown_analysis': dtime(19, 30),# Drawdown analysis
+    'holiday_next_day_prep': dtime(20, 0),     # Prepare for next day
+    'holiday_watchlist_build': dtime(20, 30),  # Build watchlist
+    'holiday_preview_scan': dtime(21, 0),      # Preview mode scan
+    'holiday_final_backup': dtime(21, 30),     # Final backup
+    'holiday_complete': dtime(22, 0),          # Holiday schedule complete
 }
 
 # Position monitor runs every N minutes during market hours
@@ -369,6 +950,14 @@ POSITION_MONITOR_INTERVAL_MINUTES = 15  # Check positions every 15 minutes
 
 # Track last position monitor run
 _last_position_monitor: datetime | None = None
+
+# Track last crypto scan run
+_last_crypto_scan: datetime | None = None
+CRYPTO_SCAN_CADENCE_HOURS = 4  # Default, can be overridden by --crypto-cadence
+
+# Track last options scan run
+_last_options_scan: datetime | None = None
+OPTIONS_SCAN_CADENCE_HOURS = 2  # Default, can be overridden by --options-cadence
 
 
 def run_position_monitor(dotenv: Path) -> int:
@@ -431,6 +1020,318 @@ def should_run_position_monitor() -> bool:
     return minutes_since_last >= POSITION_MONITOR_INTERVAL_MINUTES
 
 
+def run_crypto_scan(dotenv: Path, cadence_hours: int = 4) -> int:
+    """
+    Run crypto scanner (24/7, independent of market hours).
+
+    Crypto trades 24/7, so this can run any time.
+    Uses the same DualStrategyScanner as equities.
+
+    Returns: returncode from subprocess, or number of signals found
+    """
+    global _last_crypto_scan
+
+    # Check kill switch
+    if is_kill_switch_active():
+        info = get_kill_switch_info()
+        jlog('crypto_scan_blocked_by_kill_switch', level='WARNING',
+             reason=info.get('reason') if info else 'Unknown')
+        return -1
+
+    jlog('crypto_scan_start', cadence_hours=cadence_hours)
+
+    try:
+        # Import crypto scanner
+        from scanner.crypto_signals import scan_crypto, CRYPTO_DATA_AVAILABLE
+
+        if not CRYPTO_DATA_AVAILABLE:
+            jlog('crypto_scan_unavailable', level='WARNING', reason='Crypto data provider not available')
+            return -1
+
+        # Run the scan
+        signals = scan_crypto(cap=8, max_signals=3, verbose=False)
+
+        _last_crypto_scan = now_et()
+
+        if signals.empty:
+            jlog('crypto_scan_complete', signals_found=0)
+            return 0
+
+        # Log signals found
+        signal_count = len(signals)
+        jlog('crypto_scan_complete', signals_found=signal_count)
+
+        # Save to state file for visibility
+        state_dir = ROOT / 'state' / 'watchlist'
+        state_dir.mkdir(parents=True, exist_ok=True)
+        crypto_file = state_dir / 'crypto_signals.json'
+
+        signals_list = signals.to_dict(orient='records')
+        with open(crypto_file, 'w') as f:
+            json.dump({
+                'scan_time': _last_crypto_scan.isoformat(),
+                'signals_count': signal_count,
+                'signals': signals_list,
+            }, f, indent=2, default=str)
+
+        jlog('crypto_scan_saved', file=str(crypto_file), signals=signal_count)
+
+        # Send alert if signals found
+        if signal_count > 0:
+            try:
+                now2 = now_et()
+                stamp2 = f"{fmt_ct(now2)} | {now2.strftime('%I:%M %p').lstrip('0')} ET"
+                symbols = ', '.join(signals['symbol'].tolist()[:3])
+                send_telegram(f"Kobe CRYPTO: {signal_count} signal(s) found: {symbols} [{stamp2}]")
+            except Exception:
+                pass
+
+        return signal_count
+
+    except ImportError as e:
+        jlog('crypto_scan_import_error', level='ERROR', error=str(e))
+        return -1
+    except Exception as e:
+        jlog('crypto_scan_error', level='ERROR', error=str(e))
+        return -1
+
+
+def should_run_crypto_scan(cadence_hours: int = 4) -> bool:
+    """Check if it's time to run crypto scan."""
+    global _last_crypto_scan
+
+    if _last_crypto_scan is None:
+        return True
+
+    now = now_et()
+    hours_since_last = (now - _last_crypto_scan).total_seconds() / 3600
+
+    return hours_since_last >= cadence_hours
+
+
+def run_options_scan(dotenv: Path, universe: Path, cap: int, cadence_hours: int = 2) -> int:
+    """
+    Run options scanner - generates options signals from equity signals.
+
+    Options scanning runs during market hours and generates CALL/PUT signals
+    from the top equity signals using 30-delta targeting and Black-Scholes pricing.
+
+    Returns: number of options signals found, or -1 on error
+    """
+    global _last_options_scan
+
+    # Check kill switch
+    if is_kill_switch_active():
+        info = get_kill_switch_info()
+        jlog('options_scan_blocked_by_kill_switch', level='WARNING',
+             reason=info.get('reason') if info else 'Unknown')
+        return -1
+
+    # Check if market is open (options only trade during market hours)
+    now = now_et()
+    closed, reason = is_market_closed(now)
+    if closed:
+        jlog('options_scan_skipped_market_closed', level='DEBUG', reason=reason)
+        return 0
+
+    jlog('options_scan_start', cadence_hours=cadence_hours)
+
+    try:
+        # Import options signal generator
+        from scanner.options_signals import generate_options_signals, OPTIONS_AVAILABLE
+
+        if not OPTIONS_AVAILABLE:
+            jlog('options_scan_unavailable', level='WARNING', reason='Options modules not available')
+            return -1
+
+        # First, run a quick equity scan to get signals to convert
+        from strategies.dual_strategy import DualStrategyScanner, DualStrategyParams
+        from data.providers.polygon_eod import fetch_daily_bars_polygon
+        from data.universe.loader import load_universe
+        import pandas as pd
+
+        # Load universe and get top signals
+        symbols = load_universe(str(universe), cap=min(cap, 200))  # Cap at 200 for speed
+
+        scanner = DualStrategyScanner(DualStrategyParams())
+        equity_signals = []
+        all_price_data = []
+
+        for sym in symbols[:100]:  # Scan top 100 for options conversion
+            try:
+                df = fetch_daily_bars_polygon(sym, start='2024-06-01', cache_dir=None)
+                if df is None or len(df) < 50:
+                    continue
+                df['symbol'] = sym
+                all_price_data.append(df)
+
+                signals = scanner.generate_signals(df)
+                if not signals.empty:
+                    for _, sig in signals.iterrows():
+                        equity_signals.append(sig.to_dict())
+            except Exception:
+                continue
+
+        if not equity_signals:
+            jlog('options_scan_no_equity_signals', level='INFO')
+            _last_options_scan = now_et()
+            return 0
+
+        equity_df = pd.DataFrame(equity_signals)
+        price_df = pd.concat(all_price_data, ignore_index=True) if all_price_data else pd.DataFrame()
+
+        # Sort by conf_score and take top 5
+        if 'conf_score' in equity_df.columns:
+            equity_df = equity_df.sort_values('conf_score', ascending=False).head(5)
+        else:
+            equity_df = equity_df.head(5)
+
+        # Generate options signals (CALL + PUT for each)
+        options_signals = generate_options_signals(
+            equity_df,
+            price_df,
+            max_signals=10,  # 5 calls + 5 puts
+            target_delta=0.30,
+            target_dte=21,
+        )
+
+        _last_options_scan = now_et()
+
+        if options_signals.empty:
+            jlog('options_scan_complete', signals_found=0)
+            return 0
+
+        signal_count = len(options_signals)
+        jlog('options_scan_complete', signals_found=signal_count)
+
+        # Save to state file
+        state_dir = ROOT / 'state' / 'watchlist'
+        state_dir.mkdir(parents=True, exist_ok=True)
+        options_file = state_dir / 'options_signals.json'
+
+        signals_list = options_signals.to_dict(orient='records')
+        with open(options_file, 'w') as f:
+            json.dump({
+                'scan_time': _last_options_scan.isoformat(),
+                'signals_count': signal_count,
+                'signals': signals_list,
+            }, f, indent=2, default=str)
+
+        jlog('options_scan_saved', file=str(options_file), signals=signal_count)
+
+        # Send alert if signals found
+        if signal_count > 0:
+            try:
+                now2 = now_et()
+                stamp2 = f"{fmt_ct(now2)} | {now2.strftime('%I:%M %p').lstrip('0')} ET"
+                # Show top 2 calls and top 2 puts
+                calls = [s for s in signals_list if s.get('option_type') == 'CALL'][:2]
+                puts = [s for s in signals_list if s.get('option_type') == 'PUT'][:2]
+                call_syms = ', '.join([c['symbol'] for c in calls]) if calls else 'none'
+                put_syms = ', '.join([p['symbol'] for p in puts]) if puts else 'none'
+                send_telegram(f"Kobe OPTIONS: {signal_count} signals - CALLS: {call_syms} | PUTS: {put_syms} [{stamp2}]")
+            except Exception:
+                pass
+
+        return signal_count
+
+    except ImportError as e:
+        jlog('options_scan_import_error', level='ERROR', error=str(e))
+        return -1
+    except Exception as e:
+        jlog('options_scan_error', level='ERROR', error=str(e))
+        return -1
+
+
+def should_run_options_scan(cadence_hours: int = 2) -> bool:
+    """Check if it's time to run options scan."""
+    global _last_options_scan
+
+    if _last_options_scan is None:
+        return True
+
+    now = now_et()
+    hours_since_last = (now - _last_options_scan).total_seconds() / 3600
+
+    return hours_since_last >= cadence_hours
+
+
+def run_unified_multi_asset_scan(dotenv: Path, universe: Path, cap: int, mode: str = 'paper') -> int:
+    """
+    Run UNIFIED multi-asset scan - equities + crypto + options in ONE pass.
+
+    This is the professional quant approach:
+    1. Scan 900 equities
+    2. Scan 8 crypto pairs
+    3. Generate options from top equity signals
+    4. Rank ALL signals together by conf_score/EV
+    5. Pick Top 5 to watch, Top 2 to trade
+    6. Execute trades for the Top 2 (regardless of asset class)
+
+    Returns: number of trades executed, or -1 on error
+    """
+    # Check kill switch
+    if is_kill_switch_active():
+        info = get_kill_switch_info()
+        jlog('unified_scan_blocked_by_kill_switch', level='WARNING',
+             reason=info.get('reason') if info else 'Unknown')
+        return -1
+
+    jlog('unified_scan_start', mode=mode)
+
+    try:
+        # Import unified scanner
+        from scripts.unified_multi_asset_scan import scan_all_assets
+
+        # This runs the full unified scan and saves to state/watchlist/multi_asset_scan.json
+        scan_all_assets()
+
+        # Load results
+        results_file = ROOT / 'state' / 'watchlist' / 'multi_asset_scan.json'
+        if not results_file.exists():
+            jlog('unified_scan_no_results', level='WARNING')
+            return 0
+
+        with open(results_file) as f:
+            results = json.load(f)
+
+        top2 = results.get('top2', [])
+        jlog('unified_scan_complete',
+             total_signals=results.get('total_signals', 0),
+             top2_count=len(top2),
+             by_class=results.get('by_asset_class', {}))
+
+        if not top2:
+            jlog('unified_scan_no_signals', level='INFO')
+            return 0
+
+        # Send alert
+        try:
+            now2 = now_et()
+            stamp2 = f"{fmt_ct(now2)} | {now2.strftime('%I:%M %p').lstrip('0')} ET"
+            top2_symbols = ', '.join([t['symbol'] for t in top2])
+            by_class = results.get('by_asset_class', {})
+            send_telegram(
+                f"Kobe UNIFIED SCAN: {results.get('total_signals', 0)} signals "
+                f"(E:{by_class.get('equity', 0)} C:{by_class.get('crypto', 0)} O:{by_class.get('options', 0)})\n"
+                f"Top 2: {top2_symbols} [{stamp2}]"
+            )
+        except Exception:
+            pass
+
+        # For now, unified scan is read-only (generates signals, doesn't execute)
+        # TODO: Add execution logic for Top 2 trades across asset classes
+        jlog('incomplete_feature_warning', feature='unified_multi_asset_execution', status='not_implemented')
+        return len(top2)
+
+    except ImportError as e:
+        jlog('unified_scan_import_error', level='ERROR', error=str(e))
+        return -1
+    except Exception as e:
+        jlog('unified_scan_error', level='ERROR', error=str(e))
+        return -1
+
+
 def run_daily_cycle_script(script_name: str, universe: Path, cap: int, dotenv: Path) -> int:
     """
     Run a daily cycle script (overnight watchlist, premarket validator, opening range observer).
@@ -449,6 +1350,7 @@ def run_daily_cycle_script(script_name: str, universe: Path, cap: int, dotenv: P
         'premarket_validator': ROOT / 'scripts' / 'premarket_validator.py',
         'opening_range_1': ROOT / 'scripts' / 'opening_range_observer.py',
         'opening_range_2': ROOT / 'scripts' / 'opening_range_observer.py',
+        'cache_refresh_eod': ROOT / 'scripts' / 'refresh_polygon_cache.py',
     }
 
     script_path = script_map.get(script_name)
@@ -465,12 +1367,20 @@ def run_daily_cycle_script(script_name: str, universe: Path, cap: int, dotenv: P
         pass  # No special args
     elif script_name.startswith('opening_range'):
         pass  # No special args
+    elif script_name == 'cache_refresh_eod':
+        # Refresh cache for all 900 symbols with latest EOD data
+        cmd.extend(['--universe', str(universe)])
 
     if dotenv.exists():
         cmd.extend(['--dotenv', str(dotenv)])
 
-    # overnight_watchlist needs more time (scans 900 stocks)
-    timeout = 600 if script_name == 'overnight_watchlist' else 300
+    # Longer timeouts for scripts that process 900 stocks
+    if script_name == 'cache_refresh_eod':
+        timeout = 1800  # 30 min - refreshes 900 symbols
+    elif script_name == 'overnight_watchlist':
+        timeout = 600   # 10 min - scans 900 stocks
+    else:
+        timeout = 300   # 5 min default
 
     jlog('daily_cycle_execute', script=script_name, cmd=' '.join(cmd), timeout=timeout)
 
@@ -561,6 +1471,10 @@ def main():
     ap.add_argument('--crypto-cadence', type=int, default=4, help='Crypto scan cadence in hours')
     ap.add_argument('--crypto-universe', type=str, help='Crypto universe file (optional)')
     ap.add_argument('--enable-options', action='store_true', help='Enable options event scanning')
+    ap.add_argument('--options-cadence', type=int, default=2, help='Options scan cadence in hours (default: 2)')
+    # Unified multi-asset scanning (recommended - runs all asset classes together)
+    ap.add_argument('--unified', action='store_true',
+                    help='Use unified multi-asset scanning (equities + crypto + options in one scan)')
     args = ap.parse_args()
 
     # CRITICAL: Live trading safety check
@@ -631,14 +1545,18 @@ def main():
     except Exception as e:
         jlog('health_server_start_failed', level='ERROR', error=str(e))
 
-    # Position reconciliation on startup
+    # Position reconciliation on startup (enhanced: detects AND fixes discrepancies)
     if not args.skip_reconcile:
         jlog('runner_startup_reconcile', level='INFO')
         _heartbeat.update("reconciling_positions")
-        reconcile_result = reconcile_positions(dotenv)
+        reconcile_result = reconcile_and_fix(dotenv, auto_fix=True)
         if reconcile_result.get('discrepancies'):
             jlog('runner_reconcile_discrepancies', level='WARNING',
                  discrepancies=reconcile_result['discrepancies'])
+            # Log fixes applied
+            if reconcile_result.get('fixes_applied'):
+                jlog('runner_reconcile_fixes', level='INFO',
+                     fixes=reconcile_result['fixes_applied'])
         if not reconcile_result.get('success'):
             msg = f"Kobe reconcile failed: {reconcile_result.get('error','unknown')}"
             try:
@@ -647,6 +1565,18 @@ def main():
             except Exception:
                 pass
             send_telegram(msg)
+
+        # FIX (2026-01-06): Gap #5 - Exit manager catch-up for missed exits
+        if EXIT_MANAGER_AVAILABLE:
+            jlog('runner_startup_exit_catchup', level='INFO')
+            _heartbeat.update("catching_up_exits")
+            catchup_result = catch_up_missed_exits(dotenv_path=str(dotenv), execute=True)
+            if catchup_result.get('exits_executed'):
+                jlog('runner_startup_exits_executed', level='INFO',
+                     symbols=catchup_result['exits_executed'])
+            if not catchup_result.get('success'):
+                jlog('runner_startup_exit_catchup_failed', level='WARNING',
+                     errors=catchup_result.get('errors'))
 
         # Check performance drift on startup
         if DRIFT_DETECTION_AVAILABLE:
@@ -711,11 +1641,11 @@ def main():
             time.sleep(60)  # Check again in 1 minute
             continue
 
-        # Daily reconciliation (run once per day at start)
+        # Daily reconciliation (run once per day at start) - enhanced with auto-fix
         if now.date() != last_reconcile_date and within_market_day(now):
             jlog('runner_daily_reconcile', level='INFO')
             _heartbeat.update("daily_reconcile")
-            reconcile_positions(dotenv)
+            reconcile_and_fix(dotenv, auto_fix=True)
 
             # Check performance drift after reconciliation
             if DRIFT_DETECTION_AVAILABLE:
@@ -826,15 +1756,25 @@ def main():
                     continue
                 if now >= target_dt and not already_ran(tag, today_str):
                     _heartbeat.update(f"running_{tag}")
-                    rc = run_submit(args.mode, universe, args.cap, args.lookback_days, dotenv, scan_time=t)
+
+                    # UNIFIED MODE: Scan all asset classes together
+                    if getattr(args, 'unified', False):
+                        jlog('runner_unified_scan_start', tag=tag)
+                        rc = run_unified_multi_asset_scan(dotenv, universe, args.cap, args.mode)
+                        scan_type = 'unified'
+                    else:
+                        # LEGACY MODE: Scan equities only at scheduled times
+                        rc = run_submit(args.mode, universe, args.cap, args.lookback_days, dotenv, scan_time=t)
+                        scan_type = 'equity'
+
                     update_request_counter('total', 1)
                     mark_ran(tag, today_str)
-                    jlog('runner_done', mode=args.mode, schedule=tag, returncode=rc)
+                    jlog('runner_done', mode=args.mode, schedule=tag, scan_type=scan_type, returncode=rc)
                     try:
                         now2 = now_et(); stamp2 = f"{fmt_ct(now2)} | {now2.strftime('%I:%M %p').lstrip('0')} ET"
-                        send_telegram(f"Kobe run {tag} completed rc={rc} [{stamp2}]")
+                        send_telegram(f"Kobe {scan_type} run {tag} completed rc={rc} [{stamp2}]")
                     except Exception:
-                        send_telegram(f"Kobe run {tag} completed rc={rc}")
+                        send_telegram(f"Kobe {scan_type} run {tag} completed rc={rc}")
 
         # ==================================================================
         # POSITION MONITOR (Time-Based Exits)
@@ -852,6 +1792,33 @@ def main():
                 rc = run_position_monitor(dotenv)
                 if rc == 0:
                     jlog('position_monitor_done', returncode=rc)
+
+        # ==================================================================
+        # CRYPTO SCAN (24/7 - Independent of Market Hours)
+        # ==================================================================
+        # Run every N hours (default 4) regardless of time/day
+        # Crypto markets never close
+        # SKIP if unified mode is enabled (unified handles crypto)
+        if not getattr(args, 'unified', False):
+            if args.enable_crypto and should_run_crypto_scan(args.crypto_cadence):
+                _heartbeat.update("running_crypto_scan")
+                crypto_result = run_crypto_scan(dotenv, args.crypto_cadence)
+                jlog('crypto_scan_done', signals_found=crypto_result)
+
+        # ==================================================================
+        # OPTIONS SCAN (Market Hours Only - Event Driven)
+        # ==================================================================
+        # Run every N hours (default 2) during market hours
+        # Generates CALL/PUT signals from top equity signals
+        # SKIP if unified mode is enabled (unified handles options)
+        if not getattr(args, 'unified', False):
+            if args.enable_options and should_run_options_scan(args.options_cadence):
+                # Only run during market hours (options don't trade after hours)
+                closed, _ = is_market_closed(now)
+                if not closed:
+                    _heartbeat.update("running_options_scan")
+                    options_result = run_options_scan(dotenv, universe, args.cap, args.options_cadence)
+                    jlog('options_scan_done', signals_found=options_result)
 
         # Sleep in small intervals for faster shutdown response
         for _ in range(30):

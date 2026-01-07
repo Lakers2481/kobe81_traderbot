@@ -18,6 +18,11 @@ logger = logging.getLogger(__name__)
 ET = ZoneInfo("America/New_York")
 
 
+def _today_str() -> str:
+    """Get today's date as YYYY-MM-DD string. FIX (2026-01-07): No more hardcoded dates."""
+    return datetime.now(ET).strftime('%Y-%m-%d')
+
+
 def safe_run(func, **kwargs) -> Dict[str, Any]:
     """Wrap any function to never fail."""
     try:
@@ -255,7 +260,7 @@ def walk_forward(**kwargs) -> Dict[str, Any]:
     return run_script(
         "scripts/run_wf_polygon.py",
         ["--universe", "data/universe/optionable_liquid_900.csv",
-         "--start", "2023-01-01", "--end", "2024-12-31",
+         "--start", "2023-01-01", "--end", _today_str(),  # FIX: dynamic end date
          "--train-days", "252", "--test-days", "63", "--cap", "20"],
         timeout=600,
     )
@@ -323,7 +328,7 @@ def update_universe(**kwargs) -> Dict[str, Any]:
     return run_script(
         "scripts/build_universe_polygon.py",
         ["--cidates", "data/universe/optionable_liquid_cidates.csv",
-         "--start", "2015-01-01", "--end", "2024-12-31",
+         "--start", "2015-01-01", "--end", _today_str(),  # FIX: dynamic end date
          "--min-years", "10", "--cap", "900", "--concurrency", "3"],
         timeout=600,
     )
@@ -338,7 +343,7 @@ def fetch_data(**kwargs) -> Dict[str, Any]:
     return run_script(
         "scripts/prefetch_polygon_universe.py",
         ["--universe", "data/universe/optionable_liquid_900.csv",
-         "--start", "2024-01-01", "--end", "2024-12-31"],
+         "--start", "2025-01-01", "--end", _today_str()],  # FIX: dynamic end date
         timeout=600,
     )
 

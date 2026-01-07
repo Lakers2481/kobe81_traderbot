@@ -21,7 +21,7 @@ import logging
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List, Dict
 
 # Add project root to path
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,6 +43,7 @@ def build_overnight_watchlist(
     top_n: int = 5,
     dotenv_path: str = "./.env",
     prefetch: bool = False,
+    provider: str = "polygon",  # FIX (2026-01-07): Add provider parameter
 ) -> Dict:
     """
     Build the overnight watchlist for next trading day.
@@ -95,12 +96,13 @@ def build_overnight_watchlist(
     # Use cached data if available
     cache_dir = Path("data/polygon_cache")
 
+    import pandas as pd  # Needed for signal timestamp filtering
+
     for symbol in symbols:
         try:
             # Try to load from cache first
             cache_file = cache_dir / f"{symbol.lower()}.csv"
             if cache_file.exists():
-                import pandas as pd
                 df = pd.read_csv(cache_file)
                 if 'timestamp' not in df.columns and 'date' in df.columns:
                     df['timestamp'] = pd.to_datetime(df['date'])
@@ -117,10 +119,22 @@ def build_overnight_watchlist(
             # Generate signals
             signals = scanner.scan_signals_over_time(df)
             if signals is not None and len(signals) > 0:
-                # Get the most recent signal
-                latest = signals.iloc[-1].to_dict()
-                latest['symbol'] = symbol
-                all_signals.append(latest)
+                # FIX (2026-01-07): Only use signals from the last 10 trading days
+                # Previously took signals.iloc[-1] which could be years old if no recent signals
+                if 'timestamp' in signals.columns:
+                    signals['timestamp'] = pd.to_datetime(signals['timestamp'])
+                    # Use tz-naive cutoff for comparison with tz-naive signal timestamps
+                    cutoff_date = (datetime.now() - timedelta(days=14)).replace(tzinfo=None)
+                    recent_signals = signals[signals['timestamp'] >= cutoff_date]
+                    if len(recent_signals) > 0:
+                        latest = recent_signals.iloc[-1].to_dict()
+                        latest['symbol'] = symbol
+                        all_signals.append(latest)
+                else:
+                    # Fallback: use last signal if no timestamp
+                    latest = signals.iloc[-1].to_dict()
+                    latest['symbol'] = symbol
+                    all_signals.append(latest)
 
             scanned += 1
             if scanned % 100 == 0:

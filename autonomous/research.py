@@ -370,7 +370,6 @@ class ResearchEngine:
         try:
             from pathlib import Path
             import pandas as pd
-            import numpy as np
             from strategies.dual_strategy import DualStrategyScanner, DualStrategyParams
 
             # Use CACHED data - no API calls
@@ -430,9 +429,13 @@ class ResearchEngine:
                     # Add symbol from filename
                     df['symbol'] = cache_file.stem.upper()
 
-                    # Filter to 2023-2024 for consistent comparison
-                    df = df[df['timestamp'] >= '2023-01-01']
-                    df = df[df['timestamp'] <= '2024-12-31']
+                    # Filter to last 2 years for consistent comparison
+                    # FIX (2026-01-07): Use dynamic dates, not hardcoded 2024-12-31
+                    from datetime import datetime, timedelta
+                    end_date = datetime.now().strftime('%Y-%m-%d')
+                    start_date = (datetime.now() - timedelta(days=730)).strftime('%Y-%m-%d')  # 2 years
+                    df = df[df['timestamp'] >= start_date]
+                    df = df[df['timestamp'] <= end_date]
 
                     if len(df) < 100:
                         continue
