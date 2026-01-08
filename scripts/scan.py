@@ -28,16 +28,26 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from config.env_loader import load_env
+# noqa: E402 - Local imports must come after sys.path setup
+from config.env_loader import load_env  # noqa: E402
 from data.providers.multi_source import fetch_daily_bars_multi
 from data.universe.loader import load_universe
 from strategies.dual_strategy import DualStrategyScanner, DualStrategyParams
 from config.settings_loader import get_selection_config
 from core.regime_filter import get_regime_filter_config, filter_signals_by_regime, fetch_spy_bars
 from core.earnings_filter import filter_signals_by_earnings
+from core.structured_log import jlog
 from ml_meta.features import compute_features_frame
 from ml_meta.model import load_model, predict_proba, FEATURE_COLS
 from altdata.sentiment import load_daily_cache, normalize_sentiment_to_conf
+
+# CRITICAL FIX (2026-01-08): Fake data detection to catch hardcoded placeholders
+try:
+    from validation.fake_data_detector import validate_signals_before_trading, FakeDataError
+    FAKE_DATA_DETECTION_AVAILABLE = True
+except ImportError:
+    FAKE_DATA_DETECTION_AVAILABLE = False
+    FakeDataError = Exception  # Fallback
 
 # Portfolio-aware filtering (Phase 7 - Scheduler v2)
 try:
@@ -72,6 +82,23 @@ try:
     HMM_REGIME_AVAILABLE = True
 except ImportError:
     HMM_REGIME_AVAILABLE = False
+
+# === TIER 3.2: LSTM Confidence Model ===
+try:
+    from ml_advanced.lstm_confidence.model import get_lstm_model
+    LSTM_AVAILABLE = True
+except ImportError:
+    LSTM_AVAILABLE = False
+    get_lstm_model = None
+
+# === TIER 3.3: Anomaly Detection Filter ===
+try:
+    from ml_features.anomaly_detection import AnomalyDetector, get_anomaly_score
+    ANOMALY_DETECTION_AVAILABLE = True
+except ImportError:
+    ANOMALY_DETECTION_AVAILABLE = False
+    AnomalyDetector = None
+    get_anomaly_score = None
 
 # VIX Monitor (pause trading when VIX > 30)
 try:
@@ -1067,7 +1094,6 @@ Examples:
     if args.deterministic:
         import random
         import numpy as np
-        import hashlib
         # CRITICAL: Seed BOTH random modules for full determinism
         random.seed(42)     # Python built-in random (used by execution_bandit, curiosity_engine)
         np.random.seed(42)  # NumPy random (used by ML models, Thompson sampling)
@@ -1142,10 +1168,13 @@ Examples:
         return 1
 
     # VIX Pause Check: Block signal generation when VIX > 30
+    # Also store VIX level for later use in enrichment pipeline
+    current_vix_level = 0.0
     if VIX_MONITOR_AVAILABLE:
         try:
             vix_monitor = get_vix_monitor()
             should_pause, vix_level, reason = vix_monitor.should_pause_trading()
+            current_vix_level = vix_level  # Store for enrichment pipeline
 
             if should_pause:
                 print(f"\n*** TRADING PAUSED: {reason} ***")
@@ -1312,6 +1341,67 @@ Examples:
 
     print(f"Total bars (equity + crypto): {len(combined):,}")
 
+    # === DATA VALIDATION (Fix 5 - 2026-01-07) ===
+    # Validate all data sources before signal generation
+    # FIX (2026-01-07): Time-of-day guard - skip during peak trading hours to avoid 5-30s overhead
+    try:
+        from autonomous.data_validator import DataValidator
+        from core.clock.tz_utils import now_et
+        from core.structured_log import jlog
+
+        # Time-of-day guard: Only run full validation outside peak trading hours
+        # Peak hours: 10:00 AM - 3:30 PM ET (main trading windows)
+        current_et = now_et()
+        hour = current_et.hour
+        minute = current_et.minute
+        current_time_minutes = hour * 60 + minute
+
+        # Skip validation during peak trading hours (10:00-15:30 ET)
+        peak_start = 10 * 60  # 10:00 AM ET
+        peak_end = 15 * 60 + 30  # 3:30 PM ET
+
+        if peak_start <= current_time_minutes <= peak_end:
+            # During peak hours, skip validation for faster scans
+            print("\n[DATA VALIDATION] Skipped during peak trading hours (10:00-15:30 ET)")
+            jlog('data_validation_skipped', reason='peak_trading_hours', hour=hour)
+        else:
+            # Outside peak hours: Run full validation
+            print("\n[DATA VALIDATION] Running pre-scan data quality checks...")
+            validator = DataValidator()
+            validation_result = validator.run_full_validation()
+
+            passed = validation_result.get('passed', 0)
+            failed = validation_result.get('failed', 0)
+            warnings_count = validation_result.get('warnings', 0)
+
+            if failed > 0:
+                jlog('data_validation_warnings',
+                     passed=passed,
+                     failed=failed,
+                     warnings=warnings_count,
+                     alerts=validation_result.get('alerts', []),
+                     level='WARN')
+                print(f"  [WARN] Data validation: {passed} passed, {failed} failed, {warnings_count} warnings")
+
+                # Check for critical failures
+                critical_alerts = [a for a in validation_result.get('alerts', [])
+                                  if a.get('severity') == 'CRITICAL']
+                if critical_alerts:
+                    jlog('data_validation_critical', alerts=critical_alerts, level='ERROR')
+                    print(f"  [CRITICAL] {len(critical_alerts)} critical alerts detected!")
+                    for alert in critical_alerts[:3]:  # Show first 3
+                        print(f"    - {alert.get('message', 'Unknown issue')}")
+            else:
+                jlog('data_validation_passed', checks=passed)
+                print(f"  [OK] Data validation passed: {passed} checks, {warnings_count} warnings")
+
+    except ImportError:
+        print("  [SKIP] DataValidator not available")
+    except Exception as e:
+        jlog('data_validation_error', error=str(e), level='WARN')
+        print(f"  [WARN] Data validation error: {e}")
+        # Continue anyway - validation is advisory, not blocking
+
     # === MARKOV PRE-FILTER (optional) ===
     # Rank stocks by stationary pi(Up) and filter to top N before detailed scan
     markov_scores = {}  # Cache for later use in signal scoring
@@ -1388,17 +1478,23 @@ Examples:
         except Exception:
             spy_bars = None
 
-    # HMM Regime Detection (ML-enhanced)
-    if HMM_REGIME_AVAILABLE and args.ml and spy_bars is not None and not spy_bars.empty:
+    # === TIER 3.1: HMM Regime Detection (MANDATORY - Always Run) ===
+    # FIX (2026-01-08): HMM regime is now MANDATORY for all scans, not optional with --ml flag
+    # Regime data is critical for position sizing and signal quality assessment
+    if HMM_REGIME_AVAILABLE and spy_bars is not None and not spy_bars.empty:
         try:
             regime_detector = AdaptiveRegimeDetector(use_hmm=True)
             # Note: VIX data is optional, we'll pass None if not available
             hmm_regime_state = regime_detector.detect_regime(spy_bars, vix_data=None)
-            if args.verbose:
-                print(f"  HMM Regime: {hmm_regime_state.regime.value} (conf={hmm_regime_state.confidence:.2f})")
+            print(f"  HMM Regime: {hmm_regime_state.regime.value} (conf={hmm_regime_state.confidence:.2f})")
+            jlog('hmm_regime_detected',
+                 regime=hmm_regime_state.regime.value,
+                 confidence=hmm_regime_state.confidence,
+                 mandatory=True)
         except Exception as e:
+            jlog('hmm_regime_failed', error=str(e), fallback='SPY_SMA200')
             if args.verbose:
-                print(f"  HMM regime detection failed: {e}", file=sys.stderr)
+                print(f"  HMM regime detection failed (using SPY SMA200 fallback): {e}", file=sys.stderr)
 
     # Selection config overrides
     sel_cfg = get_selection_config()
@@ -1651,6 +1747,7 @@ Examples:
                 signals=signals,
                 market_data=combined,
                 spy_data=spy_bars,
+                vix_value=current_vix_level if current_vix_level > 0 else None,
             )
 
             if not approved_df.empty:
@@ -1690,11 +1787,22 @@ Examples:
         print("=" * 70)
 
         try:
+            # Create VIX DataFrame for enrichment pipeline
+            vix_df = None
+            if current_vix_level > 0:
+                vix_df = pd.DataFrame({
+                    'close': [current_vix_level],
+                    'vix': [current_vix_level],
+                })
+                if args.verbose:
+                    print(f"[UNIFIED PIPELINE] Passing VIX={current_vix_level:.2f} to enrichment")
+
             # Run the full enrichment pipeline
             enriched_signals, top2_theses = run_full_enrichment(
                 signals=signals,
                 price_data=combined,
                 spy_data=spy_bars,
+                vix_data=vix_df,
                 verbose=args.verbose,
             )
 
@@ -1719,10 +1827,37 @@ Examples:
 
                 # Get TOP 2 for trading
                 top2_df = enriched_df.head(2)
-                top2_path = Path(args.out_top2)
-                top2_path.parent.mkdir(parents=True, exist_ok=True)
-                top2_df.to_csv(top2_path, index=False)
-                print(f"[UNIFIED PIPELINE] Wrote TOP 2 for trading: {top2_path}")
+
+                # CRITICAL FIX (2026-01-08): Validate signals for fake/hardcoded data
+                # This catches placeholder values like VIX=20.0, conf_score=0.5 always
+                if FAKE_DATA_DETECTION_AVAILABLE and not top2_df.empty:
+                    try:
+                        alerts = validate_signals_before_trading(
+                            top2_df,
+                            halt_on_critical=True  # Will raise FakeDataError if critical
+                        )
+                        if alerts:
+                            print(f"[FAKE DATA WARNING] {len(alerts)} non-critical alerts detected")
+                            for alert in alerts:
+                                print(f"  - {alert.field}: {alert.description}")
+                    except FakeDataError as e:
+                        print(f"\n{'='*60}")
+                        print(f"🚨 TRADING HALTED: FAKE DATA DETECTED 🚨")
+                        print(f"{'='*60}")
+                        print(e.get_summary())
+                        print(f"\nFix the data issues before trading.")
+                        print(f"Top 2 signals NOT written to prevent bad trades.")
+                        jlog('scan_halted', reason='fake_data_detected', alerts=len(e.alerts))
+                        # Don't write the file - exit the unified pipeline section
+                        enriched_df = pd.DataFrame()  # Clear to prevent further processing
+                        top2_df = pd.DataFrame()
+
+                # Only write if we have valid (non-fake) data
+                if not top2_df.empty:
+                    top2_path = Path(args.out_top2)
+                    top2_path.parent.mkdir(parents=True, exist_ok=True)
+                    top2_df.to_csv(top2_path, index=False)
+                    print(f"[UNIFIED PIPELINE] Wrote TOP 2 for trading: {top2_path}")
 
             # Save trade theses as markdown
             if top2_theses:
@@ -1748,7 +1883,7 @@ Examples:
                 print(f"  Side: {s.side.upper()} | Entry: ${s.entry_price:.2f} | Stop: ${s.stop_loss:.2f}")
                 print(f"  Final Confidence: {s.final_conf_score:.2%} | Rank: #{s.final_rank}")
 
-                print(f"\n  CONFIDENCE BREAKDOWN:")
+                print("\n  CONFIDENCE BREAKDOWN:")
                 print(f"    ML Meta (XGB/LGBM): {s.ml_meta_conf:.2%}")
                 print(f"    LSTM Success Prob:  {s.lstm_success:.2%}")
                 print(f"    Ensemble Conf:      {s.ensemble_conf:.2%}")
@@ -1756,20 +1891,20 @@ Examples:
                 print(f"    Conviction Score:   {s.conviction_score}/100 ({s.conviction_tier})")
                 print(f"    Cognitive Approved: {'YES' if s.cognitive_approved else 'NO'} ({s.cognitive_confidence:.0%})")
 
-                print(f"\n  HISTORICAL PATTERN:")
+                print("\n  HISTORICAL PATTERN:")
                 print(f"    Consecutive Days:   {s.streak_length}")
                 print(f"    Historical Samples: {s.streak_samples}")
                 print(f"    Win Rate:           {s.streak_win_rate:.0%}")
                 print(f"    Avg Bounce:         {s.streak_avg_bounce:+.1%}")
                 print(f"    Auto-Pass Eligible: {'YES' if s.qualifies_auto_pass else 'NO'}")
 
-                print(f"\n  ALT DATA:")
+                print("\n  ALT DATA:")
                 print(f"    News Sentiment: {s.news_sentiment:+.2f} ({s.news_article_count} articles)")
                 print(f"    Insider Signal: {s.insider_signal.upper()}")
                 print(f"    Congress:       {s.congress_signal.upper()} ({s.congress_buys} buys / {s.congress_sells} sells)")
                 print(f"    Options Flow:   {s.options_flow_signal.upper()}")
 
-                print(f"\n  RISK ANALYSIS:")
+                print("\n  RISK ANALYSIS:")
                 print(f"    Kelly Optimal:  {s.kelly_optimal_pct:.1%}")
                 print(f"    VaR Contrib:    ${s.var_contribution:,.0f}")
                 print(f"    Correlation:    {s.correlation_with_portfolio:.2f}")
@@ -1991,6 +2126,83 @@ Examples:
                 if 'conf_score' not in out.columns:
                     out['conf_score'] = out.apply(base_conf_row, axis=1)
 
+                # === TIER 3.2: LSTM Confidence Scoring ===
+                # Enhance conf_score with LSTM model predictions when available
+                if LSTM_AVAILABLE and get_lstm_model is not None and not out.empty:
+                    try:
+                        lstm_model = get_lstm_model()
+                        if lstm_model is not None and lstm_model.model is not None:
+                            lstm_scores = []
+                            for _, row in out.iterrows():
+                                try:
+                                    # Build features for LSTM (simplified)
+                                    features = {
+                                        'score': float(row.get('score', 0)),
+                                        'entry_price': float(row.get('entry_price', 0)),
+                                        'stop_loss': float(row.get('stop_loss', 0)),
+                                        'take_profit': float(row.get('take_profit', 0)),
+                                    }
+                                    # LSTM predict returns confidence score
+                                    lstm_conf = lstm_model.predict_confidence(features)
+                                    lstm_scores.append(float(lstm_conf))
+                                except Exception:
+                                    lstm_scores.append(0.5)  # Default neutral
+
+                            out['lstm_confidence'] = lstm_scores
+
+                            # Blend LSTM confidence with base conf_score (80% base + 20% LSTM)
+                            out['conf_score'] = (
+                                0.8 * out['conf_score'].astype(float) +
+                                0.2 * out['lstm_confidence'].astype(float)
+                            )
+
+                            jlog('lstm_confidence_applied',
+                                 signals=len(out),
+                                 avg_lstm_conf=sum(lstm_scores)/len(lstm_scores) if lstm_scores else 0)
+
+                            if args.verbose:
+                                print(f"  LSTM Confidence: Applied to {len(out)} signals (avg={sum(lstm_scores)/len(lstm_scores):.2%})")
+                    except Exception as e:
+                        jlog('lstm_confidence_failed', error=str(e))
+                        if args.verbose:
+                            print(f"  LSTM Confidence: Failed ({e})")
+
+                # === TIER 3.3: Anomaly Detection Filter ===
+                # Filter out signals with high anomaly scores (> 0.9) as they may be unreliable
+                if ANOMALY_DETECTION_AVAILABLE and AnomalyDetector is not None and not out.empty:
+                    try:
+                        anomaly_filtered = []
+                        detector = AnomalyDetector()
+
+                        for idx, row in out.iterrows():
+                            try:
+                                sym = row['symbol']
+                                # Get historical data for this symbol
+                                sym_data = combined[combined['symbol'] == sym] if 'symbol' in combined.columns else pd.DataFrame()
+
+                                if not sym_data.empty and len(sym_data) >= 50:
+                                    # Calculate anomaly score for most recent bar
+                                    sym_result = detector.detect_all(sym_data)
+                                    latest_anomaly = sym_result['anomaly_combined'].iloc[-1] if 'anomaly_combined' in sym_result.columns else 0
+
+                                    if latest_anomaly > 0.9:
+                                        jlog('anomaly_filtered', symbol=sym, anomaly_score=latest_anomaly)
+                                        if args.verbose:
+                                            print(f"  ANOMALY FILTER: Removed {sym} (score={latest_anomaly:.2f})")
+                                        continue
+
+                                anomaly_filtered.append(row)
+                            except Exception:
+                                anomaly_filtered.append(row)
+
+                        if len(anomaly_filtered) < len(out):
+                            out = pd.DataFrame(anomaly_filtered)
+                            jlog('anomaly_filter_applied',
+                                 original=len(out) + (len(out) - len(anomaly_filtered)),
+                                 remaining=len(anomaly_filtered))
+                    except Exception as e:
+                        jlog('anomaly_filter_failed', error=str(e))
+
                 # Ensure Top-3 by filling from highest-confidence leftovers if requested
                 if args.ensure_top3 and len(out) < 3:
                     left = df.copy()
@@ -2098,6 +2310,10 @@ Examples:
                 print(tradeable[['strategy','symbol','side','entry_price','stop_loss','take_profit','conf_score']].to_string(index=False))
                 print(f"  Wrote: {tradeable_path}")
                 print("  PURPOSE: These are the ONLY 2 trades to execute. Best of the Top 5.")
+
+                # === FIX (2026-01-07): Initialize totd and approve_totd for LLM analysis ===
+                totd = tradeable  # Top trades as "Trade of the Day" set
+                approve_totd = len(tradeable) > 0  # Approve if we have tradeable signals
 
                 # === LLM NARRATIVE ANALYSIS ===
                 # Generate human-like reasoning for picks using Claude
@@ -2393,6 +2609,126 @@ Examples:
         # Ensure conf_score is numeric
         unified_signals['conf_score'] = pd.to_numeric(unified_signals['conf_score'], errors='coerce').fillna(0.5)
 
+        # === SEMANTIC RULES INTEGRATION (Fix 2 - 2026-01-07) ===
+        # Apply learned rules to adjust confidence scores before final ranking
+        try:
+            from cognitive.semantic_memory import get_semantic_memory
+            from core.structured_log import jlog
+
+            sm = get_semantic_memory()
+            rules_applied = 0
+            signals_modified = 0
+
+            # Get current regime if available
+            current_regime = 'unknown'
+            if hmm_regime_state is not None:
+                current_regime = hmm_regime_state.regime.value
+
+            # Get VIX level if available (from earlier in scan)
+            current_vix = vix_level if 'vix_level' in dir() else 0.0
+
+            for idx, row in unified_signals.iterrows():
+                context = {
+                    'symbol': row.get('symbol', ''),
+                    'strategy': row.get('strategy', 'dual_strategy'),
+                    'regime': current_regime,
+                    'vix': current_vix,
+                    'side': row.get('side', ''),
+                    'conf_score': float(row.get('conf_score', 0.5)),
+                }
+
+                applicable_rules = sm.get_applicable_rules(context, min_confidence=0.6)
+
+                if applicable_rules:
+                    original_conf = float(unified_signals.at[idx, 'conf_score'])
+                    for rule in applicable_rules:
+                        rules_applied += 1
+                        # Apply rule action
+                        if hasattr(rule, 'action_type') and hasattr(rule, 'action_value'):
+                            if rule.action_type == 'boost':
+                                unified_signals.at[idx, 'conf_score'] *= (1 + rule.action_value)
+                            elif rule.action_type == 'reduce':
+                                unified_signals.at[idx, 'conf_score'] *= (1 - rule.action_value)
+                            elif rule.action_type == 'block':
+                                unified_signals.at[idx, 'conf_score'] = 0.0
+
+                    if float(unified_signals.at[idx, 'conf_score']) != original_conf:
+                        signals_modified += 1
+
+            if rules_applied > 0:
+                jlog('semantic_rules_applied', rules_applied=rules_applied, signals_modified=signals_modified)
+                print(f"  [SEMANTIC] Applied {rules_applied} rules, modified {signals_modified} signals")
+
+        except ImportError:
+            pass  # Semantic memory not available
+        except Exception as e:
+            jlog('semantic_rules_error', error=str(e), level='WARN')
+            # Continue without semantic rules - not blocking
+
+        # === EPISODIC MEMORY: Learn from Similar Past Trades ===
+        # This closes the MNIST-style learning loop: past outcomes -> current decisions
+        try:
+            from cognitive.episodic_memory import EpisodicMemory, EpisodeOutcome
+            em = EpisodicMemory()  # Loads persisted episodes automatically in __init__
+
+            episodes_checked = 0
+            confidence_adjustments = 0
+
+            for idx, row in unified_signals.iterrows():
+                # Build context for similarity lookup
+                context = {
+                    'symbol': row.get('symbol', ''),
+                    'strategy': row.get('strategy', 'dual_strategy'),
+                    'side': row.get('side', 'long'),
+                }
+
+                # Find similar past trades
+                similar_episodes = em.find_similar(context, limit=10)
+                episodes_checked += 1
+
+                if similar_episodes and len(similar_episodes) >= 3:
+                    # Calculate win rate from similar trades
+                    wins = sum(1 for ep in similar_episodes if ep.outcome == EpisodeOutcome.WIN)
+                    total = len(similar_episodes)
+                    win_rate = wins / total
+
+                    original_conf = float(unified_signals.at[idx, 'conf_score'])
+
+                    # Adjust confidence based on historical performance
+                    if win_rate >= 0.70 and total >= 5:
+                        # Strong historical evidence - boost confidence
+                        unified_signals.at[idx, 'conf_score'] *= 1.10
+                        confidence_adjustments += 1
+                    elif win_rate >= 0.60:
+                        # Good historical evidence - small boost
+                        unified_signals.at[idx, 'conf_score'] *= 1.05
+                        confidence_adjustments += 1
+                    elif win_rate <= 0.35:
+                        # Poor historical evidence - reduce confidence
+                        unified_signals.at[idx, 'conf_score'] *= 0.85
+                        confidence_adjustments += 1
+
+                    # Log significant adjustments
+                    new_conf = float(unified_signals.at[idx, 'conf_score'])
+                    if abs(new_conf - original_conf) > 0.01:
+                        jlog('episodic_memory_adjustment',
+                             symbol=row.get('symbol'),
+                             similar_trades=total,
+                             win_rate=round(win_rate, 2),
+                             conf_change=round(new_conf - original_conf, 3))
+
+            if confidence_adjustments > 0:
+                jlog('episodic_memory_applied',
+                     episodes_checked=episodes_checked,
+                     adjustments=confidence_adjustments)
+                print(f"  [EPISODIC] Checked {episodes_checked} signals, adjusted {confidence_adjustments} based on past trades")
+
+        except ImportError:
+            pass  # Episodic memory not available
+        except Exception as e:
+            jlog('episodic_memory_error', error=str(e), level='WARN')
+            # Continue without episodic memory - not blocking
+
         # Sort by conf_score (descending) for unified ranking
         # STRICT RANKING: conf_score is the ONLY primary sort key
         # Ties broken by symbol (alphabetical) for determinism
@@ -2478,27 +2814,23 @@ Examples:
                 else:
                     print(f"  #{rank} [{asset}] {side.upper()} {symbol} @ ${price:.2f} (conf: {conf:.2f})")
 
-        # Write unified outputs
-        unified_path = ROOT / 'logs' / 'unified_signals.csv'
-        unified_path.parent.mkdir(parents=True, exist_ok=True)
-        unified_signals.to_csv(unified_path, index=False)
-
-        top5_path = ROOT / 'logs' / 'top5_unified.csv'
-        top5_unified.to_csv(top5_path, index=False)
-
-        top2_path = ROOT / 'logs' / 'top2_trade.csv'
-        top2_unified.to_csv(top2_path, index=False)
+        # NOTE: Unified outputs are already written by the enriched pipeline at lines 1810-1823
+        # DO NOT overwrite here - the enriched data has 100+ fields, unified_signals only has ~15
+        # The enriched files are:
+        #   - logs/unified_signals.csv (all enriched signals)
+        #   - logs/top5_unified.csv (top 5 enriched)
+        #   - logs/top2_trade.csv (top 2 enriched for execution)
 
         print(f"\n{'='*70}")
         print("OUTPUT FILES")
         print("="*70)
-        print(f"  All signals:  {unified_path}")
-        print(f"  Top 5 study:  {top5_path}")
-        print(f"  Top 2 trade:  {top2_path}")
+        print(f"  All signals:  {ROOT / 'logs' / 'unified_signals.csv'}")
+        print(f"  Top 5 study:  {ROOT / 'logs' / 'top5_unified.csv'}")
+        print(f"  Top 2 trade:  {ROOT / 'logs' / 'top2_trade.csv'}")
 
         # Final summary
         print(f"\n{'='*70}")
-        print("KOBE PIPELINE: 900 STOCKS + OPTIONS + CRYPTO → TOP 5 → TOP 2")
+        print("KOBE PIPELINE: 900 STOCKS + OPTIONS + CRYPTO -> TOP 5 -> TOP 2")
         print("="*70)
 
         # Show asset mix in top 2

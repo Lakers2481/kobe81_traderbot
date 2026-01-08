@@ -33,12 +33,21 @@ import json
 import logging
 import time
 import traceback
-from datetime import datetime, time as dtime
+import warnings
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
 from zoneinfo import ZoneInfo
 from enum import Enum
-import random
+
+# DEPRECATION WARNING (2026-01-08): Use autonomous.brain.AutonomousBrain instead
+warnings.warn(
+    "autonomous.master_brain.MasterBrain is DEPRECATED. "
+    "Use autonomous.brain.AutonomousBrain instead. "
+    "The canonical 24/7 brain is autonomous/brain.py, which integrates all components.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 logger = logging.getLogger(__name__)
 ET = ZoneInfo("America/New_York")
@@ -644,7 +653,7 @@ class MasterBrain:
                     logger.warning(f"  ⚠ Discovery has warnings: {validation.get('warnings')}")
 
                 if not validation.get("statistically_significant"):
-                    logger.warning(f"  ⚠ Not statistically significant (< 30 trades)")
+                    logger.warning("  ⚠ Not statistically significant (< 30 trades)")
 
                 logger.info("  ✓ Discovery backtest VALIDATED")
                 return {"status": "validated", "validation": validation}

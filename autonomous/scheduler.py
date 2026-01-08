@@ -7,8 +7,7 @@ Tasks are prioritized based on time, context, and importance.
 
 import json
 import logging
-import time
-import hashlib
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
@@ -20,8 +19,20 @@ from .awareness import (
     MarketPhase, WorkMode, MarketContext, ContextBuilder
 )
 
+# CRITICAL FIX (2026-01-08): Self-healing for autonomous recovery from errors
+try:
+    from .self_healer import get_self_healer, HealingResult
+    SELF_HEALING_AVAILABLE = True
+except ImportError:
+    SELF_HEALING_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 ET = ZoneInfo("America/New_York")
+
+# FIX (2026-01-07): Default task timeout in seconds
+# Tasks that run longer than this will be terminated
+DEFAULT_TASK_TIMEOUT = 30  # 30 seconds default
+MAX_TASK_TIMEOUT = 300     # 5 minutes max for long tasks
 
 
 class TaskPriority(Enum):
@@ -500,6 +511,20 @@ class AutonomousScheduler:
             ),
 
             # === SELF-IMPROVEMENT TASKS (Always getting smarter) ===
+
+            # CRITICAL FIX (2026-01-08): Wire Curiosity Engine for autonomous alpha discovery
+            Task(
+                id="run_curiosity_cycle",
+                name="Run Curiosity Cycle",
+                category=TaskCategory.DISCOVERY,
+                priority=TaskPriority.HIGH,
+                description="Generate hypotheses, test them, discover new trading edges",
+                handler="autonomous.handlers:run_curiosity_cycle",
+                valid_modes=[WorkMode.RESEARCH, WorkMode.DEEP_RESEARCH, WorkMode.OPTIMIZATION],
+                cooldown_minutes=240,  # Every 4 hours
+                recurring=True,
+            ),
+
             Task(
                 id="check_goals",
                 name="Check Goal Progress",
@@ -748,39 +773,114 @@ class AutonomousScheduler:
         return self.queue.get_next_task(context)
 
     def execute_task(self, task: Task) -> Dict[str, Any]:
-        """Execute a task."""
+        """Execute a task with retry logic and timeout protection."""
         logger.info(f"Executing task: {task.name}")
         task.status = TaskStatus.RUNNING
+
+        # FIX (2026-01-07): Add retry tracking with exponential backoff
+        max_retries = getattr(task, 'max_retries', 3)
+        retry_count = getattr(task, 'retry_count', 0)
+
+        # FIX (2026-01-07): Add timeout protection to prevent runaway tasks
+        task_timeout = getattr(task, 'timeout', DEFAULT_TASK_TIMEOUT)
+        task_timeout = min(task_timeout, MAX_TASK_TIMEOUT)  # Cap at max
 
         try:
             # Find handler
             if task.handler and task.handler in self._handlers:
                 handler = self._handlers[task.handler]
-                result = handler(**task.params)
+
+                # FIX (2026-01-07): Execute handler with timeout using ThreadPoolExecutor
+                with ThreadPoolExecutor(max_workers=1) as executor:
+                    future = executor.submit(handler, **task.params)
+                    try:
+                        result = future.result(timeout=task_timeout)
+                    except FuturesTimeoutError:
+                        raise TimeoutError(f"Task {task.name} timed out after {task_timeout}s")
             else:
                 # Default: just log
                 logger.info(f"Task {task.name} has no registered handler")
                 result = {"status": "no_handler", "task": task.name}
 
+            # Success - reset retry count
             task.status = TaskStatus.COMPLETED
             task.last_result = result
             task.last_error = None
+            task.retry_count = 0  # Reset on success
 
         except Exception as e:
-            logger.error(f"Task {task.name} failed: {e}")
-            task.status = TaskStatus.FAILED
+            # FIX (2026-01-07): Enhanced error handling with retry logic
+            # CRITICAL FIX (2026-01-08): Add self-healing for autonomous recovery
+            task.retry_count = retry_count + 1
             task.last_error = str(e)
-            result = {"status": "error", "error": str(e)}
+            logger.error(f"Task {task.name} failed (attempt {task.retry_count}/{max_retries}): {e}")
+
+            # Try self-healing first
+            healing_result = None
+            backoff_seconds = min(60 * (2 ** retry_count), 3600)  # Default backoff
+
+            if SELF_HEALING_AVAILABLE:
+                try:
+                    healer = get_self_healer()
+                    healing_result = healer.heal(e, context={
+                        'task_name': task.name,
+                        'retry_count': retry_count,
+                        'task_category': task.category.value if task.category else 'unknown',
+                    })
+
+                    if healing_result.healed:
+                        # Use healer's recommended delay
+                        backoff_seconds = max(healing_result.retry_delay_seconds, 5)
+                        logger.info(f"Self-healer: {healing_result.action_taken}")
+                    else:
+                        # Healer says this can't be auto-fixed
+                        logger.warning(f"Self-healer cannot fix: {healing_result.action_taken}")
+                except Exception as heal_err:
+                    logger.warning(f"Self-healing failed: {heal_err}")
+
+            if task.retry_count >= max_retries:
+                # Max retries exceeded - mark permanently failed
+                task.status = TaskStatus.FAILED
+                logger.critical(f"Task {task.name} PERMANENTLY FAILED after {max_retries} attempts")
+                self._send_failure_alert(task)
+                result = {
+                    "status": "permanently_failed",
+                    "error": str(e),
+                    "attempts": task.retry_count,
+                    "healing": healing_result.to_dict() if healing_result else None,
+                }
+            else:
+                # Schedule retry with backoff (healer-adjusted or default)
+                task.status = TaskStatus.PENDING
+                task.scheduled_time = datetime.now(ET) + timedelta(seconds=backoff_seconds)
+                logger.warning(f"Task {task.name} will retry in {backoff_seconds}s")
+                result = {
+                    "status": "retry_scheduled",
+                    "error": str(e),
+                    "retry_in_seconds": backoff_seconds,
+                    "healing": healing_result.to_dict() if healing_result else None,
+                }
 
         task.last_run = datetime.now(ET)
         task.run_count += 1
 
-        # Reset status for recurring tasks
-        if task.recurring:
+        # Reset status for recurring tasks (only if not in retry state)
+        if task.recurring and task.status == TaskStatus.COMPLETED:
             task.status = TaskStatus.PENDING
 
         self.queue.save_state()
         return result
+
+    def _send_failure_alert(self, task: Task) -> None:
+        """Send alert for permanently failed task."""
+        try:
+            from notifications.telegram_alerts import send_critical_alert
+            send_critical_alert(
+                f"SCHEDULER FAILURE: {task.name} failed {getattr(task, 'retry_count', 0)}x - {task.last_error}"
+            )
+        except Exception as e:
+            logger.error(f"Failed to send failure alert: {e}")
+            # Alert is best-effort, don't crash
 
     def run_one_cycle(self) -> Optional[Dict[str, Any]]:
         """Run one scheduling cycle."""

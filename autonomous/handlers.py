@@ -135,6 +135,94 @@ def discover_strategies(**kwargs) -> Dict[str, Any]:
     return engine.discover_strategies()
 
 
+def run_curiosity_cycle(**kwargs) -> Dict[str, Any]:
+    """
+    CRITICAL FIX (2026-01-08): Wire Curiosity Engine for autonomous alpha discovery.
+
+    The CuriosityEngine was fully implemented but NEVER CALLED by anything.
+    This handler wires it into the scheduler to run every 4 hours.
+
+    What it does:
+    1. Generates hypotheses from recent trade patterns
+    2. Tests pending hypotheses against historical data
+    3. Promotes validated hypotheses to trading edges
+    4. Creates semantic rules from discovered edges
+
+    This is the HEART of autonomous learning - the robot gets smarter over time.
+    """
+    logger.info("Running curiosity cycle for autonomous alpha discovery...")
+
+    try:
+        from cognitive.curiosity_engine import get_curiosity_engine
+
+        engine = get_curiosity_engine()
+
+        # Step 1: Generate new hypotheses from observations
+        observations = _get_current_observations()
+        new_hypotheses = engine.generate_hypotheses(observations=observations)
+        logger.info(f"Generated {len(new_hypotheses)} new hypotheses")
+
+        # Step 2: Test all pending hypotheses
+        test_results = engine.test_all_pending()
+        logger.info(f"Tested hypotheses: {test_results}")
+
+        # Step 3: Get validated edges (these auto-create semantic rules!)
+        edges = engine.get_validated_edges()
+
+        # Step 4: Get stats for logging
+        stats = engine.get_stats()
+
+        result = {
+            "status": "success",
+            "new_hypotheses": len(new_hypotheses),
+            "test_results": test_results,
+            "total_edges": len(edges),
+            "stats": stats,
+            "top_edges": [e.to_dict() for e in edges[:3]] if edges else [],
+        }
+
+        logger.info(
+            f"Curiosity cycle complete: {len(new_hypotheses)} new hypotheses, "
+            f"{test_results.get('validated', 0)} validated, {len(edges)} total edges"
+        )
+
+        return result
+
+    except Exception as e:
+        logger.error(f"Curiosity cycle failed: {e}")
+        return {
+            "status": "error",
+            "error": str(e),
+            "recovered": True,  # Never fails permanently
+        }
+
+
+def _get_current_observations() -> Dict[str, Any]:
+    """Get current market observations for hypothesis generation."""
+    observations = {}
+
+    try:
+        # Get VIX level
+        from core.vix_monitor import get_vix_monitor
+        vix_monitor = get_vix_monitor()
+        reading = vix_monitor.fetch_vix()
+        if reading and hasattr(reading, 'level'):
+            observations['vix'] = reading.level
+    except Exception:
+        observations['vix'] = 20.0  # Fallback
+
+    try:
+        # Get current regime
+        from ml_advanced.hmm_regime_detector import get_cached_regime
+        regime, conf = get_cached_regime()
+        observations['regime'] = regime
+        observations['regime_confidence'] = conf
+    except Exception:
+        observations['regime'] = 'unknown'
+
+    return observations
+
+
 def check_goals(**kwargs) -> Dict[str, Any]:
     """Check progress toward goals - ALWAYS works."""
     logger.info("Checking goals...")
@@ -165,12 +253,52 @@ def analyze_trades(**kwargs) -> Dict[str, Any]:
     - Online learning updates
     - Reflection for significant trades
     - Semantic rule extraction
+
+    FIX (2026-01-08): TIER 2.2 - Wire Reflection Engine for post-trade learning
     """
     logger.info("Analyzing trades with LearningHub integration...")
     from autonomous.learning import LearningEngine
 
     engine = LearningEngine()
     base_result = engine.analyze_trades()
+
+    # === TIER 2.2: Wire Reflection Engine ===
+    # FIX (2026-01-08): Explicit reflection after trade analysis
+    try:
+        from cognitive.reflection_engine import ReflectionEngine
+        reflection = ReflectionEngine()
+
+        trades_data = base_result.get("trades_data", [])
+        reflection_results = []
+
+        for trade_data in trades_data[-10:]:  # Reflect on last 10 trades
+            try:
+                outcome = {
+                    'symbol': trade_data.get('symbol', 'UNKNOWN'),
+                    'pnl': trade_data.get('pnl', 0),
+                    'pnl_pct': trade_data.get('pnl_pct', 0),
+                    'entry_reason': trade_data.get('pattern_type', trade_data.get('reason', 'unknown')),
+                    'exit_reason': trade_data.get('exit_reason', 'unknown'),
+                    'regime': trade_data.get('regime', 'unknown'),
+                    'won': trade_data.get('pnl', 0) > 0,
+                }
+                reflection_result = reflection.reflect_on_outcome(outcome)
+                reflection_results.append(reflection_result)
+            except Exception as e:
+                logger.warning(f"Reflection failed for trade: {e}")
+
+        base_result["reflection_engine"] = {
+            "trades_reflected": len(reflection_results),
+            "summary": reflection.get_summary() if hasattr(reflection, 'get_summary') else "N/A"
+        }
+        logger.info(f"Reflection Engine processed {len(reflection_results)} trades")
+        from core.structured_log import jlog
+        jlog('reflection_engine_processed', trades=len(reflection_results))
+    except ImportError:
+        logger.debug("ReflectionEngine not available, skipping reflection")
+    except Exception as e:
+        logger.warning(f"Reflection Engine error: {e}")
+        base_result["reflection_engine_error"] = str(e)
 
     # Wire LearningHub integration
     try:

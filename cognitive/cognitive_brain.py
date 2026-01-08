@@ -42,10 +42,21 @@ Usage:
 """
 
 import logging
+import warnings
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 from enum import Enum
+
+# DEPRECATION WARNING (2026-01-08): This brain is being phased out
+# The canonical brain is now autonomous.brain.AutonomousBrain
+warnings.warn(
+    "cognitive.cognitive_brain.CognitiveBrain is DEPRECATED. "
+    "Use autonomous.brain.AutonomousBrain instead for 24/7 autonomous operation. "
+    "This module will continue to work but is no longer the primary brain.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 logger = logging.getLogger(__name__)
 
@@ -254,6 +265,32 @@ class CognitiveBrain:
             from cognitive.dynamic_policy_generator import get_policy_generator
             self._policy_generator = get_policy_generator()
         return self._policy_generator
+
+    # === New Gap-Fill Components (2026-01-07) ===
+
+    @property
+    def tree_of_thoughts(self):
+        """Lazy-load Tree-of-Thoughts reasoner for multi-path deliberation."""
+        if not hasattr(self, '_tree_of_thoughts') or self._tree_of_thoughts is None:
+            from cognitive.tree_of_thoughts import get_tot_reasoner
+            self._tree_of_thoughts = get_tot_reasoner()
+        return self._tree_of_thoughts
+
+    @property
+    def self_consistency(self):
+        """Lazy-load Self-Consistency decoder for robust reasoning."""
+        if not hasattr(self, '_self_consistency') or self._self_consistency is None:
+            from cognitive.self_consistency import get_self_consistency
+            self._self_consistency = get_self_consistency()
+        return self._self_consistency
+
+    @property
+    def contradiction_resolver(self):
+        """Lazy-load Contradiction Resolver for conflicting signals."""
+        if not hasattr(self, '_contradiction_resolver') or self._contradiction_resolver is None:
+            from cognitive.contradiction_resolver import get_resolver
+            self._contradiction_resolver = get_resolver()
+        return self._contradiction_resolver
 
     def deliberate(
         self,

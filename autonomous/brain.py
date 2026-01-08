@@ -11,20 +11,42 @@ This is the central orchestrator that:
 import json
 import logging
 import signal
-import sys
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Optional, Dict, Any
 from zoneinfo import ZoneInfo
 
-from .awareness import ContextBuilder, MarketContext, WorkMode, MarketPhase
-from .scheduler import AutonomousScheduler, Task, TaskPriority, TaskCategory
+from .awareness import ContextBuilder, MarketContext, WorkMode
+from .scheduler import AutonomousScheduler
 from .research import ResearchEngine
 from .learning import LearningEngine
 from .handlers import register_all_handlers
 
 from core.structured_log import jlog
+
+# === TIER 2.1: Connect Cognitive Brain to Autonomous Brain ===
+# FIX (2026-01-08): Wire the cognitive reasoning system
+try:
+    from cognitive.cognitive_brain import get_cognitive_brain
+    COGNITIVE_BRAIN_AVAILABLE = True
+except ImportError:
+    COGNITIVE_BRAIN_AVAILABLE = False
+    get_cognitive_brain = None
+
+try:
+    from cognitive.curiosity_engine import CuriosityEngine
+    CURIOSITY_ENGINE_AVAILABLE = True
+except ImportError:
+    CURIOSITY_ENGINE_AVAILABLE = False
+    CuriosityEngine = None
+
+try:
+    from cognitive.knowledge_boundary import KnowledgeBoundary
+    KNOWLEDGE_BOUNDARY_AVAILABLE = True
+except ImportError:
+    KNOWLEDGE_BOUNDARY_AVAILABLE = False
+    KnowledgeBoundary = None
 
 logger = logging.getLogger(__name__)
 ET = ZoneInfo("America/New_York")
@@ -87,6 +109,35 @@ class AutonomousBrain:
         self.scheduler = AutonomousScheduler(state_dir)
         self.research = ResearchEngine(state_dir / "research")
         self.learning = LearningEngine(state_dir / "learning")
+
+        # === TIER 2.1: Initialize Cognitive Components ===
+        # FIX (2026-01-08): Wire cognitive brain for reasoning
+        self.cognitive = None
+        self.curiosity = None
+        self.boundaries = None
+
+        if COGNITIVE_BRAIN_AVAILABLE and get_cognitive_brain is not None:
+            try:
+                self.cognitive = get_cognitive_brain()
+                logger.info("Cognitive Brain connected")
+                jlog('cognitive_brain_connected', status='ok')
+            except Exception as e:
+                logger.warning(f"Could not initialize Cognitive Brain: {e}")
+                jlog('cognitive_brain_error', error=str(e), level='WARN')
+
+        if CURIOSITY_ENGINE_AVAILABLE and CuriosityEngine is not None:
+            try:
+                self.curiosity = CuriosityEngine()
+                logger.info("Curiosity Engine connected")
+            except Exception as e:
+                logger.warning(f"Could not initialize Curiosity Engine: {e}")
+
+        if KNOWLEDGE_BOUNDARY_AVAILABLE and KnowledgeBoundary is not None:
+            try:
+                self.boundaries = KnowledgeBoundary()
+                logger.info("Knowledge Boundary connected")
+            except Exception as e:
+                logger.warning(f"Could not initialize Knowledge Boundary: {e}")
 
         # Register all task handlers
         register_all_handlers(self.scheduler)
@@ -216,6 +267,36 @@ class AutonomousBrain:
         """
         discoveries = []
 
+        # CRITICAL FIX (2026-01-08): Check curiosity engine for validated edges
+        if self.curiosity is not None:
+            try:
+                validated_edges = self.curiosity.get_validated_edges()
+                for edge in validated_edges:
+                    if not getattr(edge, "_alerted", False):
+                        if edge.confidence > 0.7 and edge.expected_win_rate > 0.55:
+                            discovery = Discovery(
+                                discovery_type="curiosity_edge",
+                                description=edge.description,
+                                source="curiosity_engine",
+                                improvement=edge.expected_win_rate - 0.50,
+                                confidence=edge.confidence,
+                                data={
+                                    "edge_id": edge.edge_id,
+                                    "condition": edge.condition,
+                                    "win_rate": edge.expected_win_rate,
+                                    "profit_factor": edge.expected_profit_factor,
+                                    "sample_size": edge.sample_size,
+                                },
+                            )
+                            discoveries.append(discovery)
+                            edge._alerted = True
+                            jlog('curiosity_edge_discovered',
+                                 edge_id=edge.edge_id,
+                                 win_rate=edge.expected_win_rate,
+                                 condition=edge.condition[:100])
+            except Exception as e:
+                logger.debug(f"Curiosity edge check skipped: {e}")
+
         # Check research engine for new high-value discoveries
         for disc in self.research.discoveries:
             if disc.confidence > 0.6 and disc.improvement > 0.05:
@@ -285,6 +366,18 @@ class AutonomousBrain:
 
         Returns information about what Kobe is thinking/doing.
         """
+        # CRITICAL FIX (2026-01-08): Check kill switch FIRST before any action
+        kill_switch_file = Path("state/KILL_SWITCH")
+        if kill_switch_file.exists():
+            logger.warning("KILL SWITCH ACTIVE - Brain refusing to think")
+            jlog('kill_switch_active', action='brain_halted', cycle=self.cycles_completed)
+            return {
+                "timestamp": datetime.now(ET).isoformat(),
+                "status": "HALTED",
+                "reason": "KILL_SWITCH active",
+                "message": "Brain is halted. Remove state/KILL_SWITCH to resume.",
+            }
+
         context = self.get_context()
 
         # Log current awareness
@@ -308,6 +401,26 @@ class AutonomousBrain:
         if task:
             result["task"] = task.name
             logger.info(f"Executing: {task.name}")
+
+            # === TIER 2.1: Cognitive Deliberation for High-Priority Tasks ===
+            # FIX (2026-01-08): Use cognitive reasoning for important decisions
+            if self.cognitive is not None and hasattr(task, 'priority') and task.priority >= 8:
+                try:
+                    # Build context for cognitive deliberation
+                    task_context = {
+                        'task_name': task.name,
+                        'priority': task.priority,
+                        'phase': context.phase.value,
+                        'work_mode': context.work_mode.value,
+                        'market_open': context.is_market_open,
+                    }
+                    reasoning = self.cognitive.deliberate(task_context)
+                    result["cognitive_reasoning"] = reasoning
+                    jlog('cognitive_deliberation', task=task.name, priority=task.priority, reasoning=str(reasoning)[:200])
+                except Exception as e:
+                    logger.warning(f"Cognitive deliberation failed: {e}")
+                    jlog('cognitive_deliberation_error', task=task.name, error=str(e), level='WARN')
+
             task_result = self.scheduler.execute_task(task)
             result["task_result"] = task_result
             self.last_task_time = datetime.now(ET)

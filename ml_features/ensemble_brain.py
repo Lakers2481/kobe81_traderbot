@@ -26,6 +26,18 @@ import pickle
 import json
 import logging
 import warnings
+
+# DEPRECATION WARNING (2026-01-08): This brain is supplementary
+# The canonical brain is now autonomous.brain.AutonomousBrain
+# This module provides ML ensemble predictions used BY the main brain
+warnings.warn(
+    "ml_features.ensemble_brain.EnsembleBrain is DEPRECATED as a standalone brain. "
+    "Use autonomous.brain.AutonomousBrain instead, which integrates ensemble predictions. "
+    "This module will continue to provide ML predictions but is not the primary decision maker.",
+    DeprecationWarning,
+    stacklevel=2
+)
+
 warnings.filterwarnings('ignore')
 
 logger = logging.getLogger(__name__)

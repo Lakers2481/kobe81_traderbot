@@ -18,10 +18,20 @@ import logging
 import random
 import time
 import traceback
-from datetime import datetime, timedelta
+import warnings
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from zoneinfo import ZoneInfo
+
+# DEPRECATION WARNING (2026-01-08): Use autonomous.brain.AutonomousBrain instead
+warnings.warn(
+    "autonomous.comprehensive_brain.ComprehensiveBrain is DEPRECATED. "
+    "Use autonomous.brain.AutonomousBrain instead. "
+    "The canonical 24/7 brain is autonomous/brain.py.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 logger = logging.getLogger(__name__)
 ET = ZoneInfo("America/New_York")

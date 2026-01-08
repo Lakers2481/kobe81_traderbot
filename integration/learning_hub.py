@@ -33,12 +33,11 @@ Author: Kobe Trading System
 Created: 2026-01-04
 """
 
-import asyncio
-import logging
+import threading
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Callable
+from typing import Any, Dict, Optional, Callable
 import json
 import numpy as np
 
@@ -168,8 +167,20 @@ class LearningHub:
         self.drift_alerts_sent = 0
         self.started_at = datetime.now()
 
+        # FIX (2026-01-07): Fix 1 - Track pending entries for matching with exits
+        # FIX (2026-01-07): Fix 1a - Thread safety for concurrent access
+        self._entries_lock = threading.RLock()
+        self._pending_entries: Dict[str, Dict[str, Any]] = {}
+
+        # FIX (2026-01-07): Fix 1b - Persistence path for crash recovery
+        self._pending_entries_file = Path("state/integration/pending_entries.json")
+
         # Ensure state directory exists
         self.STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        self._pending_entries_file.parent.mkdir(parents=True, exist_ok=True)
+
+        # Load any persisted pending entries from previous session
+        self._load_pending_entries()
 
         logger.info(
             f"LearningHub initialized: reflection_threshold={reflection_threshold_pct}, "
@@ -212,6 +223,168 @@ class LearningHub:
                 auto_update=True
             )
         return self._online_learning
+
+    # --- Entry Recording (Fix 1 - 2026-01-07) ---
+
+    def record_trade_entry(self, entry_data: Dict[str, Any]) -> None:
+        """
+        Record a trade entry for later matching with exit.
+
+        FIX (2026-01-07): Fix 1 - Wire trade outcomes to Learning Hub.
+        This method is called when a trade fills to record entry data.
+        When the position closes, the entry data is matched with exit data
+        to create a complete TradeOutcomeEvent for learning.
+
+        FIX (2026-01-07): Fix 1a - Thread-safe with RLock
+        FIX (2026-01-07): Fix 1b - Persisted to disk for crash recovery
+
+        Args:
+            entry_data: Dict containing:
+                - symbol: Stock symbol
+                - side: 'long' or 'short'
+                - entry_price: Fill price
+                - shares: Number of shares
+                - strategy: Strategy name
+                - trade_id: Unique trade identifier
+                - entry_time: ISO timestamp
+                - stop_loss: Optional stop loss price
+                - take_profit: Optional take profit price
+        """
+        symbol = entry_data.get('symbol')
+        if not symbol:
+            logger.warning("record_trade_entry called without symbol")
+            return
+
+        # Use symbol|side as key to handle multiple positions in same symbol
+        side = entry_data.get('side', 'long')
+        key = f"{symbol}|{side}"
+
+        with self._entries_lock:
+            self._pending_entries[key] = entry_data
+            self._persist_pending_entries()
+
+        logger.info(
+            f"Recorded trade entry: {symbol} {side} "
+            f"{entry_data.get('shares')} @ ${entry_data.get('entry_price', 0):.2f}"
+        )
+
+    def get_pending_entry(self, symbol: str, side: str = 'long') -> Optional[Dict[str, Any]]:
+        """Get pending entry data for a symbol, if any."""
+        key = f"{symbol}|{side}"
+        with self._entries_lock:
+            return self._pending_entries.get(key)
+
+    def clear_pending_entry(self, symbol: str, side: str = 'long') -> None:
+        """Clear pending entry after it's been processed."""
+        key = f"{symbol}|{side}"
+        with self._entries_lock:
+            if key in self._pending_entries:
+                del self._pending_entries[key]
+                self._persist_pending_entries()
+
+    def _persist_pending_entries(self) -> None:
+        """Persist pending entries to disk for crash recovery."""
+        try:
+            with open(self._pending_entries_file, 'w') as f:
+                json.dump(self._pending_entries, f, indent=2)
+        except Exception as e:
+            logger.error(f"Failed to persist pending entries: {e}")
+
+    def _load_pending_entries(self) -> None:
+        """Load pending entries from disk on startup."""
+        try:
+            if self._pending_entries_file.exists():
+                with open(self._pending_entries_file, 'r') as f:
+                    self._pending_entries = json.load(f)
+                if self._pending_entries:
+                    logger.info(f"Loaded {len(self._pending_entries)} pending entries from previous session")
+        except Exception as e:
+            logger.warning(f"Failed to load pending entries: {e}")
+            self._pending_entries = {}
+
+    async def record_exit_and_learn(
+        self,
+        symbol: str,
+        exit_price: float,
+        exit_reason: str,
+        side: str = 'long',
+        exit_time: Optional[datetime] = None
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Convenience method to record a trade exit and trigger learning.
+
+        FIX (2026-01-07): Fix 1c - Single entry point for ALL exit paths.
+        Call this from ANY exit path (time-stop, stop-loss, take-profit, manual, external).
+
+        Args:
+            symbol: Stock symbol
+            exit_price: Price at which position was closed
+            exit_reason: One of 'time_stop', 'stop_loss', 'take_profit', 'manual', 'external'
+            side: 'long' or 'short' (default 'long')
+            exit_time: Optional datetime, defaults to now
+
+        Returns:
+            Processing results dict, or None if no pending entry found
+        """
+        entry = self.get_pending_entry(symbol, side)
+        if not entry:
+            logger.warning(f"record_exit_and_learn: No pending entry for {symbol}|{side}")
+            return None
+
+        exit_time = exit_time or datetime.now()
+        entry_price = entry.get('entry_price', 0)
+        shares = entry.get('shares', 0)
+
+        # Calculate P&L
+        if side == 'long':
+            pnl = (exit_price - entry_price) * shares
+            pnl_pct = (exit_price - entry_price) / entry_price if entry_price > 0 else 0
+        else:
+            pnl = (entry_price - exit_price) * shares
+            pnl_pct = (entry_price - exit_price) / entry_price if entry_price > 0 else 0
+
+        # Parse entry time
+        entry_time_str = entry.get('entry_time')
+        if entry_time_str:
+            try:
+                entry_time = datetime.fromisoformat(entry_time_str)
+            except (ValueError, TypeError):
+                entry_time = datetime.now()
+        else:
+            entry_time = datetime.now()
+
+        # Create TradeOutcomeEvent
+        outcome = TradeOutcomeEvent(
+            symbol=symbol,
+            side=side,
+            entry_price=entry_price,
+            exit_price=exit_price,
+            shares=shares,
+            entry_time=entry_time,
+            exit_time=exit_time,
+            pnl=pnl,
+            pnl_pct=pnl_pct,
+            won=pnl > 0,
+            signal_score=entry.get('signal_score', 0.0),
+            pattern_type=entry.get('strategy', 'dual_strategy'),
+            regime=entry.get('regime', 'unknown'),
+            exit_reason=exit_reason,
+            trade_id=entry.get('trade_id', ''),
+            metadata=entry.get('metadata', {})
+        )
+
+        # Process through learning systems
+        result = await self.process_trade_outcome(outcome)
+
+        # Clear the pending entry
+        self.clear_pending_entry(symbol, side)
+
+        logger.info(
+            f"Exit recorded and learning triggered: {symbol} {side} "
+            f"exit_reason={exit_reason} pnl=${pnl:.2f} ({pnl_pct:.2%})"
+        )
+
+        return result
 
     # --- Main Integration Method ---
 
@@ -299,6 +472,17 @@ class LearningHub:
             except Exception as e:
                 logger.error(f"Failed to check concept drift: {e}")
                 results['errors'].append(f"concept_drift: {e}")
+
+        # Step 7: CRITICAL FIX (2026-01-08) - Close the learning feedback loop
+        # Update semantic memory rules that were applied for this trade
+        try:
+            rules_updated = self._update_rule_outcomes(trade)
+            results['rules_updated'] = rules_updated
+            if rules_updated > 0:
+                results['steps_completed'].append('rule_feedback_loop')
+        except Exception as e:
+            logger.error(f"Failed to update rule outcomes: {e}")
+            results['errors'].append(f"rule_feedback_loop: {e}")
 
         self.trades_processed += 1
 
@@ -475,10 +659,27 @@ class LearningHub:
         buffer_size = len(self.online_learning.replay_buffer)
         if buffer_size >= self.min_trades_for_model_update:
             logger.info(f"Model update triggered (buffer size: {buffer_size})")
-            # The actual model update would be triggered here
-            # For now, we just mark it as triggered
-            self.online_learning.last_update = datetime.now()
-            return True
+
+            # FIX (2026-01-07): Actually perform model retraining
+            try:
+                # Trigger incremental update with batch size
+                batch_size = min(buffer_size, 100)  # Max 100 samples per batch
+                result = self.online_learning.trigger_incremental_update(batch_size)
+
+                if result.get("status") == "completed":
+                    logger.info(
+                        f"Model retraining complete: {result.get('samples_trained', 0)} samples, "
+                        f"WR={result.get('batch_win_rate', 0):.1%}"
+                    )
+                    return True
+                else:
+                    logger.warning(f"Model retraining skipped: {result.get('reason', 'unknown')}")
+                    return False
+
+            except Exception as e:
+                logger.error(f"Model retraining failed: {e}")
+                # Don't crash - learning is advisory, not critical
+                return False
 
         return False
 
@@ -505,6 +706,90 @@ class LearningHub:
             return True
 
         return False
+
+    def _update_rule_outcomes(self, trade: TradeOutcomeEvent) -> int:
+        """
+        CRITICAL FIX (2026-01-08): Close the learning feedback loop.
+
+        Updates semantic memory rules that were applied when this trade was entered.
+        This is the KEY missing piece - rules were being created but never updated
+        with their outcomes, so times_applied was always 0.
+
+        Args:
+            trade: The completed trade outcome
+
+        Returns:
+            Number of rules updated
+        """
+        rules_updated = 0
+
+        # Get rules that were applied from trade metadata
+        rules_applied = trade.metadata.get('rules_applied', [])
+
+        # Also try to find matching rules by pattern type and regime
+        # This catches rules even if they weren't explicitly tracked
+        if not rules_applied:
+            # Find rules that match this trade's context
+            matching_rules = self._find_matching_rules(trade)
+            rules_applied = [r.rule_id for r in matching_rules]
+
+        # Update each rule with the trade outcome
+        for rule_id in rules_applied:
+            try:
+                self.semantic_memory.record_rule_outcome(
+                    rule_id=rule_id,
+                    successful=trade.won
+                )
+                rules_updated += 1
+                logger.debug(f"Updated rule outcome: {rule_id} -> won={trade.won}")
+            except Exception as e:
+                logger.warning(f"Failed to update rule {rule_id}: {e}")
+
+        if rules_updated > 0:
+            logger.info(
+                f"Feedback loop closed: updated {rules_updated} rules "
+                f"for {trade.symbol} (won={trade.won})"
+            )
+
+        return rules_updated
+
+    def _find_matching_rules(self, trade: TradeOutcomeEvent) -> list:
+        """
+        Find semantic rules that match the trade's context.
+
+        This allows feedback even for trades where rules weren't explicitly tracked.
+        """
+        matching = []
+
+        try:
+            # Build context for rule matching
+            context = {
+                'pattern_type': trade.pattern_type,
+                'regime': trade.regime,
+                'symbol': trade.symbol,
+                'side': trade.side,
+            }
+
+            # Get all active rules and check which ones match
+            all_rules = self.semantic_memory.get_all_rules()
+            for rule in all_rules:
+                if not rule.is_active:
+                    continue
+
+                # Simple condition matching
+                condition_lower = rule.condition.lower()
+
+                # Check if rule condition matches trade context
+                if trade.pattern_type and trade.pattern_type.lower() in condition_lower:
+                    matching.append(rule)
+                elif trade.regime and trade.regime.lower() in condition_lower:
+                    if not matching or rule not in matching:  # Avoid duplicates
+                        matching.append(rule)
+
+        except Exception as e:
+            logger.warning(f"Error finding matching rules: {e}")
+
+        return matching[:5]  # Limit to 5 most relevant rules
 
     # --- State Management ---
 
