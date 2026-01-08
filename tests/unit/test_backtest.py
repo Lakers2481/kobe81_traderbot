@@ -2,9 +2,7 @@
 Unit tests for backtest engine.
 """
 
-import pytest
 import pandas as pd
-import numpy as np
 from pathlib import Path
 import sys
 
@@ -27,7 +25,7 @@ class TestBacktester:
         from backtest.engine import BacktestConfig
         cfg = BacktestConfig(initial_cash=100000)
         assert cfg.initial_cash == 100000
-        assert cfg.slippage_bps == 5.0  # default
+        assert cfg.slippage_bps == 10.0  # default (aligned with live IOC LIMIT)
 
     def test_backtester_initialization(self):
         """Test Backtester initialization."""
