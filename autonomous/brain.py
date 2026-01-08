@@ -404,19 +404,21 @@ class AutonomousBrain:
 
             # === TIER 2.1: Cognitive Deliberation for High-Priority Tasks ===
             # FIX (2026-01-08): Use cognitive reasoning for important decisions
-            if self.cognitive is not None and hasattr(task, 'priority') and task.priority >= 8:
+            # TaskPriority: CRITICAL=1, HIGH=2, NORMAL=3, LOW=4, BACKGROUND=5 (lower = higher priority)
+            task_priority_value = task.priority.value if hasattr(task.priority, 'value') else task.priority
+            if self.cognitive is not None and hasattr(task, 'priority') and task_priority_value <= 2:
                 try:
                     # Build context for cognitive deliberation
                     task_context = {
                         'task_name': task.name,
-                        'priority': task.priority,
+                        'priority': task_priority_value,
                         'phase': context.phase.value,
                         'work_mode': context.work_mode.value,
                         'market_open': context.is_market_open,
                     }
                     reasoning = self.cognitive.deliberate(task_context)
                     result["cognitive_reasoning"] = reasoning
-                    jlog('cognitive_deliberation', task=task.name, priority=task.priority, reasoning=str(reasoning)[:200])
+                    jlog('cognitive_deliberation', task=task.name, priority=task_priority_value, reasoning=str(reasoning)[:200])
                 except Exception as e:
                     logger.warning(f"Cognitive deliberation failed: {e}")
                     jlog('cognitive_deliberation_error', task=task.name, error=str(e), level='WARN')
