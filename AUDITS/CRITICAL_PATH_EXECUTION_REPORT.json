@@ -1,0 +1,59 @@
+{
+  "timestamp": "2026-01-09T10:51:16.410599",
+  "verdict": "PASS",
+  "confidence_level": "HIGH",
+  "total_paths": 6,
+  "passed": 6,
+  "failed": 0,
+  "avg_execution_time_ms": 890.6079530715942,
+  "tests": [
+    {
+      "name": "Data Pipeline",
+      "description": "Load universe -> fetch data -> cache -> return DataFrame",
+      "passed": true,
+      "execution_time_ms": 1798.4418869018555,
+      "notes": "[OK] Loaded 5 symbols, fetched 21 bars for TSLA",
+      "error": null
+    },
+    {
+      "name": "Scanner Pipeline",
+      "description": "Load strategy -> scan universe -> generate signals -> filter by quality gates",
+      "passed": true,
+      "execution_time_ms": 1223.4742641448975,
+      "notes": "[OK] Scanned 62 bars for AAPL, generated 0 signals",
+      "error": null
+    },
+    {
+      "name": "Backtest Pipeline",
+      "description": "Load data -> run backtest -> generate equity curve -> calculate metrics",
+      "passed": true,
+      "execution_time_ms": 1915.1973724365234,
+      "notes": "[OK] Backtest engine created, scanner loaded, 126 bars ready",
+      "error": null
+    },
+    {
+      "name": "Execution Pipeline",
+      "description": "Signal -> policy gate -> position sizing -> broker submission -> idempotency check",
+      "passed": true,
+      "execution_time_ms": 156.86345100402832,
+      "notes": "[OK] Policy gate passed, sized 133 shares ($19950.00), idempotency verified",
+      "error": null
+    },
+    {
+      "name": "Risk Pipeline",
+      "description": "Check kill switch -> check kill zone -> check exposure limits -> approve/reject",
+      "passed": true,
+      "execution_time_ms": 0.0,
+      "notes": "[OK] Kill switch: inactive, Kill zone: Lunch Chop (11:30-14:30): Low volume, avoid new entries, Policy: ok",
+      "error": null
+    },
+    {
+      "name": "Recovery Pipeline",
+      "description": "Crash simulation -> state restore -> position reconciliation",
+      "passed": true,
+      "execution_time_ms": 249.67074394226074,
+      "notes": "[OK] State recovered successfully after crash, idempotency preserved",
+      "error": null
+    }
+  ]
+}
