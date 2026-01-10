@@ -3,11 +3,9 @@ Tests for core/earnings_filter.py - Earnings proximity filtering.
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta
-import pytest
-import json
+from datetime import datetime
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -33,27 +31,25 @@ class TestFetchEarningsDates:
         """Clear cache after each test."""
         clear_cache()
 
-    def test_returns_empty_without_api_key_and_yfinance(self):
-        """Returns empty list when no API key is set and yfinance fails.
+    def test_returns_empty_without_api_key_no_fallback(self):
+        """Returns empty list when no API key is set.
 
-        Note: FIX (2026-01-04) added yfinance fallback, so we need to mock both.
+        FIX (2026-01-06): yfinance fallback removed entirely. When Polygon
+        API key is missing, returns empty (no earnings filtering applied).
         """
         with patch.dict('os.environ', {'POLYGON_API_KEY': ''}, clear=True):
-            # Mock yfinance to fail (simulates yfinance not installed or failing)
-            with patch('core.earnings_filter._fetch_from_yfinance', return_value=[]):
-                result = fetch_earnings_dates('AAPL')
-                assert result == []
+            result = fetch_earnings_dates('AAPL')
+            assert result == []
 
-    def test_falls_back_to_yfinance_without_api_key(self):
-        """Falls back to yfinance when no Polygon API key is set.
+    def test_returns_empty_without_api_key(self):
+        """Returns empty when no Polygon API key is set.
 
-        FIX (2026-01-04): Added yfinance fallback for users without Polygon API key.
+        FIX (2026-01-06): yfinance fallback removed for speed/reliability.
+        Now returns empty when Polygon is unavailable (no earnings filtering).
         """
-        mock_dates = [datetime(2024, 1, 15)]
         with patch.dict('os.environ', {'POLYGON_API_KEY': ''}, clear=True):
-            with patch('core.earnings_filter._fetch_from_yfinance', return_value=mock_dates):
-                result = fetch_earnings_dates('AAPL', force_refresh=True)
-                assert result == mock_dates
+            result = fetch_earnings_dates('AAPL', force_refresh=True)
+            assert result == []
 
     def test_uses_memory_cache(self):
         """Uses memory cache for repeated calls."""

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional, Any
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -26,8 +26,9 @@ class BacktestConfig:
     start_date: Optional[str] = None
     end_date: Optional[str] = None
     initial_cash: float = 100_000.0
-    slippage_bps: float = 5.0  # 5 bps default
+    slippage_bps: float = 10.0  # FIX (2026-01-08): Aligned with live IOC LIMIT (best_ask × 1.001)
     commissions: Optional[CommissionConfig] = None
+    apply_kill_zones: bool = True  # FIX (2026-01-08): Match live trading kill zone restrictions
 
 @dataclass
 class Trade:
@@ -101,6 +102,43 @@ class Backtester:
 
         return fee
 
+    def _filter_signals_by_kill_zone(self, signals: pd.DataFrame) -> pd.DataFrame:
+        """
+        Filter signals to only those in valid kill zones for parity with live trading.
+
+        Valid windows (ET):
+        - Primary: 10:00-11:30 (London close)
+        - Power Hour: 14:30-15:30
+
+        Blocked windows:
+        - Opening range: 9:30-10:00
+        - Lunch chop: 11:30-14:30
+        - Close: 15:30-16:00
+
+        Args:
+            signals: DataFrame with 'timestamp' column
+
+        Returns:
+            Filtered DataFrame containing only signals within valid kill zones.
+        """
+        if signals.empty:
+            return signals
+
+        # Extract hour and minute from timestamp
+        signals = signals.copy()
+        ts = pd.to_datetime(signals['timestamp'])
+        signals['_hour'] = ts.dt.hour
+        signals['_minute'] = ts.dt.minute
+        signals['_time_decimal'] = signals['_hour'] + signals['_minute'] / 60.0
+
+        # Valid windows: 10:00-11:30 (10.0-11.5) and 14:30-15:30 (14.5-15.5)
+        primary_window = (signals['_time_decimal'] >= 10.0) & (signals['_time_decimal'] < 11.5)
+        power_hour = (signals['_time_decimal'] >= 14.5) & (signals['_time_decimal'] < 15.5)
+        valid = primary_window | power_hour
+
+        filtered = signals[valid].drop(columns=['_hour', '_minute', '_time_decimal'])
+        return filtered
+
     def run(self, symbols: List[str], outdir: Optional[str] = None) -> Dict[str, Any]:
         """Execute backtest across symbols, simulating trades with FIFO P&L accounting.
 
@@ -133,6 +171,10 @@ class Backtester:
         # Normalize signal timestamps
         if not signals.empty and 'timestamp' in signals.columns:
             signals['timestamp'] = pd.to_datetime(signals['timestamp'], utc=True).dt.tz_localize(None)
+
+        # FIX (2026-01-08): Apply kill zone filter for parity with live trading
+        if self.cfg.apply_kill_zones and not signals.empty:
+            signals = self._filter_signals_by_kill_zone(signals)
 
         # Group signals by symbol and simulate with exits (ATR stop + 5-bar time stop)
         for sym, sym_df in by_sym.items():
