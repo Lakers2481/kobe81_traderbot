@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\explainability\playbook_generator.py
+# hypothesis_version: 6.150.0
+
+[2000, '## CHECKLIST', '## EXECUTIVE SUMMARY', '## Entry Plan', '## Exit Plan', '## FULL PLAYBOOK', '## RISK SECTION', '## Risk Analysis', '## The Setup', '## Trade Checklist', '### ML Model Output', '### Post-Trade', '### Pre-Trade', '- **Size**: Unknown', 'ANTHROPIC_API_KEY', 'FAIL', 'PASS', 'both', 'checklist', 'claude', 'confidence_section', 'content', 'deterministic', 'executive_summary', 'full_playbook', 'html', 'md', 'probability', 'risk_section', 'role', 'tables', 'unknown', 'user', 'utf-8', 'vix', 'w']

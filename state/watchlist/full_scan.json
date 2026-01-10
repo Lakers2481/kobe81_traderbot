@@ -1,0 +1,61 @@
+{
+  "scan_time": "2026-01-06T10:25:26.299871",
+  "prior_close": "2026-01-05",
+  "total_signals": 19,
+  "ibs_rsi_count": 5,
+  "turtle_soup_count": 14,
+  "top5": [
+    {
+      "symbol": "CVE",
+      "strategy": "TurtleSoup",
+      "entry": 16.64,
+      "stop": 15.72,
+      "target": 17.33,
+      "rr": 0.7499999999999976,
+      "reason": "TurtleSoup[sweep=1.41ATR]",
+      "score": 141.25
+    },
+    {
+      "symbol": "VTR",
+      "strategy": "TurtleSoup",
+      "entry": 76.44,
+      "stop": 74.71,
+      "target": 77.74,
+      "rr": 0.7514450867051989,
+      "reason": "TurtleSoup[sweep=0.98ATR]",
+      "score": 97.78
+    },
+    {
+      "symbol": "JNJ",
+      "strategy": "TurtleSoup",
+      "entry": 204.31,
+      "stop": 200.3,
+      "target": 207.31,
+      "rr": 0.7481296758104755,
+      "reason": "TurtleSoup[sweep=0.78ATR]",
+      "score": 78.25
+    },
+    {
+      "symbol": "AEP",
+      "strategy": "TurtleSoup",
+      "entry": 114.07,
+      "stop": 112.24,
+      "target": 115.45,
+      "rr": 0.7540983606557436,
+      "reason": "TurtleSoup[sweep=0.77ATR]",
+      "score": 76.54
+    },
+    {
+      "symbol": "PNR",
+      "strategy": "TurtleSoup",
+      "entry": 102.67,
+      "stop": 100.87,
+      "target": 104.02,
+      "rr": 0.749999999999998,
+      "reason": "TurtleSoup[sweep=0.72ATR]",
+      "score": 71.93
+    }
+  ],
+  "validated": [],
+  "top2": []
+}

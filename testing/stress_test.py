@@ -15,7 +15,6 @@ Outputs a simple summary of final equity and drawdown impact.
 
 import argparse
 from pathlib import Path
-from typing import List
 import pandas as pd
 import numpy as np
 

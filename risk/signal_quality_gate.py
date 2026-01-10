@@ -29,7 +29,6 @@ Usage:
 from __future__ import annotations
 
 import logging
-import math
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -422,10 +421,36 @@ class SignalQualityGate:
 
         # Evaluate each signal
         quality_results = []
+        auto_pass_count = 0
         for _, row in signals.iterrows():
             signal = row.to_dict()
             symbol = signal.get('symbol', '')
 
+            # ================================================================
+            # AUTO-PASS LOGIC: Elite historical patterns bypass quality gate
+            # ================================================================
+            qualifies_auto_pass = signal.get('qualifies_auto_pass', False)
+            if qualifies_auto_pass:
+                # AUTO-PASS: Bypass evaluation, force pass with ELITE score
+                quality_results.append({
+                    **signal,
+                    'quality_score': 95.0,  # ELITE tier (guaranteed top 2)
+                    'quality_tier': QualityTier.ELITE.value,
+                    'passes_gate': True,
+                    'rejection_reasons': '',
+                    'auto_pass_applied': True,  # Flag for tracking
+                })
+                auto_pass_count += 1
+                logger.info(
+                    "AUTO-PASS: %s (streak=%s, samples=%s, WR=%.0f%%)",
+                    symbol,
+                    signal.get('streak_length', 0),
+                    signal.get('streak_samples', 0),
+                    signal.get('streak_win_rate', 0) * 100
+                )
+                continue  # Skip normal evaluation
+
+            # Normal evaluation for non-auto-pass signals
             # Get symbol-specific price data
             if 'symbol' in price_data.columns:
                 symbol_prices = price_data[price_data['symbol'] == symbol]
@@ -446,6 +471,7 @@ class SignalQualityGate:
                 'quality_tier': quality.tier.value,
                 'passes_gate': quality.passes_gate,
                 'rejection_reasons': '; '.join(quality.rejection_reasons) if quality.rejection_reasons else '',
+                'auto_pass_applied': False,
             })
 
         result_df = pd.DataFrame(quality_results)
@@ -459,9 +485,10 @@ class SignalQualityGate:
             passing = passing.head(max_signals)
 
         logger.info(
-            "Quality gate: %d -> %d signals (filter ratio: %.1fx)",
+            "Quality gate: %d -> %d signals (filter ratio: %.1fx, auto-pass: %d)",
             len(signals), len(passing),
-            len(signals) / max(len(passing), 1)
+            len(signals) / max(len(passing), 1),
+            auto_pass_count
         )
 
         return passing

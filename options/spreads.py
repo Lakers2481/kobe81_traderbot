@@ -17,12 +17,11 @@ import logging
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from options.chain_fetcher import (
     ChainFetcher,
     OptionContract,
-    OptionsChain,
     OptionType,
 )
 

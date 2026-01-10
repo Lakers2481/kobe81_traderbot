@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\data\lake\manifest.py
+# hypothesis_version: 6.150.0
+
+[365.25, 65536, '*.json', '.csv', '.parquet', 'DatasetManifest', 'FileRecord', 'data/manifests', 'empty', 'errors', 'file_count', 'files', 'files_checked', 'files_missing', 'rb', 'sha256', 'symbol', 'symbols', 'timestamp', 'total_rows', 'v1.0', 'valid', 'warnings', 'years', '|']

@@ -290,10 +290,10 @@ python scripts/runner.py --mode paper --cap 50
 ### Start Trading
 ```bash
 # Paper trading (single run)
-python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --start 2024-01-01 --end 2024-12-31 --cap 50
+python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_800.csv --start 2024-01-01 --end 2024-12-31 --cap 50
 
 # 24/7 runner (paper)
-python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv --cap 50 --scan-times 09:35,10:30,15:55
+python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_800.csv --cap 50 --scan-times 09:35,10:30,15:55
 
 # Start system (with preflight)
 python scripts/start.py --mode paper
@@ -311,10 +311,10 @@ python scripts/overnight_watchlist.py
 ### Backtesting
 ```bash
 # Canonical backtest
-python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_900.csv --start 2023-01-01 --end 2024-12-31 --cap 150
+python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_800.csv --start 2023-01-01 --end 2024-12-31 --cap 150
 
 # Walk-forward
-python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63
+python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63
 ```
 
 ### Emergency Controls

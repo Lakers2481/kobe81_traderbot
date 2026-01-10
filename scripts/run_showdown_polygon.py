@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 from pathlib import Path as _P
 
-import numpy as np
 import pandas as pd
 
 import sys
@@ -16,9 +15,7 @@ from data.universe.loader import load_universe
 from data.providers.polygon_eod import fetch_daily_bars_polygon
 from config.env_loader import load_env
 from config.settings_loader import (
-    get_regime_filter_config, is_regime_filter_enabled,
-    get_selection_config, is_selection_enabled,
-    is_earnings_filter_enabled,
+    get_regime_filter_config, get_selection_config, is_earnings_filter_enabled,
 )
 from core.regime_filter import filter_signals_by_regime, fetch_spy_bars
 from core.earnings_filter import filter_signals_by_earnings

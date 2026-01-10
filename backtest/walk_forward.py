@@ -4,7 +4,7 @@ import multiprocessing
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
-from typing import Callable, Iterable, List, Dict, Any, Optional
+from typing import Callable, List, Dict, Any, Optional
 
 import pandas as pd
 

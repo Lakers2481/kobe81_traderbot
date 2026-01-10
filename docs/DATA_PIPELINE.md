@@ -121,7 +121,7 @@ Loads trading universes (symbol lists) from CSV files.
 from data.universe.loader import load_universe
 
 # Load 900-stock optionable universe
-symbols = load_universe('data/universe/optionable_liquid_900.csv', cap=100)
+symbols = load_universe('data/universe/optionable_liquid_800.csv', cap=100)
 ```
 
 **Features:**
@@ -156,7 +156,7 @@ manifest = DatasetManifest.create(
     timeframe='1d',
     start_date='2015-01-01',
     end_date='2024-12-31',
-    universe_path='data/universe/optionable_liquid_900.csv',
+    universe_path='data/universe/optionable_liquid_800.csv',
     schema_version='v1.0',
 )
 # manifest.dataset_id = 'stooq_1d_2015_2024_a1b2c3...'
@@ -289,7 +289,7 @@ if not report.passed:
 
 ```python
 # 1. Load universe
-symbols = load_universe('data/universe/optionable_liquid_900.csv')
+symbols = load_universe('data/universe/optionable_liquid_800.csv')
 
 # 2. Fetch/cache price data
 for symbol in symbols:
@@ -333,7 +333,7 @@ Data pipeline settings are in `config/base.yaml`:
 data:
   provider: "polygon"
   cache_dir: "data/cache"
-  universe_file: "data/universe/optionable_liquid_900.csv"
+  universe_file: "data/universe/optionable_liquid_800.csv"
 ```
 
 ---
@@ -360,5 +360,5 @@ data:
 1. **Always use cached data for backtesting** - Set `ignore_cache_ttl=True`
 2. **Freeze datasets before major experiments** - Use the data lake
 3. **Validate data quality before production runs** - Use preflight checks
-4. **Keep universes version-controlled** - Track `optionable_liquid_900.csv`
+4. **Keep universes version-controlled** - Track `optionable_liquid_800.csv`
 5. **Monitor API rate limits** - Polygon has 5 calls/minute on free tier

@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\config\settings_schema.py
+# hypothesis_version: 6.150.0
+
+[0.001, 0.005, 0.01, 0.02, 0.1, 0.2, 1.0, 20.0, 25.0, 30.0, 40.0, 100, 1000, 3000, 11000, 15000, 22000, 45000, 100000, '2.0.0', 'ALPACA_API_KEY_ID', 'America/New_York', 'DataConfig', 'KOBE_CONFIG_PATH', 'Kobe', 'ModesConfig', 'RiskConfig', 'System name', 'System timezone', 'System version', 'SystemConfig', 'Trading mode', '_', '__dict__', 'allow', 'alpaca', 'base.yaml', 'data', 'data/cache', 'ibkr', 'ioc_limit', 'live', 'max_notional_pct', 'max_positions', 'micro', 'mode', 'model_dump', 'modes', 'paper', 'polygon', 'r', 'real', 'risk', 'stooq', 'system', 'utf-8', 'yfinance']

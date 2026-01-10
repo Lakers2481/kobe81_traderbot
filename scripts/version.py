@@ -12,12 +12,11 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import platform
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))

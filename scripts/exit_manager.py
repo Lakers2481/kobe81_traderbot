@@ -20,11 +20,11 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any
+import asyncio
 
-import pandas as pd
 
 # Add project root to path
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,6 +34,8 @@ from config.env_loader import load_env
 from core.structured_log import jlog
 from core.alerts import send_telegram
 from core.clock.tz_utils import now_et, fmt_ct
+from portfolio.state_manager import get_state_manager
+from integration.learning_hub import get_learning_hub, TradeOutcomeEvent
 
 # Time stop rules per strategy
 TIME_STOP_BARS = {
@@ -42,25 +44,52 @@ TIME_STOP_BARS = {
     'DEFAULT': 5,       # Default if strategy unknown
 }
 
-# State file for tracking position entry dates
+# Legacy file (kept for migration)
 POSITION_STATE_FILE = ROOT / 'state' / 'position_tracker.json'
-TRADE_LOG_FILE = ROOT / 'logs' / 'trade_history.jsonl'
+# FIX (2026-01-08): Use trades.jsonl (broker_alpaca.py logs) not trade_history.jsonl
+TRADE_LOG_FILE = ROOT / 'logs' / 'trades.jsonl'
 
 
 def load_position_state() -> Dict[str, Any]:
-    """Load position tracking state."""
+    """
+    Load position tracking state using StateManager (atomic, locked).
+
+    FIX (2026-01-06): Gap #2 - Now uses StateManager for atomic access.
+    """
+    sm = get_state_manager()
+
+    # First try StateManager (new location)
+    positions = sm.get_positions()
+    if positions:
+        return {'positions': positions, 'last_sync': None}
+
+    # Migration: If legacy file exists, migrate it
     if POSITION_STATE_FILE.exists():
         try:
-            return json.loads(POSITION_STATE_FILE.read_text())
+            legacy_data = json.loads(POSITION_STATE_FILE.read_text())
+            legacy_positions = legacy_data.get('positions', {})
+            if legacy_positions:
+                # Migrate to StateManager
+                sm.set_positions(legacy_positions)
+                jlog('position_state_migrated', count=len(legacy_positions))
+                # Rename legacy file
+                POSITION_STATE_FILE.rename(POSITION_STATE_FILE.with_suffix('.json.bak'))
+            return {'positions': legacy_positions}
         except Exception as e:
-            jlog('position_state_load_error', error=str(e), level='WARN')
+            jlog('position_state_migration_error', error=str(e), level='WARN')
+
     return {'positions': {}}
 
 
 def save_position_state(state: Dict[str, Any]) -> None:
-    """Save position tracking state."""
-    POSITION_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    POSITION_STATE_FILE.write_text(json.dumps(state, indent=2, default=str))
+    """
+    Save position tracking state using StateManager (atomic, locked).
+
+    FIX (2026-01-06): Gap #2 - Atomic writes with file locking.
+    """
+    sm = get_state_manager()
+    positions = state.get('positions', {})
+    sm.set_positions(positions)
 
 
 def get_broker_positions() -> List[Dict]:
@@ -142,18 +171,51 @@ def get_trading_days_since(entry_date: datetime) -> int:
     """
     Calculate number of trading days since entry.
 
-    Uses NYSE calendar if available, otherwise estimates.
+    FIX (2026-01-08): Proper NYSE calendar-based calculation.
+    Uses NYSE calendar to count actual trading days, excluding weekends and holidays.
     """
+    today = now_et().date()
+    entry_date_obj = entry_date.date() if hasattr(entry_date, 'date') else entry_date
+
     try:
-        from market_calendar import get_trading_days_between
-        today = now_et().date()
-        return get_trading_days_between(entry_date.date(), today)
-    except ImportError:
-        # Fallback: rough estimate (exclude weekends)
-        today = now_et().date()
-        delta = (today - entry_date.date()).days
-        # Rough estimate: 5 trading days per 7 calendar days
-        return int(delta * 5 / 7)
+        # Try to use market_calendar module (same directory)
+        import sys
+        from pathlib import Path
+        scripts_dir = Path(__file__).resolve().parent
+        if str(scripts_dir) not in sys.path:
+            sys.path.insert(0, str(scripts_dir))
+
+        from market_calendar import get_trading_days_between, is_market_closed
+        trading_days = get_trading_days_between(entry_date_obj, today)
+
+        # Debug logging for bars counter verification
+        jlog('bars_counter_calculation', level='DEBUG',
+             entry_date=str(entry_date_obj),
+             today=str(today),
+             trading_days_held=trading_days,
+             calendar_days=(today - entry_date_obj).days)
+
+        return trading_days
+
+    except Exception as e:
+        # Fallback: Better estimate that counts actual days excluding weekends
+        from datetime import timedelta
+        count = 0
+        current = entry_date_obj + timedelta(days=1)
+
+        while current <= today:
+            # Skip weekends (5=Saturday, 6=Sunday)
+            if current.weekday() < 5:
+                count += 1
+            current += timedelta(days=1)
+
+        jlog('bars_counter_fallback', level='WARNING',
+             entry_date=str(entry_date_obj),
+             today=str(today),
+             trading_days_estimate=count,
+             reason=str(e))
+
+        return count
 
 
 def sync_positions_with_broker(state: Dict[str, Any], broker_positions: List[Dict]) -> Dict[str, Any]:
@@ -267,6 +329,47 @@ def check_time_exits(state: Dict[str, Any], execute: bool = False, dry_run: bool
                 exit_info['close_result'] = result
 
                 if result.get('status') in ('CLOSED', 'DRY_RUN'):
+                    # LEARNING HUB INTEGRATION (FIX 1)
+                    try:
+                        hub = get_learning_hub()
+                        order_details = result.get('order', {})
+                        
+                        entry_price = pos_info.get('entry_price', 0)
+                        exit_price = float(order_details.get('filled_avg_price', 0))
+                        shares = abs(pos_info.get('qty', 0))
+                        
+                        if entry_price > 0 and exit_price > 0 and shares > 0:
+                            pnl = (exit_price - entry_price) * shares
+                            if pos_info.get('side') == 'short':
+                                pnl = -pnl
+                            pnl_pct = (pnl / (entry_price * shares))
+                            
+                            exit_time_str = order_details.get('filled_at')
+                            exit_time = datetime.fromisoformat(exit_time_str.replace('Z', '+00:00')) if exit_time_str else now_et()
+
+                            trade_outcome = TradeOutcomeEvent(
+                                symbol=sym,
+                                side=pos_info.get('side', 'long'),
+                                entry_price=entry_price,
+                                exit_price=exit_price,
+                                shares=shares,
+                                entry_time=entry_date,
+                                exit_time=exit_time,
+                                pnl=pnl,
+                                pnl_pct=pnl_pct,
+                                won=pnl > 0,
+                                pattern_type=pos_info.get('strategy', 'UNKNOWN'),
+                                exit_reason='time_stop',
+                                trade_id=f"trade_{sym}_{entry_date.strftime('%Y%m%d')}"
+                            )
+                            
+                            jlog('learning_hub_feed_start', trade_id=trade_outcome.trade_id, pnl_pct=pnl_pct)
+                            asyncio.run(hub.process_trade_outcome(trade_outcome))
+                            jlog('learning_hub_feed_complete', trade_id=trade_outcome.trade_id)
+
+                    except Exception as e:
+                        jlog('learning_hub_integration_error', error=str(e), level='ERROR')
+
                     # Remove from tracking
                     if sym in state['positions']:
                         del state['positions'][sym]
@@ -285,6 +388,97 @@ def check_time_exits(state: Dict[str, Any], execute: bool = False, dry_run: bool
             print(f"  {sym}: {bars_held}/{max_bars} bars ({bars_remaining} remaining)")
 
     return exits_needed
+
+
+def catch_up_missed_exits(dotenv_path: Optional[str] = None, execute: bool = True) -> dict:
+    """
+    Catch-up logic for missed exits on startup/restart.
+
+    FIX (2026-01-06): Gap #5 - Exit manager now checks for missed exits on startup.
+
+    This function should be called when the runner starts to ensure any positions
+    that exceeded their time limits during downtime are properly closed.
+
+    Args:
+        dotenv_path: Path to .env file
+        execute: If True, actually close positions (default: True for catch-up)
+
+    Returns:
+        Dict with catch-up results
+    """
+    result = {
+        'success': False,
+        'positions_checked': 0,
+        'exits_executed': [],
+        'exits_needed': [],
+        'errors': [],
+    }
+
+    try:
+        # Load environment if provided
+        if dotenv_path:
+            dotenv = Path(dotenv_path)
+            if dotenv.exists():
+                load_env(dotenv)
+
+        jlog('exit_manager_catchup_start', level='INFO')
+
+        # Get broker positions
+        broker_positions = get_broker_positions()
+        if not broker_positions:
+            jlog('exit_manager_catchup_no_positions', level='INFO')
+            result['success'] = True
+            return result
+
+        result['positions_checked'] = len(broker_positions)
+
+        # Load and sync state
+        state = load_position_state()
+        state = sync_positions_with_broker(state, broker_positions)
+        save_position_state(state)
+
+        # Check for overdue exits
+        exits = check_time_exits(state, execute=execute, dry_run=False)
+
+        # Save updated state
+        save_position_state(state)
+
+        # Record results
+        result['exits_needed'] = [
+            {'symbol': e['symbol'], 'bars_held': e['bars_held'], 'max_bars': e['max_bars']}
+            for e in exits
+        ]
+        result['exits_executed'] = [
+            e['symbol'] for e in exits
+            if e.get('close_result', {}).get('status') == 'CLOSED'
+        ]
+
+        if result['exits_executed']:
+            jlog('exit_manager_catchup_exits', level='INFO',
+                 symbols=result['exits_executed'],
+                 count=len(result['exits_executed']))
+
+            # Send alert
+            now = now_et()
+            stamp = f"{fmt_ct(now)} | {now.strftime('%I:%M %p').lstrip('0')} ET"
+            msg = f"EXIT MANAGER CATCH-UP: Closed {len(result['exits_executed'])} overdue positions [{stamp}]"
+            for sym in result['exits_executed']:
+                msg += f"\n  - {sym}"
+            try:
+                send_telegram(msg)
+            except Exception:
+                pass
+
+        result['success'] = True
+        jlog('exit_manager_catchup_complete', level='INFO',
+             positions_checked=result['positions_checked'],
+             exits_executed=len(result['exits_executed']))
+
+    except Exception as e:
+        jlog('exit_manager_catchup_error', level='ERROR', error=str(e))
+        result['errors'].append(str(e))
+
+    return result
 
 
 def main():

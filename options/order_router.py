@@ -20,11 +20,11 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
-from options.chain_fetcher import OptionContract, OptionsChain, OptionType
-from options.spreads import OptionsSpread, SpreadLeg, SpreadType
-from safety.execution_choke import evaluate_safety_gates, SafetyViolationError
+from options.chain_fetcher import OptionContract, OptionType
+from options.spreads import OptionsSpread
+from safety.execution_choke import evaluate_safety_gates
 
 logger = logging.getLogger(__name__)
 
@@ -331,6 +331,10 @@ class OptionsOrderRouter:
         Returns:
             OptionsOrderResult with status
         """
+        # === PAPER MODE GUARD - MUST BE FIRST ===
+        from safety.paper_guard import ensure_paper_mode_or_die
+        ensure_paper_mode_or_die(context=f"OptionsOrderRouter.submit_order:{order.symbol}")
+
         # FULL SAFETY GATE CHECK - Required for all order submissions
         # (Replaces simple kill switch check with comprehensive 7-flag check)
         gate_result = evaluate_safety_gates(

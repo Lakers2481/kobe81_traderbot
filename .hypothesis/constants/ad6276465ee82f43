@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\portfolio\risk_manager.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.02, 0.05, 0.25, 0.3, 0.5, 0.7, 0.9, 1.0, 80.0, 100000.0, 100, 'UNKNOWN', 'components', 'conformal', 'correlation_checker', 'enabled', 'entry_price', 'equity', 'expected_return', 'heat_monitor', 'kelly_fraction', 'kelly_sizer', 'long', 'max_position_pct', 'ml', 'price', 'quantity', 'risk_level', 'shares', 'side', 'stop_loss', 'symbol', 'use_kelly', 'use_ml_confidence', 'var', 'volatility']

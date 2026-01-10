@@ -1,4 +1,4 @@
-﻿{
+{
   "permissions": {
     "allow": [
       "Bash(dir /b \"C:\\\\Users\\\\Owner\\\\OneDrive\\\\Desktop\\\\kobe81_traderbot\\\\.claude\\\\skills\")",
@@ -9,9 +9,21 @@
       "Bash(git config:*)",
       "Bash(git add:*)",
       "Bash(git reset:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Kobe trading system codebase\n\nCore modules:\n- backtest/: Engine with equity curve, ATR/time stops, walk-forward\n- strategies/:  Donchian/ICT and ICT with Wilder smoothing\n- data/: Polygon EOD provider with CSV caching, universe loader\n- execution/: Alpaca broker with IOC LIMIT orders\n- risk/: PolicyGate with $75/order and $1k/daily budgets\n- oms/: Order state tracking, idempotency store\n- core/: Hash chain audit, structured logging, config pin\n- monitor/: Health check endpoints\n- scripts/: Preflight, WF runner, paper/live trade, reconciliation\n\nIncludes:\n- 900-stock universe \\(optionable, liquid, 10+ years history\\)\n- .gitignore for cache, outputs, env files\n- Documentation and requirements\n\nðŸ¤– Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Kobe trading system codebase\n\nCore modules:\n- backtest/: Engine with equity curve, ATR/time stops, walk-forward\n- strategies/:  Donchian/ICT and ICT with Wilder smoothing\n- data/: Polygon EOD provider with CSV caching, universe loader\n- execution/: Alpaca broker with IOC LIMIT orders\n- risk/: PolicyGate with $75/order and $1k/daily budgets\n- oms/: Order state tracking, idempotency store\n- core/: Hash chain audit, structured logging, config pin\n- monitor/: Health check endpoints\n- scripts/: Preflight, WF runner, paper/live trade, reconciliation\n\nIncludes:\n- 900-stock universe \\(optionable, liquid, 10+ years history\\)\n- .gitignore for cache, outputs, env files\n- Documentation and requirements\n\nðŸ¤– Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(python:*)",
+      "Bash(pip install:*)",
+      "Bash(pushd:*)",
+      "Bash(popd)",
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(for dir in tests/properties features research)",
+      "Bash(do echo \"=== $dir ===\")",
+      "Bash(done)",
+      "Bash(gh run list:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(ls:*)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(curl:*)"
     ]
   }
 }
-
-

@@ -14,14 +14,14 @@ Providers:
 Usage:
     # Windows:
     python scripts\\freeze_equities_eod.py ^
-        --universe data\\universe\\optionable_liquid_900.csv ^
+        --universe data\\universe\\optionable_liquid_800.csv ^
         --start 2015-01-01 --end 2025-12-31 ^
         --provider stooq ^
         --out data\\lake
 
     # Linux/macOS:
     python scripts/freeze_equities_eod.py \\
-        --universe data/universe/optionable_liquid_900.csv \\
+        --universe data/universe/optionable_liquid_800.csv \\
         --start 2015-01-01 --end 2025-12-31 \\
         --provider stooq \\
         --out data/lake
@@ -71,13 +71,13 @@ def main():
 Examples:
     # Freeze 900+ stock universe with Stooq (free)
     python scripts/freeze_equities_eod.py \\
-        --universe data/universe/optionable_liquid_900.csv \\
+        --universe data/universe/optionable_liquid_800.csv \\
         --start 2015-01-01 --end 2025-12-31 \\
         --provider stooq
 
     # Quick test with 10 symbols
     python scripts/freeze_equities_eod.py \\
-        --universe data/universe/optionable_liquid_900.csv \\
+        --universe data/universe/optionable_liquid_800.csv \\
         --limit 10
 
     # Use Yahoo Finance fallback

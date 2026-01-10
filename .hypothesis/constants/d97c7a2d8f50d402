@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\altdata\sentiment_fingpt.py
+# hypothesis_version: 6.150.0
+
+[-1.0, 0.0, 0.33, 1.0, 100, 500, 512, 1000, 'FINGPT_MODEL', 'ProsusAI/finbert', 'avg_latency_ms', 'cache_hit_rate', 'cache_hits', 'cache_size', 'compound_score', 'cpu', 'cuda', 'data/sentiment_cache', 'device', 'inference_time_ms', 'model_version', 'models/fingpt', 'negative_prob', 'neutral_prob', 'positive_prob', 'pt', 'text_hash', 'timestamp', 'total_inferences', 'utf-8']

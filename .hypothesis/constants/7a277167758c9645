@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\cognitive\reflection_engine.py
+# hypothesis_version: 6.150.0
+
+[-0.1, 0.0, 0.4, 0.5, 0.6, 0.7, 1.0, 100, 200, ' / ', 'Overconfident', 'ReflectionEngine', 'action_items', 'auto-generated', 'behavior_changes', 'caution', 'daily', 'decision_mode', 'decision_time_ms', 'episode', 'episode_count', 'fast', 'increase_confidence', 'is_simulated', 'justified', 'lessons', 'llm_critique', 'metadata', 'new_rules_extracted', 'new_self_description', 'pending_count', 'positive', 'reason', 'reduce_confidence', 'reflection', 'regime', 'root_causes', 'rules_pruned', 'scope', 'simulated', 'simulation_source', 'simulation_weight', 'slow', 'strategy', 'strengthen rule', 'summary', 'timestamp', 'total_pnl', 'unknown', 'unknown context', 'what_went_well', 'what_went_wrong', 'win_rate']

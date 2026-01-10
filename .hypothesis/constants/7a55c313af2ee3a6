@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\cognitive\episodic_memory.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.2, 0.3, 0.5, 1.0, 2.0, 20.0, 100, 500, 1000, '%Y%m%d_%H%M%S_', '*.json', 'EXTREME', 'Episode', 'HIGH', 'LOW', 'MED', 'action_taken', 'active_episodes', 'breakeven', 'completed_at', 'concerns_noted', 'confidence_levels', 'decision_mode', 'episode_id', 'error', 'importance', 'lessons_learned', 'long', 'loss', 'losses', 'market_context', 'mistakes_made', 'n', 'outcome', 'outcome_details', 'pending', 'pnl', 'portfolio_context', 'postmortem', 'r', 'r_multiple', 'reasoning_trace', 'regime', 'side', 'signal_context', 'stand_down', 'stand_downs', 'started_at', 'strategy', 'tags', 'total_episodes', 'total_lessons', 'unknown', 'vix', 'vix_level', 'w', 'what_to_avoid', 'what_to_repeat', 'win', 'win_rate', 'wins', 'won', '|']

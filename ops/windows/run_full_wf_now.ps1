@@ -2,7 +2,7 @@ param(
   [string]$RepoRoot = (Resolve-Path "..\..").Path,
   [string]$PythonExe = "python",
   [string]$DotEnv = ".\\.env",
-  [string]$Universe = "data/universe/optionable_liquid_900.csv",
+  [string]$Universe = "data/universe/optionable_liquid_800.csv",
   [string]$Start = "2020-01-02",
   [string]$End = "2025-12-26",
   [int]$TrainDays = 252,

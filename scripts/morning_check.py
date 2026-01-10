@@ -14,7 +14,7 @@ import argparse
 import json
 import os
 import shutil
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any
 
@@ -89,7 +89,7 @@ def main() -> None:
         out['polygon'] = {'ok': False, 'error': str(e)}
 
     # Files (universe, cache, models)
-    uni = ROOT / 'data' / 'universe' / 'optionable_liquid_900.csv'
+    uni = ROOT / 'data' / 'universe' / 'optionable_liquid_800.csv'
     out['files']['universe_exists'] = uni.exists()
     out['files']['universe_count'] = int(sum(1 for _ in open(uni))) - 1 if uni.exists() else 0
     out['files']['cache_dir'] = (ROOT / 'data' / 'cache').exists()

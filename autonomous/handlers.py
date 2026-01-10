@@ -387,7 +387,7 @@ def walk_forward(**kwargs) -> Dict[str, Any]:
         }
     return run_script(
         "scripts/run_wf_polygon.py",
-        ["--universe", "data/universe/optionable_liquid_900.csv",
+        ["--universe", "data/universe/optionable_liquid_800.csv",
          "--start", "2023-01-01", "--end", _today_str(),  # FIX: dynamic end date
          "--train-days", "252", "--test-days", "63", "--cap", "20"],
         timeout=600,
@@ -457,7 +457,7 @@ def update_universe(**kwargs) -> Dict[str, Any]:
         "scripts/build_universe_polygon.py",
         ["--cidates", "data/universe/optionable_liquid_cidates.csv",
          "--start", "2015-01-01", "--end", _today_str(),  # FIX: dynamic end date
-         "--min-years", "10", "--cap", "900", "--concurrency", "3"],
+         "--min-years", "10", "--cap", "800", "--concurrency", "3"],
         timeout=600,
     )
 
@@ -470,7 +470,7 @@ def fetch_data(**kwargs) -> Dict[str, Any]:
         return {"status": "success", "message": "Data fetch script not available"}
     return run_script(
         "scripts/prefetch_polygon_universe.py",
-        ["--universe", "data/universe/optionable_liquid_900.csv",
+        ["--universe", "data/universe/optionable_liquid_800.csv",
          "--start", "2025-01-01", "--end", _today_str()],  # FIX: dynamic end date
         timeout=600,
     )
@@ -516,10 +516,10 @@ def generate_pregame_blueprint(**kwargs) -> Dict[str, Any]:
     script = Path("scripts/generate_pregame_blueprint.py")
     if not script.exists():
         return {"status": "error", "message": "Pre-Game Blueprint script not found"}
-    # Run with --cap 900 --top 5 --execute 2 (select Top 2 for full analysis)
+    # Run with --cap 800 --top 5 --execute 2 (select Top 2 for full analysis)
     return run_script(
         "scripts/generate_pregame_blueprint.py",
-        args=["--cap", "900", "--top", "5", "--execute", "2"],
+        args=["--cap", "800", "--top", "5", "--execute", "2"],
         timeout=300  # 5 minutes for full analysis
     )
 

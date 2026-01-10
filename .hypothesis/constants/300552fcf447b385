@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\ml_advanced\online_learning.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.01, 0.1, 0.15, 0.5, 0.6, 100, 10000, '0', 'TradeOutcome', 'actual_outcome', 'auto_update', 'avg_pnl_pct', 'batch_avg_pnl', 'batch_size', 'batch_win_rate', 'buffer_not_ready', 'buffer_ready', 'buffer_size', 'buffer_size_before', 'class_balance', 'completed', 'daily', 'drift', 'drift_baseline', 'empty_batch', 'features', 'holding_period', 'last_update', 'no_valid_features', 'normal', 'pnl_pct', 'prediction', 'r', 'reason', 'samples_trained', 'skipped', 'status', 'symbol', 'timestamp', 'total_updates', 'update_frequency', 'update_history', 'w', 'warning', 'win_rate']

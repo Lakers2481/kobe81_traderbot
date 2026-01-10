@@ -20,7 +20,7 @@ Created: 2026-01-04
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, Any, List, Optional
 from pathlib import Path
 import json
@@ -384,7 +384,7 @@ if __name__ == "__main__":
 
     # Check after normal executions
     result = breaker.check()
-    print(f"\nAfter normal executions:")
+    print("\nAfter normal executions:")
     print(f"  Status: {result['status'].value}")
     print(f"  Action: {result['action'].value}")
     print(f"  Message: {result['message']}")
@@ -407,7 +407,7 @@ if __name__ == "__main__":
         )
 
     result = breaker.check()
-    print(f"\nAfter high slippage executions:")
+    print("\nAfter high slippage executions:")
     print(f"  Status: {result['status'].value}")
     print(f"  Action: {result['action'].value}")
     print(f"  Message: {result['message']}")

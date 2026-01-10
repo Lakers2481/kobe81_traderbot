@@ -3,9 +3,7 @@ Tests for execution/intraday_trigger.py - Intraday entry trigger.
 """
 from __future__ import annotations
 
-import pytest
 from unittest.mock import patch, MagicMock
-from datetime import datetime
 
 import sys
 from pathlib import Path
@@ -13,8 +11,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from execution.intraday_trigger import (
     IntradayTrigger,
-    TriggerResult,
-    TriggerMode,
     check_entry_trigger,
     get_intraday_trigger,
 )

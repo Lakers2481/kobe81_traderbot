@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\execution\broker_crypto.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.0001, 0.001, 100, 100000000, '/', 'ADA', 'AVAX', 'BTC', 'BUSD', 'DOGE', 'DOT', 'ETH', 'Live', 'SOL', 'Sandbox', 'USD', 'USDC', 'USDT', 'XRP', 'all', 'apiKey', 'ask', 'average', 'bid', 'binance', 'buy', 'canceled', 'cancelled', 'closed', 'coinbasepro', 'crypto', 'enableRateLimit', 'expired', 'filled', 'free', 'id', 'kraken', 'kucoin', 'last', 'limit', 'long', 'maker', 'market', 'open', 'password', 'price', 'quoteVolume', 'rejected', 'sandbox', 'secret', 'sell', 'set_sandbox_mode', 'status', 'symbol', 'taker', 'total']

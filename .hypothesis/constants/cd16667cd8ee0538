@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\pipelines\snapshot_pipeline.py
+# hypothesis_version: 6.150.0
+
+['%Y%m%d', 'cache', 'created_at', 'filename', 'files', 'files_copied', 'manifest.json', 'polygon_eod', 'sha256', 'size_bytes', 'snapshot', 'snapshot_id', 'snapshots', 'symbol', 'universe_cap']

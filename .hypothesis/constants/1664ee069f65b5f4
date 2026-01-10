@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\cognitive\llm_narrative_analyzer.py
+# hypothesis_version: 6.150.0
+
+[0.4, 0.5, 0.7, 1200, 2000, '\nWhat Went Well:\n', '\nWhat Went Wrong:\n', '-\\s*(.+?)(?:\\n|$)', 'ANTHROPIC_API_KEY', 'RATIONALE:\\s*(.+?)$', 'Reflection', 'adapt', 'concept', 'condition', 'confidence', 'consistently fail', 'content', 'critique', 'daily', 'description', 'entry_conditions', 'exit_conditions', 'general', 'hypotheses', 'input_tokens', 'live', 'market_context', 'name', 'need different', 'new regime', 'novel', 'output_tokens', 'paper', 'pattern of loss', 'prediction', 'rationale', 'repeated loss', 'rethink', 'risk_management', 'role', 'strategy_ideas', 'struggling', 'system.mode', 'undefined', 'underperform', 'unfamiliar', 'unknown', 'usage', 'user', 'weekly', 'win_rate > 0.55']

@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\risk\policy_gate.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.005, 3.0, 75.0, 1000.0, 'PolicyGate', 'allow_shorts', 'base.yaml', 'config', 'current_positions', 'daily_limit', 'daily_remaining', 'daily_used', 'exceeds_daily_budget', 'invalid_price_or_qty', 'last_reset', 'max_daily_loss', 'max_daily_notional', 'max_open_positions', 'max_order_value', 'max_positions', 'max_price', 'micro', 'min_price', 'modes', 'ok', 'per_order_limit', 'price_out_of_bounds', 'r', 'risk', 'risk_per_trade_pct', 'short', 'shorts_disabled', 'trading_mode']

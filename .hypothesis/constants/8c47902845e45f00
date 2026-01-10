@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\web\api\webhooks.py
+# hypothesis_version: 6.150.0
+
+[300, 401, 429, 500, 3600, ',', '.ARCA', '.NASDAQ', '.NYSE', '.US', '/queue', '/signal', '/status', '/test', '/tradingview', '/webhook', 'Alert message', 'Alert trigger price', 'Confidence 0-1', 'Custom', 'Invalid signature', 'KOBE_MODE', 'Rate limit exceeded', 'Signal rejected', 'Stock/crypto symbol', 'Stop loss price', 'Strategy name', 'Take profit price', 'TradingView', 'WEBHOOK_API_KEY', 'X-Forwarded-For', 'X-Webhook-Signature', 'action', 'buy', 'close', 'kill_switch_active', 'live', 'long', 'max_requests', 'open', 'operational', 'paper', 'pending_count', 'queue_stats', 'queued', 'rate_limit', 'raw', 'received', 'rejected', 'replace', 'scale_in', 'scale_out', 'sell', 'sha1=', 'sha256', 'sha256=', 'short', 'side', 'signals', 'status', 'symbol', 'system.mode', 'timestamp', 'unknown', 'utf-8', 'webhooks', 'window_seconds']

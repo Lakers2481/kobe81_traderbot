@@ -13,7 +13,7 @@ Usage:
 import argparse
 import json
 import sys
-from datetime import datetime, date
+from datetime import date
 from pathlib import Path
 
 # Add project root to path
@@ -23,7 +23,6 @@ sys.path.insert(0, str(project_root))
 from explainability.decision_packet import (
     DecisionPacket,
     build_decision_packet,
-    ExecutionPlan,
 )
 from explainability.playbook_generator import PlaybookGenerator
 

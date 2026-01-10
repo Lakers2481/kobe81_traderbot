@@ -9,7 +9,7 @@ Implements simple, interpretable alpha signals for screening:
 - Gap close tendency
 """
 
-from typing import Optional, Dict, Callable
+from typing import Dict, Callable
 import numpy as np
 import pandas as pd
 

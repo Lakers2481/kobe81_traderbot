@@ -7,7 +7,6 @@ from pathlib import Path as _P
 sys.path.insert(0, str(_P(__file__).resolve().parents[1]))
 
 import argparse
-import pandas as pd
 from pathlib import Path
 from datetime import datetime
 

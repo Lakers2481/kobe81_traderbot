@@ -20,9 +20,9 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Tuple
+from typing import Optional
 
-from .black_scholes import BlackScholes, OptionType, OptionPricing
+from .black_scholes import BlackScholes, OptionType
 
 
 class PositionDirection(Enum):

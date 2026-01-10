@@ -103,7 +103,7 @@
 | .json | 171 | frozen_strategy_params_v2.2.json |
 | .env | 146 | .env for API keys |
 | state/ | 47 | state/watchlist/next_day.json |
-| .csv | 38 | universe/optionable_liquid_900.csv |
+| .csv | 38 | universe/optionable_liquid_800.csv |
 | .yaml | 15 | config/base.yaml |
 | config/ | 1 | Configuration directory |
 
@@ -111,7 +111,7 @@
 | File | Purpose |
 |------|---------|
 | config/frozen_strategy_params_v2.2.json | Strategy parameters |
-| data/universe/optionable_liquid_900.csv | 900 stock universe |
+| data/universe/optionable_liquid_800.csv | 900 stock universe |
 | state/watchlist/next_day.json | Tomorrow's Top 5 |
 | state/autonomous/heartbeat.json | Robot alive status |
 | .env | API keys (not in repo) |

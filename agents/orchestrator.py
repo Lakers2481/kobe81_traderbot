@@ -26,7 +26,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from agents.base_agent import PAPER_ONLY, AgentResult, AgentStatus
+from agents.base_agent import PAPER_ONLY
 from agents.scout_agent import ScoutAgent, IdeaCard
 from agents.auditor_agent import AuditorAgent
 from agents.risk_agent import RiskAgent

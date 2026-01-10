@@ -1,0 +1,6241 @@
+{
+  "files": [
+    {
+      "path": "run_brain.py",
+      "name": "run_brain.py",
+      "size": 1813,
+      "mtime": 1767647254,
+      "module": "root"
+    },
+    {
+      "path": "run_brain_full.py",
+      "name": "run_brain_full.py",
+      "size": 937,
+      "mtime": 1767647212,
+      "module": "root"
+    },
+    {
+      "path": "verify_fix_4.py",
+      "name": "verify_fix_4.py",
+      "size": 9796,
+      "mtime": 1767933522,
+      "module": "root"
+    },
+    {
+      "path": "verify_pipeline.py",
+      "name": "verify_pipeline.py",
+      "size": 4218,
+      "mtime": 1767837096,
+      "module": "root"
+    },
+    {
+      "path": "agents\\agent_tools.py",
+      "name": "agent_tools.py",
+      "size": 19418,
+      "mtime": 1767755147,
+      "module": "agents"
+    },
+    {
+      "path": "agents\\auditor_agent.py",
+      "name": "auditor_agent.py",
+      "size": 15676,
+      "mtime": 1767755147,
+      "module": "agents"
+    },
+    {
+      "path": "agents\\autogen_team.py",
+      "name": "autogen_team.py",
+      "size": 19739,
+      "mtime": 1767755147,
+      "module": "agents"
+    },
+    {
+      "path": "agents\\base_agent.py",
+      "name": "base_agent.py",
+      "size": 14234,
+      "mtime": 1767755147,
+      "module": "agents"
+    },
+    {
+      "path": "agents\\langgraph_coordinator.py",
+      "name": "langgraph_coordinator.py",
+      "size": 18347,
+      "mtime": 1767755147,
+      "module": "agents"
+    },
+    {
+      "path": "agents\\orchestrator.py",
+      "name": "orchestrator.py",
+      "size": 12793,
+      "mtime": 1767755147,
+      "module": "agents"
+    },
+    {
+      "path": "agents\\reporter_agent.py",
+      "name": "reporter_agent.py",
+      "size": 9633,
+      "mtime": 1767755147,
+      "module": "agents"
+    },
+    {
+      "path": "agents\\risk_agent.py",
+      "name": "risk_agent.py",
+      "size": 15374,
+      "mtime": 1767755147,
+      "module": "agents"
+    },
+    {
+      "path": "agents\\scout_agent.py",
+      "name": "scout_agent.py",
+      "size": 10036,
+      "mtime": 1767755147,
+      "module": "agents"
+    },
+    {
+      "path": "agents\\__init__.py",
+      "name": "__init__.py",
+      "size": 2099,
+      "mtime": 1767501637,
+      "module": "agents"
+    },
+    {
+      "path": "alerts\\professional_alerts.py",
+      "name": "professional_alerts.py",
+      "size": 16199,
+      "mtime": 1766787820,
+      "module": "alerts"
+    },
+    {
+      "path": "alerts\\regime_alerts.py",
+      "name": "regime_alerts.py",
+      "size": 7315,
+      "mtime": 1767755147,
+      "module": "alerts"
+    },
+    {
+      "path": "alerts\\telegram_alerter.py",
+      "name": "telegram_alerter.py",
+      "size": 12781,
+      "mtime": 1767200730,
+      "module": "alerts"
+    },
+    {
+      "path": "alerts\\telegram_commander.py",
+      "name": "telegram_commander.py",
+      "size": 11761,
+      "mtime": 1767755147,
+      "module": "alerts"
+    },
+    {
+      "path": "alerts\\__init__.py",
+      "name": "__init__.py",
+      "size": 584,
+      "mtime": 1766787818,
+      "module": "alerts"
+    },
+    {
+      "path": "altdata\\congressional_trades.py",
+      "name": "congressional_trades.py",
+      "size": 17502,
+      "mtime": 1767755147,
+      "module": "altdata"
+    },
+    {
+      "path": "altdata\\github_activity.py",
+      "name": "github_activity.py",
+      "size": 13373,
+      "mtime": 1767760246,
+      "module": "altdata"
+    },
+    {
+      "path": "altdata\\insider_activity.py",
+      "name": "insider_activity.py",
+      "size": 18354,
+      "mtime": 1767755147,
+      "module": "altdata"
+    },
+    {
+      "path": "altdata\\market_mood_analyzer.py",
+      "name": "market_mood_analyzer.py",
+      "size": 15673,
+      "mtime": 1766910136,
+      "module": "altdata"
+    },
+    {
+      "path": "altdata\\news_processor.py",
+      "name": "news_processor.py",
+      "size": 19180,
+      "mtime": 1767755147,
+      "module": "altdata"
+    },
+    {
+      "path": "altdata\\options_flow.py",
+      "name": "options_flow.py",
+      "size": 25393,
+      "mtime": 1767755147,
+      "module": "altdata"
+    },
+    {
+      "path": "altdata\\political_sentiment.py",
+      "name": "political_sentiment.py",
+      "size": 18279,
+      "mtime": 1767760305,
+      "module": "altdata"
+    },
+    {
+      "path": "altdata\\sentiment.py",
+      "name": "sentiment.py",
+      "size": 7564,
+      "mtime": 1767930898,
+      "module": "altdata"
+    },
+    {
+      "path": "altdata\\sentiment_fingpt.py",
+      "name": "sentiment_fingpt.py",
+      "size": 18768,
+      "mtime": 1767930864,
+      "module": "altdata"
+    },
+    {
+      "path": "altdata\\__init__.py",
+      "name": "__init__.py",
+      "size": 1181,
+      "mtime": 1767416196,
+      "module": "altdata"
+    },
+    {
+      "path": "analysis\\historical_patterns.py",
+      "name": "historical_patterns.py",
+      "size": 55005,
+      "mtime": 1767920884,
+      "module": "analysis"
+    },
+    {
+      "path": "analysis\\options_expected_move.py",
+      "name": "options_expected_move.py",
+      "size": 12778,
+      "mtime": 1767382017,
+      "module": "analysis"
+    },
+    {
+      "path": "analysis\\__init__.py",
+      "name": "__init__.py",
+      "size": 966,
+      "mtime": 1767381685,
+      "module": "analysis"
+    },
+    {
+      "path": "analytics\\auto_standdown.py",
+      "name": "auto_standdown.py",
+      "size": 18584,
+      "mtime": 1767755147,
+      "module": "analytics"
+    },
+    {
+      "path": "analytics\\duckdb_engine.py",
+      "name": "duckdb_engine.py",
+      "size": 14771,
+      "mtime": 1767755147,
+      "module": "analytics"
+    },
+    {
+      "path": "analytics\\edge_decomposition.py",
+      "name": "edge_decomposition.py",
+      "size": 22732,
+      "mtime": 1767755147,
+      "module": "analytics"
+    },
+    {
+      "path": "analytics\\factor_attribution.py",
+      "name": "factor_attribution.py",
+      "size": 16283,
+      "mtime": 1767310257,
+      "module": "analytics"
+    },
+    {
+      "path": "analytics\\pyfolio_integration.py",
+      "name": "pyfolio_integration.py",
+      "size": 19489,
+      "mtime": 1767834594,
+      "module": "analytics"
+    },
+    {
+      "path": "analytics\\recovery_analyzer.py",
+      "name": "recovery_analyzer.py",
+      "size": 15173,
+      "mtime": 1767923057,
+      "module": "analytics"
+    },
+    {
+      "path": "analytics\\statistical_testing.py",
+      "name": "statistical_testing.py",
+      "size": 20120,
+      "mtime": 1767922975,
+      "module": "analytics"
+    },
+    {
+      "path": "analytics\\__init__.py",
+      "name": "__init__.py",
+      "size": 1942,
+      "mtime": 1767834233,
+      "module": "analytics"
+    },
+    {
+      "path": "analytics\\alpha_decay\\alpha_monitor.py",
+      "name": "alpha_monitor.py",
+      "size": 21206,
+      "mtime": 1767755147,
+      "module": "analytics"
+    },
+    {
+      "path": "analytics\\alpha_decay\\__init__.py",
+      "name": "__init__.py",
+      "size": 867,
+      "mtime": 1767576618,
+      "module": "analytics"
+    },
+    {
+      "path": "analytics\\attribution\\attribution_report.py",
+      "name": "attribution_report.py",
+      "size": 16738,
+      "mtime": 1767755147,
+      "module": "analytics"
+    },
+    {
+      "path": "analytics\\attribution\\daily_pnl.py",
+      "name": "daily_pnl.py",
+      "size": 16858,
+      "mtime": 1767755147,
+      "module": "analytics"
+    },
+    {
+      "path": "analytics\\attribution\\factor_attribution.py",
+      "name": "factor_attribution.py",
+      "size": 12017,
+      "mtime": 1767755147,
+      "module": "analytics"
+    },
+    {
+      "path": "analytics\\attribution\\strategy_attribution.py",
+      "name": "strategy_attribution.py",
+      "size": 15063,
+      "mtime": 1767761486,
+      "module": "analytics"
+    },
+    {
+      "path": "analytics\\attribution\\__init__.py",
+      "name": "__init__.py",
+      "size": 1484,
+      "mtime": 1767576011,
+      "module": "analytics"
+    },
+    {
+      "path": "AUDITS\\generate_census.py",
+      "name": "generate_census.py",
+      "size": 5931,
+      "mtime": 1767761498,
+      "module": "AUDITS"
+    },
+    {
+      "path": "autonomous\\awareness.py",
+      "name": "awareness.py",
+      "size": 26196,
+      "mtime": 1767755147,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\brain.py",
+      "name": "brain.py",
+      "size": 25292,
+      "mtime": 1767894237,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\comprehensive_brain.py",
+      "name": "comprehensive_brain.py",
+      "size": 38232,
+      "mtime": 1767892907,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\data_validator.py",
+      "name": "data_validator.py",
+      "size": 27443,
+      "mtime": 1767755147,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\enhanced_brain.py",
+      "name": "enhanced_brain.py",
+      "size": 22610,
+      "mtime": 1767892933,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\enhanced_research.py",
+      "name": "enhanced_research.py",
+      "size": 23298,
+      "mtime": 1767833149,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\handlers.py",
+      "name": "handlers.py",
+      "size": 64139,
+      "mtime": 1767891922,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\integrity.py",
+      "name": "integrity.py",
+      "size": 12703,
+      "mtime": 1767755147,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\knowledge_integrator.py",
+      "name": "knowledge_integrator.py",
+      "size": 17242,
+      "mtime": 1767644147,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\learning.py",
+      "name": "learning.py",
+      "size": 22118,
+      "mtime": 1767855955,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\maintenance.py",
+      "name": "maintenance.py",
+      "size": 8338,
+      "mtime": 1767755147,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\master_brain.py",
+      "name": "master_brain.py",
+      "size": 39118,
+      "mtime": 1767892880,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\master_brain_full.py",
+      "name": "master_brain_full.py",
+      "size": 57497,
+      "mtime": 1767761532,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\monitor.py",
+      "name": "monitor.py",
+      "size": 14738,
+      "mtime": 1767856371,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\pattern_rhymes.py",
+      "name": "pattern_rhymes.py",
+      "size": 15924,
+      "mtime": 1767755147,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\research.py",
+      "name": "research.py",
+      "size": 57067,
+      "mtime": 1767831412,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\run.py",
+      "name": "run.py",
+      "size": 21793,
+      "mtime": 1767755147,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\scheduler.py",
+      "name": "scheduler.py",
+      "size": 40688,
+      "mtime": 1767892746,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\scheduler_full.py",
+      "name": "scheduler_full.py",
+      "size": 72713,
+      "mtime": 1767755147,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\self_healer.py",
+      "name": "self_healer.py",
+      "size": 17635,
+      "mtime": 1767892648,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\source_tracker.py",
+      "name": "source_tracker.py",
+      "size": 10380,
+      "mtime": 1767422344,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\__init__.py",
+      "name": "__init__.py",
+      "size": 1622,
+      "mtime": 1767833261,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\__main__.py",
+      "name": "__main__.py",
+      "size": 324,
+      "mtime": 1767504756,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\scrapers\\all_sources.py",
+      "name": "all_sources.py",
+      "size": 28914,
+      "mtime": 1767646172,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\scrapers\\arxiv_scraper.py",
+      "name": "arxiv_scraper.py",
+      "size": 13019,
+      "mtime": 1767424105,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\scrapers\\firecrawl_adapter.py",
+      "name": "firecrawl_adapter.py",
+      "size": 23449,
+      "mtime": 1767839351,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\scrapers\\github_scraper.py",
+      "name": "github_scraper.py",
+      "size": 9667,
+      "mtime": 1767424066,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\scrapers\\reddit_scraper.py",
+      "name": "reddit_scraper.py",
+      "size": 10539,
+      "mtime": 1767755147,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\scrapers\\source_manager.py",
+      "name": "source_manager.py",
+      "size": 16365,
+      "mtime": 1767838396,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\scrapers\\youtube_scraper.py",
+      "name": "youtube_scraper.py",
+      "size": 7719,
+      "mtime": 1767755147,
+      "module": "autonomous"
+    },
+    {
+      "path": "autonomous\\scrapers\\__init__.py",
+      "name": "__init__.py",
+      "size": 1118,
+      "mtime": 1767422084,
+      "module": "autonomous"
+    },
+    {
+      "path": "backtest\\costs.py",
+      "name": "costs.py",
+      "size": 9343,
+      "mtime": 1766818931,
+      "module": "backtest"
+    },
+    {
+      "path": "backtest\\engine.py",
+      "name": "engine.py",
+      "size": 24199,
+      "mtime": 1767849633,
+      "module": "backtest"
+    },
+    {
+      "path": "backtest\\fill_model.py",
+      "name": "fill_model.py",
+      "size": 13043,
+      "mtime": 1766818932,
+      "module": "backtest"
+    },
+    {
+      "path": "backtest\\gap_risk_model.py",
+      "name": "gap_risk_model.py",
+      "size": 16547,
+      "mtime": 1767755147,
+      "module": "backtest"
+    },
+    {
+      "path": "backtest\\monte_carlo.py",
+      "name": "monte_carlo.py",
+      "size": 12542,
+      "mtime": 1767493577,
+      "module": "backtest"
+    },
+    {
+      "path": "backtest\\multi_timeframe.py",
+      "name": "multi_timeframe.py",
+      "size": 12649,
+      "mtime": 1767755147,
+      "module": "backtest"
+    },
+    {
+      "path": "backtest\\purged_cv.py",
+      "name": "purged_cv.py",
+      "size": 18957,
+      "mtime": 1767322720,
+      "module": "backtest"
+    },
+    {
+      "path": "backtest\\regime_adaptive_slippage.py",
+      "name": "regime_adaptive_slippage.py",
+      "size": 16100,
+      "mtime": 1767755147,
+      "module": "backtest"
+    },
+    {
+      "path": "backtest\\reproducibility.py",
+      "name": "reproducibility.py",
+      "size": 25928,
+      "mtime": 1767493665,
+      "module": "backtest"
+    },
+    {
+      "path": "backtest\\slippage.py",
+      "name": "slippage.py",
+      "size": 12093,
+      "mtime": 1766818930,
+      "module": "backtest"
+    },
+    {
+      "path": "backtest\\triple_barrier.py",
+      "name": "triple_barrier.py",
+      "size": 19046,
+      "mtime": 1767755147,
+      "module": "backtest"
+    },
+    {
+      "path": "backtest\\vectorbt_engine.py",
+      "name": "vectorbt_engine.py",
+      "size": 18838,
+      "mtime": 1767755147,
+      "module": "backtest"
+    },
+    {
+      "path": "backtest\\vectorized.py",
+      "name": "vectorized.py",
+      "size": 16826,
+      "mtime": 1767755147,
+      "module": "backtest"
+    },
+    {
+      "path": "backtest\\vectorized_fast.py",
+      "name": "vectorized_fast.py",
+      "size": 22896,
+      "mtime": 1767832681,
+      "module": "backtest"
+    },
+    {
+      "path": "backtest\\visualization.py",
+      "name": "visualization.py",
+      "size": 23845,
+      "mtime": 1767755147,
+      "module": "backtest"
+    },
+    {
+      "path": "backtest\\walk_forward.py",
+      "name": "walk_forward.py",
+      "size": 12301,
+      "mtime": 1767755147,
+      "module": "backtest"
+    },
+    {
+      "path": "backtest\\__init__.py",
+      "name": "__init__.py",
+      "size": 2735,
+      "mtime": 1767300309,
+      "module": "backtest"
+    },
+    {
+      "path": "bounce\\bounce_score.py",
+      "name": "bounce_score.py",
+      "size": 13094,
+      "mtime": 1767755147,
+      "module": "bounce"
+    },
+    {
+      "path": "bounce\\data_loader.py",
+      "name": "data_loader.py",
+      "size": 15288,
+      "mtime": 1767755147,
+      "module": "bounce"
+    },
+    {
+      "path": "bounce\\event_table.py",
+      "name": "event_table.py",
+      "size": 12438,
+      "mtime": 1767755147,
+      "module": "bounce"
+    },
+    {
+      "path": "bounce\\profile_generator.py",
+      "name": "profile_generator.py",
+      "size": 26115,
+      "mtime": 1767755147,
+      "module": "bounce"
+    },
+    {
+      "path": "bounce\\strategy_integration.py",
+      "name": "strategy_integration.py",
+      "size": 14877,
+      "mtime": 1767755147,
+      "module": "bounce"
+    },
+    {
+      "path": "bounce\\streak_analyzer.py",
+      "name": "streak_analyzer.py",
+      "size": 11602,
+      "mtime": 1767755147,
+      "module": "bounce"
+    },
+    {
+      "path": "bounce\\validation.py",
+      "name": "validation.py",
+      "size": 10660,
+      "mtime": 1767755147,
+      "module": "bounce"
+    },
+    {
+      "path": "bounce\\__init__.py",
+      "name": "__init__.py",
+      "size": 7750,
+      "mtime": 1767473760,
+      "module": "bounce"
+    },
+    {
+      "path": "cognitive\\adjudicator.py",
+      "name": "adjudicator.py",
+      "size": 3840,
+      "mtime": 1766898156,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\azr_reasoning.py",
+      "name": "azr_reasoning.py",
+      "size": 33743,
+      "mtime": 1767755147,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\brain_graph.py",
+      "name": "brain_graph.py",
+      "size": 23492,
+      "mtime": 1767832338,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\causal_reasoner.py",
+      "name": "causal_reasoner.py",
+      "size": 23698,
+      "mtime": 1767760180,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\circuit_breakers.py",
+      "name": "circuit_breakers.py",
+      "size": 15604,
+      "mtime": 1767755147,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\cognitive_brain.py",
+      "name": "cognitive_brain.py",
+      "size": 38704,
+      "mtime": 1767892815,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\contradiction_resolver.py",
+      "name": "contradiction_resolver.py",
+      "size": 27368,
+      "mtime": 1767837521,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\curiosity_engine.py",
+      "name": "curiosity_engine.py",
+      "size": 49943,
+      "mtime": 1767755147,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\dynamic_policy_generator.py",
+      "name": "dynamic_policy_generator.py",
+      "size": 26911,
+      "mtime": 1767755147,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\episodic_memory.py",
+      "name": "episodic_memory.py",
+      "size": 26130,
+      "mtime": 1767324817,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\game_briefings.py",
+      "name": "game_briefings.py",
+      "size": 69044,
+      "mtime": 1767755147,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\global_workspace.py",
+      "name": "global_workspace.py",
+      "size": 15853,
+      "mtime": 1767755147,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\knowledge_boundary.py",
+      "name": "knowledge_boundary.py",
+      "size": 26048,
+      "mtime": 1767755147,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\llm_narrative_analyzer.py",
+      "name": "llm_narrative_analyzer.py",
+      "size": 21890,
+      "mtime": 1767595632,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\llm_trade_analyzer.py",
+      "name": "llm_trade_analyzer.py",
+      "size": 98922,
+      "mtime": 1767493953,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\llm_validator.py",
+      "name": "llm_validator.py",
+      "size": 19483,
+      "mtime": 1767755147,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\metacognitive_governor.py",
+      "name": "metacognitive_governor.py",
+      "size": 34989,
+      "mtime": 1767837882,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\policy_generator.py",
+      "name": "policy_generator.py",
+      "size": 851,
+      "mtime": 1766926559,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\rag_evaluator.py",
+      "name": "rag_evaluator.py",
+      "size": 29319,
+      "mtime": 1767832790,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\reflection_engine.py",
+      "name": "reflection_engine.py",
+      "size": 25800,
+      "mtime": 1766911305,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\self_consistency.py",
+      "name": "self_consistency.py",
+      "size": 19821,
+      "mtime": 1767837432,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\self_model.py",
+      "name": "self_model.py",
+      "size": 33618,
+      "mtime": 1766910697,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\semantic_memory.py",
+      "name": "semantic_memory.py",
+      "size": 23134,
+      "mtime": 1767856002,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\signal_adjudicator.py",
+      "name": "signal_adjudicator.py",
+      "size": 25841,
+      "mtime": 1767236642,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\signal_processor.py",
+      "name": "signal_processor.py",
+      "size": 30099,
+      "mtime": 1767889406,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\socratic_narrative.py",
+      "name": "socratic_narrative.py",
+      "size": 28470,
+      "mtime": 1767755147,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\states.py",
+      "name": "states.py",
+      "size": 6535,
+      "mtime": 1767832266,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\symbolic_reasoner.py",
+      "name": "symbolic_reasoner.py",
+      "size": 22388,
+      "mtime": 1767755147,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\symbol_rag.py",
+      "name": "symbol_rag.py",
+      "size": 12910,
+      "mtime": 1767755147,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\symbol_rag_production.py",
+      "name": "symbol_rag_production.py",
+      "size": 23230,
+      "mtime": 1767932854,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\tree_of_thoughts.py",
+      "name": "tree_of_thoughts.py",
+      "size": 23007,
+      "mtime": 1767837358,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\tweet_generator.py",
+      "name": "tweet_generator.py",
+      "size": 7969,
+      "mtime": 1767493577,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\vector_memory.py",
+      "name": "vector_memory.py",
+      "size": 17320,
+      "mtime": 1767755147,
+      "module": "cognitive"
+    },
+    {
+      "path": "cognitive\\__init__.py",
+      "name": "__init__.py",
+      "size": 3421,
+      "mtime": 1767236659,
+      "module": "cognitive"
+    },
+    {
+      "path": "compliance\\audit_trail.py",
+      "name": "audit_trail.py",
+      "size": 926,
+      "mtime": 1767755147,
+      "module": "compliance"
+    },
+    {
+      "path": "compliance\\prohibited_list.py",
+      "name": "prohibited_list.py",
+      "size": 1675,
+      "mtime": 1767755147,
+      "module": "compliance"
+    },
+    {
+      "path": "compliance\\rules_engine.py",
+      "name": "rules_engine.py",
+      "size": 4058,
+      "mtime": 1767592465,
+      "module": "compliance"
+    },
+    {
+      "path": "compliance\\__init__.py",
+      "name": "__init__.py",
+      "size": 981,
+      "mtime": 1767583480,
+      "module": "compliance"
+    },
+    {
+      "path": "config\\env_loader.py",
+      "name": "env_loader.py",
+      "size": 1463,
+      "mtime": 1766770885,
+      "module": "config"
+    },
+    {
+      "path": "config\\FROZEN_PIPELINE.py",
+      "name": "FROZEN_PIPELINE.py",
+      "size": 7512,
+      "mtime": 1767814812,
+      "module": "config"
+    },
+    {
+      "path": "config\\settings_loader.py",
+      "name": "settings_loader.py",
+      "size": 12380,
+      "mtime": 1767333265,
+      "module": "config"
+    },
+    {
+      "path": "config\\settings_schema.py",
+      "name": "settings_schema.py",
+      "size": 12200,
+      "mtime": 1767767228,
+      "module": "config"
+    },
+    {
+      "path": "config\\__init__.py",
+      "name": "__init__.py",
+      "size": 0,
+      "mtime": 1766722010,
+      "module": "config"
+    },
+    {
+      "path": "core\\alerts.py",
+      "name": "alerts.py",
+      "size": 887,
+      "mtime": 1766769732,
+      "module": "core"
+    },
+    {
+      "path": "core\\circuit_breaker.py",
+      "name": "circuit_breaker.py",
+      "size": 16738,
+      "mtime": 1767755147,
+      "module": "core"
+    },
+    {
+      "path": "core\\config_pin.py",
+      "name": "config_pin.py",
+      "size": 300,
+      "mtime": 1766723543,
+      "module": "core"
+    },
+    {
+      "path": "core\\decision_packet.py",
+      "name": "decision_packet.py",
+      "size": 17686,
+      "mtime": 1767755147,
+      "module": "core"
+    },
+    {
+      "path": "core\\earnings_filter.py",
+      "name": "earnings_filter.py",
+      "size": 19820,
+      "mtime": 1767679330,
+      "module": "core"
+    },
+    {
+      "path": "core\\hash_chain.py",
+      "name": "hash_chain.py",
+      "size": 1528,
+      "mtime": 1766723562,
+      "module": "core"
+    },
+    {
+      "path": "core\\http_client.py",
+      "name": "http_client.py",
+      "size": 7168,
+      "mtime": 1767621179,
+      "module": "core"
+    },
+    {
+      "path": "core\\journal.py",
+      "name": "journal.py",
+      "size": 1317,
+      "mtime": 1766808357,
+      "module": "core"
+    },
+    {
+      "path": "core\\kill_switch.py",
+      "name": "kill_switch.py",
+      "size": 8135,
+      "mtime": 1767756244,
+      "module": "core"
+    },
+    {
+      "path": "core\\lineage.py",
+      "name": "lineage.py",
+      "size": 12377,
+      "mtime": 1767755147,
+      "module": "core"
+    },
+    {
+      "path": "core\\rate_limiter.py",
+      "name": "rate_limiter.py",
+      "size": 6132,
+      "mtime": 1766738548,
+      "module": "core"
+    },
+    {
+      "path": "core\\regime_filter.py",
+      "name": "regime_filter.py",
+      "size": 6600,
+      "mtime": 1767755147,
+      "module": "core"
+    },
+    {
+      "path": "core\\restart_backoff.py",
+      "name": "restart_backoff.py",
+      "size": 11160,
+      "mtime": 1767755147,
+      "module": "core"
+    },
+    {
+      "path": "core\\safe_pickle.py",
+      "name": "safe_pickle.py",
+      "size": 4316,
+      "mtime": 1767588301,
+      "module": "core"
+    },
+    {
+      "path": "core\\secrets.py",
+      "name": "secrets.py",
+      "size": 8242,
+      "mtime": 1767596171,
+      "module": "core"
+    },
+    {
+      "path": "core\\signal_freshness.py",
+      "name": "signal_freshness.py",
+      "size": 8463,
+      "mtime": 1767114020,
+      "module": "core"
+    },
+    {
+      "path": "core\\structured_log.py",
+      "name": "structured_log.py",
+      "size": 4657,
+      "mtime": 1767053802,
+      "module": "core"
+    },
+    {
+      "path": "core\\vix_monitor.py",
+      "name": "vix_monitor.py",
+      "size": 13115,
+      "mtime": 1767755147,
+      "module": "core"
+    },
+    {
+      "path": "core\\__init__.py",
+      "name": "__init__.py",
+      "size": 1016,
+      "mtime": 1766937824,
+      "module": "core"
+    },
+    {
+      "path": "core\\clock\\crypto_clock.py",
+      "name": "crypto_clock.py",
+      "size": 4591,
+      "mtime": 1766818521,
+      "module": "core"
+    },
+    {
+      "path": "core\\clock\\date_utils.py",
+      "name": "date_utils.py",
+      "size": 4407,
+      "mtime": 1767796571,
+      "module": "core"
+    },
+    {
+      "path": "core\\clock\\equities_calendar.py",
+      "name": "equities_calendar.py",
+      "size": 10790,
+      "mtime": 1767755147,
+      "module": "core"
+    },
+    {
+      "path": "core\\clock\\macro_events.py",
+      "name": "macro_events.py",
+      "size": 9242,
+      "mtime": 1767493522,
+      "module": "core"
+    },
+    {
+      "path": "core\\clock\\market_clock.py",
+      "name": "market_clock.py",
+      "size": 9880,
+      "mtime": 1767755147,
+      "module": "core"
+    },
+    {
+      "path": "core\\clock\\options_event_clock.py",
+      "name": "options_event_clock.py",
+      "size": 8272,
+      "mtime": 1767755147,
+      "module": "core"
+    },
+    {
+      "path": "core\\clock\\tz_utils.py",
+      "name": "tz_utils.py",
+      "size": 2098,
+      "mtime": 1766823374,
+      "module": "core"
+    },
+    {
+      "path": "core\\clock\\__init__.py",
+      "name": "__init__.py",
+      "size": 1012,
+      "mtime": 1767796599,
+      "module": "core"
+    },
+    {
+      "path": "dashboard\\ml_confidence.py",
+      "name": "ml_confidence.py",
+      "size": 13813,
+      "mtime": 1767493577,
+      "module": "dashboard"
+    },
+    {
+      "path": "dashboard\\__init__.py",
+      "name": "__init__.py",
+      "size": 710,
+      "mtime": 1767163141,
+      "module": "dashboard"
+    },
+    {
+      "path": "data\\corporate_actions.py",
+      "name": "corporate_actions.py",
+      "size": 9570,
+      "mtime": 1766818933,
+      "module": "data"
+    },
+    {
+      "path": "data\\quorum.py",
+      "name": "quorum.py",
+      "size": 23945,
+      "mtime": 1767755147,
+      "module": "data"
+    },
+    {
+      "path": "data\\validation.py",
+      "name": "validation.py",
+      "size": 18978,
+      "mtime": 1767755147,
+      "module": "data"
+    },
+    {
+      "path": "data\\__init__.py",
+      "name": "__init__.py",
+      "size": 0,
+      "mtime": 1766722107,
+      "module": "data"
+    },
+    {
+      "path": "data\\alternative\\alt_data_aggregator.py",
+      "name": "alt_data_aggregator.py",
+      "size": 14064,
+      "mtime": 1767577183,
+      "module": "data"
+    },
+    {
+      "path": "data\\alternative\\congress_trades.py",
+      "name": "congress_trades.py",
+      "size": 16816,
+      "mtime": 1767577040,
+      "module": "data"
+    },
+    {
+      "path": "data\\alternative\\insider_trades.py",
+      "name": "insider_trades.py",
+      "size": 17425,
+      "mtime": 1767576969,
+      "module": "data"
+    },
+    {
+      "path": "data\\alternative\\news_sentiment.py",
+      "name": "news_sentiment.py",
+      "size": 17077,
+      "mtime": 1767576888,
+      "module": "data"
+    },
+    {
+      "path": "data\\alternative\\options_flow.py",
+      "name": "options_flow.py",
+      "size": 18880,
+      "mtime": 1767577121,
+      "module": "data"
+    },
+    {
+      "path": "data\\alternative\\__init__.py",
+      "name": "__init__.py",
+      "size": 1665,
+      "mtime": 1767577197,
+      "module": "data"
+    },
+    {
+      "path": "data\\lake\\io.py",
+      "name": "io.py",
+      "size": 11919,
+      "mtime": 1767755147,
+      "module": "data"
+    },
+    {
+      "path": "data\\lake\\manifest.py",
+      "name": "manifest.py",
+      "size": 11045,
+      "mtime": 1767755147,
+      "module": "data"
+    },
+    {
+      "path": "data\\lake\\__init__.py",
+      "name": "__init__.py",
+      "size": 1755,
+      "mtime": 1766811255,
+      "module": "data"
+    },
+    {
+      "path": "data\\ml\\generative_market_model.py",
+      "name": "generative_market_model.py",
+      "size": 16820,
+      "mtime": 1766911177,
+      "module": "data"
+    },
+    {
+      "path": "data\\ml\\__init__.py",
+      "name": "__init__.py",
+      "size": 446,
+      "mtime": 1766911098,
+      "module": "data"
+    },
+    {
+      "path": "data\\providers\\alpaca_intraday.py",
+      "name": "alpaca_intraday.py",
+      "size": 7199,
+      "mtime": 1767755147,
+      "module": "data"
+    },
+    {
+      "path": "data\\providers\\alpaca_live.py",
+      "name": "alpaca_live.py",
+      "size": 14356,
+      "mtime": 1767755147,
+      "module": "data"
+    },
+    {
+      "path": "data\\providers\\alpaca_websocket.py",
+      "name": "alpaca_websocket.py",
+      "size": 9931,
+      "mtime": 1767065817,
+      "module": "data"
+    },
+    {
+      "path": "data\\providers\\bea_macro.py",
+      "name": "bea_macro.py",
+      "size": 9730,
+      "mtime": 1767755147,
+      "module": "data"
+    },
+    {
+      "path": "data\\providers\\binance_klines.py",
+      "name": "binance_klines.py",
+      "size": 9761,
+      "mtime": 1767755147,
+      "module": "data"
+    },
+    {
+      "path": "data\\providers\\cftc_cot.py",
+      "name": "cftc_cot.py",
+      "size": 18136,
+      "mtime": 1767755147,
+      "module": "data"
+    },
+    {
+      "path": "data\\providers\\eia_energy.py",
+      "name": "eia_energy.py",
+      "size": 13776,
+      "mtime": 1767755147,
+      "module": "data"
+    },
+    {
+      "path": "data\\providers\\fred_macro.py",
+      "name": "fred_macro.py",
+      "size": 16716,
+      "mtime": 1767572307,
+      "module": "data"
+    },
+    {
+      "path": "data\\providers\\multi_source.py",
+      "name": "multi_source.py",
+      "size": 19904,
+      "mtime": 1767755147,
+      "module": "data"
+    },
+    {
+      "path": "data\\providers\\polygon_crypto.py",
+      "name": "polygon_crypto.py",
+      "size": 5659,
+      "mtime": 1767493577,
+      "module": "data"
+    },
+    {
+      "path": "data\\providers\\polygon_eod.py",
+      "name": "polygon_eod.py",
+      "size": 9301,
+      "mtime": 1767755147,
+      "module": "data"
+    },
+    {
+      "path": "data\\providers\\polygon_intraday.py",
+      "name": "polygon_intraday.py",
+      "size": 7893,
+      "mtime": 1767755147,
+      "module": "data"
+    },
+    {
+      "path": "data\\providers\\stooq_eod.py",
+      "name": "stooq_eod.py",
+      "size": 9029,
+      "mtime": 1767755147,
+      "module": "data"
+    },
+    {
+      "path": "data\\providers\\treasury_yields.py",
+      "name": "treasury_yields.py",
+      "size": 15215,
+      "mtime": 1767755147,
+      "module": "data"
+    },
+    {
+      "path": "data\\providers\\yfinance_eod.py",
+      "name": "yfinance_eod.py",
+      "size": 7631,
+      "mtime": 1767755147,
+      "module": "data"
+    },
+    {
+      "path": "data\\providers\\__init__.py",
+      "name": "__init__.py",
+      "size": 0,
+      "mtime": 1766722107,
+      "module": "data"
+    },
+    {
+      "path": "data\\quality\\corporate_actions_canary.py",
+      "name": "corporate_actions_canary.py",
+      "size": 10280,
+      "mtime": 1767755147,
+      "module": "data"
+    },
+    {
+      "path": "data\\quality\\__init__.py",
+      "name": "__init__.py",
+      "size": 649,
+      "mtime": 1767596064,
+      "module": "data"
+    },
+    {
+      "path": "data\\schemas\\ohlcv_schema.py",
+      "name": "ohlcv_schema.py",
+      "size": 6239,
+      "mtime": 1767833297,
+      "module": "data"
+    },
+    {
+      "path": "data\\universe\\canonical.py",
+      "name": "canonical.py",
+      "size": 2529,
+      "mtime": 1767493522,
+      "module": "data"
+    },
+    {
+      "path": "data\\universe\\loader.py",
+      "name": "loader.py",
+      "size": 2718,
+      "mtime": 1767464591,
+      "module": "data"
+    },
+    {
+      "path": "data\\universe\\__init__.py",
+      "name": "__init__.py",
+      "size": 0,
+      "mtime": 1766722107,
+      "module": "data"
+    },
+    {
+      "path": "data_exploration\\data_registry.py",
+      "name": "data_registry.py",
+      "size": 11447,
+      "mtime": 1767755147,
+      "module": "data_exploration"
+    },
+    {
+      "path": "data_exploration\\feature_discovery.py",
+      "name": "feature_discovery.py",
+      "size": 13311,
+      "mtime": 1767755147,
+      "module": "data_exploration"
+    },
+    {
+      "path": "data_exploration\\feature_imp.py",
+      "name": "feature_imp.py",
+      "size": 1602,
+      "mtime": 1767755147,
+      "module": "data_exploration"
+    },
+    {
+      "path": "data_exploration\\feature_importance.py",
+      "name": "feature_importance.py",
+      "size": 11526,
+      "mtime": 1767755147,
+      "module": "data_exploration"
+    },
+    {
+      "path": "data_exploration\\__init__.py",
+      "name": "__init__.py",
+      "size": 151,
+      "mtime": 1766817220,
+      "module": "data_exploration"
+    },
+    {
+      "path": "evaluation\\rl_benchmark.py",
+      "name": "rl_benchmark.py",
+      "size": 26927,
+      "mtime": 1767932074,
+      "module": "evaluation"
+    },
+    {
+      "path": "evolution\\clone_detector.py",
+      "name": "clone_detector.py",
+      "size": 9451,
+      "mtime": 1767755147,
+      "module": "evolution"
+    },
+    {
+      "path": "evolution\\genetic_optimizer.py",
+      "name": "genetic_optimizer.py",
+      "size": 18871,
+      "mtime": 1767755147,
+      "module": "evolution"
+    },
+    {
+      "path": "evolution\\promotion_gate.py",
+      "name": "promotion_gate.py",
+      "size": 1478,
+      "mtime": 1766817542,
+      "module": "evolution"
+    },
+    {
+      "path": "evolution\\registry.py",
+      "name": "registry.py",
+      "size": 11897,
+      "mtime": 1766819029,
+      "module": "evolution"
+    },
+    {
+      "path": "evolution\\rule_generator.py",
+      "name": "rule_generator.py",
+      "size": 1634,
+      "mtime": 1766886875,
+      "module": "evolution"
+    },
+    {
+      "path": "evolution\\strategy_foundry.py",
+      "name": "strategy_foundry.py",
+      "size": 22362,
+      "mtime": 1767755147,
+      "module": "evolution"
+    },
+    {
+      "path": "evolution\\strategy_mutator.py",
+      "name": "strategy_mutator.py",
+      "size": 11769,
+      "mtime": 1767755147,
+      "module": "evolution"
+    },
+    {
+      "path": "evolution\\__init__.py",
+      "name": "__init__.py",
+      "size": 341,
+      "mtime": 1766817514,
+      "module": "evolution"
+    },
+    {
+      "path": "execution\\broker_alpaca.py",
+      "name": "broker_alpaca.py",
+      "size": 81207,
+      "mtime": 1767858324,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\broker_alpaca_crypto.py",
+      "name": "broker_alpaca_crypto.py",
+      "size": 17900,
+      "mtime": 1767858382,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\broker_base.py",
+      "name": "broker_base.py",
+      "size": 16888,
+      "mtime": 1767858695,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\broker_crypto.py",
+      "name": "broker_crypto.py",
+      "size": 18966,
+      "mtime": 1767858375,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\broker_factory.py",
+      "name": "broker_factory.py",
+      "size": 7666,
+      "mtime": 1767309419,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\broker_paper.py",
+      "name": "broker_paper.py",
+      "size": 16110,
+      "mtime": 1767858366,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\execution_bandit.py",
+      "name": "execution_bandit.py",
+      "size": 15024,
+      "mtime": 1767755147,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\execution_guard.py",
+      "name": "execution_guard.py",
+      "size": 16775,
+      "mtime": 1767331147,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\intelligent_executor.py",
+      "name": "intelligent_executor.py",
+      "size": 22141,
+      "mtime": 1767755147,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\intraday_trigger.py",
+      "name": "intraday_trigger.py",
+      "size": 10652,
+      "mtime": 1767755147,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\order_manager.py",
+      "name": "order_manager.py",
+      "size": 16080,
+      "mtime": 1767858743,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\order_state_machine.py",
+      "name": "order_state_machine.py",
+      "size": 19931,
+      "mtime": 1767858761,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\reconcile.py",
+      "name": "reconcile.py",
+      "size": 19734,
+      "mtime": 1767755147,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\utils.py",
+      "name": "utils.py",
+      "size": 2613,
+      "mtime": 1767592258,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\__init__.py",
+      "name": "__init__.py",
+      "size": 1296,
+      "mtime": 1766812534,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\analytics\\execution_report.py",
+      "name": "execution_report.py",
+      "size": 16441,
+      "mtime": 1767575963,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\analytics\\market_impact.py",
+      "name": "market_impact.py",
+      "size": 15407,
+      "mtime": 1767575819,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\analytics\\slippage_tracker.py",
+      "name": "slippage_tracker.py",
+      "size": 15257,
+      "mtime": 1767575750,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\analytics\\timing_analysis.py",
+      "name": "timing_analysis.py",
+      "size": 13635,
+      "mtime": 1767575886,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\analytics\\__init__.py",
+      "name": "__init__.py",
+      "size": 1395,
+      "mtime": 1767575678,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\tca\\transaction_cost_analyzer.py",
+      "name": "transaction_cost_analyzer.py",
+      "size": 11224,
+      "mtime": 1767755147,
+      "module": "execution"
+    },
+    {
+      "path": "execution\\tca\\__init__.py",
+      "name": "__init__.py",
+      "size": 0,
+      "mtime": 1766902708,
+      "module": "execution"
+    },
+    {
+      "path": "experiments\\mlflow_adapter.py",
+      "name": "mlflow_adapter.py",
+      "size": 24235,
+      "mtime": 1767834324,
+      "module": "experiments"
+    },
+    {
+      "path": "experiments\\registry.py",
+      "name": "registry.py",
+      "size": 20638,
+      "mtime": 1767755147,
+      "module": "experiments"
+    },
+    {
+      "path": "experiments\\__init__.py",
+      "name": "__init__.py",
+      "size": 1258,
+      "mtime": 1767834340,
+      "module": "experiments"
+    },
+    {
+      "path": "explainability\\decision_packet.py",
+      "name": "decision_packet.py",
+      "size": 12069,
+      "mtime": 1766820130,
+      "module": "explainability"
+    },
+    {
+      "path": "explainability\\decision_tracker.py",
+      "name": "decision_tracker.py",
+      "size": 14429,
+      "mtime": 1766814143,
+      "module": "explainability"
+    },
+    {
+      "path": "explainability\\narrative_generator.py",
+      "name": "narrative_generator.py",
+      "size": 11766,
+      "mtime": 1766898982,
+      "module": "explainability"
+    },
+    {
+      "path": "explainability\\playbook_generator.py",
+      "name": "playbook_generator.py",
+      "size": 18108,
+      "mtime": 1767755147,
+      "module": "explainability"
+    },
+    {
+      "path": "explainability\\trade_explainer.py",
+      "name": "trade_explainer.py",
+      "size": 6816,
+      "mtime": 1766898910,
+      "module": "explainability"
+    },
+    {
+      "path": "explainability\\trade_thesis_builder.py",
+      "name": "trade_thesis_builder.py",
+      "size": 33702,
+      "mtime": 1767755147,
+      "module": "explainability"
+    },
+    {
+      "path": "explainability\\__init__.py",
+      "name": "__init__.py",
+      "size": 306,
+      "mtime": 1766817623,
+      "module": "explainability"
+    },
+    {
+      "path": "extensions\\registry.py",
+      "name": "registry.py",
+      "size": 12062,
+      "mtime": 1767845258,
+      "module": "extensions"
+    },
+    {
+      "path": "extensions\\__init__.py",
+      "name": "__init__.py",
+      "size": 561,
+      "mtime": 1767845070,
+      "module": "extensions"
+    },
+    {
+      "path": "guardian\\alert_manager.py",
+      "name": "alert_manager.py",
+      "size": 13026,
+      "mtime": 1767577805,
+      "module": "guardian"
+    },
+    {
+      "path": "guardian\\daily_digest.py",
+      "name": "daily_digest.py",
+      "size": 15395,
+      "mtime": 1767755147,
+      "module": "guardian"
+    },
+    {
+      "path": "guardian\\decision_engine.py",
+      "name": "decision_engine.py",
+      "size": 13957,
+      "mtime": 1767577740,
+      "module": "guardian"
+    },
+    {
+      "path": "guardian\\emergency_protocol.py",
+      "name": "emergency_protocol.py",
+      "size": 19402,
+      "mtime": 1767755147,
+      "module": "guardian"
+    },
+    {
+      "path": "guardian\\guardian.py",
+      "name": "guardian.py",
+      "size": 16517,
+      "mtime": 1767755147,
+      "module": "guardian"
+    },
+    {
+      "path": "guardian\\portfolio_governor.py",
+      "name": "portfolio_governor.py",
+      "size": 16491,
+      "mtime": 1767758544,
+      "module": "guardian"
+    },
+    {
+      "path": "guardian\\resilience.py",
+      "name": "resilience.py",
+      "size": 16329,
+      "mtime": 1767758669,
+      "module": "guardian"
+    },
+    {
+      "path": "guardian\\self_learner.py",
+      "name": "self_learner.py",
+      "size": 20403,
+      "mtime": 1767755147,
+      "module": "guardian"
+    },
+    {
+      "path": "guardian\\system_monitor.py",
+      "name": "system_monitor.py",
+      "size": 17343,
+      "mtime": 1767755147,
+      "module": "guardian"
+    },
+    {
+      "path": "guardian\\__init__.py",
+      "name": "__init__.py",
+      "size": 2490,
+      "mtime": 1767761561,
+      "module": "guardian"
+    },
+    {
+      "path": "integration\\learning_hub.py",
+      "name": "learning_hub.py",
+      "size": 33299,
+      "mtime": 1767891764,
+      "module": "integration"
+    },
+    {
+      "path": "integration\\__init__.py",
+      "name": "__init__.py",
+      "size": 747,
+      "mtime": 1767543201,
+      "module": "integration"
+    },
+    {
+      "path": "llm\\financial_adapter.py",
+      "name": "financial_adapter.py",
+      "size": 20645,
+      "mtime": 1767837685,
+      "module": "llm"
+    },
+    {
+      "path": "llm\\provider_anthropic.py",
+      "name": "provider_anthropic.py",
+      "size": 7837,
+      "mtime": 1767755147,
+      "module": "llm"
+    },
+    {
+      "path": "llm\\provider_base.py",
+      "name": "provider_base.py",
+      "size": 6627,
+      "mtime": 1767500782,
+      "module": "llm"
+    },
+    {
+      "path": "llm\\provider_ollama.py",
+      "name": "provider_ollama.py",
+      "size": 8024,
+      "mtime": 1767501037,
+      "module": "llm"
+    },
+    {
+      "path": "llm\\provider_openai.py",
+      "name": "provider_openai.py",
+      "size": 8872,
+      "mtime": 1767501002,
+      "module": "llm"
+    },
+    {
+      "path": "llm\\router.py",
+      "name": "router.py",
+      "size": 10020,
+      "mtime": 1767501086,
+      "module": "llm"
+    },
+    {
+      "path": "llm\\token_budget.py",
+      "name": "token_budget.py",
+      "size": 11064,
+      "mtime": 1767621047,
+      "module": "llm"
+    },
+    {
+      "path": "llm\\__init__.py",
+      "name": "__init__.py",
+      "size": 1951,
+      "mtime": 1767501107,
+      "module": "llm"
+    },
+    {
+      "path": "messaging\\redis_pubsub.py",
+      "name": "redis_pubsub.py",
+      "size": 18837,
+      "mtime": 1767556471,
+      "module": "messaging"
+    },
+    {
+      "path": "messaging\\__init__.py",
+      "name": "__init__.py",
+      "size": 467,
+      "mtime": 1767556396,
+      "module": "messaging"
+    },
+    {
+      "path": "ml\\confidence_gate.py",
+      "name": "confidence_gate.py",
+      "size": 552,
+      "mtime": 1766817325,
+      "module": "ml"
+    },
+    {
+      "path": "ml\\experiment_tracking.py",
+      "name": "experiment_tracking.py",
+      "size": 4695,
+      "mtime": 1767493522,
+      "module": "ml"
+    },
+    {
+      "path": "ml\\__init__.py",
+      "name": "__init__.py",
+      "size": 33,
+      "mtime": 1766941890,
+      "module": "ml"
+    },
+    {
+      "path": "ml\\alpha_discovery\\__init__.py",
+      "name": "__init__.py",
+      "size": 1816,
+      "mtime": 1766986194,
+      "module": "ml"
+    },
+    {
+      "path": "ml\\alpha_discovery\\common\\data_loader.py",
+      "name": "data_loader.py",
+      "size": 9358,
+      "mtime": 1767755147,
+      "module": "ml"
+    },
+    {
+      "path": "ml\\alpha_discovery\\common\\metrics.py",
+      "name": "metrics.py",
+      "size": 6120,
+      "mtime": 1767755147,
+      "module": "ml"
+    },
+    {
+      "path": "ml\\alpha_discovery\\common\\__init__.py",
+      "name": "__init__.py",
+      "size": 598,
+      "mtime": 1766985564,
+      "module": "ml"
+    },
+    {
+      "path": "ml\\alpha_discovery\\feature_discovery\\importance_analyzer.py",
+      "name": "importance_analyzer.py",
+      "size": 10252,
+      "mtime": 1767487182,
+      "module": "ml"
+    },
+    {
+      "path": "ml\\alpha_discovery\\feature_discovery\\__init__.py",
+      "name": "__init__.py",
+      "size": 289,
+      "mtime": 1766985806,
+      "module": "ml"
+    },
+    {
+      "path": "ml\\alpha_discovery\\hybrid_pipeline\\orchestrator.py",
+      "name": "orchestrator.py",
+      "size": 11730,
+      "mtime": 1767755147,
+      "module": "ml"
+    },
+    {
+      "path": "ml\\alpha_discovery\\hybrid_pipeline\\__init__.py",
+      "name": "__init__.py",
+      "size": 240,
+      "mtime": 1766986183,
+      "module": "ml"
+    },
+    {
+      "path": "ml\\alpha_discovery\\pattern_miner\\clustering.py",
+      "name": "clustering.py",
+      "size": 12092,
+      "mtime": 1767755147,
+      "module": "ml"
+    },
+    {
+      "path": "ml\\alpha_discovery\\pattern_miner\\pattern_library.py",
+      "name": "pattern_library.py",
+      "size": 3909,
+      "mtime": 1766985733,
+      "module": "ml"
+    },
+    {
+      "path": "ml\\alpha_discovery\\pattern_miner\\__init__.py",
+      "name": "__init__.py",
+      "size": 407,
+      "mtime": 1766985659,
+      "module": "ml"
+    },
+    {
+      "path": "ml\\alpha_discovery\\pattern_narrator\\narrator.py",
+      "name": "narrator.py",
+      "size": 12526,
+      "mtime": 1766985798,
+      "module": "ml"
+    },
+    {
+      "path": "ml\\alpha_discovery\\pattern_narrator\\__init__.py",
+      "name": "__init__.py",
+      "size": 262,
+      "mtime": 1766985741,
+      "module": "ml"
+    },
+    {
+      "path": "ml\\alpha_discovery\\rl_agent\\agent.py",
+      "name": "agent.py",
+      "size": 9182,
+      "mtime": 1767755147,
+      "module": "ml"
+    },
+    {
+      "path": "ml\\alpha_discovery\\rl_agent\\trading_env.py",
+      "name": "trading_env.py",
+      "size": 13340,
+      "mtime": 1767755147,
+      "module": "ml"
+    },
+    {
+      "path": "ml\\alpha_discovery\\rl_agent\\__init__.py",
+      "name": "__init__.py",
+      "size": 237,
+      "mtime": 1766985875,
+      "module": "ml"
+    },
+    {
+      "path": "ml_advanced\\hmm_regime_detector.py",
+      "name": "hmm_regime_detector.py",
+      "size": 35258,
+      "mtime": 1767853453,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_advanced\\online_learning.py",
+      "name": "online_learning.py",
+      "size": 13417,
+      "mtime": 1767759597,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_advanced\\__init__.py",
+      "name": "__init__.py",
+      "size": 942,
+      "mtime": 1766801860,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_advanced\\ensemble\\ensemble_predictor.py",
+      "name": "ensemble_predictor.py",
+      "size": 24076,
+      "mtime": 1767403934,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_advanced\\ensemble\\loader.py",
+      "name": "loader.py",
+      "size": 4515,
+      "mtime": 1767248103,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_advanced\\ensemble\\regime_weights.py",
+      "name": "regime_weights.py",
+      "size": 14760,
+      "mtime": 1767755147,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_advanced\\ensemble\\__init__.py",
+      "name": "__init__.py",
+      "size": 1049,
+      "mtime": 1766800670,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_advanced\\lstm_confidence\\config.py",
+      "name": "config.py",
+      "size": 1668,
+      "mtime": 1767755147,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_advanced\\lstm_confidence\\model.py",
+      "name": "model.py",
+      "size": 13590,
+      "mtime": 1767853481,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_advanced\\lstm_confidence\\__init__.py",
+      "name": "__init__.py",
+      "size": 2039,
+      "mtime": 1767164528,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_advanced\\markov_chain\\higher_order.py",
+      "name": "higher_order.py",
+      "size": 17173,
+      "mtime": 1767563098,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_advanced\\markov_chain\\predictor.py",
+      "name": "predictor.py",
+      "size": 20182,
+      "mtime": 1767563100,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_advanced\\markov_chain\\scorer.py",
+      "name": "scorer.py",
+      "size": 17878,
+      "mtime": 1767755147,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_advanced\\markov_chain\\state_classifier.py",
+      "name": "state_classifier.py",
+      "size": 14723,
+      "mtime": 1767755147,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_advanced\\markov_chain\\stationary_dist.py",
+      "name": "stationary_dist.py",
+      "size": 16315,
+      "mtime": 1767755147,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_advanced\\markov_chain\\transition_matrix.py",
+      "name": "transition_matrix.py",
+      "size": 15903,
+      "mtime": 1767563528,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_advanced\\markov_chain\\__init__.py",
+      "name": "__init__.py",
+      "size": 2120,
+      "mtime": 1767563118,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_advanced\\tft\\temporal_fusion.py",
+      "name": "temporal_fusion.py",
+      "size": 25439,
+      "mtime": 1767755147,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_advanced\\tft\\__init__.py",
+      "name": "__init__.py",
+      "size": 418,
+      "mtime": 1767324079,
+      "module": "ml_advanced"
+    },
+    {
+      "path": "ml_features\\anomaly_detection.py",
+      "name": "anomaly_detection.py",
+      "size": 12211,
+      "mtime": 1767755147,
+      "module": "ml_features"
+    },
+    {
+      "path": "ml_features\\confidence_integrator.py",
+      "name": "confidence_integrator.py",
+      "size": 13168,
+      "mtime": 1767248144,
+      "module": "ml_features"
+    },
+    {
+      "path": "ml_features\\conviction_scorer.py",
+      "name": "conviction_scorer.py",
+      "size": 15984,
+      "mtime": 1767755147,
+      "module": "ml_features"
+    },
+    {
+      "path": "ml_features\\ensemble_brain.py",
+      "name": "ensemble_brain.py",
+      "size": 22661,
+      "mtime": 1767892842,
+      "module": "ml_features"
+    },
+    {
+      "path": "ml_features\\feature_pipeline.py",
+      "name": "feature_pipeline.py",
+      "size": 28542,
+      "mtime": 1767477466,
+      "module": "ml_features"
+    },
+    {
+      "path": "ml_features\\macro_features.py",
+      "name": "macro_features.py",
+      "size": 18843,
+      "mtime": 1767755147,
+      "module": "ml_features"
+    },
+    {
+      "path": "ml_features\\pca_reducer.py",
+      "name": "pca_reducer.py",
+      "size": 10181,
+      "mtime": 1767062281,
+      "module": "ml_features"
+    },
+    {
+      "path": "ml_features\\realtime_feature_engine.py",
+      "name": "realtime_feature_engine.py",
+      "size": 18655,
+      "mtime": 1767760373,
+      "module": "ml_features"
+    },
+    {
+      "path": "ml_features\\regime_hmm.py",
+      "name": "regime_hmm.py",
+      "size": 15763,
+      "mtime": 1767486927,
+      "module": "ml_features"
+    },
+    {
+      "path": "ml_features\\regime_ml.py",
+      "name": "regime_ml.py",
+      "size": 18079,
+      "mtime": 1767755147,
+      "module": "ml_features"
+    },
+    {
+      "path": "ml_features\\sentiment.py",
+      "name": "sentiment.py",
+      "size": 22231,
+      "mtime": 1767755147,
+      "module": "ml_features"
+    },
+    {
+      "path": "ml_features\\shap_explainer.py",
+      "name": "shap_explainer.py",
+      "size": 17739,
+      "mtime": 1767837588,
+      "module": "ml_features"
+    },
+    {
+      "path": "ml_features\\signal_confidence.py",
+      "name": "signal_confidence.py",
+      "size": 20463,
+      "mtime": 1767543668,
+      "module": "ml_features"
+    },
+    {
+      "path": "ml_features\\strategy_enhancer.py",
+      "name": "strategy_enhancer.py",
+      "size": 13245,
+      "mtime": 1767755147,
+      "module": "ml_features"
+    },
+    {
+      "path": "ml_features\\technical_features.py",
+      "name": "technical_features.py",
+      "size": 24867,
+      "mtime": 1767755147,
+      "module": "ml_features"
+    },
+    {
+      "path": "ml_features\\tsfresh_features.py",
+      "name": "tsfresh_features.py",
+      "size": 15037,
+      "mtime": 1767755147,
+      "module": "ml_features"
+    },
+    {
+      "path": "ml_features\\__init__.py",
+      "name": "__init__.py",
+      "size": 2947,
+      "mtime": 1767062428,
+      "module": "ml_features"
+    },
+    {
+      "path": "ml_meta\\calibration.py",
+      "name": "calibration.py",
+      "size": 15932,
+      "mtime": 1767755147,
+      "module": "ml_meta"
+    },
+    {
+      "path": "ml_meta\\canary.py",
+      "name": "canary.py",
+      "size": 1504,
+      "mtime": 1767755147,
+      "module": "ml_meta"
+    },
+    {
+      "path": "ml_meta\\conformal.py",
+      "name": "conformal.py",
+      "size": 15917,
+      "mtime": 1767493577,
+      "module": "ml_meta"
+    },
+    {
+      "path": "ml_meta\\conf_policy.py",
+      "name": "conf_policy.py",
+      "size": 1587,
+      "mtime": 1766822310,
+      "module": "ml_meta"
+    },
+    {
+      "path": "ml_meta\\features.py",
+      "name": "features.py",
+      "size": 2829,
+      "mtime": 1767493577,
+      "module": "ml_meta"
+    },
+    {
+      "path": "ml_meta\\model.py",
+      "name": "model.py",
+      "size": 2951,
+      "mtime": 1767588320,
+      "module": "ml_meta"
+    },
+    {
+      "path": "ml_meta\\__init__.py",
+      "name": "__init__.py",
+      "size": 208,
+      "mtime": 1766884304,
+      "module": "ml_meta"
+    },
+    {
+      "path": "monitor\\calibration.py",
+      "name": "calibration.py",
+      "size": 1335,
+      "mtime": 1767755147,
+      "module": "monitor"
+    },
+    {
+      "path": "monitor\\circuit_breaker.py",
+      "name": "circuit_breaker.py",
+      "size": 1210,
+      "mtime": 1766817394,
+      "module": "monitor"
+    },
+    {
+      "path": "monitor\\divergence.py",
+      "name": "divergence.py",
+      "size": 3508,
+      "mtime": 1767755147,
+      "module": "monitor"
+    },
+    {
+      "path": "monitor\\divergence_monitor.py",
+      "name": "divergence_monitor.py",
+      "size": 21986,
+      "mtime": 1767755147,
+      "module": "monitor"
+    },
+    {
+      "path": "monitor\\drift_detector.py",
+      "name": "drift_detector.py",
+      "size": 16906,
+      "mtime": 1767310837,
+      "module": "monitor"
+    },
+    {
+      "path": "monitor\\health_endpoints.py",
+      "name": "health_endpoints.py",
+      "size": 32142,
+      "mtime": 1767595475,
+      "module": "monitor"
+    },
+    {
+      "path": "monitor\\heartbeat.py",
+      "name": "heartbeat.py",
+      "size": 8482,
+      "mtime": 1766817217,
+      "module": "monitor"
+    },
+    {
+      "path": "monitor\\__init__.py",
+      "name": "__init__.py",
+      "size": 2403,
+      "mtime": 1766817355,
+      "module": "monitor"
+    },
+    {
+      "path": "news\\news_monitor.py",
+      "name": "news_monitor.py",
+      "size": 12641,
+      "mtime": 1766787891,
+      "module": "news"
+    },
+    {
+      "path": "news\\__init__.py",
+      "name": "__init__.py",
+      "size": 442,
+      "mtime": 1766787890,
+      "module": "news"
+    },
+    {
+      "path": "observability\\langfuse_tracer.py",
+      "name": "langfuse_tracer.py",
+      "size": 18899,
+      "mtime": 1767537296,
+      "module": "observability"
+    },
+    {
+      "path": "observability\\__init__.py",
+      "name": "__init__.py",
+      "size": 379,
+      "mtime": 1767537230,
+      "module": "observability"
+    },
+    {
+      "path": "oms\\idempotency_store.py",
+      "name": "idempotency_store.py",
+      "size": 3389,
+      "mtime": 1766767133,
+      "module": "oms"
+    },
+    {
+      "path": "oms\\order_state.py",
+      "name": "order_state.py",
+      "size": 1822,
+      "mtime": 1767755147,
+      "module": "oms"
+    },
+    {
+      "path": "oms\\__init__.py",
+      "name": "__init__.py",
+      "size": 438,
+      "mtime": 1766937738,
+      "module": "oms"
+    },
+    {
+      "path": "ops\\locks.py",
+      "name": "locks.py",
+      "size": 8821,
+      "mtime": 1767493522,
+      "module": "ops"
+    },
+    {
+      "path": "ops\\supervisor.py",
+      "name": "supervisor.py",
+      "size": 23212,
+      "mtime": 1767755147,
+      "module": "ops"
+    },
+    {
+      "path": "ops\\__init__.py",
+      "name": "__init__.py",
+      "size": 45,
+      "mtime": 1766941847,
+      "module": "ops"
+    },
+    {
+      "path": "optimization\\bayesian_hyperopt.py",
+      "name": "bayesian_hyperopt.py",
+      "size": 27726,
+      "mtime": 1767755147,
+      "module": "optimization"
+    },
+    {
+      "path": "optimization\\__init__.py",
+      "name": "__init__.py",
+      "size": 1266,
+      "mtime": 1766788820,
+      "module": "optimization"
+    },
+    {
+      "path": "options\\backtest.py",
+      "name": "backtest.py",
+      "size": 29695,
+      "mtime": 1767755147,
+      "module": "options"
+    },
+    {
+      "path": "options\\black_scholes.py",
+      "name": "black_scholes.py",
+      "size": 13595,
+      "mtime": 1767658179,
+      "module": "options"
+    },
+    {
+      "path": "options\\chain_fetcher.py",
+      "name": "chain_fetcher.py",
+      "size": 18448,
+      "mtime": 1767755147,
+      "module": "options"
+    },
+    {
+      "path": "options\\iv_signals.py",
+      "name": "iv_signals.py",
+      "size": 22365,
+      "mtime": 1767755147,
+      "module": "options"
+    },
+    {
+      "path": "options\\order_router.py",
+      "name": "order_router.py",
+      "size": 25423,
+      "mtime": 1767858412,
+      "module": "options"
+    },
+    {
+      "path": "options\\position_sizing.py",
+      "name": "position_sizing.py",
+      "size": 19612,
+      "mtime": 1767755147,
+      "module": "options"
+    },
+    {
+      "path": "options\\pricing.py",
+      "name": "pricing.py",
+      "size": 336,
+      "mtime": 1766817692,
+      "module": "options"
+    },
+    {
+      "path": "options\\selection.py",
+      "name": "selection.py",
+      "size": 12468,
+      "mtime": 1767755147,
+      "module": "options"
+    },
+    {
+      "path": "options\\spreads.py",
+      "name": "spreads.py",
+      "size": 27636,
+      "mtime": 1767755147,
+      "module": "options"
+    },
+    {
+      "path": "options\\volatility.py",
+      "name": "volatility.py",
+      "size": 15106,
+      "mtime": 1766810339,
+      "module": "options"
+    },
+    {
+      "path": "options\\__init__.py",
+      "name": "__init__.py",
+      "size": 3451,
+      "mtime": 1767310742,
+      "module": "options"
+    },
+    {
+      "path": "pipelines\\backtest_pipeline.py",
+      "name": "backtest_pipeline.py",
+      "size": 5981,
+      "mtime": 1767505121,
+      "module": "pipelines"
+    },
+    {
+      "path": "pipelines\\base.py",
+      "name": "base.py",
+      "size": 6533,
+      "mtime": 1767504913,
+      "module": "pipelines"
+    },
+    {
+      "path": "pipelines\\data_audit_pipeline.py",
+      "name": "data_audit_pipeline.py",
+      "size": 4948,
+      "mtime": 1767755147,
+      "module": "pipelines"
+    },
+    {
+      "path": "pipelines\\discovery_pipeline.py",
+      "name": "discovery_pipeline.py",
+      "size": 7077,
+      "mtime": 1767755147,
+      "module": "pipelines"
+    },
+    {
+      "path": "pipelines\\gates_pipeline.py",
+      "name": "gates_pipeline.py",
+      "size": 7225,
+      "mtime": 1767755147,
+      "module": "pipelines"
+    },
+    {
+      "path": "pipelines\\implementation_pipeline.py",
+      "name": "implementation_pipeline.py",
+      "size": 8093,
+      "mtime": 1767755147,
+      "module": "pipelines"
+    },
+    {
+      "path": "pipelines\\promotion_pipeline.py",
+      "name": "promotion_pipeline.py",
+      "size": 7963,
+      "mtime": 1767755147,
+      "module": "pipelines"
+    },
+    {
+      "path": "pipelines\\quant_rd_pipeline.py",
+      "name": "quant_rd_pipeline.py",
+      "size": 9536,
+      "mtime": 1767755147,
+      "module": "pipelines"
+    },
+    {
+      "path": "pipelines\\reporting_pipeline.py",
+      "name": "reporting_pipeline.py",
+      "size": 12217,
+      "mtime": 1767755147,
+      "module": "pipelines"
+    },
+    {
+      "path": "pipelines\\snapshot_pipeline.py",
+      "name": "snapshot_pipeline.py",
+      "size": 3927,
+      "mtime": 1767755147,
+      "module": "pipelines"
+    },
+    {
+      "path": "pipelines\\spec_pipeline.py",
+      "name": "spec_pipeline.py",
+      "size": 7607,
+      "mtime": 1767755147,
+      "module": "pipelines"
+    },
+    {
+      "path": "pipelines\\unified_signal_enrichment.py",
+      "name": "unified_signal_enrichment.py",
+      "size": 121810,
+      "mtime": 1767933202,
+      "module": "pipelines"
+    },
+    {
+      "path": "pipelines\\universe_pipeline.py",
+      "name": "universe_pipeline.py",
+      "size": 3596,
+      "mtime": 1767755147,
+      "module": "pipelines"
+    },
+    {
+      "path": "pipelines\\__init__.py",
+      "name": "__init__.py",
+      "size": 4209,
+      "mtime": 1767675352,
+      "module": "pipelines"
+    },
+    {
+      "path": "portfolio\\heat_monitor.py",
+      "name": "heat_monitor.py",
+      "size": 14815,
+      "mtime": 1766788560,
+      "module": "portfolio"
+    },
+    {
+      "path": "portfolio\\risk_manager.py",
+      "name": "risk_manager.py",
+      "size": 17501,
+      "mtime": 1767756409,
+      "module": "portfolio"
+    },
+    {
+      "path": "portfolio\\state_manager.py",
+      "name": "state_manager.py",
+      "size": 17382,
+      "mtime": 1767612533,
+      "module": "portfolio"
+    },
+    {
+      "path": "portfolio\\__init__.py",
+      "name": "__init__.py",
+      "size": 486,
+      "mtime": 1766789106,
+      "module": "portfolio"
+    },
+    {
+      "path": "portfolio\\optimizer\\mean_variance.py",
+      "name": "mean_variance.py",
+      "size": 14334,
+      "mtime": 1767577322,
+      "module": "portfolio"
+    },
+    {
+      "path": "portfolio\\optimizer\\portfolio_manager.py",
+      "name": "portfolio_manager.py",
+      "size": 16315,
+      "mtime": 1767755147,
+      "module": "portfolio"
+    },
+    {
+      "path": "portfolio\\optimizer\\rebalancer.py",
+      "name": "rebalancer.py",
+      "size": 13961,
+      "mtime": 1767755147,
+      "module": "portfolio"
+    },
+    {
+      "path": "portfolio\\optimizer\\risk_parity.py",
+      "name": "risk_parity.py",
+      "size": 11649,
+      "mtime": 1767577378,
+      "module": "portfolio"
+    },
+    {
+      "path": "portfolio\\optimizer\\__init__.py",
+      "name": "__init__.py",
+      "size": 1372,
+      "mtime": 1767577259,
+      "module": "portfolio"
+    },
+    {
+      "path": "preflight\\cognitive_preflight.py",
+      "name": "cognitive_preflight.py",
+      "size": 18680,
+      "mtime": 1767755147,
+      "module": "preflight"
+    },
+    {
+      "path": "preflight\\data_quality.py",
+      "name": "data_quality.py",
+      "size": 23071,
+      "mtime": 1767755147,
+      "module": "preflight"
+    },
+    {
+      "path": "preflight\\evidence_gate.py",
+      "name": "evidence_gate.py",
+      "size": 20651,
+      "mtime": 1766810488,
+      "module": "preflight"
+    },
+    {
+      "path": "preflight\\__init__.py",
+      "name": "__init__.py",
+      "size": 1059,
+      "mtime": 1766810845,
+      "module": "preflight"
+    },
+    {
+      "path": "quant_gates\\gate_0_sanity.py",
+      "name": "gate_0_sanity.py",
+      "size": 9092,
+      "mtime": 1767755147,
+      "module": "quant_gates"
+    },
+    {
+      "path": "quant_gates\\gate_1_baseline.py",
+      "name": "gate_1_baseline.py",
+      "size": 7302,
+      "mtime": 1767755147,
+      "module": "quant_gates"
+    },
+    {
+      "path": "quant_gates\\gate_2_robustness.py",
+      "name": "gate_2_robustness.py",
+      "size": 6639,
+      "mtime": 1767755147,
+      "module": "quant_gates"
+    },
+    {
+      "path": "quant_gates\\gate_3_risk.py",
+      "name": "gate_3_risk.py",
+      "size": 5663,
+      "mtime": 1767755147,
+      "module": "quant_gates"
+    },
+    {
+      "path": "quant_gates\\gate_4_multiple_testing.py",
+      "name": "gate_4_multiple_testing.py",
+      "size": 10076,
+      "mtime": 1767920951,
+      "module": "quant_gates"
+    },
+    {
+      "path": "quant_gates\\pipeline.py",
+      "name": "pipeline.py",
+      "size": 13353,
+      "mtime": 1767755147,
+      "module": "quant_gates"
+    },
+    {
+      "path": "quant_gates\\__init__.py",
+      "name": "__init__.py",
+      "size": 1197,
+      "mtime": 1767501679,
+      "module": "quant_gates"
+    },
+    {
+      "path": "reports\\weekly_ai_summary.py",
+      "name": "weekly_ai_summary.py",
+      "size": 8518,
+      "mtime": 1767162350,
+      "module": "reports"
+    },
+    {
+      "path": "research\\alphas.py",
+      "name": "alphas.py",
+      "size": 2241,
+      "mtime": 1767755147,
+      "module": "research"
+    },
+    {
+      "path": "research\\alpha_factory.py",
+      "name": "alpha_factory.py",
+      "size": 28131,
+      "mtime": 1767832558,
+      "module": "research"
+    },
+    {
+      "path": "research\\alpha_library.py",
+      "name": "alpha_library.py",
+      "size": 35856,
+      "mtime": 1767831497,
+      "module": "research"
+    },
+    {
+      "path": "research\\alpha_research_integration.py",
+      "name": "alpha_research_integration.py",
+      "size": 25670,
+      "mtime": 1767831911,
+      "module": "research"
+    },
+    {
+      "path": "research\\alpha_seeder.py",
+      "name": "alpha_seeder.py",
+      "size": 24257,
+      "mtime": 1767760467,
+      "module": "research"
+    },
+    {
+      "path": "research\\experiment_analyzer.py",
+      "name": "experiment_analyzer.py",
+      "size": 16726,
+      "mtime": 1767758618,
+      "module": "research"
+    },
+    {
+      "path": "research\\factor_validator.py",
+      "name": "factor_validator.py",
+      "size": 18968,
+      "mtime": 1767831828,
+      "module": "research"
+    },
+    {
+      "path": "research\\features.py",
+      "name": "features.py",
+      "size": 4098,
+      "mtime": 1767755147,
+      "module": "research"
+    },
+    {
+      "path": "research\\screener.py",
+      "name": "screener.py",
+      "size": 2490,
+      "mtime": 1766817785,
+      "module": "research"
+    },
+    {
+      "path": "research\\vectorbt_miner.py",
+      "name": "vectorbt_miner.py",
+      "size": 26109,
+      "mtime": 1767831052,
+      "module": "research"
+    },
+    {
+      "path": "research\\__init__.py",
+      "name": "__init__.py",
+      "size": 2313,
+      "mtime": 1767831368,
+      "module": "research"
+    },
+    {
+      "path": "research_os\\approval_gate.py",
+      "name": "approval_gate.py",
+      "size": 13376,
+      "mtime": 1767664683,
+      "module": "research_os"
+    },
+    {
+      "path": "research_os\\knowledge_card.py",
+      "name": "knowledge_card.py",
+      "size": 9386,
+      "mtime": 1767490398,
+      "module": "research_os"
+    },
+    {
+      "path": "research_os\\orchestrator.py",
+      "name": "orchestrator.py",
+      "size": 21423,
+      "mtime": 1767755147,
+      "module": "research_os"
+    },
+    {
+      "path": "research_os\\proposal.py",
+      "name": "proposal.py",
+      "size": 12052,
+      "mtime": 1767490451,
+      "module": "research_os"
+    },
+    {
+      "path": "research_os\\__init__.py",
+      "name": "__init__.py",
+      "size": 1665,
+      "mtime": 1767490341,
+      "module": "research_os"
+    },
+    {
+      "path": "risk\\dynamic_position_sizer.py",
+      "name": "dynamic_position_sizer.py",
+      "size": 8105,
+      "mtime": 1767755147,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\equity_sizer.py",
+      "name": "equity_sizer.py",
+      "size": 13093,
+      "mtime": 1767853591,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\intelligent_exit_manager.py",
+      "name": "intelligent_exit_manager.py",
+      "size": 16338,
+      "mtime": 1767758468,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\kill_zone_gate.py",
+      "name": "kill_zone_gate.py",
+      "size": 10345,
+      "mtime": 1767758162,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\leverage_manager.py",
+      "name": "leverage_manager.py",
+      "size": 14604,
+      "mtime": 1767899193,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\liquidity.py",
+      "name": "liquidity.py",
+      "size": 1294,
+      "mtime": 1766817389,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\liquidity_gate.py",
+      "name": "liquidity_gate.py",
+      "size": 8233,
+      "mtime": 1767755147,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\net_exposure_gate.py",
+      "name": "net_exposure_gate.py",
+      "size": 12293,
+      "mtime": 1767309155,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\policy_gate.py",
+      "name": "policy_gate.py",
+      "size": 6383,
+      "mtime": 1767755147,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\portfolio_risk.py",
+      "name": "portfolio_risk.py",
+      "size": 17810,
+      "mtime": 1767755147,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\position_limit_gate.py",
+      "name": "position_limit_gate.py",
+      "size": 9446,
+      "mtime": 1766985797,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\signal_quality_gate.py",
+      "name": "signal_quality_gate.py",
+      "size": 31914,
+      "mtime": 1767917010,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\trailing_stops.py",
+      "name": "trailing_stops.py",
+      "size": 12119,
+      "mtime": 1767755147,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\volatility_targeting.py",
+      "name": "volatility_targeting.py",
+      "size": 15568,
+      "mtime": 1767755147,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\weekly_exposure_gate.py",
+      "name": "weekly_exposure_gate.py",
+      "size": 17603,
+      "mtime": 1767378366,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\__init__.py",
+      "name": "__init__.py",
+      "size": 974,
+      "mtime": 1766958875,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\advanced\\correlation_limits.py",
+      "name": "correlation_limits.py",
+      "size": 22931,
+      "mtime": 1767755147,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\advanced\\kelly_position_sizer.py",
+      "name": "kelly_position_sizer.py",
+      "size": 16328,
+      "mtime": 1767755147,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\advanced\\monte_carlo_var.py",
+      "name": "monte_carlo_var.py",
+      "size": 21686,
+      "mtime": 1767755147,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\advanced\\portfolio_optimizer.py",
+      "name": "portfolio_optimizer.py",
+      "size": 20152,
+      "mtime": 1767755147,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\advanced\\__init__.py",
+      "name": "__init__.py",
+      "size": 6357,
+      "mtime": 1767853691,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\circuit_breakers\\breaker_manager.py",
+      "name": "breaker_manager.py",
+      "size": 19065,
+      "mtime": 1767755147,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\circuit_breakers\\correlation_breaker.py",
+      "name": "correlation_breaker.py",
+      "size": 14945,
+      "mtime": 1767755147,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\circuit_breakers\\drawdown_breaker.py",
+      "name": "drawdown_breaker.py",
+      "size": 8894,
+      "mtime": 1767575364,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\circuit_breakers\\execution_breaker.py",
+      "name": "execution_breaker.py",
+      "size": 16346,
+      "mtime": 1767755147,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\circuit_breakers\\streak_breaker.py",
+      "name": "streak_breaker.py",
+      "size": 14624,
+      "mtime": 1767755147,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\circuit_breakers\\volatility_breaker.py",
+      "name": "volatility_breaker.py",
+      "size": 12164,
+      "mtime": 1767755147,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\circuit_breakers\\__init__.py",
+      "name": "__init__.py",
+      "size": 1267,
+      "mtime": 1767575178,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\factor_model\\factor_calculator.py",
+      "name": "factor_calculator.py",
+      "size": 17456,
+      "mtime": 1767755147,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\factor_model\\factor_report.py",
+      "name": "factor_report.py",
+      "size": 11721,
+      "mtime": 1767755147,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\factor_model\\sector_exposure.py",
+      "name": "sector_exposure.py",
+      "size": 14228,
+      "mtime": 1767755147,
+      "module": "risk"
+    },
+    {
+      "path": "risk\\factor_model\\__init__.py",
+      "name": "__init__.py",
+      "size": 1163,
+      "mtime": 1767576345,
+      "module": "risk"
+    },
+    {
+      "path": "safety\\execution_choke.py",
+      "name": "execution_choke.py",
+      "size": 16830,
+      "mtime": 1767858473,
+      "module": "safety"
+    },
+    {
+      "path": "safety\\mode.py",
+      "name": "mode.py",
+      "size": 8533,
+      "mtime": 1767504647,
+      "module": "safety"
+    },
+    {
+      "path": "safety\\paper_guard.py",
+      "name": "paper_guard.py",
+      "size": 10341,
+      "mtime": 1767858141,
+      "module": "safety"
+    },
+    {
+      "path": "safety\\__init__.py",
+      "name": "__init__.py",
+      "size": 1108,
+      "mtime": 1767505680,
+      "module": "safety"
+    },
+    {
+      "path": "scanner\\crypto_signals.py",
+      "name": "crypto_signals.py",
+      "size": 6714,
+      "mtime": 1767755147,
+      "module": "scanner"
+    },
+    {
+      "path": "scanner\\options_signals.py",
+      "name": "options_signals.py",
+      "size": 13204,
+      "mtime": 1767755147,
+      "module": "scanner"
+    },
+    {
+      "path": "scanner\\professional_quant_scanner.py",
+      "name": "professional_quant_scanner.py",
+      "size": 13595,
+      "mtime": 1767796499,
+      "module": "scanner"
+    },
+    {
+      "path": "scanner\\__init__.py",
+      "name": "__init__.py",
+      "size": 881,
+      "mtime": 1767671162,
+      "module": "scanner"
+    },
+    {
+      "path": "scripts\\aggregate_wf_report.py",
+      "name": "aggregate_wf_report.py",
+      "size": 2633,
+      "mtime": 1766884079,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\alerts.py",
+      "name": "alerts.py",
+      "size": 23627,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\alpha_research.py",
+      "name": "alpha_research.py",
+      "size": 2541,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\analyze_stock.py",
+      "name": "analyze_stock.py",
+      "size": 4369,
+      "mtime": 1767226439,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\audit.py",
+      "name": "audit.py",
+      "size": 16272,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\backfill_yfinance.py",
+      "name": "backfill_yfinance.py",
+      "size": 3762,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\backtest_dual_strategy.py",
+      "name": "backtest_dual_strategy.py",
+      "size": 15782,
+      "mtime": 1767835044,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\backtest_ibs_rsi.py",
+      "name": "backtest_ibs_rsi.py",
+      "size": 8965,
+      "mtime": 1767494641,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\backtest_totd.py",
+      "name": "backtest_totd.py",
+      "size": 38171,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\backup.py",
+      "name": "backup.py",
+      "size": 14080,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\backup_snapshot.py",
+      "name": "backup_snapshot.py",
+      "size": 1271,
+      "mtime": 1766822395,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\backup_state.py",
+      "name": "backup_state.py",
+      "size": 1955,
+      "mtime": 1766808377,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\benchmark.py",
+      "name": "benchmark.py",
+      "size": 20275,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\broker.py",
+      "name": "broker.py",
+      "size": 15894,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\build_signal_dataset.py",
+      "name": "build_signal_dataset.py",
+      "size": 8650,
+      "mtime": 1766890161,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\build_totd_dataset.py",
+      "name": "build_totd_dataset.py",
+      "size": 1584,
+      "mtime": 1766884186,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\build_universe_900.py",
+      "name": "build_universe_900.py",
+      "size": 1892,
+      "mtime": 1766810856,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\build_universe_polygon.py",
+      "name": "build_universe_polygon.py",
+      "size": 4043,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\check_data_quality.py",
+      "name": "check_data_quality.py",
+      "size": 2183,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\check_polygon_earliest.py",
+      "name": "check_polygon_earliest.py",
+      "size": 1811,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\check_polygon_earliest_universe.py",
+      "name": "check_polygon_earliest_universe.py",
+      "size": 2596,
+      "mtime": 1766732754,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\ci_smoke.py",
+      "name": "ci_smoke.py",
+      "size": 19900,
+      "mtime": 1767766024,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\cleanup.py",
+      "name": "cleanup.py",
+      "size": 12454,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\cognitive_learn.py",
+      "name": "cognitive_learn.py",
+      "size": 12675,
+      "mtime": 1767493577,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\config_utils.py",
+      "name": "config_utils.py",
+      "size": 17518,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\correlation.py",
+      "name": "correlation.py",
+      "size": 26227,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\correlation_check.py",
+      "name": "correlation_check.py",
+      "size": 2194,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\daily_scheduler.py",
+      "name": "daily_scheduler.py",
+      "size": 15090,
+      "mtime": 1767757556,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\dashboard.py",
+      "name": "dashboard.py",
+      "size": 14983,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\data.py",
+      "name": "data.py",
+      "size": 14089,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\debugger.py",
+      "name": "debugger.py",
+      "size": 19100,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\debug_signals.py",
+      "name": "debug_signals.py",
+      "size": 3283,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\demo_enhanced_brain.py",
+      "name": "demo_enhanced_brain.py",
+      "size": 11569,
+      "mtime": 1767833439,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\deploy.py",
+      "name": "deploy.py",
+      "size": 12184,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\diagnose_assets.py",
+      "name": "diagnose_assets.py",
+      "size": 5532,
+      "mtime": 1767796453,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\drawdown.py",
+      "name": "drawdown.py",
+      "size": 24618,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\earnings.py",
+      "name": "earnings.py",
+      "size": 9698,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\env.py",
+      "name": "env.py",
+      "size": 6565,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\eod_finalize.py",
+      "name": "eod_finalize.py",
+      "size": 14842,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\eod_report.py",
+      "name": "eod_report.py",
+      "size": 2493,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\exit_manager.py",
+      "name": "exit_manager.py",
+      "size": 20687,
+      "mtime": 1767848589,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\explain.py",
+      "name": "explain.py",
+      "size": 11517,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\export_ai_bundle.py",
+      "name": "export_ai_bundle.py",
+      "size": 3131,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\export_evidence_bundle.py",
+      "name": "export_evidence_bundle.py",
+      "size": 2427,
+      "mtime": 1766822365,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\export_rl_trades.py",
+      "name": "export_rl_trades.py",
+      "size": 11604,
+      "mtime": 1767931528,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\exposure.py",
+      "name": "exposure.py",
+      "size": 10720,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\fast_quant_scan.py",
+      "name": "fast_quant_scan.py",
+      "size": 19096,
+      "mtime": 1767757557,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\feature_experiment.py",
+      "name": "feature_experiment.py",
+      "size": 2122,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\find_unique_patterns.py",
+      "name": "find_unique_patterns.py",
+      "size": 16745,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\freeze_crypto_ohlcv.py",
+      "name": "freeze_crypto_ohlcv.py",
+      "size": 8072,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\freeze_equities_eod.py",
+      "name": "freeze_equities_eod.py",
+      "size": 8975,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\fresh_scan_now.py",
+      "name": "fresh_scan_now.py",
+      "size": 3760,
+      "mtime": 1767757559,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\full_900_scan.py",
+      "name": "full_900_scan.py",
+      "size": 6853,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\full_analysis_cve.py",
+      "name": "full_analysis_cve.py",
+      "size": 20255,
+      "mtime": 1767757534,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\full_system_heartbeat.py",
+      "name": "full_system_heartbeat.py",
+      "size": 34664,
+      "mtime": 1767840505,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\generate_briefing.py",
+      "name": "generate_briefing.py",
+      "size": 9012,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\generate_pregame.py",
+      "name": "generate_pregame.py",
+      "size": 6633,
+      "mtime": 1767312387,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\generate_pregame_blueprint.py",
+      "name": "generate_pregame_blueprint.py",
+      "size": 38174,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\generate_totd_playbook.py",
+      "name": "generate_totd_playbook.py",
+      "size": 8389,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\generate_training_data.py",
+      "name": "generate_training_data.py",
+      "size": 16787,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\health_check_full.py",
+      "name": "health_check_full.py",
+      "size": 7835,
+      "mtime": 1767583580,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\health_monitor.py",
+      "name": "health_monitor.py",
+      "size": 15102,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\heartbeat.py",
+      "name": "heartbeat.py",
+      "size": 4267,
+      "mtime": 1766823974,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\hedge.py",
+      "name": "hedge.py",
+      "size": 11344,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\idempotency.py",
+      "name": "idempotency.py",
+      "size": 15744,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\index_trade_knowledge.py",
+      "name": "index_trade_knowledge.py",
+      "size": 11005,
+      "mtime": 1767933248,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\install_git_hooks.py",
+      "name": "install_git_hooks.py",
+      "size": 896,
+      "mtime": 1766808846,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\integrity_check.py",
+      "name": "integrity_check.py",
+      "size": 28461,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\interview_quick_test.py",
+      "name": "interview_quick_test.py",
+      "size": 3956,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\journal.py",
+      "name": "journal.py",
+      "size": 7292,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\kill.py",
+      "name": "kill.py",
+      "size": 7270,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\learn.py",
+      "name": "learn.py",
+      "size": 11044,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\live_trading_heartbeat.py",
+      "name": "live_trading_heartbeat.py",
+      "size": 36807,
+      "mtime": 1767842914,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\live_vs_backtest_reconcile.py",
+      "name": "live_vs_backtest_reconcile.py",
+      "size": 17535,
+      "mtime": 1767759846,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\logs.py",
+      "name": "logs.py",
+      "size": 12508,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\log_event.py",
+      "name": "log_event.py",
+      "size": 958,
+      "mtime": 1766808831,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\manage_secrets.py",
+      "name": "manage_secrets.py",
+      "size": 10276,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\market_calendar.py",
+      "name": "market_calendar.py",
+      "size": 11465,
+      "mtime": 1767848562,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\metrics.py",
+      "name": "metrics.py",
+      "size": 21308,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\mini_backtest.py",
+      "name": "mini_backtest.py",
+      "size": 4486,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\monte_carlo.py",
+      "name": "monte_carlo.py",
+      "size": 11312,
+      "mtime": 1767493577,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\morning_check.py",
+      "name": "morning_check.py",
+      "size": 4774,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\morning_report.py",
+      "name": "morning_report.py",
+      "size": 23143,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\normalize_docs.py",
+      "name": "normalize_docs.py",
+      "size": 1959,
+      "mtime": 1767023504,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\opening_range_observer.py",
+      "name": "opening_range_observer.py",
+      "size": 8773,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\optimize.py",
+      "name": "optimize.py",
+      "size": 7093,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\optimize_consecutive_pattern.py",
+      "name": "optimize_consecutive_pattern.py",
+      "size": 20907,
+      "mtime": 1767921408,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\optimize_entry_hold_recovery_universe.py",
+      "name": "optimize_entry_hold_recovery_universe.py",
+      "size": 43224,
+      "mtime": 1767923333,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\options.py",
+      "name": "options.py",
+      "size": 9845,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\orders.py",
+      "name": "orders.py",
+      "size": 15133,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\overnight_runner.py",
+      "name": "overnight_runner.py",
+      "size": 8055,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\overnight_watchlist.py",
+      "name": "overnight_watchlist.py",
+      "size": 13020,
+      "mtime": 1767828991,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\pattern_hunt.py",
+      "name": "pattern_hunt.py",
+      "size": 6354,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\performance.py",
+      "name": "performance.py",
+      "size": 17324,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\pnl.py",
+      "name": "pnl.py",
+      "size": 15700,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\polygon.py",
+      "name": "polygon.py",
+      "size": 19505,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\positions.py",
+      "name": "positions.py",
+      "size": 9910,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\position_manager.py",
+      "name": "position_manager.py",
+      "size": 23373,
+      "mtime": 1767848650,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\prefetch_polygon_universe.py",
+      "name": "prefetch_polygon_universe.py",
+      "size": 2071,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\preflight.py",
+      "name": "preflight.py",
+      "size": 5747,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\preflight_live.py",
+      "name": "preflight_live.py",
+      "size": 25252,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\pregame_report.py",
+      "name": "pregame_report.py",
+      "size": 7076,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\premarket_check.py",
+      "name": "premarket_check.py",
+      "size": 15255,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\premarket_validator.py",
+      "name": "premarket_validator.py",
+      "size": 11655,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\pre_game_plan.py",
+      "name": "pre_game_plan.py",
+      "size": 3184,
+      "mtime": 1766824290,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\promote_models.py",
+      "name": "promote_models.py",
+      "size": 8672,
+      "mtime": 1767493577,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\quality_check.py",
+      "name": "quality_check.py",
+      "size": 30030,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\quant_dashboard.py",
+      "name": "quant_dashboard.py",
+      "size": 27669,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\quant_pattern_analysis.py",
+      "name": "quant_pattern_analysis.py",
+      "size": 17548,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\readiness_check.py",
+      "name": "readiness_check.py",
+      "size": 3442,
+      "mtime": 1766822304,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\rebuild_state.py",
+      "name": "rebuild_state.py",
+      "size": 743,
+      "mtime": 1766822400,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\reconcile_alpaca.py",
+      "name": "reconcile_alpaca.py",
+      "size": 1520,
+      "mtime": 1766815491,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\reconcile_broker_daily.py",
+      "name": "reconcile_broker_daily.py",
+      "size": 550,
+      "mtime": 1766822389,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\reconcile_daily_parity.py",
+      "name": "reconcile_daily_parity.py",
+      "size": 12496,
+      "mtime": 1767850811,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\refresh_polygon_cache.py",
+      "name": "refresh_polygon_cache.py",
+      "size": 6888,
+      "mtime": 1767793887,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\regime.py",
+      "name": "regime.py",
+      "size": 20729,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\regime_analysis.py",
+      "name": "regime_analysis.py",
+      "size": 2404,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\replay.py",
+      "name": "replay.py",
+      "size": 23446,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\replay_day.py",
+      "name": "replay_day.py",
+      "size": 2333,
+      "mtime": 1766822372,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\report.py",
+      "name": "report.py",
+      "size": 27743,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\research_discover.py",
+      "name": "research_discover.py",
+      "size": 1996,
+      "mtime": 1767209227,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\research_os_cli.py",
+      "name": "research_os_cli.py",
+      "size": 13116,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\restart.py",
+      "name": "restart.py",
+      "size": 16758,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\resume.py",
+      "name": "resume.py",
+      "size": 13134,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\risk_cli.py",
+      "name": "risk_cli.py",
+      "size": 10243,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\runner.py",
+      "name": "runner.py",
+      "size": 90385,
+      "mtime": 1767856314,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_alpha_screener.py",
+      "name": "run_alpha_screener.py",
+      "size": 4491,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_autonomous.py",
+      "name": "run_autonomous.py",
+      "size": 5920,
+      "mtime": 1767761602,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_backtest.py",
+      "name": "run_backtest.py",
+      "size": 1782,
+      "mtime": 1767157351,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_backtest_options_synth.py",
+      "name": "run_backtest_options_synth.py",
+      "size": 13184,
+      "mtime": 1766810700,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_backtest_polygon.py",
+      "name": "run_backtest_polygon.py",
+      "size": 2355,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_comprehensive_brain.py",
+      "name": "run_comprehensive_brain.py",
+      "size": 4934,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_daily_pipeline.py",
+      "name": "run_daily_pipeline.py",
+      "size": 2797,
+      "mtime": 1766809735,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_guardian.py",
+      "name": "run_guardian.py",
+      "size": 4664,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_job.py",
+      "name": "run_job.py",
+      "size": 8661,
+      "mtime": 1766984738,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_live_trade_micro.py",
+      "name": "run_live_trade_micro.py",
+      "size": 9665,
+      "mtime": 1767889678,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_master_brain.py",
+      "name": "run_master_brain.py",
+      "size": 774,
+      "mtime": 1767641939,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_paper_trade.py",
+      "name": "run_paper_trade.py",
+      "size": 46916,
+      "mtime": 1767930120,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_professional_scan.py",
+      "name": "run_professional_scan.py",
+      "size": 15453,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_rl_benchmark.py",
+      "name": "run_rl_benchmark.py",
+      "size": 13733,
+      "mtime": 1767931586,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_shadow.py",
+      "name": "run_shadow.py",
+      "size": 2352,
+      "mtime": 1766822280,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_showdown_crypto.py",
+      "name": "run_showdown_crypto.py",
+      "size": 4424,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_showdown_polygon.py",
+      "name": "run_showdown_polygon.py",
+      "size": 5825,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_weekly_training.py",
+      "name": "run_weekly_training.py",
+      "size": 1575,
+      "mtime": 1766808631,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\run_wf_polygon.py",
+      "name": "run_wf_polygon.py",
+      "size": 14449,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\scan.py",
+      "name": "scan.py",
+      "size": 134898,
+      "mtime": 1767921079,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\scan_down_streaks.py",
+      "name": "scan_down_streaks.py",
+      "size": 8056,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\scan_week_down_then_bounce.py",
+      "name": "scan_week_down_then_bounce.py",
+      "size": 36363,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\scheduler_ctl.py",
+      "name": "scheduler_ctl.py",
+      "size": 13302,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\scheduler_kobe.py",
+      "name": "scheduler_kobe.py",
+      "size": 92461,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\sector_rotation.py",
+      "name": "sector_rotation.py",
+      "size": 2929,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\seed_episodic_memory.py",
+      "name": "seed_episodic_memory.py",
+      "size": 7207,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\send_telegram_test.py",
+      "name": "send_telegram_test.py",
+      "size": 1695,
+      "mtime": 1766805870,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\show_config_pin.py",
+      "name": "show_config_pin.py",
+      "size": 544,
+      "mtime": 1766732739,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\show_manifest.py",
+      "name": "show_manifest.py",
+      "size": 7342,
+      "mtime": 1767845302,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\signals.py",
+      "name": "signals.py",
+      "size": 12929,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\simulate.py",
+      "name": "simulate.py",
+      "size": 16922,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\smoke_test.py",
+      "name": "smoke_test.py",
+      "size": 1953,
+      "mtime": 1767157293,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\snapshot.py",
+      "name": "snapshot.py",
+      "size": 15592,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\start.py",
+      "name": "start.py",
+      "size": 12683,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\start_health.py",
+      "name": "start_health.py",
+      "size": 563,
+      "mtime": 1767493577,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\start_kobe.py",
+      "name": "start_kobe.py",
+      "size": 16803,
+      "mtime": 1767767129,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\state.py",
+      "name": "state.py",
+      "size": 8691,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\status.py",
+      "name": "status.py",
+      "size": 14295,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\stop.py",
+      "name": "stop.py",
+      "size": 9109,
+      "mtime": 1766735767,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\strategy.py",
+      "name": "strategy.py",
+      "size": 14873,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\submit_totd.py",
+      "name": "submit_totd.py",
+      "size": 12634,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\suggest.py",
+      "name": "suggest.py",
+      "size": 13206,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\supervisor.py",
+      "name": "supervisor.py",
+      "size": 1652,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\sync_all_tasks.py",
+      "name": "sync_all_tasks.py",
+      "size": 21664,
+      "mtime": 1767639924,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\system_audit.py",
+      "name": "system_audit.py",
+      "size": 5412,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\telegram.py",
+      "name": "telegram.py",
+      "size": 13775,
+      "mtime": 1766823357,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\temp_account_check.py",
+      "name": "temp_account_check.py",
+      "size": 1850,
+      "mtime": 1767847459,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\test.py",
+      "name": "test.py",
+      "size": 8861,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\top2_analysis.py",
+      "name": "top2_analysis.py",
+      "size": 14671,
+      "mtime": 1767829646,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\trade_top3.py",
+      "name": "trade_top3.py",
+      "size": 6828,
+      "mtime": 1767107504,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\train_ensemble.py",
+      "name": "train_ensemble.py",
+      "size": 12836,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\train_ensemble_models.py",
+      "name": "train_ensemble_models.py",
+      "size": 9597,
+      "mtime": 1767493522,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\train_hmm_regime.py",
+      "name": "train_hmm_regime.py",
+      "size": 14491,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\train_lstm_confidence.py",
+      "name": "train_lstm_confidence.py",
+      "size": 10454,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\train_meta.py",
+      "name": "train_meta.py",
+      "size": 4353,
+      "mtime": 1767223884,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\train_rl_agent.py",
+      "name": "train_rl_agent.py",
+      "size": 5980,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\unified_multi_asset_scan.py",
+      "name": "unified_multi_asset_scan.py",
+      "size": 12854,
+      "mtime": 1767757560,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\unified_scan.py",
+      "name": "unified_scan.py",
+      "size": 7147,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\universe.py",
+      "name": "universe.py",
+      "size": 19389,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\update_sentiment_cache.py",
+      "name": "update_sentiment_cache.py",
+      "size": 2038,
+      "mtime": 1766810895,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\update_slippage_defaults.py",
+      "name": "update_slippage_defaults.py",
+      "size": 10179,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\update_status_md.py",
+      "name": "update_status_md.py",
+      "size": 2283,
+      "mtime": 1766955796,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\validate.py",
+      "name": "validate.py",
+      "size": 16441,
+      "mtime": 1767486795,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\validate_backtest_live_parity.py",
+      "name": "validate_backtest_live_parity.py",
+      "size": 15586,
+      "mtime": 1767849693,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\validate_data_pipeline.py",
+      "name": "validate_data_pipeline.py",
+      "size": 30188,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\validate_lake.py",
+      "name": "validate_lake.py",
+      "size": 12540,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\validate_sentiment_ab_test.py",
+      "name": "validate_sentiment_ab_test.py",
+      "size": 14971,
+      "mtime": 1767931043,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\validate_universe_coverage.py",
+      "name": "validate_universe_coverage.py",
+      "size": 1475,
+      "mtime": 1766802150,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\verified_quant_scan.py",
+      "name": "verified_quant_scan.py",
+      "size": 11597,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\verify_architecture.py",
+      "name": "verify_architecture.py",
+      "size": 1105,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\verify_core.py",
+      "name": "verify_core.py",
+      "size": 13410,
+      "mtime": 1767845126,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\verify_data.py",
+      "name": "verify_data.py",
+      "size": 12098,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\verify_hash_chain.py",
+      "name": "verify_hash_chain.py",
+      "size": 378,
+      "mtime": 1766723567,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\verify_pltr_streak.py",
+      "name": "verify_pltr_streak.py",
+      "size": 6147,
+      "mtime": 1767493593,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\verify_scan_consistency.py",
+      "name": "verify_scan_consistency.py",
+      "size": 6317,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\verify_streak.py",
+      "name": "verify_streak.py",
+      "size": 2022,
+      "mtime": 1767401830,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\verify_system.py",
+      "name": "verify_system.py",
+      "size": 7850,
+      "mtime": 1767064355,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\version.py",
+      "name": "version.py",
+      "size": 8512,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\volatility_study.py",
+      "name": "volatility_study.py",
+      "size": 2320,
+      "mtime": 1767493577,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\watchdog.py",
+      "name": "watchdog.py",
+      "size": 9989,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\watchlist.py",
+      "name": "watchlist.py",
+      "size": 11745,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\__init__.py",
+      "name": "__init__.py",
+      "size": 24,
+      "mtime": 1766941891,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\experiments\\quant_edge_65_markov_verification.py",
+      "name": "quant_edge_65_markov_verification.py",
+      "size": 23205,
+      "mtime": 1767919283,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\ops\\check_circular_imports.py",
+      "name": "check_circular_imports.py",
+      "size": 4591,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\ops\\check_missing_init.py",
+      "name": "check_missing_init.py",
+      "size": 982,
+      "mtime": 1767755147,
+      "module": "scripts"
+    },
+    {
+      "path": "scripts\\proof\\generate_verdict.py",
+      "name": "generate_verdict.py",
+      "size": 10404,
+      "mtime": 1767925035,
+      "module": "scripts"
+    },
+    {
+      "path": "selfmonitor\\anomaly_detect.py",
+      "name": "anomaly_detect.py",
+      "size": 2664,
+      "mtime": 1766823997,
+      "module": "selfmonitor"
+    },
+    {
+      "path": "selfmonitor\\anomaly_detector.py",
+      "name": "anomaly_detector.py",
+      "size": 7477,
+      "mtime": 1767755147,
+      "module": "selfmonitor"
+    },
+    {
+      "path": "selfmonitor\\circuit_breaker.py",
+      "name": "circuit_breaker.py",
+      "size": 7538,
+      "mtime": 1766814685,
+      "module": "selfmonitor"
+    },
+    {
+      "path": "selfmonitor\\__init__.py",
+      "name": "__init__.py",
+      "size": 215,
+      "mtime": 1766817480,
+      "module": "selfmonitor"
+    },
+    {
+      "path": "strategies\\adaptive_selector.py",
+      "name": "adaptive_selector.py",
+      "size": 11498,
+      "mtime": 1767755147,
+      "module": "strategies"
+    },
+    {
+      "path": "strategies\\registry.py",
+      "name": "registry.py",
+      "size": 8853,
+      "mtime": 1767755147,
+      "module": "strategies"
+    },
+    {
+      "path": "strategies\\__init__.py",
+      "name": "__init__.py",
+      "size": 1436,
+      "mtime": 1767156164,
+      "module": "strategies"
+    },
+    {
+      "path": "strategies\\dual_strategy\\combined.py",
+      "name": "combined.py",
+      "size": 28448,
+      "mtime": 1767543576,
+      "module": "strategies"
+    },
+    {
+      "path": "strategies\\dual_strategy\\__init__.py",
+      "name": "__init__.py",
+      "size": 184,
+      "mtime": 1766867219,
+      "module": "strategies"
+    },
+    {
+      "path": "strategies\\ibs_rsi\\strategy.py",
+      "name": "strategy.py",
+      "size": 7139,
+      "mtime": 1767157702,
+      "module": "strategies"
+    },
+    {
+      "path": "strategies\\ibs_rsi\\__init__.py",
+      "name": "__init__.py",
+      "size": 149,
+      "mtime": 1766875363,
+      "module": "strategies"
+    },
+    {
+      "path": "strategies\\ict\\smart_money.py",
+      "name": "smart_money.py",
+      "size": 22331,
+      "mtime": 1767755147,
+      "module": "strategies"
+    },
+    {
+      "path": "strategies\\ict\\turtle_soup.py",
+      "name": "turtle_soup.py",
+      "size": 19364,
+      "mtime": 1767477089,
+      "module": "strategies"
+    },
+    {
+      "path": "strategies\\ict\\__init__.py",
+      "name": "__init__.py",
+      "size": 165,
+      "mtime": 1766799030,
+      "module": "strategies"
+    },
+    {
+      "path": "strategies\\medallion\\medallion_orchestrator.py",
+      "name": "medallion_orchestrator.py",
+      "size": 17978,
+      "mtime": 1767897408,
+      "module": "strategies"
+    },
+    {
+      "path": "strategies\\medallion\\__init__.py",
+      "name": "__init__.py",
+      "size": 4083,
+      "mtime": 1767897330,
+      "module": "strategies"
+    },
+    {
+      "path": "strategies\\pairs_trading\\__init__.py",
+      "name": "__init__.py",
+      "size": 1390,
+      "mtime": 1767897087,
+      "module": "strategies"
+    },
+    {
+      "path": "strategy_specs\\spec.py",
+      "name": "spec.py",
+      "size": 10902,
+      "mtime": 1767755147,
+      "module": "strategy_specs"
+    },
+    {
+      "path": "strategy_specs\\__init__.py",
+      "name": "__init__.py",
+      "size": 554,
+      "mtime": 1767501959,
+      "module": "strategy_specs"
+    },
+    {
+      "path": "tax\\lot_accounting.py",
+      "name": "lot_accounting.py",
+      "size": 16209,
+      "mtime": 1767755147,
+      "module": "tax"
+    },
+    {
+      "path": "tax\\__init__.py",
+      "name": "__init__.py",
+      "size": 540,
+      "mtime": 1766788643,
+      "module": "tax"
+    },
+    {
+      "path": "testing\\monte_carlo.py",
+      "name": "monte_carlo.py",
+      "size": 1193,
+      "mtime": 1766817586,
+      "module": "testing"
+    },
+    {
+      "path": "testing\\stress_test.py",
+      "name": "stress_test.py",
+      "size": 3668,
+      "mtime": 1767755147,
+      "module": "testing"
+    },
+    {
+      "path": "testing\\__init__.py",
+      "name": "__init__.py",
+      "size": 878,
+      "mtime": 1766987109,
+      "module": "testing"
+    },
+    {
+      "path": "tests\\conftest.py",
+      "name": "conftest.py",
+      "size": 7666,
+      "mtime": 1767762649,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_autonomous_config.py",
+      "name": "test_autonomous_config.py",
+      "size": 4596,
+      "mtime": 1767505632,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_autonomous_run.py",
+      "name": "test_autonomous_run.py",
+      "size": 3597,
+      "mtime": 1767505631,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_backtest_enhanced.py",
+      "name": "test_backtest_enhanced.py",
+      "size": 22634,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_bounce.py",
+      "name": "test_bounce.py",
+      "size": 10023,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_broker_liquidity_integration.py",
+      "name": "test_broker_liquidity_integration.py",
+      "size": 13272,
+      "mtime": 1767767191,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_cognitive_integration.py",
+      "name": "test_cognitive_integration.py",
+      "size": 7228,
+      "mtime": 1767493577,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_cognitive_system.py",
+      "name": "test_cognitive_system.py",
+      "size": 14941,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_data_lake.py",
+      "name": "test_data_lake.py",
+      "size": 6169,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_data_quality.py",
+      "name": "test_data_quality.py",
+      "size": 8469,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_enhanced_brain_integration.py",
+      "name": "test_enhanced_brain_integration.py",
+      "size": 12035,
+      "mtime": 1767833305,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_experiments.py",
+      "name": "test_experiments.py",
+      "size": 9543,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_integration_pipeline.py",
+      "name": "test_integration_pipeline.py",
+      "size": 2492,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_liquidity_gate.py",
+      "name": "test_liquidity_gate.py",
+      "size": 8246,
+      "mtime": 1767493593,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_macro_providers.py",
+      "name": "test_macro_providers.py",
+      "size": 11899,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_optimizer_proof.py",
+      "name": "test_optimizer_proof.py",
+      "size": 15947,
+      "mtime": 1767924780,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_options.py",
+      "name": "test_options.py",
+      "size": 11218,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_pipelines.py",
+      "name": "test_pipelines.py",
+      "size": 5335,
+      "mtime": 1767505630,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_research.py",
+      "name": "test_research.py",
+      "size": 9403,
+      "mtime": 1766817550,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_safety_mode.py",
+      "name": "test_safety_mode.py",
+      "size": 4395,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\test_scanner_determinism.py",
+      "name": "test_scanner_determinism.py",
+      "size": 7245,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\__init__.py",
+      "name": "__init__.py",
+      "size": 28,
+      "mtime": 1766732253,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\altdata\\test_market_mood_analyzer.py",
+      "name": "test_market_mood_analyzer.py",
+      "size": 13798,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\altdata\\test_news_processor.py",
+      "name": "test_news_processor.py",
+      "size": 4494,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\altdata\\test_sentiment_fingpt.py",
+      "name": "test_sentiment_fingpt.py",
+      "size": 16500,
+      "mtime": 1767930976,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\altdata\\__init__.py",
+      "name": "__init__.py",
+      "size": 22,
+      "mtime": 1766941893,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\backtest\\test_pnl_calculation.py",
+      "name": "test_pnl_calculation.py",
+      "size": 15868,
+      "mtime": 1767854053,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\backtest\\__init__.py",
+      "name": "__init__.py",
+      "size": 35,
+      "mtime": 1767853814,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_adjudicator.py",
+      "name": "test_adjudicator.py",
+      "size": 8012,
+      "mtime": 1767493522,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_cognitive_brain.py",
+      "name": "test_cognitive_brain.py",
+      "size": 12838,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_contradiction_resolver.py",
+      "name": "test_contradiction_resolver.py",
+      "size": 10719,
+      "mtime": 1767838459,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_curiosity_engine.py",
+      "name": "test_curiosity_engine.py",
+      "size": 7367,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_episodic_memory.py",
+      "name": "test_episodic_memory.py",
+      "size": 20100,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_game_briefings.py",
+      "name": "test_game_briefings.py",
+      "size": 12819,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_global_workspace.py",
+      "name": "test_global_workspace.py",
+      "size": 12137,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_knowledge_boundary.py",
+      "name": "test_knowledge_boundary.py",
+      "size": 11461,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_llm_narrative_analyzer.py",
+      "name": "test_llm_narrative_analyzer.py",
+      "size": 14008,
+      "mtime": 1766955276,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_llm_trade_analyzer.py",
+      "name": "test_llm_trade_analyzer.py",
+      "size": 17696,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_metacognitive_governor.py",
+      "name": "test_metacognitive_governor.py",
+      "size": 13090,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_reflection_engine.py",
+      "name": "test_reflection_engine.py",
+      "size": 12742,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_self_consistency.py",
+      "name": "test_self_consistency.py",
+      "size": 10711,
+      "mtime": 1767838397,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_self_model.py",
+      "name": "test_self_model.py",
+      "size": 18386,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_semantic_memory.py",
+      "name": "test_semantic_memory.py",
+      "size": 14588,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_signal_adjudicator.py",
+      "name": "test_signal_adjudicator.py",
+      "size": 15644,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_signal_processor.py",
+      "name": "test_signal_processor.py",
+      "size": 8880,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_symbol_rag_production.py",
+      "name": "test_symbol_rag_production.py",
+      "size": 23281,
+      "mtime": 1767932971,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\test_tree_of_thoughts.py",
+      "name": "test_tree_of_thoughts.py",
+      "size": 10885,
+      "mtime": 1767838263,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\cognitive\\__init__.py",
+      "name": "__init__.py",
+      "size": 299,
+      "mtime": 1766899476,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\config\\test_settings_schema.py",
+      "name": "test_settings_schema.py",
+      "size": 7409,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\core\\test_earnings_canary.py",
+      "name": "test_earnings_canary.py",
+      "size": 7393,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\core\\test_restart_backoff.py",
+      "name": "test_restart_backoff.py",
+      "size": 12014,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\core\\test_secrets.py",
+      "name": "test_secrets.py",
+      "size": 5840,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\core\\test_vix_monitor.py",
+      "name": "test_vix_monitor.py",
+      "size": 12127,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\core\\__init__.py",
+      "name": "__init__.py",
+      "size": 21,
+      "mtime": 1767240729,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\data\\test_pandera_schemas.py",
+      "name": "test_pandera_schemas.py",
+      "size": 16503,
+      "mtime": 1767833355,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\data\\quality\\test_corporate_actions_canary.py",
+      "name": "test_corporate_actions_canary.py",
+      "size": 6626,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\data\\quality\\__init__.py",
+      "name": "__init__.py",
+      "size": 38,
+      "mtime": 1767596075,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\evaluation\\test_rl_benchmark.py",
+      "name": "test_rl_benchmark.py",
+      "size": 28649,
+      "mtime": 1767932055,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\execution\\test_broker_alpaca.py",
+      "name": "test_broker_alpaca.py",
+      "size": 10074,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\execution\\test_intelligent_executor.py",
+      "name": "test_intelligent_executor.py",
+      "size": 13250,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\execution\\test_intraday_trigger.py",
+      "name": "test_intraday_trigger.py",
+      "size": 6594,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\execution\\test_order_manager.py",
+      "name": "test_order_manager.py",
+      "size": 11819,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\execution\\__init__.py",
+      "name": "__init__.py",
+      "size": 24,
+      "mtime": 1766941894,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\execution\\tca\\test_transaction_cost_analyzer.py",
+      "name": "test_transaction_cost_analyzer.py",
+      "size": 9409,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\execution\\tca\\__init__.py",
+      "name": "__init__.py",
+      "size": 18,
+      "mtime": 1766941895,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\fixtures\\broker_mocks.py",
+      "name": "broker_mocks.py",
+      "size": 9994,
+      "mtime": 1767762610,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\fixtures\\market_data.py",
+      "name": "market_data.py",
+      "size": 9030,
+      "mtime": 1767762607,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\fixtures\\provider_mocks.py",
+      "name": "provider_mocks.py",
+      "size": 7240,
+      "mtime": 1767763547,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\fixtures\\signals.py",
+      "name": "signals.py",
+      "size": 7528,
+      "mtime": 1767762609,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\fixtures\\state_helpers.py",
+      "name": "state_helpers.py",
+      "size": 9392,
+      "mtime": 1767762613,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\fixtures\\__init__.py",
+      "name": "__init__.py",
+      "size": 2432,
+      "mtime": 1767762606,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\integration\\test_api_connectivity.py",
+      "name": "test_api_connectivity.py",
+      "size": 10329,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\integration\\test_backtest_live_parity.py",
+      "name": "test_backtest_live_parity.py",
+      "size": 8114,
+      "mtime": 1767849734,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\integration\\test_concurrent_execution.py",
+      "name": "test_concurrent_execution.py",
+      "size": 14350,
+      "mtime": 1767763390,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\integration\\test_demo_run.py",
+      "name": "test_demo_run.py",
+      "size": 1633,
+      "mtime": 1767505632,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\integration\\test_idempotency_stress.py",
+      "name": "test_idempotency_stress.py",
+      "size": 16761,
+      "mtime": 1767763012,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\integration\\test_kill_zone_boundaries.py",
+      "name": "test_kill_zone_boundaries.py",
+      "size": 16751,
+      "mtime": 1767762800,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\integration\\test_pipeline_run.py",
+      "name": "test_pipeline_run.py",
+      "size": 2517,
+      "mtime": 1767505633,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\integration\\test_position_sizing_edge.py",
+      "name": "test_position_sizing_edge.py",
+      "size": 11456,
+      "mtime": 1767763159,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\integration\\test_provider_fallback.py",
+      "name": "test_provider_fallback.py",
+      "size": 11085,
+      "mtime": 1767763005,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\integration\\test_risk_gates_real.py",
+      "name": "test_risk_gates_real.py",
+      "size": 14807,
+      "mtime": 1767854364,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\integration\\test_safety_gate_enforced.py",
+      "name": "test_safety_gate_enforced.py",
+      "size": 11987,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\integration\\test_signal_to_execution.py",
+      "name": "test_signal_to_execution.py",
+      "size": 15521,
+      "mtime": 1767763340,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\integration\\test_state_recovery.py",
+      "name": "test_state_recovery.py",
+      "size": 13510,
+      "mtime": 1767763008,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\integration\\test_workflow.py",
+      "name": "test_workflow.py",
+      "size": 4891,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\integration\\__init__.py",
+      "name": "__init__.py",
+      "size": 44,
+      "mtime": 1766732261,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\llm\\test_financial_adapter.py",
+      "name": "test_financial_adapter.py",
+      "size": 16186,
+      "mtime": 1767838669,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\llm\\__init__.py",
+      "name": "__init__.py",
+      "size": 24,
+      "mtime": 1767838106,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\ml_advanced\\test_markov_chain.py",
+      "name": "test_markov_chain.py",
+      "size": 20441,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\ml_features\\test_shap_explainer.py",
+      "name": "test_shap_explainer.py",
+      "size": 15519,
+      "mtime": 1767838707,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\ml_features\\__init__.py",
+      "name": "__init__.py",
+      "size": 32,
+      "mtime": 1767838045,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\monitor\\test_health_endpoints_rate_limit.py",
+      "name": "test_health_endpoints_rate_limit.py",
+      "size": 3103,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\oms\\test_order_state.py",
+      "name": "test_order_state.py",
+      "size": 3885,
+      "mtime": 1766904271,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\oms\\__init__.py",
+      "name": "__init__.py",
+      "size": 18,
+      "mtime": 1766941897,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\portfolio\\test_state_manager.py",
+      "name": "test_state_manager.py",
+      "size": 9152,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\risk\\test_position_sizing_math.py",
+      "name": "test_position_sizing_math.py",
+      "size": 14810,
+      "mtime": 1767854297,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\risk\\__init__.py",
+      "name": "__init__.py",
+      "size": 30,
+      "mtime": 1767853958,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\scripts\\test_preflight_live.py",
+      "name": "test_preflight_live.py",
+      "size": 8413,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\security\\test_live_bypass.py",
+      "name": "test_live_bypass.py",
+      "size": 8906,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\security\\test_runtime_choke_enforcement.py",
+      "name": "test_runtime_choke_enforcement.py",
+      "size": 14052,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\smoke\\verify_robot.py",
+      "name": "verify_robot.py",
+      "size": 9238,
+      "mtime": 1767858548,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\strategies\\test_signal_behavior.py",
+      "name": "test_signal_behavior.py",
+      "size": 19999,
+      "mtime": 1767894991,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\strategies\\__init__.py",
+      "name": "__init__.py",
+      "size": 32,
+      "mtime": 1767853813,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_backtest.py",
+      "name": "test_backtest.py",
+      "size": 4769,
+      "mtime": 1767894743,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_core.py",
+      "name": "test_core.py",
+      "size": 7537,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_data.py",
+      "name": "test_data.py",
+      "size": 6128,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_decision_packet.py",
+      "name": "test_decision_packet.py",
+      "size": 7979,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_decision_packet_integration.py",
+      "name": "test_decision_packet_integration.py",
+      "size": 18427,
+      "mtime": 1767930475,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_earnings_filter.py",
+      "name": "test_earnings_filter.py",
+      "size": 10770,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_execution_guard.py",
+      "name": "test_execution_guard.py",
+      "size": 7977,
+      "mtime": 1766819652,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_fill_models.py",
+      "name": "test_fill_models.py",
+      "size": 9679,
+      "mtime": 1766824078,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_lineage.py",
+      "name": "test_lineage.py",
+      "size": 8786,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_market_clock.py",
+      "name": "test_market_clock.py",
+      "size": 8189,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_ml_features.py",
+      "name": "test_ml_features.py",
+      "size": 25720,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_playbook_generator.py",
+      "name": "test_playbook_generator.py",
+      "size": 8205,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_portfolio_risk.py",
+      "name": "test_portfolio_risk.py",
+      "size": 8471,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_rate_limiter.py",
+      "name": "test_rate_limiter.py",
+      "size": 7777,
+      "mtime": 1766767323,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_reconciliation.py",
+      "name": "test_reconciliation.py",
+      "size": 10236,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_regime_filter.py",
+      "name": "test_regime_filter.py",
+      "size": 9097,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_risk.py",
+      "name": "test_risk.py",
+      "size": 9806,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_slippage_models.py",
+      "name": "test_slippage_models.py",
+      "size": 6415,
+      "mtime": 1766820167,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\test_strategies.py",
+      "name": "test_strategies.py",
+      "size": 1769,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\unit\\__init__.py",
+      "name": "__init__.py",
+      "size": 37,
+      "mtime": 1766732255,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\web\\test_main.py",
+      "name": "test_main.py",
+      "size": 5891,
+      "mtime": 1767755147,
+      "module": "tests"
+    },
+    {
+      "path": "tests\\web\\__init__.py",
+      "name": "__init__.py",
+      "size": 18,
+      "mtime": 1766941899,
+      "module": "tests"
+    },
+    {
+      "path": "tools\\analyze_architecture.py",
+      "name": "analyze_architecture.py",
+      "size": 6108,
+      "mtime": 1767934406,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\audit_paper_mode.py",
+      "name": "audit_paper_mode.py",
+      "size": 8702,
+      "mtime": 1767858710,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\backtest_markov_instances.py",
+      "name": "backtest_markov_instances.py",
+      "size": 5738,
+      "mtime": 1767918222,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\bounce_profile.py",
+      "name": "bounce_profile.py",
+      "size": 2911,
+      "mtime": 1767755147,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\build_bounce_db.py",
+      "name": "build_bounce_db.py",
+      "size": 11223,
+      "mtime": 1767755147,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\build_bounce_profiles_all.py",
+      "name": "build_bounce_profiles_all.py",
+      "size": 2647,
+      "mtime": 1767755147,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\circular_dependency_analyzer.py",
+      "name": "circular_dependency_analyzer.py",
+      "size": 11745,
+      "mtime": 1767934333,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\cleanup_cache.py",
+      "name": "cleanup_cache.py",
+      "size": 5898,
+      "mtime": 1767755147,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\code_audit_validator.py",
+      "name": "code_audit_validator.py",
+      "size": 16697,
+      "mtime": 1767934262,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\component_auditor.py",
+      "name": "component_auditor.py",
+      "size": 21679,
+      "mtime": 1767755147,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\generate_truth_table.py",
+      "name": "generate_truth_table.py",
+      "size": 10116,
+      "mtime": 1767755147,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\quant_audit_markov.py",
+      "name": "quant_audit_markov.py",
+      "size": 9443,
+      "mtime": 1767915868,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\runtime_tracer.py",
+      "name": "runtime_tracer.py",
+      "size": 29910,
+      "mtime": 1767755147,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\super_audit_verifier.py",
+      "name": "super_audit_verifier.py",
+      "size": 9618,
+      "mtime": 1767757581,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\today_bounce_watchlist.py",
+      "name": "today_bounce_watchlist.py",
+      "size": 11059,
+      "mtime": 1767755147,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\verify_100_components.py",
+      "name": "verify_100_components.py",
+      "size": 18160,
+      "mtime": 1767755147,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\verify_5_down_day_claim.py",
+      "name": "verify_5_down_day_claim.py",
+      "size": 6273,
+      "mtime": 1767914918,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\verify_alive.py",
+      "name": "verify_alive.py",
+      "size": 18311,
+      "mtime": 1767755147,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\verify_all_components.py",
+      "name": "verify_all_components.py",
+      "size": 12649,
+      "mtime": 1767854237,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\verify_data_math_fast.py",
+      "name": "verify_data_math_fast.py",
+      "size": 6169,
+      "mtime": 1767918120,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\verify_data_math_master.py",
+      "name": "verify_data_math_master.py",
+      "size": 20915,
+      "mtime": 1767917852,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\verify_data_quality.py",
+      "name": "verify_data_quality.py",
+      "size": 11500,
+      "mtime": 1767918018,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\verify_data_yourself.py",
+      "name": "verify_data_yourself.py",
+      "size": 5416,
+      "mtime": 1767916197,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\verify_lookahead_bias.py",
+      "name": "verify_lookahead_bias.py",
+      "size": 11538,
+      "mtime": 1767917921,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\verify_repo.py",
+      "name": "verify_repo.py",
+      "size": 9913,
+      "mtime": 1767755147,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\verify_robot.py",
+      "name": "verify_robot.py",
+      "size": 47164,
+      "mtime": 1767654381,
+      "module": "tools"
+    },
+    {
+      "path": "tools\\verify_wiring_master.py",
+      "name": "verify_wiring_master.py",
+      "size": 30543,
+      "mtime": 1767755147,
+      "module": "tools"
+    },
+    {
+      "path": "trade_logging\\decision_card_logger.py",
+      "name": "decision_card_logger.py",
+      "size": 18297,
+      "mtime": 1767755147,
+      "module": "trade_logging"
+    },
+    {
+      "path": "trade_logging\\prometheus_metrics.py",
+      "name": "prometheus_metrics.py",
+      "size": 14086,
+      "mtime": 1767595814,
+      "module": "trade_logging"
+    },
+    {
+      "path": "trade_logging\\__init__.py",
+      "name": "__init__.py",
+      "size": 2307,
+      "mtime": 1767236905,
+      "module": "trade_logging"
+    },
+    {
+      "path": "validation\\fake_data_detector.py",
+      "name": "fake_data_detector.py",
+      "size": 9853,
+      "mtime": 1767892219,
+      "module": "validation"
+    },
+    {
+      "path": "validation\\__init__.py",
+      "name": "__init__.py",
+      "size": 461,
+      "mtime": 1767892145,
+      "module": "validation"
+    },
+    {
+      "path": "web\\dashboard.py",
+      "name": "dashboard.py",
+      "size": 26286,
+      "mtime": 1767755147,
+      "module": "web"
+    },
+    {
+      "path": "web\\dashboard_pro.py",
+      "name": "dashboard_pro.py",
+      "size": 214788,
+      "mtime": 1767755147,
+      "module": "web"
+    },
+    {
+      "path": "web\\data_provider.py",
+      "name": "data_provider.py",
+      "size": 21255,
+      "mtime": 1767755147,
+      "module": "web"
+    },
+    {
+      "path": "web\\main.py",
+      "name": "main.py",
+      "size": 20246,
+      "mtime": 1767755147,
+      "module": "web"
+    },
+    {
+      "path": "web\\__init__.py",
+      "name": "__init__.py",
+      "size": 472,
+      "mtime": 1766788075,
+      "module": "web"
+    },
+    {
+      "path": "web\\api\\signal_queue.py",
+      "name": "signal_queue.py",
+      "size": 12756,
+      "mtime": 1767309992,
+      "module": "web"
+    },
+    {
+      "path": "web\\api\\webhooks.py",
+      "name": "webhooks.py",
+      "size": 18403,
+      "mtime": 1767755147,
+      "module": "web"
+    },
+    {
+      "path": "web\\api\\__init__.py",
+      "name": "__init__.py",
+      "size": 374,
+      "mtime": 1767309940,
+      "module": "web"
+    }
+  ],
+  "categories": {
+    "root": 4,
+    "agents": 10,
+    "alerts": 5,
+    "altdata": 10,
+    "analysis": 3,
+    "analytics": 15,
+    "AUDITS": 1,
+    "autonomous": 31,
+    "backtest": 17,
+    "bounce": 8,
+    "cognitive": 34,
+    "compliance": 4,
+    "config": 5,
+    "core": 27,
+    "dashboard": 2,
+    "data": 37,
+    "data_exploration": 5,
+    "evaluation": 1,
+    "evolution": 8,
+    "execution": 22,
+    "experiments": 3,
+    "explainability": 7,
+    "extensions": 2,
+    "guardian": 10,
+    "integration": 2,
+    "llm": 8,
+    "messaging": 2,
+    "ml": 19,
+    "ml_advanced": 19,
+    "ml_features": 17,
+    "ml_meta": 7,
+    "monitor": 8,
+    "news": 2,
+    "observability": 2,
+    "oms": 3,
+    "ops": 3,
+    "optimization": 2,
+    "options": 11,
+    "pipelines": 14,
+    "portfolio": 9,
+    "preflight": 4,
+    "quant_gates": 7,
+    "reports": 1,
+    "research": 11,
+    "research_os": 5,
+    "risk": 32,
+    "safety": 4,
+    "scanner": 4,
+    "scripts": 212,
+    "selfmonitor": 4,
+    "strategies": 13,
+    "strategy_specs": 2,
+    "tax": 2,
+    "testing": 3,
+    "tests": 125,
+    "tools": 27,
+    "trade_logging": 3,
+    "validation": 2,
+    "web": 8
+  },
+  "duplicates": {
+    "orchestrator.py": [
+      "agents\\orchestrator.py",
+      "ml\\alpha_discovery\\hybrid_pipeline\\orchestrator.py",
+      "research_os\\orchestrator.py"
+    ],
+    "options_flow.py": [
+      "altdata\\options_flow.py",
+      "data\\alternative\\options_flow.py"
+    ],
+    "sentiment.py": [
+      "altdata\\sentiment.py",
+      "ml_features\\sentiment.py"
+    ],
+    "factor_attribution.py": [
+      "analytics\\factor_attribution.py",
+      "analytics\\attribution\\factor_attribution.py"
+    ],
+    "monte_carlo.py": [
+      "backtest\\monte_carlo.py",
+      "scripts\\monte_carlo.py",
+      "testing\\monte_carlo.py"
+    ],
+    "data_loader.py": [
+      "bounce\\data_loader.py",
+      "ml\\alpha_discovery\\common\\data_loader.py"
+    ],
+    "validation.py": [
+      "bounce\\validation.py",
+      "data\\validation.py"
+    ],
+    "alerts.py": [
+      "core\\alerts.py",
+      "scripts\\alerts.py"
+    ],
+    "circuit_breaker.py": [
+      "core\\circuit_breaker.py",
+      "monitor\\circuit_breaker.py",
+      "selfmonitor\\circuit_breaker.py"
+    ],
+    "decision_packet.py": [
+      "core\\decision_packet.py",
+      "explainability\\decision_packet.py"
+    ],
+    "journal.py": [
+      "core\\journal.py",
+      "scripts\\journal.py"
+    ],
+    "loader.py": [
+      "data\\universe\\loader.py",
+      "ml_advanced\\ensemble\\loader.py"
+    ],
+    "registry.py": [
+      "evolution\\registry.py",
+      "experiments\\registry.py",
+      "extensions\\registry.py",
+      "strategies\\registry.py"
+    ],
+    "metrics.py": [
+      "ml\\alpha_discovery\\common\\metrics.py",
+      "scripts\\metrics.py"
+    ],
+    "model.py": [
+      "ml_advanced\\lstm_confidence\\model.py",
+      "ml_meta\\model.py"
+    ],
+    "calibration.py": [
+      "ml_meta\\calibration.py",
+      "monitor\\calibration.py"
+    ],
+    "features.py": [
+      "ml_meta\\features.py",
+      "research\\features.py"
+    ],
+    "heartbeat.py": [
+      "monitor\\heartbeat.py",
+      "scripts\\heartbeat.py"
+    ],
+    "supervisor.py": [
+      "ops\\supervisor.py",
+      "scripts\\supervisor.py"
+    ],
+    "dashboard.py": [
+      "scripts\\dashboard.py",
+      "web\\dashboard.py"
+    ],
+    "signals.py": [
+      "scripts\\signals.py",
+      "tests\\fixtures\\signals.py"
+    ],
+    "strategy.py": [
+      "scripts\\strategy.py",
+      "strategies\\ibs_rsi\\strategy.py"
+    ],
+    "verify_robot.py": [
+      "tests\\smoke\\verify_robot.py",
+      "tools\\verify_robot.py"
+    ]
+  },
+  "generated": "2026-01-08T22:53:33.799043"
+}

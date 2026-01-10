@@ -14,11 +14,9 @@ Author: Kobe Trading System
 Version: 1.0.0
 """
 
-import os
 import random
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Dict, List, Optional
+from datetime import datetime
+from typing import Dict
 
 from pipelines.base import Pipeline
 

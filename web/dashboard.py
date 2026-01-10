@@ -8,13 +8,11 @@ URL: http://localhost:8080
 """
 
 import asyncio
-import json
-import os
 import sys
 import threading
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import List
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse

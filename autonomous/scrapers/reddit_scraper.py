@@ -10,7 +10,6 @@ with REAL backtest data - NO synthetic data ever.
 """
 
 import time
-import hashlib
 import requests
 from pathlib import Path
 from datetime import datetime, timedelta

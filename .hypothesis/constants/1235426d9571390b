@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\ml_advanced\markov_chain\stationary_dist.py
+# hypothesis_version: 6.150.0
+
+[0.0, 1e-10, 1e-05, 0.01, 0.05, 1.0, 1000, 'BUY', 'HOLD', 'SELL', 'eigen', 'inf', 'last_distribution', 'linear', 'method', 'pi_down', 'pi_flat', 'pi_up', 'power', 'rank', 'symbol', 'trend_score']

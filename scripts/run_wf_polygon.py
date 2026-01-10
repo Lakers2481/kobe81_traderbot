@@ -2,11 +2,9 @@
 from __future__ import annotations
 
 import argparse
-import json
 from pathlib import Path as _P
 from datetime import date
 
-import numpy as np
 import pandas as pd
 
 import sys
@@ -21,9 +19,7 @@ from backtest.walk_forward import generate_splits, run_walk_forward, run_walk_fo
 from backtest.engine import BacktestConfig, CommissionConfig
 from config.env_loader import load_env
 from config.settings_loader import (
-    get_regime_filter_config, is_regime_filter_enabled,
-    get_selection_config, is_selection_enabled,
-    is_earnings_filter_enabled,
+    get_regime_filter_config, is_earnings_filter_enabled,
     get_setting, get_commission_config,
 )
 from core.regime_filter import filter_signals_by_regime, fetch_spy_bars

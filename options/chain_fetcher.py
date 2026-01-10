@@ -17,8 +17,8 @@ import logging
 import os
 from dataclasses import dataclass, field
 from datetime import datetime, date, timedelta
-from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Tuple
+from enum import Enum
+from typing import Any, Dict, List, Optional
 
 import requests
 

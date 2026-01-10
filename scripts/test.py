@@ -6,7 +6,6 @@ Usage: python scripts/test.py [--unit|--integration|--all] [--verbose] [--covera
 
 import argparse
 import importlib
-import os
 import subprocess
 import sys
 import time
@@ -146,7 +145,7 @@ def run_data_tests() -> Tuple[bool, List[str]]:
     results = []
 
     # Check universe file
-    universe_file = Path("data/universe/optionable_liquid_900.csv")
+    universe_file = Path("data/universe/optionable_liquid_800.csv")
     if universe_file.exists():
         with open(universe_file) as f:
             lines = len(f.readlines()) - 1  # Minus header

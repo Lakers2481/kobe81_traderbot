@@ -161,8 +161,8 @@ DataFrame with OHLCV
 ### Universe
 
 ```
-data/universe/optionable_liquid_900.csv
-- 900 stocks
+data/universe/optionable_liquid_800.csv
+- 800 stocks
 - Optionable
 - Liquid (high volume)
 - 10+ years history
@@ -433,7 +433,7 @@ python scripts/premarket_validator.py
 
 **Market Open (10:00 AM):**
 ```bash
-python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --cap 50 --watchlist-only
+python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_800.csv --cap 50 --watchlist-only
 ```
 
 **End of Day:**

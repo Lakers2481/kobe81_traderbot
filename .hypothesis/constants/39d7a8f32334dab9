@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\altdata\market_mood_analyzer.py
+# hypothesis_version: 6.150.0
+
+[-1.0, -0.7, -0.3, 0.0, 0.01, 0.05, 0.1, 0.3, 0.4, 0.5, 0.6, 0.7, 1.0, 12.0, 15.0, 20.0, 25.0, 35.0, 'Extreme Fear', 'Fear', 'Greed', 'Neutral', 'components', 'confidence', 'is_extreme', 'is_extreme_mood', 'market_mood', 'market_mood_score', 'market_mood_state', 'mood_score', 'mood_state', 'sentiment', 'sentiment_mood_score', 'sentiment_weight', 'timestamp', 'vix', 'vix_contribution', 'vix_mood_score', 'vix_timestamp', 'vix_weight']

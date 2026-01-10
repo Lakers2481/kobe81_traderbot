@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import List
 
 # THE CANONICAL UNIVERSE FILE - DO NOT CHANGE
-CANONICAL_UNIVERSE_FILE = Path(__file__).parent / "optionable_liquid_900.csv"
+CANONICAL_UNIVERSE_FILE = Path(__file__).parent / "optionable_liquid_800.csv"
 EXPECTED_COUNT = 900
 
 # Magnificent 7 - must always be included
@@ -25,7 +25,7 @@ def load_canonical_universe() -> List[str]:
 
     This is the ONLY function that should be used to load the universe.
     It validates that:
-    1. Exactly 900 stocks are present
+    1. Exactly 800 stocks are present
     2. All Magnificent 7 are included
     3. File exists and is readable
 

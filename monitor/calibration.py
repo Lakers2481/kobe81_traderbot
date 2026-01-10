@@ -8,8 +8,7 @@ production morning_report computes simple reliability tables inline; this
 module provides reusable pieces.
 """
 
-from dataclasses import dataclass
-from typing import Iterable, Tuple, Dict
+from typing import Iterable
 import pandas as pd
 import numpy as np
 

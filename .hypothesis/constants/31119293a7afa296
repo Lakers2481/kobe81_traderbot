@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\options\position_sizing.py
+# hypothesis_version: 6.150.0
+
+[0.02, 0.1, 0.2, 0.5, 1.5, 100, 'LONG', 'SHORT', 'collateral_required', 'contracts', 'direction', 'inf', 'is_valid', 'margin_required', 'max_profit', 'max_risk', 'option_type', 'premium_per_contract', 'rejection_reason', 'risk_pct_of_equity', 'total_premium']

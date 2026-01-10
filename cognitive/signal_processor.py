@@ -43,7 +43,7 @@ Usage:
 """
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -178,6 +178,8 @@ class CognitiveSignalProcessor:
         spy_data: Optional[pd.DataFrame] = None,
         vix_value: Optional[float] = None,
         current_positions: Optional[List[Dict]] = None,
+        precomputed_regime: Optional[str] = None,
+        precomputed_regime_confidence: Optional[float] = None,
     ) -> Dict[str, Any]:
         """
         Gathers data from various sources and assembles a comprehensive
@@ -185,8 +187,11 @@ class CognitiveSignalProcessor:
         """
         context = {'timestamp': datetime.now().isoformat(), 'data_timestamp': datetime.now()}
 
-        # 1. Determine Market Regime (e.g., from SPY data).
-        if spy_data is not None and not spy_data.empty:
+        # 1. Determine Market Regime - prefer pre-computed (from HMM) over simple SMA detection
+        if precomputed_regime is not None and precomputed_regime not in ('unknown', '', None):
+            context['regime'] = precomputed_regime
+            context['regime_confidence'] = precomputed_regime_confidence or 0.7
+        elif spy_data is not None and not spy_data.empty:
             context.update(self._detect_regime(spy_data))
         else:
             context['regime'], context['regime_confidence'] = 'unknown', 0.3
@@ -247,9 +252,18 @@ class CognitiveSignalProcessor:
             return {'regime': 'unknown', 'regime_confidence': 0.3}
 
     def _fetch_vix(self) -> float:
-        """Placeholder for fetching the current VIX value."""
-        # In a real system, this would call a data provider.
-        return 20.0
+        """Fetch current VIX value from VIX Monitor (real data, not placeholder)."""
+        try:
+            from core.vix_monitor import get_vix_monitor
+            monitor = get_vix_monitor()
+            reading = monitor.fetch_vix()
+            if reading and hasattr(reading, 'level') and reading.level > 0:
+                return reading.level
+            logger.warning("VIX reading invalid, using fallback 20.0")
+            return 20.0
+        except Exception as e:
+            logger.warning(f"VIX fetch failed: {e}, using fallback 20.0")
+            return 20.0
 
     def _calculate_breadth(self, market_data: pd.DataFrame) -> Dict[str, Any]:
         """Placeholder for calculating market breadth indicators."""
@@ -320,6 +334,7 @@ class CognitiveSignalProcessor:
         signals: pd.DataFrame,
         market_data: Optional[pd.DataFrame] = None,
         spy_data: Optional[pd.DataFrame] = None,
+        vix_value: Optional[float] = None,
     ) -> Tuple[pd.DataFrame, List[EvaluatedSignal]]:
         """
         The main method of this class. It orchestrates the evaluation of a
@@ -329,6 +344,7 @@ class CognitiveSignalProcessor:
             signals: A DataFrame of raw trading signals.
             market_data: Supporting market data for context building.
             spy_data: SPY data for regime detection.
+            vix_value: Pre-fetched VIX level (from enrichment pipeline).
 
         Returns:
             A tuple containing:
@@ -338,8 +354,32 @@ class CognitiveSignalProcessor:
         if signals.empty:
             return pd.DataFrame(), []
 
+        # Extract pre-computed regime from signals DataFrame (from HMM detector via enrichment)
+        precomputed_regime = None
+        precomputed_regime_confidence = None
+        if not signals.empty:
+            first_row = signals.iloc[0]
+            if 'regime' in signals.columns:
+                regime_val = first_row.get('regime') if hasattr(first_row, 'get') else first_row['regime'] if 'regime' in first_row.index else None
+                if regime_val and str(regime_val).upper() not in ('UNKNOWN', 'NAN', 'NONE', ''):
+                    precomputed_regime = str(regime_val).upper()
+            if 'regime_confidence' in signals.columns:
+                rc_val = first_row.get('regime_confidence') if hasattr(first_row, 'get') else first_row['regime_confidence'] if 'regime_confidence' in first_row.index else None
+                if rc_val is not None:
+                    try:
+                        if not (isinstance(rc_val, float) and pd.isna(rc_val)):
+                            precomputed_regime_confidence = float(rc_val)
+                    except (ValueError, TypeError):
+                        pass
+
         # 1. Build a single market context for this batch of signals.
-        context = self.build_market_context(market_data=market_data, spy_data=spy_data)
+        context = self.build_market_context(
+            market_data=market_data,
+            spy_data=spy_data,
+            vix_value=vix_value,
+            precomputed_regime=precomputed_regime,
+            precomputed_regime_confidence=precomputed_regime_confidence,
+        )
         evaluated_signals: List[EvaluatedSignal] = []
 
         # 2. Iterate through each signal and send it to the brain for deliberation.
@@ -359,7 +399,30 @@ class CognitiveSignalProcessor:
                     'volume': signal_dict.get('volume', 0),
                     'symbol_sentiment': symbol_sentiment, # Add symbol-specific sentiment
                 }
-                ensemble_confidence = float(signal_dict.get('conf_score', 0.5))
+                # Extract ensemble confidence with proper NaN handling and fallback chain
+                raw_conf = signal_dict.get('conf_score')
+                ensemble_confidence = 0.5  # Default
+                if raw_conf is not None and not (isinstance(raw_conf, float) and pd.isna(raw_conf)):
+                    try:
+                        ensemble_confidence = float(raw_conf)
+                    except (ValueError, TypeError):
+                        pass
+                else:
+                    # Fallback chain: try other confidence fields
+                    for alt_field in ['ml_confidence', 'adjudication_score', 'quality_score']:
+                        alt_val = signal_dict.get(alt_field)
+                        if alt_val is not None:
+                            try:
+                                if isinstance(alt_val, float) and pd.isna(alt_val):
+                                    continue
+                                # adjudication_score and quality_score are 0-100, normalize to 0-1
+                                if alt_field in ['adjudication_score', 'quality_score']:
+                                    ensemble_confidence = float(alt_val) / 100.0
+                                else:
+                                    ensemble_confidence = float(alt_val)
+                                break
+                            except (ValueError, TypeError):
+                                continue
 
                 decision = self.brain.deliberate(
                     signal=signal_dict,
@@ -367,66 +430,42 @@ class CognitiveSignalProcessor:
                     fast_confidence=ensemble_confidence
                 )
 
-                # 4. Check if brain rejected but episodic/ensemble evidence supports acceptance.
-                #    This allows signals with strong historical support to pass even if brain
-                #    has limited live trading experience.
+                # ============================================================================
+                # PHASE 3 FIX (2026-01-08): Brain authority is FINAL - no more overrides
+                # ============================================================================
+                # Previously, when brain rejected a signal, there was fallback logic that
+                # could OVERRIDE the brain's decision using "episodic evidence".
+                # This defeated the purpose of having a cognitive brain with authority.
+                #
+                # NEW BEHAVIOR: When brain says STAND_DOWN, that's FINAL.
+                # The brain has 30% weight in confidence scoring and can veto trades.
+                # ============================================================================
                 final_approved = decision.should_act
                 final_confidence = decision.confidence
                 final_size_multiplier = decision.action.get('size_multiplier', 1.0) if decision.action else 0.5
-                override_reasoning = []
 
                 if not decision.should_act:
-                    # Try knowledge_boundary.should_accept() as fallback
-                    accept_decision = self.knowledge_boundary.should_accept(
-                        signal=signal_dict,
-                        context=full_context,
-                        ensemble_confidence=ensemble_confidence
-                    )
-
-                    # Log the cognitive decision with full evidence for audit
-                    metadata = accept_decision.get('metadata', {})
-                    jlog('cognitive_decision',
+                    # Log the brain's rejection (but DO NOT override it)
+                    jlog('cognitive_stand_down',
                          symbol=symbol,
-                         decision=accept_decision['decision'],
-                         accept=accept_decision['accept'],
-                         reason=accept_decision['reason'],
-                         size_multiplier=accept_decision['size_multiplier'],
-                         signature=metadata.get('signature'),
-                         ensemble_confidence=metadata.get('ensemble_confidence'),
-                         episodic_n=metadata.get('episodic_n'),
-                         episodic_wr=metadata.get('episodic_wr'),
-                         self_model_n=metadata.get('self_model_n'),
-                         self_model_wr=metadata.get('self_model_wr'),
-                         vix=metadata.get('vix'),
-                         regime=metadata.get('regime'),
-                         strategy=metadata.get('strategy'))
-
-                    if accept_decision['accept']:
-                        # Override brain's rejection with episodic evidence
-                        final_approved = True
-                        # Use ensemble confidence or a reasonable minimum
-                        final_confidence = max(ensemble_confidence, 0.45)
-                        final_size_multiplier = accept_decision['size_multiplier']
-                        override_reasoning = [
-                            f"OVERRIDE: {accept_decision['decision']} via episodic evidence",
-                            accept_decision['reason']
-                        ]
-                        logger.info(
-                            f"  {symbol}: Brain rejected -> KnowledgeBoundary override: "
-                            f"{accept_decision['decision']} ({accept_decision['reason']})"
-                        )
+                         confidence=decision.confidence,
+                         concerns=decision.concerns[:3] if decision.concerns else [],
+                         reason='Brain STAND_DOWN is final - no override')
+                    logger.info(
+                        f"  {symbol}: Brain STAND_DOWN (final) - confidence={decision.confidence:.2%}"
+                    )
 
                 # 5. Wrap the result in our structured `EvaluatedSignal` object.
                 eval_signal = EvaluatedSignal(
                     original_signal=signal_dict,
                     approved=final_approved,
                     cognitive_confidence=final_confidence,
-                    reasoning_trace=decision.reasoning_trace + override_reasoning,
+                    reasoning_trace=decision.reasoning_trace,  # No more override reasoning
                     concerns=decision.concerns,
                     knowledge_gaps=decision.knowledge_gaps,
                     invalidators=decision.invalidators,
                     episode_id=decision.episode_id,
-                    decision_mode=decision.decision_mode if not override_reasoning else 'episodic_override',
+                    decision_mode=decision.decision_mode,  # No more episodic_override mode
                     size_multiplier=final_size_multiplier,
                 )
                 evaluated_signals.append(eval_signal)

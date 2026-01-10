@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\llm\provider_anthropic.py
+# hypothesis_version: 6.150.0
+
+[0.7, 60.0, 2000, 4096, 8192, 'ANTHROPIC_API_KEY', 'anthropic', 'content', 'description', 'error', 'input_schema', 'input_tokens', 'max_tokens', 'messages', 'model', 'name', 'output_tokens', 'role', 'stop', 'system', 'temperature', 'text', 'tool', 'tool_result', 'tool_use', 'tool_use_id', 'tools', 'type', 'user']

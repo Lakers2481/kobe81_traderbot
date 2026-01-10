@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\experiments\registry.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.02, 100, 100000, '--show-current', '1.0', 'Experiment', 'HEAD', 'archived', 'artifacts', 'best_profit_factor', 'best_sharpe', 'best_win_rate', 'branch', 'completed', 'completed_at', 'config', 'created_at', 'dataset_id', 'description', 'end_date', 'error', 'error_message', 'experiments', 'failed', 'git', 'git_branch', 'git_commit', 'id', 'imported', 'inf', 'initial_equity', 'max_dd', 'max_drawdown', 'name', 'params', 'pnl', 'profit_factor', 'registered', 'registry.json', 'results', 'rev-parse', 'risk_pct', 'running', 'seed', 'sharpe', 'sharpe_ratio', 'start_date', 'status', 'strategy', 'tags', 'total_pnl', 'total_trades', 'updated_at', 'version', 'win_rate']

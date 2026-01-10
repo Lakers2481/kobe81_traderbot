@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\autonomous\enhanced_brain.py
+# hypothesis_version: 6.150.0
+
+[0.5, 0.8, 0.95, 1.0, 100, '%Y-%m-%d %H:%M:%S', '--cycle', '--langgraph', '--once', '--status', '2.0.0', '=', 'America/New_York', 'Show status and exit', '__main__', '_alerted', 'alpha_discovery', 'alpha_id', 'alpha_mining', 'alpha_name', 'available', 'avg_human_rating', 'avg_score', 'category', 'confidence', 'decision', 'decision_reason', 'enabled', 'enhanced_version', 'error', 'evaluations_count', 'hypotheses_submitted', 'ic_mean', 'ic_sharpe', 'langgraph', 'langgraph_enabled', 'n_samples', 'orders_placed', 'profit_factor', 'rag_evaluation', 'rag_evaluator', 'rag_quality', 'research', 'retriever_count', 'retriever_stats', 'retriever_type', 'sharpe_ratio', 'status', 'store_true', 'success', 'task', 'timestamp', 'total_evaluations', 'trading_phase', 'win_rate']

@@ -10,7 +10,6 @@ Run: python -m pytest tests/test_backtest_enhanced.py -v
 import pytest
 import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
 from pathlib import Path
 import tempfile
 import shutil

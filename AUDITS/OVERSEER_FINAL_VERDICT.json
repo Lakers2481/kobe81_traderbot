@@ -1,0 +1,233 @@
+{
+  "agent": "overseer_omega",
+  "ts_utc": "2026-01-09T05:15:00+00:00",
+  "verdict": "NOT READY FOR PAPER TRADING",
+  "overall_status": "blocked",
+  "risk_level": "high",
+  "blocking_issues": {
+    "critical": 2,
+    "high": 7,
+    "medium": 5,
+    "low": 2
+  },
+  "estimated_time_to_ready": "4-8 hours",
+  "critical_blockers": [
+    {
+      "id": "C1",
+      "title": "Data Coverage Gap",
+      "current": "11.9%",
+      "required": "95%+",
+      "impact": "Scanner will fail on 793/800 symbols",
+      "fix": "python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2026-01-08",
+      "time": "2-4 hours",
+      "severity": "SEV-0"
+    },
+    {
+      "id": "C2",
+      "title": "Data Staleness",
+      "current": "53.4 hours",
+      "required": "<24 hours",
+      "impact": "Trading on 2-day-old data",
+      "fix": "python scripts/daily_scheduler.py --refresh-data",
+      "time": "30 minutes",
+      "severity": "SEV-0"
+    }
+  ],
+  "high_priority_issues": [
+    {
+      "id": "H1",
+      "title": "Metadata Integrity Mismatch",
+      "description": "Metadata claims 800 symbols updated, only 107 CSVs exist",
+      "severity": "SEV-1"
+    },
+    {
+      "id": "H2",
+      "title": "Autonomous Brain Offline",
+      "description": "Heartbeat dead for 640 minutes",
+      "severity": "SEV-1"
+    },
+    {
+      "id": "H3",
+      "title": "Watchlist Stale",
+      "description": "29.3 hours old",
+      "severity": "SEV-1"
+    },
+    {
+      "id": "H4",
+      "title": "ML Confidence Unverified",
+      "description": "No runtime check for 0.5 defaults",
+      "severity": "SEV-1"
+    },
+    {
+      "id": "H5",
+      "title": "Claim Accuracy: Markov Pattern",
+      "claimed": "64.0%",
+      "verified": "56.2%",
+      "difference": "-7.8%",
+      "severity": "SEV-1"
+    },
+    {
+      "id": "H6",
+      "title": "Claim Accuracy: Backtest WR",
+      "claimed": "59.9%",
+      "verified": "53.7%",
+      "difference": "-6.2%",
+      "severity": "SEV-1"
+    },
+    {
+      "id": "H7",
+      "title": "Schema Mismatch",
+      "description": "CSV 'timestamp' vs scripts expect 'date'",
+      "severity": "SEV-1"
+    }
+  ],
+  "user_concerns_verification": {
+    "concern_1_enriched_data_not_reaching_broker": {
+      "status": "PARTIALLY_VERIFIED",
+      "wiring": "CORRECT",
+      "live_test": "MISSING",
+      "recommendation": "Run integration test: python scripts/scan.py --cap 10 --dry-run"
+    },
+    "concern_2_risk_gates_not_blocking": {
+      "status": "VERIFIED_AS_BLOCKING",
+      "evidence": "@require_no_kill_switch, @require_policy_gate decorators found",
+      "mechanism": "Raise exceptions on violation"
+    },
+    "concern_3_fake_ml_confidence": {
+      "status": "NEEDS_VERIFICATION",
+      "wiring": "CORRECT",
+      "runtime_check": "MISSING",
+      "recommendation": "python -c \"from ml_meta.model import get_signal_confidence; assert get_signal_confidence({}) != 0.5\""
+    }
+  },
+  "agent_reports_summary": {
+    "sentinel_audit": {
+      "grade": "NOT READY",
+      "critical": 2,
+      "warnings": 7,
+      "timestamp": "2026-01-09T04:53:16+00:00"
+    },
+    "code_audit": {
+      "grade": "A+",
+      "syntax_errors": 0,
+      "import_errors": 0,
+      "timestamp": "2026-01-08"
+    },
+    "data_integrity": {
+      "grade": "B+",
+      "sev1_issues": 3,
+      "certification": "CONDITIONAL",
+      "timestamp": "2026-01-08T19:28:00"
+    },
+    "architecture": {
+      "grade": "A+",
+      "critical_issues": 0,
+      "wiring_status": "FULLY_WIRED",
+      "timestamp": "2026-01-08"
+    },
+    "folder_organization": {
+      "grade": "B-",
+      "major_issues": 7,
+      "cleanup_needed": true,
+      "timestamp": "2026-01-09T04:54:00+00:00"
+    }
+  },
+  "cross_validation_results": {
+    "conflicts_detected": 0,
+    "inconsistencies": 0,
+    "agent_agreement": "CONSISTENT",
+    "coverage_gaps": ["Live execution test missing"],
+    "systemic_issues": [
+      "Data pipeline failure (metadata claims vs actual files)",
+      "Performance claim overestimation (6-8% optimistic bias)",
+      "Stale components (brain offline, watchlist old, data old)"
+    ]
+  },
+  "go_live_guardrail": {
+    "status": "BLOCKED",
+    "requirements": [
+      "Data coverage >= 95% (currently 11.9%)",
+      "Data freshness < 24 hours (currently 53.4 hours)",
+      "End-to-end integration test passes",
+      "ML model verified to load real weights",
+      "Performance claims updated to verified numbers",
+      "Schema mismatch fixed"
+    ],
+    "permanent_rule": "DO NOT ALLOW PAPER TRADING UNTIL ALL REQUIREMENTS MET"
+  },
+  "immediate_actions": [
+    {
+      "priority": 1,
+      "action": "Prefetch missing data",
+      "command": "python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2026-01-08",
+      "time": "2-4 hours"
+    },
+    {
+      "priority": 2,
+      "action": "Refresh stale data",
+      "command": "python scripts/daily_scheduler.py --refresh-data",
+      "time": "30 minutes"
+    },
+    {
+      "priority": 3,
+      "action": "Restart autonomous brain",
+      "command": "python scripts/run_autonomous.py &",
+      "time": "5 minutes"
+    },
+    {
+      "priority": 4,
+      "action": "Regenerate fresh watchlist",
+      "command": "python scripts/overnight_watchlist.py",
+      "time": "10 minutes"
+    },
+    {
+      "priority": 5,
+      "action": "Verify ML model loads real weights",
+      "command": "python -c \"from ml_meta.model import get_signal_confidence; conf = get_signal_confidence({'symbol': 'AAPL'}); assert conf != 0.5\"",
+      "time": "1 minute"
+    },
+    {
+      "priority": 6,
+      "action": "Update performance claims",
+      "command": "sed -i 's/64.0%/56.2%/g' docs/STATUS.md && sed -i 's/59.9%/53.7%/g' docs/STATUS.md",
+      "time": "5 minutes"
+    }
+  ],
+  "urgent_actions": [
+    {
+      "priority": 7,
+      "action": "Run integration test",
+      "command": "python scripts/scan.py --cap 10 --deterministic --top5 --dry-run",
+      "time": "15 minutes"
+    },
+    {
+      "priority": 8,
+      "action": "Test risk gates block",
+      "command": "touch state/KILL_SWITCH && python -c 'from execution.broker_alpaca import AlpacaBroker; AlpacaBroker().place_ioc_limit(...)'",
+      "time": "5 minutes"
+    },
+    {
+      "priority": 9,
+      "action": "Fix schema mismatch",
+      "command": "python scripts/add_date_column_to_csvs.py",
+      "time": "10 minutes"
+    }
+  ],
+  "warnings": [
+    "SYSTEMIC RISK: Data pipeline failure - metadata claims not matching file count",
+    "SYSTEMIC RISK: Performance overestimation - use VERIFIED numbers (56.2%, 53.7%) only",
+    "SYSTEMIC RISK: No live execution test - unknown unknowns may exist",
+    "SYSTEMIC RISK: Stale components - system not self-healing",
+    "GO LIVE BLOCKED: Data coverage 11.9% (need 95%+), data staleness 53.4h (need <24h)"
+  ],
+  "confidence_levels": {
+    "data_integrity": "MEDIUM",
+    "code_quality": "HIGH",
+    "architecture": "HIGH",
+    "data_coverage": "LOW",
+    "ml_verification": "LOW",
+    "production_ready": "BLOCKED"
+  },
+  "next_review": "2026-01-09T13:15:00+00:00",
+  "certification_authority": "Overseer-Omega (Supreme Quality Control)"
+}

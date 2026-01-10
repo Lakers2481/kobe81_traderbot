@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\execution\broker_alpaca_crypto.py
+# hypothesis_version: 6.150.0
+
+[100, '/', 'AAVE/USD', 'ALPACA_API_KEY_ID', 'AVAX', 'AVAX/USD', 'BCH/USD', 'BTC', 'BTC/USD', 'DOGE', 'DOGE/USD', 'DOT', 'DOT/USD', 'ETH', 'ETH/USD', 'LINK', 'LINK/USD', 'LTC', 'LTC/USD', 'Live', 'Paper', 'SHIB/USD', 'SOL', 'SOL/USD', 'UNI/USD', 'USD', 'USDC', 'USDT', 'accepted', 'all', 'alpaca_crypto', 'asset_class', 'canceled', 'cancelled', 'created_at', 'expired', 'filled', 'filled_qty', 'id', 'long', 'new', 'partially_filled', 'pending_new', 'qty', 'rejected', 'short', 'side', 'status', 'symbol', 'timestamp']

@@ -18,7 +18,7 @@ import json
 import hashlib
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Dict, Any, List, Tuple
+from typing import Optional, Dict, Any, List
 
 import numpy as np
 

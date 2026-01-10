@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\portfolio\heat_monitor.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.02, 0.2, 0.4, 0.5, 0.7, 0.98, 1.0, 2.0, 20.0, 100, 'COLD', 'Close', 'HOT', 'NORMAL', 'OVERHEATED', 'Unknown', 'WARM', 'alerts', 'avg_correlation', 'avg_entry_price', 'capital_metrics', 'close', 'correlation', 'entry_price', 'exposure_pct', 'heat_level', 'heat_score', 'largest_position_pct', 'market_value', 'max_exposure', 'max_positions', 'max_risk_pct', 'max_single_pct', 'position_metrics', 'qty', 'recommendations', 'risk_metrics', 'risk_pct_of_equity', 'sector_exposure', 'stop_loss', 'symbol', 'timestamp', 'total_exposure', 'total_positions', 'total_risk_dollars', 'utilization_pct']

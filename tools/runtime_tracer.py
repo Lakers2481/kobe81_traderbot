@@ -21,10 +21,7 @@ Date: 2026-01-05
 from __future__ import annotations
 
 import functools
-import hashlib
-import inspect
 import json
-import os
 import sys
 import threading
 import traceback
@@ -429,7 +426,7 @@ def run_traced_scan(cap: int = 50, use_polygon: bool = True) -> Dict[str, Any]:
         from datetime import datetime, timedelta
 
         # Load universe
-        universe_path = ROOT / "data" / "universe" / "optionable_liquid_900.csv"
+        universe_path = ROOT / "data" / "universe" / "optionable_liquid_800.csv"
         symbols = load_universe(str(universe_path), cap=cap)
         print(f"Loaded {len(symbols)} symbols")
 

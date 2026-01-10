@@ -103,7 +103,7 @@ async def require_api_key_in_production(x_api_key: Optional[str] = Header(None))
                 detail="WEB_API_KEY not configured. Set this environment variable for live mode."
             )
         if not x_api_key or x_api_key != expected_key:
-            logger.warning(f"Unauthorized API access attempt to protected endpoint")
+            logger.warning("Unauthorized API access attempt to protected endpoint")
             raise HTTPException(
                 status_code=401,
                 detail="Invalid or missing X-API-Key header"

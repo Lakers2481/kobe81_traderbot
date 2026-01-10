@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\analytics\edge_decomposition.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.15, 0.3, 0.5, 18.0, 30.0, 50.0, 70.0, 100, 500, 86400, '1-2 Days', '1-2 Weeks', '2+ Weeks', '3-5 Days', 'BEARISH', 'BULLISH', 'Down', 'Elevated', 'Flat', 'Friday', 'High', 'Intraday', 'Large Up', 'Low', 'M', 'Medium', 'Monday', 'NEUTRAL', 'Normal', 'Small Down', 'Thursday', 'Tuesday', 'Unknown', 'Up', 'Very High', 'Very Low', 'Wednesday', 'adv', 'by_day_of_week', 'by_regime', 'by_sector', 'by_strategy', 'by_volatility', 'close', 'dow', 'edge_score', 'entry_date', 'entry_dt', 'entry_time', 'exit_date', 'exit_dt', 'exit_time', 'gap_pct', 'hold_days', 'inf', 'month', 'overall_pnl', 'overall_win_rate', 'pnl', 'profit_factor', 'regime', 'sector', 'strategy', 'strong_spots', 'timestamp', 'total_pnl', 'total_trades', 'trade_count', 'vix', 'weak_spots', 'win_rate']

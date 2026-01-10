@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from config.env_loader import load_env
-from risk.policy_gate import PolicyGate, RiskLimits
+from risk.policy_gate import PolicyGate
 
 
 # -----------------------------------------------------------------------------

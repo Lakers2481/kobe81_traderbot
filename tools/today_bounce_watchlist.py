@@ -26,14 +26,12 @@ import argparse
 import sys
 from pathlib import Path
 from datetime import datetime
-import time
 
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 import pandas as pd
 
-from bounce.data_loader import load_universe_data
 from bounce.streak_analyzer import get_current_streaks
 from bounce.strategy_integration import BounceIntegration, create_bounce_watchlist
 from data.universe.loader import load_universe

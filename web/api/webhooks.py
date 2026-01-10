@@ -29,7 +29,6 @@ from pydantic import BaseModel, Field, validator
 from web.api.signal_queue import (
     ExternalSignal,
     SignalSource,
-    SignalStatus,
     get_signal_queue,
 )
 from core.kill_switch import is_kill_switch_active

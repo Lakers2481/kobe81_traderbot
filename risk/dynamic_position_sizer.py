@@ -16,8 +16,7 @@ Quant Interview Ready: Implements professional capital allocation.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
-import math
+from typing import Dict, List, Optional
 
 from core.structured_log import jlog
 

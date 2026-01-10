@@ -169,7 +169,7 @@ python scripts/scan.py --cap 900 --options --crypto --top5
 
 ### Pipeline Flow
 ```
-1. Fetch equity data (900 stocks) + crypto data (8 pairs)
+1. Fetch equity data (800 stocks) + crypto data (8 pairs)
 2. Run DualStrategyScanner on COMBINED data
 3. Propagate asset_class (EQUITY/CRYPTO) to signals
 4. Run ALL signals through 9-stage AI pipeline

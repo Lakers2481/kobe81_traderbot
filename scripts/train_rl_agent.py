@@ -15,14 +15,12 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from datetime import datetime
 
 # Add project root to path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 import pandas as pd
-import numpy as np
 
 from config.env_loader import load_env
 from core.structured_log import jlog
@@ -107,7 +105,7 @@ def train_agent(
 def main():
     parser = argparse.ArgumentParser(description='Train RL Trading Agent')
     parser.add_argument('--universe', type=str,
-                       default='data/universe/optionable_liquid_900.csv',
+                       default='data/universe/optionable_liquid_800.csv',
                        help='Universe file path')
     parser.add_argument('--start', type=str, default='2020-01-01',
                        help='Training start date')

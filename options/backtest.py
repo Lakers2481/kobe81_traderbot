@@ -22,7 +22,7 @@ import pandas as pd
 
 from .black_scholes import BlackScholes, OptionType, OptionPricing
 from .volatility import RealizedVolatility, VolatilityMethod
-from .position_sizing import OptionsPositionSizer, PositionDirection, PositionSizeResult
+from .position_sizing import OptionsPositionSizer, PositionDirection
 
 logger = logging.getLogger(__name__)
 

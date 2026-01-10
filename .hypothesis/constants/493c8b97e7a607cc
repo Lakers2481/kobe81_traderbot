@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\options\black_scholes.py
+# hypothesis_version: 6.150.0
+
+[-1.0, -0.5, 0.0, 1e-10, 1e-05, 0.01, 0.05, 0.2, 0.5, 1.0, 5.0, 365.0, 100, 365, 'CALL', 'PUT', 'delta', 'dividend_yield', 'gamma', 'greeks', 'intrinsic_value', 'option_type', 'price', 'probability_itm', 'rho', 'risk_free_rate', 'spot_price', 'strike_price', 'theta', 'time_to_expiry_days', 'time_to_expiry_years', 'time_value', 'vega', 'volatility']

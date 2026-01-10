@@ -2,9 +2,7 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import json
-import os
 import subprocess
 from datetime import datetime
 from pathlib import Path

@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\oms\order_state.py
+# hypothesis_version: 6.150.0
+
+['APPROVED', 'CANCELLED', 'CLOSED', 'FAILED', 'FILLED', 'PENDING', 'REJECTED', 'SUBMITTED', 'VETOED']

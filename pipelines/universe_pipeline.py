@@ -15,8 +15,6 @@ Version: 1.0.0
 
 import pandas as pd
 from datetime import datetime
-from pathlib import Path
-from typing import List, Optional
 
 from pipelines.base import Pipeline
 
@@ -38,7 +36,7 @@ class UniversePipeline(Pipeline):
         self.logger.info("Validating trading universe...")
 
         # Load universe
-        universe_file = self.data_dir / "universe" / "optionable_liquid_900.csv"
+        universe_file = self.data_dir / "universe" / "optionable_liquid_800.csv"
         if not universe_file.exists():
             self.add_error(f"Universe file not found: {universe_file}")
             return False

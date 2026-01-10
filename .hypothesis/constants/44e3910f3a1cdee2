@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\autonomous\integrity.py
+# hypothesis_version: 6.150.0
+
+[-15.0, -10.0, -1.0, -0.5, 0.001, 0.01, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 2.0, 2.5, 3.0, 5.0, 10.0, 15.0, 100, 252, 8192, ':', 'America/New_York', 'FILE_NOT_FOUND', 'HASH_MISMATCH', 'RANDOM', 'SYNTHETIC', 'UNKNOWN', 'a', 'avg_loss_pct', 'avg_win_pct', 'by_type', 'close', 'context', 'data_source', 'entry_price', 'failures', 'low', 'max', 'max_drawdown', 'min', 'profit_factor', 'rb', 'recent', 'result_summary', 'sharpe_ratio', 'state/integrity', 'suspicious_above', 'suspicious_below', 'timestamp', 'total', 'trades', 'violations', 'violations.jsonl', 'warnings', 'win_rate']

@@ -41,11 +41,10 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import os
 import sys
 from datetime import datetime, date
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Any
 
 # Add parent to path for imports
 ROOT = Path(__file__).resolve().parents[1]
@@ -103,7 +102,7 @@ def generate_pregame_blueprint(
     # Late imports to avoid circular dependencies
     from analysis.historical_patterns import HistoricalPatternAnalyzer
     from analysis.options_expected_move import ExpectedMoveCalculator
-    from explainability.trade_thesis_builder import TradeThesisBuilder, TradeThesis
+    from explainability.trade_thesis_builder import TradeThesisBuilder
 
     today = date.today()
     generated_at = datetime.now()
@@ -153,12 +152,35 @@ def generate_pregame_blueprint(
                 vol = pattern_analyzer.analyze_volume_profile(symbol=symbol)
                 levels = pattern_analyzer.analyze_support_resistance(symbol=symbol)
 
+                # Get news sentiment (Yahoo Finance - NO API KEY NEEDED)
+                news_sentiment = {}
+                try:
+                    from altdata.yahoo_news_scraper import get_yahoo_news_client
+                    news_client = get_yahoo_news_client()
+                    news_sentiment = news_client.get_sentiment_summary(symbol, limit=20)
+                except Exception as e:
+                    logger.warning(f"News fetch failed for {symbol}: {e}")
+                    news_sentiment = {"error": str(e), "avg_sentiment": 0.0}
+
+                # Get congressional trading activity (uses simulated data - NO API KEY NEEDED)
+                # NOTE: For REAL data, add QUIVER_API_KEY to .env (free 100 calls/month)
+                congressional_activity = {}
+                try:
+                    from altdata.congressional_trades import get_congressional_client
+                    congress_client = get_congressional_client()
+                    congressional_activity = congress_client.get_trade_summary(symbol, days_back=90).to_dict()
+                except Exception as e:
+                    logger.warning(f"Congressional data fetch failed for {symbol}: {e}")
+                    congressional_activity = {"error": str(e), "net_activity": "neutral"}
+
                 blueprint["positions"][symbol] = {
                     "consecutive_pattern": pattern.to_dict(),
                     "expected_move": em.to_dict(),
                     "sector_relative_strength": sr.to_dict(),
                     "volume_profile": vol.to_dict(),
                     "support_resistance": [l.to_dict() for l in levels],
+                    "news_sentiment": news_sentiment,
+                    "congressional_activity": congressional_activity,
                 }
 
                 # Print summary
@@ -182,7 +204,7 @@ def generate_pregame_blueprint(
 
     # Get signals from scanner
     signals = _get_scanner_signals(
-        universe_path or str(ROOT / "data/universe/optionable_liquid_900.csv"),
+        universe_path or str(ROOT / "data/universe/optionable_liquid_800.csv"),
         cap,
         top_n,
         dotenv_path,
@@ -890,7 +912,7 @@ def main():
     parser.add_argument(
         "--universe",
         type=str,
-        default=str(ROOT / "data/universe/optionable_liquid_900.csv"),
+        default=str(ROOT / "data/universe/optionable_liquid_800.csv"),
         help="Path to universe CSV",
     )
     parser.add_argument(

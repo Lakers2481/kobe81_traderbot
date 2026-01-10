@@ -47,7 +47,7 @@ Expected: Full system demonstration in 5 minutes
 | Command | Description |
 |---------|-------------|
 | `python scripts/scan.py --cap 900 --deterministic --top3` | Daily scan |
-| `python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv` | Paper trade |
+| `python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_800.csv` | Paper trade |
 | `python scripts/overnight_watchlist.py` | Build next-day watchlist |
 | `python scripts/premarket_validator.py` | Validate watchlist (8 AM) |
 
@@ -55,15 +55,15 @@ Expected: Full system demonstration in 5 minutes
 
 | Command | Description |
 |---------|-------------|
-| `python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_900.csv --cap 150` | Quick backtest |
-| `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv` | Walk-forward |
+| `python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_800.csv --cap 150` | Quick backtest |
+| `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv` | Walk-forward |
 | `python scripts/aggregate_wf_report.py --wfdir wf_outputs` | WF report |
 
 ### Data Commands
 
 | Command | Description |
 |---------|-------------|
-| `python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_900.csv` | Prefetch data |
+| `python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_800.csv` | Prefetch data |
 | `python scripts/verify_hash_chain.py` | Verify audit chain |
 | `python scripts/reconcile_alpaca.py` | Reconcile positions |
 

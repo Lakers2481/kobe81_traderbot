@@ -1,12 +1,10 @@
 import pytest
 import pandas as pd
-from pathlib import Path
 from datetime import datetime, timedelta
 import re
 
 from data.providers.polygon_eod import fetch_daily_bars_polygon
-from execution.broker_alpaca import get_best_ask, _alpaca_cfg, _auth_headers, get_order_by_id, get_order_by_client_id
-from oms.order_state import OrderRecord, OrderStatus
+from execution.broker_alpaca import get_best_ask, get_order_by_id, get_order_by_client_id
 
 # Define a fixture for a temporary cache directory
 @pytest.fixture

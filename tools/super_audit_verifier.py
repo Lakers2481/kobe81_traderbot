@@ -20,7 +20,7 @@ import json
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, Any
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -156,7 +156,7 @@ def check_runtime() -> Dict[str, Any]:
                 "value": f"alive={alive}, cycles={cycles}"
             })
             results["passed"] += 1 if alive else 0
-        except:
+        except Exception:
             results["checks"].append({"name": "Heartbeat", "status": "ERROR"})
 
     # Watchlist
@@ -171,7 +171,7 @@ def check_runtime() -> Dict[str, Any]:
                 "value": f"TOTD={data.get('totd', {}).get('symbol')}, size={data.get('watchlist_size')}"
             })
             results["passed"] += 1
-        except:
+        except (json.JSONDecodeError, IOError):
             pass
 
     # Logs

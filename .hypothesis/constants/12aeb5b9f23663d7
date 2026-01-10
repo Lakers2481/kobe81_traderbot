@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\core\rate_limiter.py
+# hypothesis_version: 6.150.0
+
+[0.1, 1.0, 2.0, 10.0, 60.0, 120.0, 1000.0, 120, 500, '429', 'T', 'base_delay_ms', 'enabled', 'max_retries', 'retry_on_429']

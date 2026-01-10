@@ -228,7 +228,7 @@ python scripts/reconcile_alpaca.py
 
 ### Run End-to-End Test
 ```bash
-python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv \
+python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_800.csv \
     --start 2025-12-15 --end 2026-01-02 --cap 50 --dotenv .env --cognitive
 ```
 

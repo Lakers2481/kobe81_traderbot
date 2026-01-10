@@ -24,7 +24,7 @@ Usage:
         df=ohlcv_data,
         provider='stooq',
         timeframe='1d',
-        universe_path='data/universe/optionable_liquid_900.csv',
+        universe_path='data/universe/optionable_liquid_800.csv',
     )
 
     # Load frozen data

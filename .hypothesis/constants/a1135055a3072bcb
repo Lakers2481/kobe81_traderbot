@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\analytics\pyfolio_integration.py
+# hypothesis_version: 6.150.0
+
+[0.0, 150, '%Y-%m-%d', '--all-splits', '--backtest-dir', '--benchmark', '--full', '--output-dir', '--wf-dir', 'Agg', 'BUY', 'Benchmark symbol', 'NINF', 'PINF', 'SPY', 'UTC', '__main__', 'all', 'amount', 'annual_volatility', 'benchmark_rets', 'cagr', 'calmar_ratio', 'cash', 'close', 'equity', 'equity_curve.csv', 'ignore', 'live_start_date', 'max_drawdown', 'positions', 'price', 'pyfolio', 'qty', 'returns', 'sharpe_ratio', 'side', 'sortino_ratio', 'split_*', 'stability', 'store_true', 'symbol', 'tail_ratio', 'tight', 'timestamp', 'total_return', 'trade_list.csv', 'transactions', 'tz', 'white']

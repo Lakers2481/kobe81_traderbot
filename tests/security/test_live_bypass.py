@@ -13,7 +13,7 @@ Date: 2026-01-05
 
 import os
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from pathlib import Path
 
 # Add project root
@@ -27,7 +27,7 @@ class TestLiveBypassPrevention:
 
     def test_live_blocked_without_all_flags(self):
         """Live order must be blocked when any flag is missing."""
-        from safety.execution_choke import evaluate_safety_gates, SafetyViolationError
+        from safety.execution_choke import evaluate_safety_gates
 
         # Ensure we're in default state (all flags off)
         result = evaluate_safety_gates(is_paper_order=False, ack_token="test")

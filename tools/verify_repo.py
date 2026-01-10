@@ -13,7 +13,6 @@ Usage:
 
 import argparse
 import importlib
-import os
 import sys
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -136,7 +135,7 @@ def verify_state_directories() -> Tuple[int, int, List[str]]:
 def verify_critical_files() -> Tuple[int, int, List[str]]:
     """Verify critical data files exist."""
     critical_files = [
-        "data/universe/optionable_liquid_900.csv",
+        "data/universe/optionable_liquid_800.csv",
         "config/base.yaml",
         ".gitignore",
     ]

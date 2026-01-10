@@ -15,7 +15,6 @@ from enum import Enum
 from typing import Optional, Dict, List, Any
 from zoneinfo import ZoneInfo
 
-import pandas as pd
 
 logger = logging.getLogger(__name__)
 

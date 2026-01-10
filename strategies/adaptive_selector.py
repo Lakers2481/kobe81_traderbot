@@ -21,7 +21,7 @@ Usage:
 
 import logging
 from dataclasses import dataclass
-from typing import Dict, Optional, Tuple, List, Any
+from typing import Dict, Optional, Tuple, Any
 from enum import Enum
 import pandas as pd
 import numpy as np

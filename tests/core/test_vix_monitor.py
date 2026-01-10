@@ -11,7 +11,7 @@ Tests:
 
 import pytest
 from datetime import datetime, timedelta
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import sys
 from pathlib import Path
@@ -37,8 +37,12 @@ from core.vix_monitor import (
 
 @pytest.fixture
 def default_config():
-    """Default VIX configuration."""
-    return VIXConfig()
+    """Default VIX configuration with yfinance for testing.
+
+    Note: Production uses 'fred' as default, but tests mock _fetch_from_yfinance
+    so we explicitly set data_source='yfinance' for test isolation.
+    """
+    return VIXConfig(data_source="yfinance")
 
 
 @pytest.fixture
@@ -80,7 +84,7 @@ class TestVIXConfig:
         assert config.elevated_threshold == 25.0
         assert config.extreme_threshold == 40.0
         assert config.cache_ttl_seconds == 3600
-        assert config.data_source == "yfinance"
+        assert config.data_source == "fred"  # Updated: now uses FRED as primary source
         assert config.fallback_vix == 20.0
 
     def test_custom_values(self):
@@ -331,16 +335,25 @@ class TestConvenienceFunctions:
     def test_get_vix_level(self, mock_fetch):
         """get_vix_level should return float."""
         reset_vix_monitor()
+        # Need to initialize with yfinance config since we're mocking _fetch_from_yfinance
+        from core.vix_monitor import _vix_monitor
+        global _vix_monitor
+        import core.vix_monitor as vix_mod
+        vix_mod._vix_monitor = VIXMonitor(config=VIXConfig(data_source="yfinance"))
         mock_fetch.return_value = 19.5
 
         level = get_vix_level()
 
         assert level == 19.5
+        reset_vix_monitor()
 
     @patch("core.vix_monitor.VIXMonitor._fetch_from_yfinance")
     def test_should_pause_for_vix(self, mock_fetch):
         """should_pause_for_vix should return tuple."""
         reset_vix_monitor()
+        # Need to initialize with yfinance config since we're mocking _fetch_from_yfinance
+        import core.vix_monitor as vix_mod
+        vix_mod._vix_monitor = VIXMonitor(config=VIXConfig(data_source="yfinance"))
         mock_fetch.return_value = 35.0
 
         should_pause, level, reason = should_pause_for_vix()
@@ -348,6 +361,7 @@ class TestConvenienceFunctions:
         assert should_pause is True
         assert level == 35.0
         assert isinstance(reason, str)
+        reset_vix_monitor()
 
 
 if __name__ == "__main__":

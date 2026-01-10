@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\integration\learning_hub.py
+# hypothesis_version: 6.150.0
+
+[-0.01, 0.0, 0.03, 0.5, 0.6, 1.0, 100, 3600, 'action', 'completed', 'condition', 'confidence', 'decrease_confidence', 'drift', 'drift_alert', 'drift_alerts_sent', 'drift_detected', 'dual_strategy', 'entry_price', 'entry_time', 'episode_id', 'episodic_memory', 'errors', 'exit_price', 'exit_reason', 'exit_time', 'holding_period', 'increase_confidence', 'learning_hub_auto', 'lesson', 'long', 'metadata', 'model_update', 'online_learning', 'parameters', 'pattern_type', 'pnl', 'pnl_pct', 'r', 'reflection', 'regime', 'rule_feedback_loop', 'rules_added', 'rules_applied', 'rules_extracted', 'rules_updated', 'saved_at', 'semantic_rules', 'shares', 'side', 'signal_score', 'source_trade', 'started_at', 'status', 'steps_completed', 'strategy', 'symbol', 'timestamp', 'trade', 'trade_id', 'trades_processed', 'type', 'unknown', 'uptime_hours', 'w', 'won']

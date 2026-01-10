@@ -1001,6 +1001,189 @@ class HistoricalPatternAnalyzer:
             confidence=confidence,
         )
 
+    def get_pattern_significance(
+        self,
+        pattern: ConsecutiveDayPattern,
+        alpha: float = 0.05,
+        n_trials: int = 1
+    ) -> Dict[str, Any]:
+        """
+        Calculate statistical significance of a pattern.
+
+        Uses professional quant methods:
+        - Binomial test with Bonferroni correction
+        - Wilson confidence intervals
+        - Sample size assessment
+
+        Args:
+            pattern: ConsecutiveDayPattern to test
+            alpha: Significance level (default 0.05)
+            n_trials: Number of patterns tested (for Bonferroni correction)
+
+        Returns:
+            Dict with statistical test results
+        """
+        try:
+            from analytics.statistical_testing import (
+                compute_binomial_pvalue,
+                wilson_confidence_interval,
+            )
+        except ImportError:
+            logger.warning("Statistical testing module not available")
+            return {
+                'available': False,
+                'reason': 'Module not found'
+            }
+
+        if pattern.sample_size == 0:
+            return {
+                'available': False,
+                'reason': 'No historical instances'
+            }
+
+        # Count wins (instances with positive day1 bounce)
+        wins = sum(1 for inst in pattern.historical_instances if inst.day1_return > 0)
+        total = pattern.sample_size
+
+        # Binomial test with Bonferroni correction
+        binomial_result = compute_binomial_pvalue(
+            wins=wins,
+            total=total,
+            null_prob=0.5,
+            alpha=alpha,
+            n_trials=n_trials,
+            alternative="greater"
+        )
+
+        # Wilson confidence interval
+        ci = wilson_confidence_interval(wins, total, 0.95)
+
+        return {
+            'available': True,
+            'sample_size': total,
+            'wins': wins,
+            'win_rate': wins / total if total > 0 else 0.0,
+            'p_value': binomial_result.p_value,
+            'alpha': binomial_result.alpha,
+            'alpha_adjusted': binomial_result.alpha_adjusted,
+            'is_significant': binomial_result.is_significant,
+            'confidence_interval_lower': ci.lower_bound,
+            'confidence_interval_upper': ci.upper_bound,
+            'n_trials': n_trials,
+        }
+
+    def test_multiple_patterns(
+        self,
+        symbol: str,
+        df: Optional[pd.DataFrame] = None,
+        streak_range: Optional[range] = None,
+        alpha: float = 0.05
+    ) -> Dict[int, Dict[str, Any]]:
+        """
+        Test multiple consecutive-down-day patterns and return statistics.
+
+        This is the core of pattern optimization: test MULTIPLE patterns
+        (e.g., 2-10 consecutive down days) instead of hardcoding one value.
+
+        Args:
+            symbol: Stock symbol
+            df: OHLCV DataFrame (optional)
+            streak_range: Range of streak lengths to test (default: range(2, 11))
+            alpha: Significance level (default 0.05)
+
+        Returns:
+            Dict mapping streak_length -> pattern statistics with significance tests
+
+        Example:
+            >>> analyzer = HistoricalPatternAnalyzer()
+            >>> results = analyzer.test_multiple_patterns('AAPL', df, range(2, 11))
+            >>> for streak_len, stats in sorted(results.items()):
+            ...     print(f"{streak_len}-day: WR={stats['win_rate']:.1%}, p={stats['p_value']:.4f}")
+        """
+        if df is None:
+            df = self._get_historical_data(symbol, self.lookback_years)
+
+        if streak_range is None:
+            streak_range = range(2, 11)  # Test 2-10 days
+
+        # Get full pattern analysis
+        pattern = self.analyze_consecutive_days(df, symbol)
+
+        # Number of patterns being tested (for Bonferroni correction)
+        n_trials = len(streak_range)
+
+        # Group instances by streak length
+        results = {}
+        for streak_len in streak_range:
+            # Filter instances matching this streak length
+            matching_instances = [
+                inst for inst in pattern.historical_instances
+                if inst.streak_length == streak_len
+            ]
+
+            if len(matching_instances) == 0:
+                results[streak_len] = {
+                    'streak_length': streak_len,
+                    'sample_size': 0,
+                    'win_rate': 0.0,
+                    'avg_return': 0.0,
+                    'median_return': 0.0,
+                    'p_value': 1.0,
+                    'is_significant': False,
+                    'reason': 'No instances found'
+                }
+                continue
+
+            # Calculate statistics
+            total = len(matching_instances)
+            wins = sum(1 for inst in matching_instances if inst.day1_return > 0)
+            returns = [inst.day1_return for inst in matching_instances]
+
+            # Binomial test
+            try:
+                from analytics.statistical_testing import (
+                    compute_binomial_pvalue,
+                    wilson_confidence_interval,
+                )
+
+                binomial_result = compute_binomial_pvalue(
+                    wins=wins,
+                    total=total,
+                    null_prob=0.5,
+                    alpha=alpha,
+                    n_trials=n_trials,
+                    alternative="greater"
+                )
+
+                ci = wilson_confidence_interval(wins, total, 0.95)
+
+                results[streak_len] = {
+                    'streak_length': streak_len,
+                    'sample_size': total,
+                    'wins': wins,
+                    'win_rate': wins / total,
+                    'avg_return': np.mean(returns),
+                    'median_return': np.median(returns),
+                    'p_value': binomial_result.p_value,
+                    'alpha_adjusted': binomial_result.alpha_adjusted,
+                    'is_significant': binomial_result.is_significant,
+                    'confidence_interval_lower': ci.lower_bound,
+                    'confidence_interval_upper': ci.upper_bound,
+                }
+            except ImportError:
+                # Fallback if statistical testing module not available
+                results[streak_len] = {
+                    'streak_length': streak_len,
+                    'sample_size': total,
+                    'wins': wins,
+                    'win_rate': wins / total,
+                    'avg_return': np.mean(returns),
+                    'median_return': np.median(returns),
+                    'reason': 'Statistical module not available'
+                }
+
+        return results
+
     def get_full_analysis(
         self,
         symbol: str,

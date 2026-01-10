@@ -5,7 +5,6 @@ Canary scoring: annotate signals with both deployed and candidate model probabil
 """
 
 from pathlib import Path
-from typing import Optional
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]

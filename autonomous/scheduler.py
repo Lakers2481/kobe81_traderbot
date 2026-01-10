@@ -440,7 +440,7 @@ class AutonomousScheduler:
                 name="Update Stock Universe",
                 category=TaskCategory.DATA,
                 priority=TaskPriority.LOW,
-                description="Refresh the 900-stock universe",
+                description="Refresh the 800-stock universe",
                 handler="autonomous.data:update_universe",
                 valid_phases=[MarketPhase.NIGHT, MarketPhase.WEEKEND],
                 cooldown_minutes=10080,  # Weekly

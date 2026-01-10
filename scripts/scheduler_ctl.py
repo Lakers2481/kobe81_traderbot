@@ -156,7 +156,7 @@ def cmd_start(args):
     cmd = [
         sys.executable, str(ROOT / "scripts" / "scheduler_kobe.py"),
         "--dotenv", dotenv,
-        "--universe", "data/universe/optionable_liquid_900.csv",
+        "--universe", "data/universe/optionable_liquid_800.csv",
         "--cap", "900",
         "--tick-seconds", "20",
     ]
@@ -315,7 +315,7 @@ def cmd_test(args):
     cmd = [
         sys.executable, str(ROOT / "scripts" / "scheduler_kobe.py"),
         "--dotenv", dotenv,
-        "--universe", "data/universe/optionable_liquid_900.csv",
+        "--universe", "data/universe/optionable_liquid_800.csv",
         "--cap", "900",
         "--tick-seconds", "5",  # Fast tick for testing
     ]

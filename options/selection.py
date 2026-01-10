@@ -9,11 +9,10 @@ Provides delta-targeted strike selection for synthetic options:
 """
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import List
 
-from .black_scholes import BlackScholes, OptionType, OptionPricing
+from .black_scholes import BlackScholes, OptionType
 
 
 @dataclass

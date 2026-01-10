@@ -14,7 +14,7 @@ from typing import Dict, Any, List, Optional
 import json
 
 from core.structured_log import get_logger
-from .factor_calculator import FactorCalculator, FactorExposures, get_factor_calculator
+from .factor_calculator import FactorExposures, get_factor_calculator
 from .sector_exposure import SectorAnalyzer, SectorExposures
 
 logger = get_logger(__name__)
@@ -49,7 +49,7 @@ class FactorRiskReport:
     def to_markdown(self) -> str:
         """Generate markdown report."""
         lines = [
-            f"# Factor Risk Report",
+            "# Factor Risk Report",
             f"**Date:** {self.date}",
             f"**Risk Level:** {self.overall_risk_level}",
             "",
@@ -344,7 +344,7 @@ if __name__ == "__main__":
 
     print(f"Risk Level: {report.overall_risk_level}")
     print(f"Risk Flags: {report.risk_flags}")
-    print(f"\nRecommendations:")
+    print("\nRecommendations:")
     for rec in report.recommendations:
         print(f"  - {rec}")
 

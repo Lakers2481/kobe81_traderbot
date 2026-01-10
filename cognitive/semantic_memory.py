@@ -370,11 +370,125 @@ class SemanticMemory:
             if rule.is_active and rule.confidence < threshold:
                 rule.is_active = False
                 deactivated_count += 1
-        
+
         if deactivated_count > 0:
             logger.info(f"Pruned {deactivated_count} low-confidence rules from memory.")
             if self.auto_persist: self._save_rules()
         return deactivated_count
+
+    def reinforce_pattern(self, pattern: str, strength: float = 0.05) -> SemanticRule:
+        """
+        Reinforce a trading pattern that led to a successful trade.
+
+        This creates or strengthens a rule that says:
+        "When this pattern appears, it tends to be profitable."
+
+        Args:
+            pattern: The pattern name (e.g., "IBS_RSI", "TURTLE_SOUP", "IBS_RSI_BULL")
+            strength: Amount to increase confidence (default 0.05)
+
+        Returns:
+            The updated or created SemanticRule
+        """
+        condition = f"pattern = {pattern}"
+        action = "trust_signal"
+
+        rule_id = hashlib.md5(f"{condition}|{action}".encode()).hexdigest()[:12]
+
+        if rule_id in self._rules:
+            rule = self._rules[rule_id]
+            rule.supporting_episodes += 1
+            rule.confidence = min(1.0, rule.confidence + strength)
+            rule.last_updated = datetime.now()
+            logger.debug(f"Reinforced pattern '{pattern}', confidence now {rule.confidence:.2f}")
+        else:
+            rule = SemanticRule(
+                rule_id=rule_id,
+                condition=condition,
+                action=action,
+                parameters={'pattern': pattern},
+                confidence=0.6,  # Start with moderate confidence
+                supporting_episodes=1,
+                source="pattern_reinforcement",
+                tags=['pattern', 'auto_learned'],
+            )
+            self._rules[rule_id] = rule
+            logger.info(f"Created new pattern rule for '{pattern}'")
+
+        if self.auto_persist:
+            self._save_rules()
+        return rule
+
+    def weaken_pattern(self, pattern: str, penalty: float = 0.08) -> Optional[SemanticRule]:
+        """
+        Weaken a trading pattern that led to an unsuccessful trade.
+
+        This reduces confidence in the pattern or creates a cautionary rule.
+
+        Args:
+            pattern: The pattern name (e.g., "IBS_RSI", "TURTLE_SOUP")
+            penalty: Amount to decrease confidence (default 0.08)
+
+        Returns:
+            The updated SemanticRule if it exists, or new caution rule
+        """
+        condition = f"pattern = {pattern}"
+        action = "trust_signal"
+
+        rule_id = hashlib.md5(f"{condition}|{action}".encode()).hexdigest()[:12]
+
+        if rule_id in self._rules:
+            rule = self._rules[rule_id]
+            rule.contradicting_episodes += 1
+            rule.confidence = max(0.1, rule.confidence - penalty)
+            rule.last_updated = datetime.now()
+            logger.debug(f"Weakened pattern '{pattern}', confidence now {rule.confidence:.2f}")
+
+            # Deactivate patterns that consistently fail
+            if rule.contradicting_episodes > 10 and rule.evidence_ratio < 0.3:
+                rule.is_active = False
+                logger.warning(f"Deactivated pattern '{pattern}' due to poor evidence ({rule.evidence_ratio:.1%})")
+
+            if self.auto_persist:
+                self._save_rules()
+            return rule
+        else:
+            # Create a new rule with low initial confidence
+            rule = SemanticRule(
+                rule_id=rule_id,
+                condition=condition,
+                action=action,
+                parameters={'pattern': pattern},
+                confidence=0.4,  # Start with low confidence for first failure
+                supporting_episodes=0,
+                contradicting_episodes=1,
+                source="pattern_weakening",
+                tags=['pattern', 'auto_learned'],
+            )
+            self._rules[rule_id] = rule
+            logger.info(f"Created cautionary pattern rule for '{pattern}' (started from failure)")
+
+            if self.auto_persist:
+                self._save_rules()
+            return rule
+
+    def get_pattern_confidence(self, pattern: str) -> float:
+        """
+        Get the learned confidence level for a trading pattern.
+
+        Args:
+            pattern: The pattern name
+
+        Returns:
+            Confidence score (0.0 to 1.0), or 0.5 if pattern is unknown
+        """
+        condition = f"pattern = {pattern}"
+        action = "trust_signal"
+        rule_id = hashlib.md5(f"{condition}|{action}".encode()).hexdigest()[:12]
+
+        if rule_id in self._rules and self._rules[rule_id].is_active:
+            return self._rules[rule_id].confidence
+        return 0.5  # Neutral confidence for unknown patterns
 
     def _save_rules(self) -> None:
         """Saves the entire rule base to a JSON file."""

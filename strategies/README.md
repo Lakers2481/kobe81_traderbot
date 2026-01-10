@@ -21,10 +21,10 @@ Evidence (Backtest)
 
 Replicate Exactly
 - Dual backtest (cap=200, ~5–6 min):
-  - python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --cap 200
+  - python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --cap 200
 - Walk-forward (ensure SMA200 history; train-days ≥ 200):
   - set KOBE_CONFIG_PATH=%CD%\config\base_backtest.yaml
-  - python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2023-01-02 --end 2024-12-26 --train-days 252 --test-days 63 --cap 60 --outdir wf_outputs_verify_2023_2024 --fallback-free --dotenv ./.env
+  - python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2023-01-02 --end 2024-12-26 --train-days 252 --test-days 63 --cap 60 --outdir wf_outputs_verify_2023_2024 --fallback-free --dotenv ./.env
   - set KOBE_CONFIG_PATH=
 
 Lookahead Discipline (both strategies)

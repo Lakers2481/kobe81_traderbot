@@ -3,9 +3,7 @@ Unit tests for cognitive/curiosity_engine.py
 
 Tests the AI's ability to generate and track hypotheses for continuous improvement.
 """
-import pytest
 import tempfile
-from pathlib import Path
 
 
 class TestHypothesisStatusEnum:
@@ -205,7 +203,7 @@ class TestStatePersistence:
     """Tests for state persistence."""
 
     def test_state_persists_across_instances(self):
-        from cognitive.curiosity_engine import CuriosityEngine, Hypothesis, HypothesisStatus
+        from cognitive.curiosity_engine import CuriosityEngine, Hypothesis
 
         with tempfile.TemporaryDirectory() as tmpdir:
             # Create engine and add a hypothesis manually

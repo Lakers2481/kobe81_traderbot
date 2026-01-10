@@ -34,6 +34,22 @@ from typing import Any, Callable, Dict, Optional, TypeVar
 from core.structured_log import jlog
 
 # =============================================================================
+# NO LIVE ORDERS HARD GATE - ABSOLUTE FINAL CHECK
+# =============================================================================
+#
+# This is the ABSOLUTE FINAL CHECK before any order submission.
+# If this is True, ALL live orders are blocked regardless of other flags.
+# This is separate from PAPER_ONLY - it's an additional safety layer.
+#
+# To enable live trading (NOT RECOMMENDED):
+# 1. Set NO_LIVE_ORDERS = False in this file
+# 2. Set PAPER_ONLY_ENFORCED = False in safety/paper_guard.py
+# 3. Set all 7 flags in evaluate_safety_gates()
+# 4. Provide valid ACK token at runtime
+#
+NO_LIVE_ORDERS: bool = True  # HARDCODED - Must be manually changed to False for live
+
+# =============================================================================
 # RUNTIME TOKEN GENERATION
 # =============================================================================
 
@@ -158,6 +174,37 @@ def _generate_evidence_hash(checks: Dict[str, bool], timestamp: str) -> str:
     return hashlib.sha256(evidence_str.encode()).hexdigest()[:16]
 
 
+def assert_no_live_orders(context: str = "unknown") -> None:
+    """
+    HARD GATE: Block all live orders unconditionally when NO_LIVE_ORDERS is True.
+
+    This is separate from PAPER_ONLY - it's an additional safety layer.
+    This function MUST be called at the start of evaluate_safety_gates().
+
+    Args:
+        context: Description of where this check is being called from
+
+    Raises:
+        SafetyViolationError: If NO_LIVE_ORDERS is True and attempting live endpoint
+    """
+    if NO_LIVE_ORDERS:
+        base_url = os.getenv("ALPACA_BASE_URL", "")
+        # Check if pointing to live endpoint
+        is_live_url = (
+            "api.alpaca.markets" in base_url and
+            "paper" not in base_url.lower()
+        )
+        if is_live_url:
+            msg = (
+                f"NO_LIVE_ORDERS gate is ACTIVE. Live trading is BLOCKED. "
+                f"Context: {context}. "
+                f"ALPACA_BASE_URL: {base_url}. "
+                f"To enable live: set NO_LIVE_ORDERS=False in execution_choke.py"
+            )
+            jlog("safety_violation", gate="NO_LIVE_ORDERS", context=context, url=base_url)
+            raise SafetyViolationError(msg)
+
+
 # =============================================================================
 # MAIN CHOKE POINT FUNCTION
 # =============================================================================
@@ -180,6 +227,9 @@ def evaluate_safety_gates(
     Returns:
         SafetyGateResult with evaluation details
     """
+    # === NO_LIVE_ORDERS HARD GATE - MUST BE FIRST ===
+    assert_no_live_orders(context=context or "evaluate_safety_gates")
+
     timestamp = datetime.utcnow().isoformat()
     context_str = f" [{context}]" if context else ""
 

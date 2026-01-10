@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\research\vectorbt_miner.py
+# hypothesis_version: 6.150.0
+
+[-0.02, -0.01, 0.0, 1e-08, 0.0005, 0.001, 0.01, 0.02, 0.05, 0.2, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 100, 120, 200, 252, 500, 100000, 1000000, 10000000, '1D', '2020-01-01', 'Calmar Ratio', 'D', 'Max Drawdown [%]', 'Profit Factor', 'Sharpe Ratio', 'TEST', 'Total Return [%]', 'Total Trades', 'Win Rate [%]', '__main__', 'all', 'avg_trade_return', 'bollinger', 'calmar_ratio', 'close', 'donchian', 'entry_thresh', 'entry_window', 'exit_thresh', 'exit_window', 'fast', 'high', 'low', 'ma', 'max_drawdown', 'mean', 'momentum', 'name', 'num_std', 'num_trades', 'num_variants', 'open', 'overbought', 'oversold', 'params', 'period', 'profit_factor', 'results', 'rsi', 'sharpe_ratio', 'slow', 'symbol', 'timestamp', 'total_return', 'volume', 'w', 'win_rate', 'window']

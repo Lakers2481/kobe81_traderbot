@@ -14,12 +14,9 @@ Author: Kobe Trading System
 Created: 2026-01-04
 """
 
-import os
-import json
-import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 from io import StringIO
 
 import pandas as pd

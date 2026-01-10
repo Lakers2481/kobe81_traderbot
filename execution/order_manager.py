@@ -34,13 +34,11 @@ Usage:
 """
 
 import logging
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, List, Optional
+from datetime import datetime
+from typing import Any, Dict, Optional
 import time
 import threading
 from concurrent.futures import ThreadPoolExecutor, Future
-import pandas as pd
 
 from oms.order_state import OrderRecord, OrderStatus
 from execution.broker_alpaca import place_ioc_limit, get_best_ask, get_best_bid, BrokerExecutionResult
@@ -99,6 +97,10 @@ class OrderManager:
         Returns:
             A unique execution ID for tracking.
         """
+        # === PAPER MODE GUARD - MUST BE FIRST ===
+        from safety.paper_guard import ensure_paper_mode_or_die
+        ensure_paper_mode_or_die(context=f"OrderManager.submit_order:{order.symbol}")
+
         strategy = execution_strategy or order.order_type or self.default_execution_strategy
         execution_id = f"EXEC-{order.symbol}-{datetime.now().strftime('%Y%m%d%H%M%S')}-{strategy.upper()}"
         order.execution_id = execution_id

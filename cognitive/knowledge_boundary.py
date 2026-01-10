@@ -45,8 +45,8 @@ Usage:
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from datetime import datetime
+from typing import Any, Dict, List
 from enum import Enum
 
 logger = logging.getLogger(__name__)

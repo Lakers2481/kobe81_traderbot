@@ -15,7 +15,7 @@ import random
 import copy
 import logging
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Callable, Type
+from typing import Dict, List, Optional, Any
 from enum import Enum
 import numpy as np
 

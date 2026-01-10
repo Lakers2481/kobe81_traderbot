@@ -9,9 +9,9 @@ Created: 2026-01-04
 """
 
 from dataclasses import dataclass
-from datetime import datetime, date
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 import json
 
 from core.structured_log import get_logger
@@ -109,10 +109,10 @@ class SectorExposures:
     def to_summary(self) -> str:
         """Generate plain English summary."""
         lines = [
-            f"**Sector Exposure Analysis**",
+            "**Sector Exposure Analysis**",
             f"Risk Level: {self.get_risk_level()}",
             "",
-            f"**Sector Weights:**",
+            "**Sector Weights:**",
         ]
 
         # Sort by weight

@@ -89,7 +89,7 @@ class RobotVerifier:
         # Universe
         c['UniverseLoader'] = self.check_import('data.universe.loader', 'load_universe')
         c['CanonicalUniverse'] = self.check_import('data.universe.canonical', 'load_canonical_universe')
-        c['Universe900'] = self.check_file('data/universe/optionable_liquid_900.csv')
+        c['Universe900'] = self.check_file('data/universe/optionable_liquid_800.csv')
         # Lake
         c['LakeManifest'] = self.check_import('data.lake.manifest', 'DatasetManifest')
         c['LakeIO'] = self.check_import('data.lake.io', 'LakeWriter')

@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\backtest\multi_timeframe.py
+# hypothesis_version: 6.150.0
+
+[0.0, 100, 'CLOSE', 'Close', 'HIGH', 'High', 'LOW', 'Low', 'M', 'OPEN', 'Open', 'VOLUME', 'Volume', 'W', 'backward', 'close', 'date', 'ffill', 'first', 'high', 'htf_date', 'last', 'low', 'max', 'min', 'open', 'orig_date', 'orig_date_clean', 'right', 'sum', 'timestamp', 'value', 'volume']

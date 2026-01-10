@@ -11,8 +11,6 @@ Run: python -m pytest tests/cognitive/test_self_model.py -v
 import pytest
 import tempfile
 import os
-from datetime import datetime
-from pathlib import Path
 
 
 class TestSelfModelInitialization:

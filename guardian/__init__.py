@@ -26,7 +26,8 @@ Created: 2026-01-04
 from dotenv import load_dotenv
 load_dotenv()
 
-from .system_monitor import (
+# noqa: E402 - Imports must come after dotenv loading
+from .system_monitor import (  # noqa: E402
     SystemMonitor,
     SystemHealth,
     ComponentStatus,

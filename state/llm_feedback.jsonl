@@ -1,0 +1,12 @@
+{"query": "Should I buy AAPL?", "response": "Yes, buy AAPL at $175", "outcome": {"pnl": 250.0, "r_multiple": 1.5, "win": true}, "timestamp": "2026-01-07T20:09:36.864366"}
+{"query": "Query 0", "response": "Response 0", "outcome": {"pnl": 0, "r_multiple": 1.0, "win": true}, "timestamp": "2026-01-07T20:09:36.888769"}
+{"query": "Query 1", "response": "Response 1", "outcome": {"pnl": 100, "r_multiple": 1.0, "win": false}, "timestamp": "2026-01-07T20:09:36.888769"}
+{"query": "Query 2", "response": "Response 2", "outcome": {"pnl": 200, "r_multiple": 1.0, "win": true}, "timestamp": "2026-01-07T20:09:36.888769"}
+{"query": "Query 3", "response": "Response 3", "outcome": {"pnl": 300, "r_multiple": 1.0, "win": false}, "timestamp": "2026-01-07T20:09:36.888769"}
+{"query": "Query 4", "response": "Response 4", "outcome": {"pnl": 400, "r_multiple": 1.0, "win": true}, "timestamp": "2026-01-07T20:09:36.888769"}
+{"query": "Should I buy AAPL?", "response": "Yes, buy AAPL at $175", "outcome": {"pnl": 250.0, "r_multiple": 1.5, "win": true}, "timestamp": "2026-01-07T20:15:28.929368"}
+{"query": "Query 0", "response": "Response 0", "outcome": {"pnl": 0, "r_multiple": 1.0, "win": true}, "timestamp": "2026-01-07T20:15:28.944385"}
+{"query": "Query 1", "response": "Response 1", "outcome": {"pnl": 100, "r_multiple": 1.0, "win": false}, "timestamp": "2026-01-07T20:15:28.944385"}
+{"query": "Query 2", "response": "Response 2", "outcome": {"pnl": 200, "r_multiple": 1.0, "win": true}, "timestamp": "2026-01-07T20:15:28.944385"}
+{"query": "Query 3", "response": "Response 3", "outcome": {"pnl": 300, "r_multiple": 1.0, "win": false}, "timestamp": "2026-01-07T20:15:28.960149"}
+{"query": "Query 4", "response": "Response 4", "outcome": {"pnl": 400, "r_multiple": 1.0, "win": true}, "timestamp": "2026-01-07T20:15:28.960149"}

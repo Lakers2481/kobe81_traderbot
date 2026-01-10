@@ -9,9 +9,9 @@ import logging
 import numpy as np
 import pandas as pd
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Optional, Dict, List, Tuple, Any
+from typing import Optional, Dict, List, Any
 from zoneinfo import ZoneInfo
 
 logger = logging.getLogger(__name__)
@@ -304,7 +304,7 @@ class PatternRhymesEngine:
         Analyze how long extreme moves take to revert across all stocks.
         This informs our time-stop parameters.
         """
-        logger.info("Analyzing mean reversion timing across 900 stocks...")
+        logger.info("Analyzing mean reversion timing across 800 stocks...")
 
         reversion_times = []
 

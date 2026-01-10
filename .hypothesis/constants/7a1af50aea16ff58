@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\cognitive\tree_of_thoughts.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.01, 0.1, 0.3, 0.5, 0.7, 1.0, 1000, 'REASONING:\\s*(.+)', 'SCORE:\\s*([\\d.]+)', 'ThoughtNode', 'YES', 'backtrack_count', 'backtracked', 'branches_explored', 'confidence', 'depth', 'evaluated', 'evaluation_reasoning', 'expanding', 'final_answer', 'num_children', 'processing_time_ms', 'pruned', 'reasoning', 'reasoning_path', 'search_depth', 'status', 'terminal', 'thought', 'user', 'value']

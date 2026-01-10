@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\backtest\engine.py
+# hypothesis_version: 6.150.0
+
+[0.0, 2.78e-05, 0.000166, 0.005, 0.007, 1.0, 10.0, 11.5, 14.5, 15.5, 60.0, 10000.0, 100000.0, 252, 'BUY', 'SELL', '__atr14__', '_hour', '_minute', '_time_decimal', 'cash', 'close', 'entry_idx', 'equity', 'equity_curve.csv', 'final_equity', 'gross_pnl', 'high', 'inf', 'long', 'low', 'max_drawdown', 'metrics', 'net_pnl', 'open', 'pnl', 'price', 'profit_factor', 'qty', 'returns', 'right', 'risk_per_trade_pct', 'sharpe', 'side', 'stop', 'stop_loss', 'summary.json', 'symbol', 'take_profit', 'time_stop_bars', 'timestamp', 'total_fees', 'trade_list.csv', 'trades', 'trail_atr_mult', 'w', 'win_rate']

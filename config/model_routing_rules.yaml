@@ -1,0 +1,204 @@
+# Model Routing Rules Configuration
+# ====================================
+#
+# Defines routing rules for the enhanced multi-model system.
+# Phase 1: Cost-optimized intelligent routing
+#
+# Strategy: Try free (DeepSeek) → Escalate to paid (ChatGPT/Claude) only when needed
+# Expected Savings: 60-70% of queries handled by free models
+
+# Model Definitions
+models:
+  deepseek:
+    provider: "ollama"
+    model: "deepseek-r1"
+    cost_per_1k_tokens: 0.0
+    strengths:
+      - math: 0.97          # MATH benchmark
+      - debugging: 0.90     # SWE-bench lite
+      - reasoning: 0.85     # General reasoning
+    limitations:
+      - complex_code: 0.57  # SWE-bench verified
+      - nuanced: 0.70       # Less good at subtle decisions
+
+  chatgpt:
+    provider: "openai"
+    model: "gpt-4.5-turbo"
+    cost_per_1k_tokens: 0.015  # Approximate
+    strengths:
+      - complex_code: 0.80   # SWE-bench
+      - reasoning: 0.90
+      - web_search: true     # Built-in web search
+    limitations:
+      - math: 0.95           # Slightly worse than DeepSeek
+
+  claude:
+    provider: "anthropic"
+    model: "claude-opus-4.5"
+    cost_per_1k_tokens: 0.015
+    strengths:
+      - math: 0.97
+      - reasoning: 0.95      # Excellent understanding
+      - nuanced: 0.95        # Best for subtle decisions
+    limitations:
+      - debugging: 0.75      # Worse than DeepSeek
+
+# Routing Rules by Task Type
+routing_rules:
+  # Math tasks → DeepSeek first (97% accuracy, free)
+  math:
+    priority:
+      - model: deepseek
+        reason: "97% accuracy on MATH benchmark, free"
+      - model: claude
+        reason: "Fallback if DeepSeek unavailable"
+    escalation_threshold: 0.85  # Escalate if confidence < 85%
+
+  # Debugging → DeepSeek first (90% accuracy, free)
+  debug:
+    priority:
+      - model: deepseek
+        reason: "90% accuracy on SWE-bench lite, free"
+      - model: chatgpt
+        reason: "85% debugging, but paid"
+    escalation_threshold: 0.85
+
+  # Simple code → DeepSeek (free)
+  simple_code:
+    priority:
+      - model: deepseek
+        reason: "Good enough for simple tasks, free"
+    escalation_threshold: 0.80  # Lower bar for simple tasks
+
+  # Complex code → ChatGPT (80% quality)
+  complex_code:
+    priority:
+      - model: chatgpt
+        reason: "80% on SWE-bench, best for complex coding"
+      - model: claude
+        reason: "77% on SWE-bench, good fallback"
+      - model: deepseek
+        reason: "57% - free fallback if budget exceeded"
+    escalation_threshold: 0.85
+
+  # Nuanced decisions → Claude (excellent understanding)
+  nuanced_decision:
+    priority:
+      - model: claude
+        reason: "Excellent understanding of nuanced situations"
+      - model: chatgpt
+        reason: "Good fallback"
+    escalation_threshold: 0.90  # Higher bar for nuanced tasks
+
+  # Critical decisions → Ensemble (all 3 models vote)
+  critical_decision:
+    priority:
+      - model: ensemble
+        reason: "All models vote for consensus"
+    min_agreement: 0.90      # Flag for human review if < 90% agreement
+    always_use_ensemble: true
+
+# Cost Optimization Settings
+cost_optimization:
+  # Try free models first, escalate to paid only when needed
+  prefer_free: true
+
+  # Budget limits
+  daily_budget_usd: 50.0      # Max $50/day across paid models
+  alert_threshold_usd: 25.0   # Alert when 50% of budget used
+
+  # Escalation triggers
+  escalate_on_low_confidence: true
+  confidence_threshold: 0.85
+
+  # Cost tracking
+  track_savings: true         # Track how much saved vs always-paid
+
+# Agent-Specific Rules
+# Override routing for specific agents
+agent_overrides:
+  scout_agent:
+    # Scout does pattern analysis - mostly math
+    default_task_type: "math"
+    prefer_model: "deepseek"
+
+  risk_agent:
+    # Risk assessment is nuanced
+    default_task_type: "nuanced_decision"
+    prefer_model: "claude"
+
+  auditor_agent:
+    # Auditor validates - use ensemble
+    default_task_type: "critical_decision"
+    always_ensemble: true
+
+  reporter_agent:
+    # Reporter writes narratives
+    default_task_type: "simple"
+    prefer_model: "chatgpt"  # Best writing quality
+
+# Confidence Estimation Settings
+confidence_estimation:
+  # Words that indicate uncertainty
+  uncertainty_words:
+    - "might"
+    - "perhaps"
+    - "possibly"
+    - "not sure"
+    - "unclear"
+    - "uncertain"
+    - "maybe"
+    - "could be"
+
+  # Phrases that indicate hedging
+  hedging_phrases:
+    - "I think"
+    - "I believe"
+    - "in my opinion"
+    - "probably"
+    - "likely"
+
+  # Contradiction markers
+  contradiction_markers:
+    - "but "
+    - "however"
+    - "although"
+    - "on the other hand"
+    - "conversely"
+
+  # Self-consistency check (optional - costs extra API call)
+  enable_self_consistency: false
+  self_consistency_samples: 2
+
+# Ensemble Voting Settings
+ensemble:
+  models_to_use:
+    - deepseek
+    - chatgpt
+    - claude
+
+  # Agreement calculation
+  min_agreement_for_consensus: 0.90  # 90% agreement = consensus
+  flag_for_human_review_below: 0.70  # <70% = human review
+
+  # Voting strategy
+  strategy: "majority"  # Options: majority, weighted, unanimous
+
+# Logging and Monitoring
+monitoring:
+  log_all_routing_decisions: true
+  log_confidence_scores: true
+  log_cost_savings: true
+
+  # Metrics to track
+  track_metrics:
+    - call_count_by_model
+    - average_confidence_by_model
+    - escalation_rate
+    - cost_saved_usd
+    - ensemble_agreement_rate
+
+# State Files
+state:
+  usage_stats_file: "state/model_router_usage.json"
+  cost_savings_file: "state/model_router_savings.json"

@@ -7,7 +7,7 @@ Uses R-based exits: 1R stop, 2R target, 5-bar time stop.
 
 Usage:
   python scripts/backtest_totd.py \
-    --universe data/universe/optionable_liquid_900.csv \
+    --universe data/universe/optionable_liquid_800.csv \
     --start 2025-01-01 --end 2025-12-31 \
     --cap 900 --min-conf 0.60 --min-adv-usd 5000000
 
@@ -23,7 +23,6 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Optional, Dict, Any, Tuple
 
-import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -54,7 +53,7 @@ except ImportError:
 # -----------------------------------------------------------------------------
 # Constants
 # -----------------------------------------------------------------------------
-DEFAULT_UNIVERSE = ROOT / "data" / "universe" / "optionable_liquid_900.csv"
+DEFAULT_UNIVERSE = ROOT / "data" / "universe" / "optionable_liquid_800.csv"
 CACHE_DIR = ROOT / "data" / "cache"
 LOOKBACK_DAYS = 300  # Need 200+ for SMA(200)
 
@@ -978,7 +977,7 @@ Examples:
         """,
     )
     ap.add_argument("--universe", type=str, default=str(DEFAULT_UNIVERSE),
-                    help="Path to universe CSV (default: optionable_liquid_900.csv)")
+                    help="Path to universe CSV (default: optionable_liquid_800.csv)")
     ap.add_argument("--start", type=str, required=True,
                     help="Start date (YYYY-MM-DD)")
     ap.add_argument("--end", type=str, required=True,

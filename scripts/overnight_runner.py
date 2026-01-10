@@ -16,7 +16,7 @@ This script is designed to run while you sleep.
 import sys
 import time
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 
 # Add project root to path
@@ -50,7 +50,7 @@ def run_data_update():
         from data.universe.loader import load_universe
 
         # Load universe
-        universe = load_universe('data/universe/optionable_liquid_900.csv', cap=100)
+        universe = load_universe('data/universe/optionable_liquid_800.csv', cap=100)
         logger.info(f"Loaded {len(universe)} symbols from universe")
 
         # Note: Data is cached, so this just validates freshness
@@ -74,7 +74,7 @@ def run_backtest_validation():
         result = subprocess.run(
             [
                 sys.executable, 'scripts/backtest_dual_strategy.py',
-                '--universe', 'data/universe/optionable_liquid_900.csv',
+                '--universe', 'data/universe/optionable_liquid_800.csv',
                 '--start', '2024-01-01',
                 '--end', '2024-12-31',
                 '--cap', '50',
@@ -137,7 +137,7 @@ def run_system_health():
     logger.info("=" * 60)
 
     checks = {
-        'universe_file': Path('data/universe/optionable_liquid_900.csv').exists(),
+        'universe_file': Path('data/universe/optionable_liquid_800.csv').exists(),
         'episodic_memory': Path('state/cognitive/episodes').exists(),
         'ml_models': Path('state/models/ensemble').exists(),
         'logs_dir': Path('logs').exists(),

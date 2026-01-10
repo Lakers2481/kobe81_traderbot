@@ -11,7 +11,7 @@ from datetime import datetime, date, timedelta
 from typing import List, Optional
 from zoneinfo import ZoneInfo
 
-from .market_clock import AssetType, SessionType, SessionInfo, MarketEvent
+from .market_clock import AssetType, SessionInfo, MarketEvent
 from .equities_calendar import EquitiesCalendar
 
 ET = ZoneInfo("America/New_York")

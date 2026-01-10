@@ -27,7 +27,7 @@ import argparse
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 from datetime import datetime
 import sys
 
@@ -37,7 +37,6 @@ import pandas as pd
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from core.structured_log import jlog
 from ml_features.feature_pipeline import FeaturePipeline, FeatureConfig
 
 logger = logging.getLogger(__name__)

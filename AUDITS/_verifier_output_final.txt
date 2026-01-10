@@ -1,0 +1,101 @@
+================================================================================
+800-STOCK SYSTEM VERIFIER
+Renaissance Technologies / Jim Simons Quality Standard
+================================================================================
+
+[1/9] UNIVERSE FILE VERIFICATION
+================================================================================
+[PASS] Universe file exists
+  Evidence: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\data\universe\optionable_liquid_800.csv
+[PASS] Exactly 800 symbols
+  Evidence: Found 800 unique symbols
+[PASS] No duplicates
+  Evidence: 800 total vs 800 unique
+
+[2/9] CONFIG FILE VERIFICATION
+================================================================================
+[PASS] FROZEN_PIPELINE.py has UNIVERSE_SIZE = 800
+[PASS] base.yaml references 800 universe
+
+[3/9] CRITICAL PATH AUDIT (No 900 References)
+================================================================================
+[FAIL] No 900 in scripts/scan.py
+  Evidence: 
+  Line 2191: print(f"\n[KOBE PIPELINE] 900 -> 5: Filtered to top {len(top5_df)} candidates")
+  Line 2400: print(f"KOBE PIPELINE: 900 -> 5 (STUDY) -> 2 (TRADE) | DATE: {signal_date}")
+  Line 2940: print("KOBE PIPELINE: 900 STOCKS + OPTIONS + CRYPTO -> TOP 5 -> TOP 2")
+[PASS] No 900 in scripts/daily_scheduler.py
+[PASS] No 900 in scripts/fast_quant_scan.py
+[PASS] No 900 in scripts/fresh_scan_now.py
+
+[4/9] SCANNER CAP PARAMETER VERIFICATION
+================================================================================
+[PASS] cap=10 scans exactly 10 symbols
+[PASS] cap=800 scans exactly 800 symbols
+
+[5/9] OUTPUT ARTIFACT VERIFICATION
+================================================================================
+[PASS] Top 2 trade file exists
+  Evidence: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\logs\top2_trade.csv
+[PASS] Top 5 study file exists
+  Evidence: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\logs\top5_unified.csv
+[PASS] Unified signals file exists
+  Evidence: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\logs\unified_signals.csv
+[PASS] HPE thesis exists
+  Evidence: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\logs\trade_thesis\thesis_HPE_2026-01-08.md
+[PASS] MGM thesis exists
+  Evidence: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\logs\trade_thesis\thesis_MGM_2026-01-08.md
+[PASS] logs/top2_trade.csv has 3 rows
+  Evidence: Found 3 rows
+[PASS] logs/top5_unified.csv has 3 rows
+  Evidence: Found 3 rows
+[PASS] logs/unified_signals.csv has 3 rows
+  Evidence: Found 3 rows
+
+[6/9] ML/AI FALLBACK DETECTION
+================================================================================
+[PASS] XGBoost loaded
+[PASS] LightGBM loaded
+[PASS] HMM Regime active
+[PASS] Cognitive Brain active
+
+  Fallback Modes Detected (Non-Critical):
+    [WARNING] LSTM disabled
+    [WARNING] Markov not fitted
+    [WARNING] RAG fallback
+
+[7/9] INDEPENDENT INDICATOR VALIDATION
+================================================================================
+[PASS] HPE IBS approx 0.00
+  Evidence: IBS = 0.0000
+[PASS] HPE RSI approx 0.0
+  Evidence: RSI = 0.0000
+
+[8/9] GIT REPOSITORY STATE
+================================================================================
+[PASS] On main branch
+  Evidence: Current branch: main
+  Commit: 1a6892fa
+
+[9/9] FINAL VERDICT
+================================================================================
+
+Total Checks: 26
+Passed: 25
+Failed: 1
+
+================================================================================
+VERDICT: FAIL - System verification failed
+================================================================================
+
+Failed Checks:
+  1. No 900 in scripts/scan.py: 
+  Line 2191: print(f"\n[KOBE PIPELINE] 900 -> 5: Filtered to top {len(top5_df)} candidates")
+  Line 2400: print(f"KOBE PIPELINE: 900 -> 5 (STUDY) -> 2 (TRADE) | DATE: {signal_date}")
+  Line 2940: print("KOBE PIPELINE: 900 STOCKS + OPTIONS + CRYPTO -> TOP 5 -> TOP 2")
+
+The system CANNOT be used for trading until all failures are resolved.
+
+================================================================================
+Exit Code: 1
+================================================================================

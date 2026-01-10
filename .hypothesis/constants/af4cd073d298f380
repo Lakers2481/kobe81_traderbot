@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\pipelines\backtest_pipeline.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.02, 0.12, 0.25, 0.5, 0.58, 1.0, 1.2, 1.35, 150, 100000, '*.py', '__', 'a', 'backtest', 'backtest_results', 'backtests_run', 'generated', 'max_drawdown', 'metrics', 'name', 'passed', 'path', 'profit_factor', 'results.jsonl', 'sharpe_ratio', 'strategies', 'strategies_tested', 'strategy_name', 'strategy_path', 'timestamp', 'total_trades', 'type', 'universe', 'win_rate']

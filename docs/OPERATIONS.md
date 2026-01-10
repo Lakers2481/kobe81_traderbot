@@ -128,10 +128,10 @@ Compares local `state/positions.json` with Alpaca broker positions.
 
 ```bash
 # Paper trading mode
-python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv --cap 50 --scan-times 09:35,10:30,15:55
+python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_800.csv --cap 50 --scan-times 09:35,10:30,15:55
 
 # Live trading mode (REAL MONEY)
-python scripts/runner.py --mode live --universe data/universe/optionable_liquid_900.csv --cap 10 --scan-times 09:35,10:30,15:55
+python scripts/runner.py --mode live --universe data/universe/optionable_liquid_800.csv --cap 10 --scan-times 09:35,10:30,15:55
 ```
 
 ### Monitoring Endpoints

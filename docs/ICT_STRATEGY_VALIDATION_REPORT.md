@@ -350,7 +350,7 @@ def rolling_low_with_offset(series: pd.Series, window: int) -> tuple:
 - Returns bars_since_min (0 = current bar, 1 = previous bar, etc.)
 - Used to enforce "min_bars_since_extreme >= 3" rule (Line 218)
 
-**PERFORMANCE CONCERN:** `.apply(bars_since_min, raw=True)` is O(n*w) where w=window. For 900 stocks x 2500 bars, this is ~2.25M operations. Not critical but could be vectorized.
+**PERFORMANCE CONCERN:** `.apply(bars_since_min, raw=True)` is O(n*w) where w=window. For 800 stocks x 2500 bars, this is ~2.25M operations. Not critical but could be vectorized.
 
 **VERDICT:** CORRECT but slow. Acceptable for EOD data.
 

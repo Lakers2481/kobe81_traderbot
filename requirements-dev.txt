@@ -31,3 +31,4 @@ pre-commit>=3.5
 # Documentation (optional)
 # sphinx>=7.0
 # sphinx-rtd-theme>=2.0
+freezegun>=1.2.0

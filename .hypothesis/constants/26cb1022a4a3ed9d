@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\data\providers\polygon_eod.py
+# hypothesis_version: 6.150.0
+
+[0.3, 0.75, 200, 50000, '*.csv', 'DEBUG', 'ERROR', 'POLYGON_API_KEY', 'WARNING', 'adjusted', 'apiKey', 'asc', 'c', 'cache_expired', 'cache_read_failed', 'cache_remove_failed', 'cache_write_failed', 'close', 'false', 'h', 'high', 'l', 'limit', 'low', 'ms', 'o', 'open', 'polygon', 'polygon_http_error', 'polygon_no_api_key', 'results', 'sort', 'symbol', 't', 'timestamp', 'true', 'underlying_ticker', 'v', 'volume']

@@ -15,7 +15,7 @@ All 14 verification items verified. System ready for production.
 
 | # | Item | Status | Evidence |
 |---|------|--------|----------|
-| 1 | Universe (900 symbols) | PASS | optionable_liquid_900.csv verified, config + scripts aligned |
+| 1 | Universe (800 symbols) | PASS | optionable_liquid_800.csv verified, config + scripts aligned |
 | 2 | No-lookahead + ICT Turtle Soup signed streak | PASS | RSI(signed_streak, 2), shift(1), next-bar fills verified |
 | 3 | Data pipeline robustness | PASS | multi_source.py: Polygon->Yahoo->Stooq fallback chain |
 | 4 | Daily Top-3 + Trade of Day | PASS | scan.py --top3, export_ai_bundle.py, trade_top3.py verified |
@@ -149,7 +149,7 @@ python scripts/scan.py --top3 --cap 900
 python scripts/trade_top3.py --ensure-scan --cap 900
 
 # Full WF backtest (all strategies)
-python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv \
+python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv \
   --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 \
   --cap 900 --outdir wf_outputs --fallback-free --IBS+RSI-on --regime-on --topn-on
 
@@ -218,7 +218,7 @@ All core modules import successfully:
 ## Session Complete
 
 All 10 core audit items verified. Kobe81 trading system is ready for:
-- Daily scanning (900 symbols, 4 strategies)
+- Daily scanning (800 symbols, 4 strategies)
 - Paper/Live trading (Top 3 picks + Trade of Day)
 - Walk-forward backtesting with HTML reports
 - Windows Task Scheduler automation

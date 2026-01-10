@@ -185,7 +185,7 @@ class Pipeline(ABC):
 
     def load_universe(self) -> List[str]:
         """Load stock universe."""
-        universe_file = self.data_dir / "universe" / "optionable_liquid_900.csv"
+        universe_file = self.data_dir / "universe" / "optionable_liquid_800.csv"
         if not universe_file.exists():
             self.add_error(f"Universe file not found: {universe_file}")
             return []

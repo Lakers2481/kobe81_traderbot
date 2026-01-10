@@ -145,7 +145,7 @@ def main():
     print(f'  RSI_OVERSOLD: < {RSI_THRESHOLD}')
     print()
 
-    symbols = load_universe('data/universe/optionable_liquid_900.csv', cap=900)
+    symbols = load_universe('data/universe/optionable_liquid_800.csv', cap=900)
     print(f'Scanning {len(symbols)} stocks...')
     print()
 
@@ -246,14 +246,14 @@ def main():
                 passing.append(signal)
                 print(f'  PASS: {sym} | {sig["strategy"]} | WR={wr*100:.1f}% ({n_samples}) | EV={ev:+.4f} | IBS={ibs:.3f} | RSI={rsi:.1f}')
 
-        except Exception as e:
+        except Exception:
             continue
 
     print()
     print('=' * 70)
     print('SCAN RESULTS')
     print('=' * 70)
-    print(f'Scanner: DualStrategyScanner (IBS+RSI + Turtle Soup)')
+    print('Scanner: DualStrategyScanner (IBS+RSI + Turtle Soup)')
     print(f'Total signals found: {len(all_signals)}')
     print(f'Pass quant gate: {len(passing)}')
 
@@ -325,7 +325,7 @@ def main():
         json.dump(results, f, indent=2, default=str)
 
     print()
-    print(f'Results saved: state/watchlist/professional_scan.json')
+    print('Results saved: state/watchlist/professional_scan.json')
 
 
 if __name__ == '__main__':

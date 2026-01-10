@@ -12,12 +12,12 @@ THE PIPELINE:
 
     ┌─────────────────────────────────────────────────────────────────┐
     │                    KOBE STANDARD PIPELINE                        │
-    │                         900 → 5 → 2                              │
+    │                         800 → 5 → 2                              │
     │                                                                   │
-    │   "We scan 900, study 5, trade 2. Every single day. Forever."   │
+    │   "We scan 800, study 5, trade 2. Every single day. Forever."   │
     └─────────────────────────────────────────────────────────────────┘
 
-                            900 STOCKS
+                            800 STOCKS
                          (Full Universe)
                                │
                                ▼
@@ -72,7 +72,7 @@ THE PIPELINE:
 WHY THIS WORKS (Quant Philosophy):
 ==================================
 
-1. UNIVERSE (900)
+1. UNIVERSE (800)
    - Liquid stocks (ADV > $1M)
    - Optionable (institutional interest)
    - 10+ years history (backtestable)
@@ -143,7 +143,7 @@ FROZEN PARAMETERS:
 """
 
 # FROZEN - DO NOT CHANGE
-UNIVERSE_SIZE = 900
+UNIVERSE_SIZE = 800
 SIGNALS_EXPECTED = (30, 50)  # Expected range per day
 TOP_N_STUDY = 5              # How many to paper/study
 TOP_N_TRADE = 2              # How many to actually trade
@@ -154,7 +154,7 @@ MIN_CONFIDENCE = 0.60
 MIN_RR_RATIO = 1.5
 
 # Files
-UNIVERSE_FILE = "data/universe/optionable_liquid_900.csv"
+UNIVERSE_FILE = "data/universe/optionable_liquid_800.csv"
 TOP5_OUTPUT = "logs/daily_top5.csv"
 TRADEABLE_OUTPUT = "logs/tradeable.csv"
 SIGNALS_LOG = "logs/signals.jsonl"
@@ -171,7 +171,7 @@ FROZEN_BY = "User directive: 'FREEZE THIS FOREVER'"
 
 def validate_pipeline():
     """Validate that the pipeline hasn't been tampered with."""
-    assert UNIVERSE_SIZE == 900, "Universe must be 900 stocks"
+    assert UNIVERSE_SIZE == 800, "Universe must be 800 stocks"
     assert TOP_N_STUDY == 5, "Must study Top 5"
     assert TOP_N_TRADE == 2, "Must trade Top 2"
     assert MIN_SCORE == 70, "Min score must be 70"

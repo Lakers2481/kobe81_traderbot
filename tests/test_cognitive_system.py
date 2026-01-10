@@ -8,7 +8,6 @@ Run: python -m pytest tests/test_cognitive_system.py -v
 """
 
 import pytest
-from datetime import datetime
 
 
 class TestGlobalWorkspace:
@@ -20,7 +19,7 @@ class TestGlobalWorkspace:
         assert get_workspace is not None
 
     def test_publish_subscribe(self):
-        from cognitive.global_workspace import GlobalWorkspace, Priority
+        from cognitive.global_workspace import GlobalWorkspace
 
         ws = GlobalWorkspace()
         received = []
@@ -51,7 +50,7 @@ class TestSelfModel:
     """Tests for SelfModel."""
 
     def test_import(self):
-        from cognitive.self_model import SelfModel, get_self_model
+        from cognitive.self_model import SelfModel
         assert SelfModel is not None
 
     def test_record_trade_outcome(self):
@@ -137,7 +136,7 @@ class TestEpisodicMemory:
     """Tests for EpisodicMemory."""
 
     def test_import(self):
-        from cognitive.episodic_memory import EpisodicMemory, get_episodic_memory
+        from cognitive.episodic_memory import EpisodicMemory
         assert EpisodicMemory is not None
 
     def test_episode_lifecycle(self):
@@ -176,7 +175,7 @@ class TestSemanticMemory:
     """Tests for SemanticMemory."""
 
     def test_import(self):
-        from cognitive.semantic_memory import SemanticMemory, get_semantic_memory
+        from cognitive.semantic_memory import SemanticMemory
         assert SemanticMemory is not None
 
     def test_add_and_query_rule(self, tmp_path):
@@ -213,7 +212,7 @@ class TestKnowledgeBoundary:
         assert KnowledgeBoundary is not None
 
     def test_uncertainty_detection(self):
-        from cognitive.knowledge_boundary import KnowledgeBoundary, UncertaintyLevel
+        from cognitive.knowledge_boundary import KnowledgeBoundary
 
         kb = KnowledgeBoundary()
 
@@ -358,7 +357,7 @@ class TestIntegration:
 
     def test_full_decision_cycle(self):
         """Test complete decision -> outcome -> learning cycle."""
-        from cognitive.cognitive_brain import CognitiveBrain, DecisionType
+        from cognitive.cognitive_brain import CognitiveBrain
 
         brain = CognitiveBrain()
 
@@ -396,10 +395,10 @@ class TestIntegration:
 
     def test_cognitive_package_import(self):
         """Test that the cognitive package can be imported."""
-        from cognitive import CognitiveBrain, get_cognitive_brain
-        from cognitive import GlobalWorkspace, get_workspace
-        from cognitive import SelfModel, get_self_model
-        from cognitive import EpisodicMemory, get_episodic_memory
+        from cognitive import CognitiveBrain
+        from cognitive import GlobalWorkspace
+        from cognitive import SelfModel
+        from cognitive import EpisodicMemory
 
         assert CognitiveBrain is not None
         assert GlobalWorkspace is not None

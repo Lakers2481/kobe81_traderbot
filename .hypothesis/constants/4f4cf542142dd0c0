@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\core\vix_monitor.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.25, 0.5, 1.0, 20.0, 25.0, 30.0, 40.0, 100, 3600, '%Y-%m-%d', '1d', '5d', 'Close', 'FRED_API_KEY', 'FRED_API_KEY not set', 'POLYGON_API_KEY', 'VIX pause disabled', 'VIXCLS', 'VIXMonitor', '^VIX', 'apiKey', 'c', 'consecutive_failures', 'elevated_threshold', 'extreme_threshold', 'fallback', 'fred', 'iloc', 'pause_reason', 'pause_threshold', 'polygon', 'position_multiplier', 'results', 'trading_paused', 'value', 'vix_age_seconds', 'vix_is_stale', 'vix_level', 'vix_source', 'vix_timestamp', 'yfinance']

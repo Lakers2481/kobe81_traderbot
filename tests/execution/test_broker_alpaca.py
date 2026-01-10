@@ -1,19 +1,15 @@
 import pytest
 import json
-from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
-import requests
+from datetime import datetime
+from unittest.mock import patch, MagicMock
 import os
 
 from execution.broker_alpaca import (
     place_ioc_limit, get_best_ask, get_best_bid, log_trade_event,
-    _alpaca_cfg, _auth_headers, check_liquidity_for_order,
     place_order_with_liquidity_check, execute_signal,
     BrokerExecutionResult
 )
 from oms.order_state import OrderRecord, OrderStatus
-from oms.idempotency_store import IdempotencyStore
-from core.kill_switch import activate_kill_switch, deactivate_kill_switch, require_no_kill_switch
 from risk.liquidity_gate import LiquidityCheck, LiquidityGate
 
 
@@ -191,7 +187,7 @@ class TestPlaceOrderWithLiquidityCheck:
     """Tests for place_order_with_liquidity_check."""
 
     def test_liquidity_check_passes(self, sample_order_record, alpaca_requests_mock, mock_liquidity_gate, mock_idempotency_store):
-        from execution.broker_alpaca import is_liquidity_gate_enabled, enable_liquidity_gate
+        from execution.broker_alpaca import enable_liquidity_gate
 
         enable_liquidity_gate(True) # Ensure gate is enabled
         result = place_order_with_liquidity_check(sample_order_record)
@@ -205,7 +201,7 @@ class TestPlaceOrderWithLiquidityCheck:
 
 
     def test_liquidity_check_fails(self, sample_order_record, alpaca_requests_mock, mock_liquidity_gate):
-        from execution.broker_alpaca import is_liquidity_gate_enabled, enable_liquidity_gate
+        from execution.broker_alpaca import enable_liquidity_gate
 
         enable_liquidity_gate(True) # Ensure gate is enabled
         mock_check = MagicMock(spec=LiquidityCheck)

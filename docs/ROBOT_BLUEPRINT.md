@@ -74,7 +74,7 @@ kobe81_traderbot/
 â”‚   â”‚   â””â”€â”€ polygon_eod.py   # Polygon.io EOD data with caching
 â”‚   â”œâ”€â”€ universe/
 â”‚   â”‚   â”œâ”€â”€ loader.py        # Symbol list loading
-â”‚   â”‚   â””â”€â”€ optionable_liquid_900.csv  # 900-stock universe
+â”‚   â”‚   â””â”€â”€ optionable_liquid_800.csv  # 900-stock universe
 â”‚   â””â”€â”€ lake/
 â”‚       â””â”€â”€ dataset.py       # Data lake manifests
 â”‚
@@ -176,7 +176,7 @@ kobe81_traderbot/
 ```
 1. SCAN (scripts/scan.py)
    â”‚
-   â”œâ”€â”€ Load Universe (900 stocks from data/universe/)
+   â”œâ”€â”€ Load Universe (800 stocks from data/universe/)
    â”‚
    â”œâ”€â”€ Fetch EOD Data (Polygon.io with CSV caching)
    â”‚
@@ -342,23 +342,23 @@ python scripts/preflight.py --dotenv .env
 
 ### Daily Scan
 ```bash
-python scripts/scan.py --universe data/universe/optionable_liquid_900.csv
+python scripts/scan.py --universe data/universe/optionable_liquid_800.csv
 # Output: logs/daily_picks.csv
 ```
 
 ### Paper Trading
 ```bash
-python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --cap 50
+python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_800.csv --cap 50
 ```
 
 ### 24/7 Runner
 ```bash
-python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv --cap 50 --scan-times 09:35,10:30,15:55
+python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_800.csv --cap 50 --scan-times 09:35,10:30,15:55
 ```
 
 ### Live Trading (Micro Budget)
 ```bash
-python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_900.csv --cap 10
+python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_800.csv --cap 10
 ```
 
 ---

@@ -11,7 +11,6 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 import pandas as pd
-import numpy as np
 from datetime import datetime, timedelta
 from config.env_loader import load_env
 from data.universe.loader import load_universe
@@ -31,7 +30,7 @@ def main():
     print('STEP 1: Loading data (will use SAME data for all 3 scans)')
     print('-' * 70)
 
-    symbols = load_universe(ROOT / 'data/universe/optionable_liquid_900.csv', cap=900)
+    symbols = load_universe(ROOT / 'data/universe/optionable_liquid_800.csv', cap=900)
     print(f'Universe: {len(symbols)} symbols')
 
     end = datetime.now()

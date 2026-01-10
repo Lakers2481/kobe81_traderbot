@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\ml_features\signal_confidence.py
+# hypothesis_version: 6.150.0
+
+[-0.05, -0.02, 0.0, 0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0, 10.0, 30.0, 70.0, 90.0, 100, 200, 'ADX_14', 'Insufficient data', 'MACD_12_26_9', 'MACDs_12_26_9', 'SUPERTd_', 'WARNING', 'anomaly', 'anomaly_combined', 'anomaly_volume', 'bb_width', 'close', 'confidence', 'confidence_level', 'data_points', 'dist_from_20d_high', 'dist_from_20d_low', 'gap_pct', 'high', 'historical', 'historical_boost', 'ibs', 'inside_bar', 'long', 'low', 'medium', 'momentum', 'natr_14', 'pattern', 'pattern_type', 'rsi_', 'rsi_14', 'rsi_2', 'short', 'side', 'sma_20', 'sma_200', 'sma_50', 'strategy', 'symbol', 'timestamp', 'trend', 'very_high', 'very_low', 'volatility', 'williams_r', 'won']

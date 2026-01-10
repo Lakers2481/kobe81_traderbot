@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\safety\paper_guard.py
+# hypothesis_version: 6.150.0
+
+['-', '=', 'ALPACA_BASE_URL', 'CRITICAL', 'PAPER MODE CONFIRMED', 'PAPER MODE STATUS', 'PAPER_ONLY_ENFORCED', 'Unknown', '__main__', 'alpaca_url', 'api.alpaca.markets', 'get_current_endpoint', 'is_paper_endpoint', 'kill_switch_active', 'paper', 'paper-api', 'paper_mode_confirmed', 'paper_only_enforced', 'reason', 'require_paper_mode', 'safety_violation', 'self_test', 'state/KILL_SWITCH', 'symbol', 'timestamp', 'unknown']

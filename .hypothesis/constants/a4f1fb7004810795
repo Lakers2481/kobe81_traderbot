@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\risk\advanced\__init__.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.02, 0.05, 0.95, 5000, 'KellyPositionResult', 'KellyPositionSizer', 'MonteCarloVaR', 'No portfolio value', 'No positions', 'RiskLevel', 'StressScenario', 'StressTestResult', 'VaRResult', 'check_portfolio_var', 'confidence', 'current_price', 'cvar', 'expected_return', 'fractional_kelly', 'horizon_days', 'limit_pct', 'message', 'optimal_kelly', 'passes', 'portfolio_value', 'price', 'qty', 'quantity', 'quick_kelly_position', 'symbol', 'value', 'var', 'var_dollar', 'var_pct', 'volatility']

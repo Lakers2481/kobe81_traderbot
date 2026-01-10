@@ -21,9 +21,6 @@ from execution.broker_alpaca import (
     check_liquidity_for_order,
     place_order_with_liquidity_check,
     execute_signal,
-    get_quote_with_sizes,
-    get_avg_volume,
-    _liquidity_gate,
 )
 from oms.order_state import OrderRecord, OrderStatus
 from risk.liquidity_gate import LiquidityGate, LiquidityCheck, LiquidityIssue
@@ -226,15 +223,8 @@ class TestPlaceOrderWithLiquidityCheck:
         assert "liquidity_gate" in result.order.notes
         mock_place.assert_not_called()
 
-    @pytest.mark.skip(reason="SECURITY FIX 2026-01-04: Liquidity gate can no longer be disabled")
-    def test_bypasses_check_when_disabled(self):
-        """
-        DEPRECATED: This test is skipped because liquidity gate toggle was removed.
-
-        The liquidity gate is now ALWAYS enabled as a security measure to prevent
-        trading in illiquid securities. There is no way to bypass this check.
-        """
-        pass
+    # NOTE: test_bypasses_check_when_disabled was removed in SECURITY FIX 2026-01-04
+    # The liquidity gate is now ALWAYS enabled - there is no way to disable it.
 
 
 class TestExecuteSignal:
@@ -294,14 +284,8 @@ class TestExecuteSignal:
         assert result.order.status == OrderStatus.REJECTED
         assert "no_quote" in result.order.notes
 
-    @pytest.mark.skip(reason="SECURITY FIX 2026-01-04: Liquidity gate can no longer be disabled")
-    def test_skips_liquidity_when_disabled(self):
-        """
-        DEPRECATED: This test is skipped because liquidity gate toggle was removed.
-
-        The liquidity gate is now ALWAYS enabled as a security measure.
-        """
-        pass
+    # NOTE: test_skips_liquidity_when_disabled was removed in SECURITY FIX 2026-01-04
+    # The liquidity gate is now ALWAYS enabled as a security measure.
 
     @patch('execution.broker_alpaca.get_best_ask')
     @patch('execution.broker_alpaca.place_ioc_limit')

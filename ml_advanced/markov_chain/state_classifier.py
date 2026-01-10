@@ -28,7 +28,6 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from enum import IntEnum
 from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np

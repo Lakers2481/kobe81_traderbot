@@ -27,7 +27,7 @@ def ok(b: bool) -> str:
 def main() -> None:
     ap = argparse.ArgumentParser(description='Kobe readiness check (pre-trade)')
     ap.add_argument('--dotenv', type=str, default=str(ROOT / '.env'))
-    ap.add_argument('--universe', type=str, default=str(ROOT / 'data' / 'universe' / 'optionable_liquid_900.csv'))
+    ap.add_argument('--universe', type=str, default=str(ROOT / 'data' / 'universe' / 'optionable_liquid_800.csv'))
     args = ap.parse_args()
 
     # Load env

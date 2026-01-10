@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\core\clock\tz_utils.py
+# hypothesis_version: 6.150.0
+
+['%I:%M %p', '%Y-%m-%d', '0', 'America/Chicago', 'America/New_York']

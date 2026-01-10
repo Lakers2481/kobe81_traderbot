@@ -28,14 +28,11 @@ No API key required - uses public SEC EDGAR data.
 """
 
 import logging
-import os
 import requests
-import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 import time
-import re
 
 logger = logging.getLogger(__name__)
 

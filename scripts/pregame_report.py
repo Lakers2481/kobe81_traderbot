@@ -7,7 +7,6 @@ Generates a comprehensive pre-market analysis report with all AI components.
 """
 
 import pandas as pd
-import json
 import sys
 from datetime import datetime
 from pathlib import Path

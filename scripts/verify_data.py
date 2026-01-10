@@ -5,7 +5,6 @@ import os
 import sys
 import json
 from pathlib import Path
-from datetime import datetime
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -25,7 +24,7 @@ def main():
     print('-' * 70)
 
     data_checks = [
-        ('Universe', 'data/universe/optionable_liquid_900.csv'),
+        ('Universe', 'data/universe/optionable_liquid_800.csv'),
         ('Daily Picks', 'logs/daily_picks.csv'),
         ('Signals Log', 'logs/signals.jsonl'),
         ('Pregame JSON', 'reports/pregame_20260101.json'),
@@ -49,7 +48,7 @@ def main():
     print('-' * 70)
     import pandas as pd
     try:
-        universe = pd.read_csv('data/universe/optionable_liquid_900.csv')
+        universe = pd.read_csv('data/universe/optionable_liquid_800.csv')
         print(f'  Symbols in universe: {len(universe)}')
         print(f'  Columns: {list(universe.columns)}')
         sample = list(universe['symbol'].head(5))
@@ -242,7 +241,7 @@ def main():
 
     # Test Order State Machine
     try:
-        from execution.order_state_machine import OrderStateMachine, OrderState
+        from execution.order_state_machine import OrderStateMachine
         osm = OrderStateMachine()
         order = osm.create_order('TEST', 'buy', 100, 50.0)
         print(f'  [OK] OrderStateMachine: created order {order.order_id[:8]}...')

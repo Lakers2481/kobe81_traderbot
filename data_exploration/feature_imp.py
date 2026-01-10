@@ -7,7 +7,6 @@ Supports permutation importance for any sklearn-compatible model; attempts SHAP
 if available but degrades gracefully.
 """
 
-from typing import Optional
 import pandas as pd
 
 

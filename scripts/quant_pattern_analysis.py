@@ -2,7 +2,7 @@
 """
 QUANT-GRADE PATTERN ANALYSIS
 
-Analyzes ALL 900 stocks for consecutive down-day patterns using VECTORIZED operations.
+Analyzes ALL 800 stocks for consecutive down-day patterns using VECTORIZED operations.
 This is what a quant developer would do - find edge from REAL historical data.
 
 Output:
@@ -19,7 +19,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, Optional
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
@@ -155,7 +155,7 @@ def fetch_stock_data(symbol: str, cache_dir: Path) -> Optional[pd.DataFrame]:
         except Exception:
             pass
 
-    # Check data/cache/polygon/ for date-ranged files (primary source for 900 stocks)
+    # Check data/cache/polygon/ for date-ranged files (primary source for 800 stocks)
     polygon_api_cache = Path("data/cache/polygon")
     if polygon_api_cache.exists():
         # Look for 2015-2024 files first (full history)
@@ -205,7 +205,7 @@ def main():
     print()
 
     # Get all universe stocks
-    universe_file = Path("data/universe/optionable_liquid_900.csv")
+    universe_file = Path("data/universe/optionable_liquid_800.csv")
     if universe_file.exists():
         universe = pd.read_csv(universe_file)
         all_symbols = universe['symbol'].tolist()

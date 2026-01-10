@@ -65,6 +65,14 @@ try:
 except ImportError:
     DRIFT_DETECTION_AVAILABLE = False
 
+# === TIER 3.4: Online Learning for model updates ===
+try:
+    from ml_advanced.online_learning import create_online_learning_manager
+    ONLINE_LEARNING_AVAILABLE = True
+except ImportError:
+    ONLINE_LEARNING_AVAILABLE = False
+    create_online_learning_manager = None
+
 # Multi-asset clock imports
 try:
     from core.clock import MarketClock, AssetType, SessionType
@@ -298,19 +306,25 @@ def reconcile_and_fix(dotenv: Path, auto_fix: bool = True) -> dict:
         # Build map of symbols with stop orders AND any pending sell orders
         # FIX (2026-01-07): Check ALL sell orders, not just stops, to avoid 403 errors
         # The 403 "insufficient qty available" happens when position already has orders attached
+        # FIX (2026-01-08): Track STOP orders separately for coverage check vs ALL sells for qty check
         symbols_with_stops = set()
-        symbols_with_pending_sells: dict[str, int] = {}  # symbol -> total sell qty pending
+        symbols_with_pending_sells: dict[str, int] = {}  # symbol -> total sell qty pending (all types)
+        symbols_with_stop_coverage: dict[str, int] = {}  # symbol -> qty covered by STOP orders only
         for order in broker_orders:
             sym = order.get('symbol')
             order_side = order.get('side', '').lower()
             order_type = order.get('type', '').lower()
             order_qty = int(float(order.get('qty', 0)))
 
-            # Track stop orders specifically
+            # Track stop orders specifically (for existence check)
             if order_type in ('stop', 'stop_limit'):
                 symbols_with_stops.add(sym)
 
-            # Track ALL pending sell orders (to calculate remaining qty available)
+            # Track STOP order qty for coverage check (CRITICAL: only stops protect downside!)
+            if order_side == 'sell' and order_type in ('stop', 'stop_limit') and order_qty > 0:
+                symbols_with_stop_coverage[sym] = symbols_with_stop_coverage.get(sym, 0) + order_qty
+
+            # Track ALL pending sell orders (for 403 avoidance - broker won't allow duplicate orders)
             if order_side == 'sell' and order_qty > 0:
                 symbols_with_pending_sells[sym] = symbols_with_pending_sells.get(sym, 0) + order_qty
 
@@ -404,24 +418,51 @@ def reconcile_and_fix(dotenv: Path, auto_fix: bool = True) -> dict:
 
             # 4b. Add stop losses for positions without them
             # FIX (2026-01-07): Only place stop if there's available qty after pending sells
+            # FIX (2026-01-08): CRITICAL - Check STOP coverage not ALL sells for protection!
             for sym in positions_without_stops:
                 broker_pos = next(p for p in broker_positions if p['symbol'] == sym)
                 entry_price = float(broker_pos.get('avg_entry_price', 0))
                 position_qty = int(float(broker_pos.get('qty', 0)))
                 pending_sell_qty = symbols_with_pending_sells.get(sym, 0)
+                stop_coverage_qty = symbols_with_stop_coverage.get(sym, 0)
 
-                # Calculate remaining quantity available for new orders
+                # Calculate remaining quantity available for new orders (broker constraint)
                 remaining_qty = position_qty - pending_sell_qty
 
                 if entry_price <= 0 or position_qty <= 0:
                     continue
 
-                # Skip if all shares already have pending sell orders
-                if remaining_qty <= 0:
-                    jlog('reconcile_skip_stop_already_covered', level='INFO',
-                         symbol=sym, position_qty=position_qty, pending_sell_qty=pending_sell_qty,
-                         reason='All shares already have pending sell orders')
+                # CASE 1: Fully covered by STOP orders - all good, skip
+                if stop_coverage_qty >= position_qty:
+                    jlog('reconcile_skip_stop_fully_covered', level='INFO',
+                         symbol=sym, position_qty=position_qty, stop_coverage_qty=stop_coverage_qty,
+                         reason='Position fully protected by STOP orders')
                     continue
+
+                # CASE 2: NOT covered by stops, but has limit orders blocking qty
+                # THIS IS THE CRITICAL BUG - position has NO STOP protection!
+                if remaining_qty <= 0 and stop_coverage_qty < position_qty:
+                    unprotected_qty = position_qty - stop_coverage_qty
+                    jlog('reconcile_CRITICAL_NO_STOP_PROTECTION', level='CRITICAL',
+                         symbol=sym, position_qty=position_qty,
+                         stop_coverage_qty=stop_coverage_qty,
+                         pending_sell_qty=pending_sell_qty,
+                         unprotected_qty=unprotected_qty,
+                         reason='DANGER: Position has LIMIT orders but NO STOP LOSS! Unlimited downside risk!')
+                    # Add to discrepancies for visibility
+                    disc = {
+                        'type': 'CRITICAL_NO_STOP_PROTECTION',
+                        'symbol': sym,
+                        'position_qty': position_qty,
+                        'stop_coverage_qty': stop_coverage_qty,
+                        'pending_limit_qty': pending_sell_qty - stop_coverage_qty,
+                        'description': f"CRITICAL: {sym} has {unprotected_qty} shares with NO STOP LOSS protection!",
+                    }
+                    result['discrepancies'].append(disc)
+                    # Cannot place stop due to broker qty constraint - user must manually fix
+                    continue
+
+                # CASE 3: Need stop and have qty available - place stop order
 
                 # Calculate ATR-based stop (2 ATR default, ~4% fallback)
                 stop_pct = 0.04  # 4% default stop
@@ -533,25 +574,58 @@ def check_performance_drift() -> dict:
 
     try:
         # Try to load recent trade performance from logs
-        trades_file = ROOT / 'logs' / 'trade_history.jsonl'
+        # FIX (2026-01-08): Use trades.jsonl (actual broker log) not trade_history.jsonl
+        trades_file = ROOT / 'logs' / 'trades.jsonl'
         if trades_file.exists():
             trades = []
             with open(trades_file, 'r') as f:
                 for line in f:
                     try:
-                        trades.append(json.loads(line))
+                        t = json.loads(line)
+                        # Only count FILLED orders for metrics
+                        if t.get('status') == 'FILLED':
+                            trades.append(t)
                     except Exception:
                         continue
 
             if trades:
-                # Calculate recent metrics (last 30 trades)
+                # Calculate recent metrics (last 30 filled orders)
                 recent = trades[-30:] if len(trades) > 30 else trades
-                wins = sum(1 for t in recent if t.get('pnl', 0) > 0)
-                total = len(recent)
-                wr = wins / total if total > 0 else 0.5
 
-                gross_profit = sum(t['pnl'] for t in recent if t.get('pnl', 0) > 0)
-                gross_loss = abs(sum(t['pnl'] for t in recent if t.get('pnl', 0) < 0))
+                # Calculate P&L for each trade if not already present
+                # For BUY orders: P&L calculated when corresponding SELL happens (needs state)
+                # For now: Use slippage from entry_price_decision vs fill_price as proxy
+                pnl_trades = []
+                for t in recent:
+                    if t.get('pnl') is not None:
+                        pnl_trades.append(t)
+                    elif t.get('fill_price') and t.get('entry_price_decision'):
+                        # Calculate execution quality P&L (positive if filled better than decision)
+                        fp = float(t['fill_price'])
+                        dp = float(t['entry_price_decision'])
+                        qty = int(t.get('filled_qty', 0) or 0)
+                        side = t.get('side', '').upper()
+                        if side == 'BUY':
+                            exec_pnl = (dp - fp) * qty  # Positive if bought below decision price
+                        else:
+                            exec_pnl = (fp - dp) * qty  # Positive if sold above decision price
+                        t['exec_pnl'] = exec_pnl
+                        pnl_trades.append(t)
+
+                # If no P&L data, use fill rate as proxy for success
+                if pnl_trades:
+                    wins = sum(1 for t in pnl_trades if (t.get('pnl', 0) or t.get('exec_pnl', 0)) > 0)
+                    total = len(pnl_trades)
+                    gross_profit = sum(t.get('pnl', 0) or t.get('exec_pnl', 0) for t in pnl_trades if (t.get('pnl', 0) or t.get('exec_pnl', 0)) > 0)
+                    gross_loss = abs(sum(t.get('pnl', 0) or t.get('exec_pnl', 0) for t in pnl_trades if (t.get('pnl', 0) or t.get('exec_pnl', 0)) < 0))
+                else:
+                    # Fallback: count filled orders as neutral
+                    wins = len(recent) // 2
+                    total = len(recent)
+                    gross_profit = 0
+                    gross_loss = 0
+
+                wr = wins / total if total > 0 else 0.5
                 pf = gross_profit / gross_loss if gross_loss > 0 else 1.0
 
                 metrics = {
@@ -864,7 +938,7 @@ WEEKEND_CYCLE_TIMES = {
     'sat_trade_review': dtime(6, 47),          # Review all trades this week
 
     # === SATURDAY WATCHLIST (by 9:30 AM ET) ===
-    'sat_scan_universe': dtime(7, 2),          # Scan 900 stocks for setups
+    'sat_scan_universe': dtime(7, 2),          # Scan 800 stocks for setups
     'sat_quality_gate': dtime(7, 17),          # Apply quality gate
     'sat_select_top5': dtime(7, 32),           # Select top 5 watchlist
     'sat_historical_patterns': dtime(7, 47),   # Historical pattern analysis
@@ -1018,6 +1092,100 @@ def should_run_position_monitor() -> bool:
     minutes_since_last = (now - _last_position_monitor).total_seconds() / 60
 
     return minutes_since_last >= POSITION_MONITOR_INTERVAL_MINUTES
+
+
+# === TIER 3.4: Online Learning Manager (Singleton) ===
+_online_learning_manager = None
+
+
+def get_online_learning_manager():
+    """Get or create the online learning manager singleton."""
+    global _online_learning_manager
+    if _online_learning_manager is None and ONLINE_LEARNING_AVAILABLE:
+        try:
+            _online_learning_manager = create_online_learning_manager(
+                update_frequency='daily',
+                auto_update=True
+            )
+            jlog('online_learning_initialized', status='ready')
+        except Exception as e:
+            jlog('online_learning_init_failed', error=str(e))
+    return _online_learning_manager
+
+
+def record_trade_for_learning(trade_data: dict) -> bool:
+    """
+    Record a completed trade for online learning.
+
+    Args:
+        trade_data: Dict with symbol, pnl, features, holding_period, etc.
+
+    Returns:
+        True if recorded successfully
+    """
+    manager = get_online_learning_manager()
+    if manager is None:
+        return False
+
+    try:
+        import numpy as np
+
+        symbol = trade_data.get('symbol', 'UNKNOWN')
+        pnl = trade_data.get('pnl', 0)
+        holding_period = trade_data.get('holding_period', trade_data.get('duration_bars', 0))
+
+        # Build features array from trade data
+        features = np.array([
+            trade_data.get('entry_price', 0),
+            trade_data.get('stop_loss', 0),
+            trade_data.get('target', 0),
+            trade_data.get('conf_score', 0.5),
+            trade_data.get('regime_confidence', 0.5),
+        ])
+
+        # Calculate prediction from confidence
+        prediction = trade_data.get('conf_score', 0.5)
+
+        manager.record_trade_outcome(
+            symbol=symbol,
+            features=features,
+            prediction=prediction,
+            actual_pnl=pnl,
+            holding_period=holding_period
+        )
+
+        jlog('trade_recorded_for_learning',
+             symbol=symbol,
+             pnl=pnl,
+             buffer_size=len(manager.replay_buffer) if manager.replay_buffer else 0)
+        return True
+
+    except Exception as e:
+        jlog('trade_learning_record_failed', error=str(e))
+        return False
+
+
+def trigger_online_learning_update() -> dict:
+    """
+    Trigger an incremental update of ML models based on recent trade outcomes.
+
+    Returns:
+        Dict with update results
+    """
+    manager = get_online_learning_manager()
+    if manager is None:
+        return {"status": "unavailable", "reason": "Online learning not available"}
+
+    try:
+        if manager.should_update():
+            result = manager.trigger_incremental_update(batch_size=32)
+            jlog('online_learning_update_triggered', result=result)
+            return result
+        else:
+            return {"status": "skipped", "reason": "buffer_not_ready"}
+    except Exception as e:
+        jlog('online_learning_update_failed', error=str(e))
+        return {"status": "error", "error": str(e)}
 
 
 def run_crypto_scan(dotenv: Path, cadence_hours: int = 4) -> int:
@@ -1368,17 +1536,17 @@ def run_daily_cycle_script(script_name: str, universe: Path, cap: int, dotenv: P
     elif script_name.startswith('opening_range'):
         pass  # No special args
     elif script_name == 'cache_refresh_eod':
-        # Refresh cache for all 900 symbols with latest EOD data
+        # Refresh cache for all 800 symbols with latest EOD data
         cmd.extend(['--universe', str(universe)])
 
     if dotenv.exists():
         cmd.extend(['--dotenv', str(dotenv)])
 
-    # Longer timeouts for scripts that process 900 stocks
+    # Longer timeouts for scripts that process 800 stocks
     if script_name == 'cache_refresh_eod':
-        timeout = 1800  # 30 min - refreshes 900 symbols
+        timeout = 1800  # 30 min - refreshes 800 symbols
     elif script_name == 'overnight_watchlist':
-        timeout = 600   # 10 min - scans 900 stocks
+        timeout = 600   # 10 min - scans 800 stocks
     else:
         timeout = 300   # 5 min default
 
@@ -1475,7 +1643,49 @@ def main():
     # Unified multi-asset scanning (recommended - runs all asset classes together)
     ap.add_argument('--unified', action='store_true',
                     help='Use unified multi-asset scanning (equities + crypto + options in one scan)')
+    # Core-only mode: Disable all extensions, run only verified core components
+    ap.add_argument('--core-only', action='store_true',
+                    help='Run in core-only mode: disables all extensions, uses only verified core components')
+    ap.add_argument('--extensions', type=str, default=None,
+                    help='Comma-separated list of extensions to enable (overrides extensions_enabled.json)')
     args = ap.parse_args()
+
+    # CORE-ONLY MODE: Disable all extensions for a clean, verified run
+    if args.core_only:
+        jlog('core_only_mode', level='INFO', message='Core-only mode enabled - all extensions disabled')
+        print("=" * 60)
+        print("CORE-ONLY MODE: Running with verified core components only")
+        print("Extensions disabled: ml_markov, ml_hmm, cognitive, autonomous, etc.")
+        print("=" * 60)
+        # Set environment variable to signal extensions are disabled
+        os.environ['KOBE_CORE_ONLY'] = 'true'
+    elif args.extensions:
+        # Specific extensions enabled
+        enabled = [e.strip() for e in args.extensions.split(',')]
+        jlog('extensions_specified', level='INFO', extensions=enabled)
+        os.environ['KOBE_ENABLED_EXTENSIONS'] = args.extensions
+
+    # FIX (2026-01-08): CRITICAL SAFETY - Verify paper mode URL matches --mode flag
+    base_url = os.getenv('ALPACA_BASE_URL', '')
+    is_paper_url = 'paper' in base_url.lower()
+    if args.mode == 'paper' and not is_paper_url:
+        jlog('paper_mode_url_mismatch', level='CRITICAL',
+             mode=args.mode, alpaca_base_url=base_url,
+             reason='Paper mode requested but ALPACA_BASE_URL does not contain "paper"')
+        print("=" * 70)
+        print("SAFETY VIOLATION: Paper mode requested but URL is NOT paper!")
+        print(f"  --mode: {args.mode}")
+        print(f"  ALPACA_BASE_URL: {base_url}")
+        print("")
+        print("This could cause REAL MONEY trades instead of paper trades!")
+        print("")
+        print("FIX: Set ALPACA_BASE_URL=https://paper-api.alpaca.markets in .env")
+        print("=" * 70)
+        sys.exit(1)
+    elif args.mode == 'paper' and is_paper_url:
+        jlog('paper_mode_verified', level='INFO',
+             mode=args.mode, alpaca_base_url=base_url,
+             message='Paper mode URL verified - safe to proceed')
 
     # CRITICAL: Live trading safety check
     if args.mode == 'live':

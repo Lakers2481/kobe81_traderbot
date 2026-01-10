@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\pipelines\quant_rd_pipeline.py
+# hypothesis_version: 6.150.0
+
+[1380, 1440, 10000, 10080, 'audit', 'category', 'cooldown_minutes', 'daily_report', 'description', 'discovery', 'handler', 'id', 'items', 'maintenance', 'name', 'optimization', 'params', 'priority', 'quant_rd_discovery', 'quant_rd_validation', 'recurrence_minutes', 'recurring', 'reports', 'research', 'stage', 'strategy', 'validation', 'w', 'weekly_review']

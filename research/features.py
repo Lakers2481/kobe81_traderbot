@@ -9,7 +9,7 @@ ml_meta.features (the production feature set).
 """
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 import pandas as pd
 
 

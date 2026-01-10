@@ -8,8 +8,6 @@ Run: python -m pytest tests/cognitive/test_cognitive_brain.py -v
 """
 
 import pytest
-from datetime import datetime
-from unittest.mock import Mock, patch, MagicMock
 
 
 class TestCognitiveBrainInitialization:
@@ -48,7 +46,7 @@ class TestCognitiveBrainInitialization:
 
     def test_singleton_factory(self):
         """Test the get_cognitive_brain factory returns singleton."""
-        from cognitive.cognitive_brain import get_cognitive_brain, _cognitive_brain
+        from cognitive.cognitive_brain import get_cognitive_brain
         import cognitive.cognitive_brain as cb_module
 
         # Reset singleton for test

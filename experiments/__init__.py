@@ -23,6 +23,19 @@ from .registry import (
     list_experiments,
 )
 
+# MLflow integration (optional - requires mlflow)
+try:
+    from .mlflow_adapter import (
+        MLflowAdapter,
+        get_mlflow_adapter,
+        sync_to_mlflow,
+        query_best,
+        log_backtest_to_mlflow,
+        HAS_MLFLOW,
+    )
+except ImportError:
+    HAS_MLFLOW = False
+
 __all__ = [
     'ExperimentRegistry',
     'ExperimentConfig',
@@ -33,4 +46,11 @@ __all__ = [
     'register_experiment',
     'record_experiment_results',
     'list_experiments',
+    # MLflow (optional)
+    'MLflowAdapter',
+    'get_mlflow_adapter',
+    'sync_to_mlflow',
+    'query_best',
+    'log_backtest_to_mlflow',
+    'HAS_MLFLOW',
 ]

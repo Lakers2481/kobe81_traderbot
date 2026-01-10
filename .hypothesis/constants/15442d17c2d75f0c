@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\risk\trailing_stops.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.002, 0.01, 0.5, 1.0, 2.0, 3.0, 100, 'No change', 'UNKNOWN', 'at_breakeven', 'breakeven', 'entry_price', 'initial', 'initial_stop', 'long', 'positions_tracked', 'side', 'stop_loss', 'symbol', 'tight', 'tightened', 'trailing', 'trailing_1r', 'trailing_2r']

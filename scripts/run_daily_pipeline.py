@@ -27,7 +27,7 @@ def run_cmd(args: list[str]) -> int:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description='Run daily ML+sentiment pipeline for Top-3 and TOTD')
-    ap.add_argument('--universe', type=str, default='data/universe/optionable_liquid_900.csv')
+    ap.add_argument('--universe', type=str, default='data/universe/optionable_liquid_800.csv')
     ap.add_argument('--cap', type=int, default=900)
     ap.add_argument('--date', type=str, default=None, help='Scan date (YYYY-MM-DD); default: last business day UTC')
     ap.add_argument('--dotenv', type=str, default='./.env')

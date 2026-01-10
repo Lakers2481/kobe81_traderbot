@@ -10,7 +10,7 @@ Import the task:
 
 What it does
 - Triggers on system startup and at user logon
-- Runs: python scripts\\scheduler_kobe.py --dotenv .\\.env --universe data\\universe\\optionable_liquid_900.csv --cap 900 --min-conf 0.60 --tick-seconds 20 --telegram
+- Runs: python scripts\\scheduler_kobe.py --dotenv .\\.env --universe data\\universe\\optionable_liquid_800.csv --cap 900 --min-conf 0.60 --tick-seconds 20 --telegram
 - The scheduler stays running and executes the full daily plan in ET.
 
 Telegram

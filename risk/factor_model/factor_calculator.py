@@ -14,13 +14,12 @@ Created: 2026-01-04
 """
 
 from dataclasses import dataclass
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional
 import json
 import statistics
 
-import numpy as np
 import pandas as pd
 
 from core.structured_log import get_logger
@@ -111,7 +110,7 @@ class FactorExposures:
             f"Volatility (LowVol+/HighVol-): {self.volatility_exposure:+.2f}",
             f"Quality: {self.quality_exposure:+.2f}",
             "",
-            f"**Concentration:**",
+            "**Concentration:**",
             f"  Top 5 positions: {self.top_5_weight:.0%}",
             f"  Effective N: {self.effective_n:.1f}",
             f"  Max sector: {self.max_sector_concentration:.0%}",

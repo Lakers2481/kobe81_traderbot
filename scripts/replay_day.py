@@ -51,7 +51,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description='Replay a trading day decisions and compare')
     ap.add_argument('--date', type=str, required=True)
     ap.add_argument('--dotenv', type=str, default=str(ROOT / '.env'))
-    ap.add_argument('--universe', type=str, default=str(ROOT / 'data' / 'universe' / 'optionable_liquid_900.csv'))
+    ap.add_argument('--universe', type=str, default=str(ROOT / 'data' / 'universe' / 'optionable_liquid_800.csv'))
     ap.add_argument('--cap', type=int, default=900)
     ap.add_argument('--picks', type=str, default=str(ROOT / 'logs' / 'daily_picks.csv'))
     ap.add_argument('--totd', type=str, default=str(ROOT / 'logs' / 'trade_of_day.csv'))

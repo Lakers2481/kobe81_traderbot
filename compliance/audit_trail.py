@@ -8,7 +8,6 @@ for aggregation. This is separate from the hash-chain audit, which captures
 order/audit events at a lower level.
 """
 
-from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any

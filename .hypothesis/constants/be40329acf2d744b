@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\ml_features\strategy_enhancer.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.4, 0.7, 'DEBUG', 'anomaly_combined', 'anomaly_filtered', 'combined_regime', 'confidence', 'confidence_filtered', 'confidence_level', 'long', 'passed_signals', 'regime_confidence', 'regime_filtered', 'side', 'signals_enhanced', 'timestamp', 'total_signals', 'trend_regime', 'vol_regime']

@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\altdata\news_processor.py
+# hypothesis_version: 6.150.0
+
+[-0.3, -0.1, 0.0, 0.1, 0.3, 1.0, 60.0, 200, '%Y-%m-%dT%H:%M:%SZ', '+', '+00:00', ',', ', ', '-', 'AAPL', 'ALPACA_API_KEY_ID', 'APCA-API-KEY-ID', 'APCA-API-SECRET-KEY', 'APCA_API_KEY_ID', 'APCA_API_SECRET_KEY', 'GOOG', 'Key headlines:', 'NVDA', 'SPY', 'Simulated', 'TSLA', 'XLY', 'Z', 'aggregated_sentiment', 'articles', 'author', 'claude', 'compound', 'connected', 'created_at', 'deterministic', 'end', 'generation_method', 'headline', 'id', 'interpretation', 'limit', 'mildly negative', 'mildly positive', 'neg', 'negative', 'neu', 'neutral', 'neutral to mixed', 'news', 'none', 'pos', 'positive', 'sentiment_score', 'sim_1', 'sim_2', 'sim_3', 'sim_4', 'sim_5', 'sim_6', 'simulated', 'source', 'start', 'summary', 'symbols', 'url', '~']

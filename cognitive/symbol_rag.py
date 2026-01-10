@@ -18,7 +18,6 @@ Usage:
 """
 from __future__ import annotations
 
-import json
 import logging
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timedelta
@@ -126,7 +125,7 @@ class SymbolRAG:
 
     def __init__(
         self,
-        universe_path: str = "data/universe/optionable_liquid_900.csv",
+        universe_path: str = "data/universe/optionable_liquid_800.csv",
         cache_dir: str = "data/cache/polygon",
         signals_log: str = "logs/daily_picks.csv",
     ):

@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\risk\portfolio_risk.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.7, 0.8, 0.9, 10.0, 30.0, 40.0, 100.0, 100, 'Unknown', 'approved', 'correlated_cluster', 'data/sector_map.csv', 'enabled', 'gate_enabled', 'gross_exposure_pct', 'limits', 'long', 'max_positions', 'max_sector_pct', 'max_single_name_pct', 'metrics', 'p1', 'p2', 'portfolio_risk', 'position_count', 'r', 'rejection_reasons', 'requested_notional', 'requested_qty', 'sector', 'sector_exposure_pct', 'short', 'side', 'single_name_pct', 'status', 'symbol', 'utf-8', 'warnings']

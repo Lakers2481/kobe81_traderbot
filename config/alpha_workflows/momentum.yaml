@@ -1,0 +1,44 @@
+# Momentum Alpha Workflow
+# Tests momentum-based alpha factors
+
+name: momentum_alpha_test
+description: Test momentum alpha factors across 900-stock universe
+
+data:
+  universe_path: data/universe/optionable_liquid_800.csv
+  start_date: "2020-01-01"
+  end_date: "2024-12-31"
+  min_history_days: 252
+  provider: polygon
+
+features:
+  alpha_categories:
+    - momentum
+    - technical
+  lookback_windows: [5, 10, 20, 60]
+  normalize: true
+  lag_features: true
+  lag_periods: [1, 2, 3, 5]
+
+model:
+  model_type: lightgbm
+  train_ratio: 0.7
+  valid_ratio: 0.15
+  test_ratio: 0.15
+  target_horizon: 5
+  target_type: returns
+  hyperparams:
+    n_estimators: 200
+    max_depth: 6
+    learning_rate: 0.05
+
+backtest:
+  initial_capital: 100000.0
+  max_positions: 10
+  position_size: 0.10
+  commission: 0.001
+  slippage: 0.001
+  rebalance_freq: daily
+
+output_dir: reports/alpha_factory/momentum
+random_seed: 42

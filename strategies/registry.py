@@ -28,7 +28,7 @@ from __future__ import annotations
 
 import sys
 import warnings
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
 # Canonical import - the ONLY strategy to use
 from strategies.dual_strategy.combined import DualStrategyScanner, DualStrategyParams

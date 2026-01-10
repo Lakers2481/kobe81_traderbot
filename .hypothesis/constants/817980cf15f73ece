@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\trade_logging\decision_card_logger.py
+# hypothesis_version: 6.150.0
+
+[0.0, '%Y%m%d', '%Y%m%d_%H%M%S', 'DC_*.json', 'DecisionCard', 'Z', '_', 'avg_bars_held', 'avg_pnl', 'by_strategy', 'card_id', 'completed_trades', 'config', 'config_hash', 'count', 'data_hash', 'decision_cards', 'environment', 'execution', 'logs', 'metadata', 'model_info', 'paper', 'pending_trades', 'plan', 'r', 'rb', 'result', 'risk_checks', 'side', 'signals', 'strategy', 'symbol', 'tca', 'timestamp', 'total', 'total_cards', 'total_pnl', 'w', 'win_rate']

@@ -5,7 +5,6 @@ FIX (2026-01-05): Added for logging hygiene.
 """
 from __future__ import annotations
 
-import pytest
 import logging
 
 import sys
@@ -16,9 +15,7 @@ from core.secrets import (
     mask_secrets,
     sanitize_dict,
     sanitize_exception,
-    sanitize_traceback,
     SecretsMaskingFilter,
-    install_secrets_filter,
     get_safe_env_summary,
 )
 

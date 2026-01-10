@@ -67,8 +67,6 @@ class TestSafetyMode:
             get_trading_mode,
             is_paper_mode,
             is_live_mode,
-            SafetyViolationError,
-            TradingMode,
         )
 
         # All should be importable

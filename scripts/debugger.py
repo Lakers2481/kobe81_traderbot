@@ -22,17 +22,14 @@ import io
 import json
 import os
 import pstats
-import re
 import runpy  # SECURITY FIX (2026-01-04): Use runpy instead of exec()
-import subprocess
 import sys
 import traceback
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
-import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]

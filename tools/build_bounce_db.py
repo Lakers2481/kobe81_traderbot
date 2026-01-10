@@ -32,12 +32,11 @@ sys.path.insert(0, str(PROJECT_ROOT))
 import pandas as pd
 
 from bounce.data_loader import load_universe_data, get_data_health_summary
-from bounce.streak_analyzer import build_events_table, get_current_streaks
+from bounce.streak_analyzer import build_events_table
 from bounce.event_table import (
     compute_overall_summary,
     compute_per_stock_summary,
     derive_5y_from_10y,
-    get_ticker_max_dates,
     generate_data_health_block,
 )
 from bounce.validation import run_all_validations

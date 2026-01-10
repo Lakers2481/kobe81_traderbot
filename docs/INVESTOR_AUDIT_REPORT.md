@@ -381,7 +381,7 @@ python scripts/run_autonomous.py
 python scripts/preflight.py
 
 # Paper trade with dual caps
-python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --cap 50
+python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_800.csv --cap 50
 
 # Generate Pre-Game Blueprint
 python scripts/generate_pregame_blueprint.py --cap 900 --top 5 --execute 2

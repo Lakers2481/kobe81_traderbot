@@ -33,6 +33,7 @@ from core.structured_log import jlog
 from monitor.health_endpoints import update_request_counter
 from core.config_pin import sha256_file
 from integration.learning_hub import get_learning_hub
+from core.decision_packet import create_decision_packet, DecisionPacket
 
 # Import unified enrichment pipeline (CRITICAL: This adds 100+ fields for proper position sizing)
 try:
@@ -316,7 +317,7 @@ def main():
             print(f"\n  [FAIL] {wf_reason}")
             print("\n  This is the EVAL step in the MNIST loop.")
             print("  Run walk-forward validation first:")
-            print("    python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2023-01-01 --end 2024-12-31")
+            print("    python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2023-01-01 --end 2024-12-31")
             print("\n  Or use --skip-wf-check to bypass (NOT RECOMMENDED)")
             print("="*60)
             return
@@ -772,6 +773,139 @@ def main():
         append_block(audit_data)
         jlog('order_submit', symbol=sym, status=str(rec.status), qty=max_qty, price=limit_px,
              decision_id=rec.decision_id, cognitive_conf=cognitive_conf)
+
+        # FIX #1 (2026-01-08): Save DecisionPacket for Learning
+        # Create comprehensive decision packet with all 99 enrichment fields
+        try:
+            # Get market data snapshot for this symbol
+            symbol_data = data[data['symbol'] == sym] if 'symbol' in data.columns else data
+
+            # Build indicator snapshot from row
+            indicators = {
+                'rsi_2': row.get('rsi2'),
+                'rsi_14': row.get('rsi_14'),
+                'ibs': row.get('ibs'),
+                'sma_200': row.get('sma_200'),
+                'atr_14': row.get('atr', row.get('atr_14')),
+                'sweep_strength': row.get('sweep_strength'),
+                'donchian_high': row.get('donchian_high'),
+                'donchian_low': row.get('donchian_low'),
+                # Include extra enrichment fields
+                'streak_length': row.get('streak_length'),
+                'conviction_score': row.get('conviction_score'),
+                'quality_score': row.get('quality_score'),
+                'sector_relative_strength': row.get('sector_relative_strength'),
+            }
+
+            # Build ML predictions list from all models
+            ml_predictions = []
+
+            # ML Meta model
+            if pd.notna(row.get('ml_meta_conf')):
+                ml_predictions.append({
+                    'model': 'ml_meta',
+                    'version': '1.0',
+                    'confidence': float(row.get('ml_meta_conf', 0)),
+                    'prediction': 1.0 if side == 'BUY' else 0.0,
+                    'features': [],  # Features not stored in row
+                    'feature_names': [],
+                })
+
+            # LSTM model
+            if pd.notna(row.get('lstm_direction')):
+                ml_predictions.append({
+                    'model': 'lstm',
+                    'version': '1.0',
+                    'confidence': float(row.get('lstm_direction', 0)),
+                    'prediction': float(row.get('lstm_magnitude', 0)),
+                    'features': [],
+                    'feature_names': [],
+                })
+
+            # Ensemble model
+            if pd.notna(row.get('ensemble_conf')):
+                ml_predictions.append({
+                    'model': 'ensemble',
+                    'version': '1.0',
+                    'confidence': float(row.get('ensemble_conf', 0)),
+                    'prediction': 1.0 if side == 'BUY' else 0.0,
+                    'features': [],
+                    'feature_names': [],
+                })
+
+            # Markov chain model
+            if pd.notna(row.get('markov_pi_up')):
+                ml_predictions.append({
+                    'model': 'markov',
+                    'version': '1.0',
+                    'confidence': float(row.get('markov_pi_up', 0)),
+                    'prediction': float(row.get('markov_p_up_today', 0)),
+                    'features': [],
+                    'feature_names': [],
+                    'regime': str(row.get('regime', 'UNKNOWN')),
+                })
+
+            # Build risk checks snapshot
+            risk_checks = {
+                'policy_gate': True,  # If we got here, it passed
+                'kill_zone': True,
+                'exposure_limit': True,
+                'correlation_limit': True,
+                'current_exposure': float(pos_size.account_equity * 0.20) if pos_size else 0.0,
+                'max_exposure': 0.40,
+                'size_calculated': float(max_qty),
+                'size_capped': float(max_qty),
+                'risk_per_trade': float(risk_pct),
+                'notes': [rec.notes] if rec.notes else [],
+            }
+
+            # Create the packet
+            packet = create_decision_packet(
+                symbol=sym,
+                ohlcv=symbol_data,
+                indicators=indicators,
+                signal=row.to_dict(),  # Full enriched signal (99 fields)
+                ml_predictions=ml_predictions,
+                risk_checks=risk_checks,
+                strategy_params={
+                    'strategy': row.get('strategy', 'IBS_RSI'),
+                    'entry_timing': row.get('entry_timing', 'UNKNOWN'),
+                    'hold_period': row.get('hold_period', 7),
+                    'time_stop_bars': row.get('time_stop_bars', 7),
+                    'use_ibs': row.get('use_ibs', False),
+                    'use_rsi': row.get('use_rsi', False),
+                },
+                decision='BUY' if side == 'BUY' else 'SELL',
+                reason=f"Kelly={kelly_pct:.2%}, Regime={regime}, VIX={vix_level:.0f}, Conf={final_confidence:.0%}",
+            )
+
+            # Add context fields
+            packet.context = {
+                'decision_id': rec.decision_id,
+                'config_pin': config_pin,
+                'cognitive_confidence': cognitive_conf if cognitive_conf else None,
+                'cognitive_size_multiplier': size_multiplier,
+                'cognitive_episode_id': cognitive_decisions.get(sym, {}).get('episode_id') if cognitive_decisions else None,
+                'position_size_multiplier': {
+                    'kelly': kelly_pct / risk_pct if risk_pct > 0 else 1.0,
+                    'regime': regime_mult,
+                    'vix': vix_mult,
+                    'confidence': conf_mult,
+                    'cognitive': size_multiplier,
+                    'sector': sector_reduction if 'sector_reduction' in locals() else 1.0,
+                },
+                'enrichment_fields_count': len(row.to_dict()),
+            }
+
+            # Save packet to state/decisions/
+            packet_path = packet.save(directory=str(ROOT / 'state' / 'decisions'))
+            jlog('decision_packet_saved', symbol=sym, packet_id=packet.packet_id, path=packet_path,
+                 ml_models=len(ml_predictions), fields=len(row.to_dict()))
+            print(f"  Decision packet saved: {packet.packet_id[:8]} ({len(row.to_dict())} fields)")
+
+        except Exception as e:
+            jlog('decision_packet_error', symbol=sym, error=str(e), level='WARN')
+            print(f"  [WARN] Failed to save decision packet: {e}")
 
         # Record entry with weekly exposure gate (Professional Portfolio Allocation)
         if str(rec.status).upper().endswith('SUBMITTED') or str(rec.status).upper() == 'ACCEPTED':

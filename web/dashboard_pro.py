@@ -27,7 +27,6 @@ logger = logging.getLogger(__name__)
 
 def atomic_json_write(path: Path, data: Any) -> None:
     """Atomically write JSON to a file (write to temp, then rename)."""
-    import tempfile
     temp_path = path.with_suffix('.tmp')
     with open(temp_path, 'w') as f:
         json.dump(data, f, indent=2, default=str)

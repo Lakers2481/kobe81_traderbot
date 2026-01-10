@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\analytics\factor_attribution.py
+# hypothesis_version: 6.150.0
+
+[0.0, 1e-10, 0.01, 0.05, 1.0, 100, 'Residual', 'adj_r_squared', 'atr_multiple', 'coefficient', 'const', 'contribution', 'contribution_pct', 'factor', 'factor_', 'factor_contributions', 'gap_pct', 'ibs', 'is_positive', 'is_significant', 'p_value', 'pnl', 'r_squared', 'regime_score', 'residual_pnl', 'rsi', 'rsi_2', 'running_total', 'significant_factors', 'sweep_strength', 'timestamp', 'top_negative_factors', 'top_positive_factors', 'total_pnl', 'total_trades', 'trend_score', 'vix', 'volume_ratio']

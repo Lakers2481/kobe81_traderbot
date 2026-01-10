@@ -15,13 +15,12 @@ from __future__ import annotations
 
 import json
 import logging
-from dataclasses import dataclass
 from datetime import datetime, date
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from llm import ToolDefinition
 from agents.base_agent import BaseAgent, AgentConfig, ToolResult
-from agents.agent_tools import get_file_tools, write_draft
+from agents.agent_tools import get_file_tools
 
 logger = logging.getLogger(__name__)
 
@@ -265,7 +264,6 @@ You have access to file tools to read data and write reports.
         """Get performance metrics summary."""
         try:
             from pathlib import Path
-            import pandas as pd
 
             project_root = Path(__file__).parent.parent
 

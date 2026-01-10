@@ -18,7 +18,6 @@ from enum import Enum
 
 import numpy as np
 import pandas as pd
-from scipy import stats
 from scipy.linalg import cholesky
 
 logger = logging.getLogger(__name__)

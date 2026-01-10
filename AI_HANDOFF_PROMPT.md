@@ -36,7 +36,7 @@ Selection/TOPN ranking is disabled in this setup; only these two strategies are 
 - All 10 layers implemented and tested
 - Unit tests passing locally
 - Imports normalized (configs -> config)
-- Universe: 900 stocks validated
+- Universe: 800 stocks validated
 - Documentation aligned to IBS_RSI + ICT
 
 ### Key Files to Know
@@ -61,10 +61,10 @@ Selection/TOPN ranking is disabled in this setup; only these two strategies are 
 python scripts/preflight.py --dotenv ./.env
 
 # Walk-forward validation (IBS_RSI vs ICT)
-python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 
 # Paper trading
-python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --cap 50 --dotenv ./.env
+python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_800.csv --cap 50 --dotenv ./.env
 ```
 
 ### Environment Variables Needed

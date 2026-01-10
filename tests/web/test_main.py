@@ -1,7 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import MagicMock, patch
-from datetime import datetime
 
 # Import the FastAPI app directly
 from web.main import app

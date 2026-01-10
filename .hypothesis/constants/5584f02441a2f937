@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\cognitive\signal_adjudicator.py
+# hypothesis_version: 6.150.0
+
+[0.0, 1e-08, 0.01, 0.02, 0.04, 0.05, 0.1, 0.5, 1.01, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 80.0, 100.0, 100, ',', 'BELOW_LOWER_BB', 'Close', 'DOWN_STREAK', 'High', 'IBS_OVERSOLD', 'Low', 'NEAR_20D_LOW', 'RSI2_OVERSOLD', 'Unknown', 'VOLUME_SPIKE', 'Volume', 'adj_bb_percentile', 'adj_rsi2_tier', 'adj_sector', 'adj_sector_strength', 'adj_signal_strength', 'adjudication_score', 'bb_width_percentile', 'close', 'components', 'count', 'detected', 'extreme', 'high', 'ibs', 'low', 'near_extreme', 'normal', 'pattern_confluence', 'patterns', 'raw_values', 'rsi', 'rsi2', 'rsi2_tier', 'sector', 'sector_strength', 'sector_vs_spy', 'signal_strength', 'strategy', 'symbol', 'volume']

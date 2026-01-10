@@ -1,0 +1,93 @@
+{
+  "validated_at": "2026-01-09T04:06:46.970328-05:00",
+  "for_date": "2026-01-09",
+  "overnight_generated": "2026-01-07T18:36:37.376185-05:00",
+  "status": "VALIDATED",
+  "summary": {
+    "original_count": 5,
+    "validated_count": 5,
+    "removed_count": 0,
+    "gap_threshold": 0.03
+  },
+  "totd": {
+    "symbol": "AGG",
+    "score": 83.4,
+    "validation_status": "VALID",
+    "entry_price": 99.85,
+    "current_price": 99.85,
+    "stop_loss": 99.35
+  },
+  "watchlist": [
+    {
+      "rank": 1,
+      "symbol": "AGG",
+      "score": 83.4,
+      "strategy": "IBS_RSI",
+      "entry_price": 99.85,
+      "stop_loss": 99.35,
+      "take_profit": 100.85,
+      "rr_ratio": 2.0,
+      "reason": "IBS_RSI[ibs=0.00,rsi=0.0]",
+      "validation_status": "VALID",
+      "validation_note": "No premarket quote, using overnight analysis",
+      "current_price": 99.85
+    },
+    {
+      "rank": 2,
+      "symbol": "NVDA",
+      "score": 83.33,
+      "strategy": "IBS_RSI",
+      "entry_price": 188.85,
+      "stop_loss": 178.27,
+      "take_profit": 210.00999999999996,
+      "rr_ratio": 2.0,
+      "reason": "IBS_RSI[ibs=0.00,rsi=0.0]",
+      "validation_status": "VALID",
+      "validation_note": "No premarket quote, using overnight analysis",
+      "current_price": 188.85
+    },
+    {
+      "rank": 3,
+      "symbol": "ACWI",
+      "score": 83.19,
+      "strategy": "IBS_RSI",
+      "entry_price": 142.49,
+      "stop_loss": 140.04,
+      "take_profit": 147.39000000000004,
+      "rr_ratio": 2.0,
+      "reason": "IBS_RSI[ibs=0.01,rsi=0.0]",
+      "validation_status": "VALID",
+      "validation_note": "No premarket quote, using overnight analysis",
+      "current_price": 142.49
+    },
+    {
+      "rank": 4,
+      "symbol": "A",
+      "score": 82.94,
+      "strategy": "IBS_RSI",
+      "entry_price": 137.95,
+      "stop_loss": 132.75,
+      "take_profit": 148.34999999999997,
+      "rr_ratio": 2.0,
+      "reason": "IBS_RSI[ibs=0.02,rsi=0.0]",
+      "validation_status": "VALID",
+      "validation_note": "No premarket quote, using overnight analysis",
+      "current_price": 137.95
+    },
+    {
+      "rank": 5,
+      "symbol": "ADI",
+      "score": 82.76,
+      "strategy": "IBS_RSI",
+      "entry_price": 273.74,
+      "stop_loss": 263.23,
+      "take_profit": 294.76,
+      "rr_ratio": 2.0,
+      "reason": "IBS_RSI[ibs=0.02,rsi=0.0]",
+      "validation_status": "VALID",
+      "validation_note": "No premarket quote, using overnight analysis",
+      "current_price": 273.74
+    }
+  ],
+  "removed": []
+}

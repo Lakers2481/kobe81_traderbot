@@ -19,7 +19,7 @@ You are to design three new pillars that integrate with and enhance this existin
 
 ### **Pillar 1: The Strategy Foundry**
 
-**Concept:** An offline system that uses Genetic Programming (GP) to autonomously discover new trading strategies from a universe of 900 stocks.
+**Concept:** An offline system that uses Genetic Programming (GP) to autonomously discover new trading strategies from a universe of 800 stocks.
 
 **Requirements:**
 1.  **High-Level Design:** Describe how this GP system would work. Detail the five key phases: Initialization, Fitness Evaluation, Selection, Crossover/Mutation, and Repetition.

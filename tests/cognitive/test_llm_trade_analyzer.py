@@ -11,7 +11,6 @@ Run: pytest tests/cognitive/test_llm_trade_analyzer.py -v
 import pytest
 import pandas as pd
 from datetime import datetime
-from unittest.mock import patch, MagicMock
 
 
 class TestTradeNarrative:

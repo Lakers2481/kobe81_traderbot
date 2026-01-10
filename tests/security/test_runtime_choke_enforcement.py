@@ -163,7 +163,7 @@ class TestRuntimeChokeEnforcement:
 
             from options.order_router import (
                 OptionsOrderRouter, OptionsOrder, OptionsOrderType,
-                OptionsOrderStatus, OptionsOrderSide, OptionsOrderLeg
+                OptionsOrderSide, OptionsOrderLeg
             )
 
             router = OptionsOrderRouter(paper_mode=True)

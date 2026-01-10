@@ -328,3 +328,49 @@ def create_model(config: LSTMConfig = DEFAULT_CONFIG) -> LSTMConfidenceModel:
     model = LSTMConfidenceModel(config)
     model.build()
     return model
+
+
+# Singleton instance for get_lstm_model()
+_lstm_model_instance: Optional[LSTMConfidenceModel] = None
+
+
+def get_lstm_model(model_path: str = "models/lstm_confidence_v1.h5") -> LSTMConfidenceModel:
+    """
+    Factory function to get LSTM confidence model singleton.
+
+    FIX (2026-01-08): Added missing factory function for consistency with other ML modules.
+    This provides a singleton instance that loads from saved model if available.
+
+    Args:
+        model_path: Path to saved model file (default: models/lstm_confidence_v1.h5)
+
+    Returns:
+        LSTMConfidenceModel instance (singleton)
+
+    Raises:
+        ImportError: If TensorFlow/Keras is not installed
+    """
+    global _lstm_model_instance
+
+    if _lstm_model_instance is None:
+        _lstm_model_instance = LSTMConfidenceModel()
+        model_file = Path(model_path)
+        if model_file.exists():
+            try:
+                _lstm_model_instance.load(model_file)
+                logger.info(f"LSTM model loaded from {model_path}")
+            except Exception as e:
+                logger.warning(f"Could not load LSTM model from {model_path}: {e}")
+                # Build empty model as fallback
+                _lstm_model_instance.build()
+        else:
+            logger.info(f"No pre-trained LSTM model at {model_path}. Building empty model.")
+            _lstm_model_instance.build()
+
+    return _lstm_model_instance
+
+
+def reset_lstm_model() -> None:
+    """Reset the singleton LSTM model instance. Useful for testing."""
+    global _lstm_model_instance
+    _lstm_model_instance = None

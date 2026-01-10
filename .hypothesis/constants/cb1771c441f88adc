@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\execution\broker_paper.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.001, 1.0, 5.0, 100.0, 100.025, 100.05, 100000.0, 100, 1000, 10000, 1000000, 'PAPER', 'Paper', 'Paper broker reset', 'USD', 'all', 'cancelled', 'client_order_id', 'commission', 'current_equity', 'fill_price', 'filled', 'filled_qty', 'id', 'initial_equity', 'long', 'no_quote_available', 'paper', 'qty', 'realized_pnl', 'rejected', 'return_pct', 'sell', 'side', 'simulated_no_fill', 'status', 'symbol', 'timestamp', 'total_pnl', 'unrealized_pnl']

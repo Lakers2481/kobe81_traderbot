@@ -1,0 +1,86 @@
+{
+  "scan_date": "2026-01-06",
+  "prior_close_date": "2026-01-05",
+  "scan_time": "2026-01-06T09:59:11.415282",
+  "universe_scanned": 100,
+  "signals_found": 4,
+  "signals_validated": 4,
+  "signals_passing_quality_gate": 0,
+  "quality_gate": {
+    "min_score": 70,
+    "min_confidence": 0.6,
+    "min_rr": 1.5,
+    "max_gap": 0.03
+  },
+  "signals": [
+    {
+      "rank": 1,
+      "symbol": "JNJ",
+      "strategy": "TurtleSoup",
+      "entry": 204.31,
+      "stop": 200.3,
+      "target": 207.31,
+      "live": 204.05,
+      "gap_pct": -0.001,
+      "rr_ratio": 0.75,
+      "validation": "GAP_OK",
+      "quality_gate": "FAILED_RR",
+      "reason": "R:R 0.75:1 < 1.5:1 minimum"
+    },
+    {
+      "rank": 2,
+      "symbol": "GILD",
+      "strategy": "TurtleSoup",
+      "entry": 118.3,
+      "stop": 116.39,
+      "target": 119.74,
+      "live": 120.67,
+      "gap_pct": 0.02,
+      "rr_ratio": 0.75,
+      "validation": "GAP_OK",
+      "quality_gate": "FAILED_RR",
+      "reason": "R:R 0.75:1 < 1.5:1 minimum"
+    },
+    {
+      "rank": 3,
+      "symbol": "AEP",
+      "strategy": "TurtleSoup",
+      "entry": 114.07,
+      "stop": 111.93,
+      "target": 115.68,
+      "live": 114.64,
+      "gap_pct": 0.005,
+      "rr_ratio": 0.75,
+      "validation": "GAP_OK",
+      "quality_gate": "FAILED_RR",
+      "reason": "R:R 0.75:1 < 1.5:1 minimum"
+    },
+    {
+      "rank": 4,
+      "symbol": "WELL",
+      "strategy": "TurtleSoup",
+      "entry": 184.73,
+      "stop": 181.4,
+      "target": 187.22,
+      "live": 184.87,
+      "gap_pct": 0.001,
+      "rr_ratio": 0.75,
+      "validation": "GAP_OK",
+      "quality_gate": "FAILED_RR",
+      "reason": "R:R 0.75:1 < 1.5:1 minimum"
+    }
+  ],
+  "crypto_status": "NOT_AVAILABLE",
+  "options_status": "NOT_SCANNED",
+  "top_2_tradeable": [],
+  "recommendation": "NO_TRADE",
+  "reasoning": [
+    "All 4 signals have R:R ratio of 0.75:1",
+    "Quality gate requires R:R >= 1.5:1",
+    "TurtleSoup signals lack sufficient reward vs risk",
+    "Market conditions not ideal for mean-reversion",
+    "Capital preservation > forced trades"
+  ],
+  "next_action": "Wait for EOD scan at 3:30 PM ET",
+  "next_scan_time": "2026-01-06T15:30:00-05:00"
+}

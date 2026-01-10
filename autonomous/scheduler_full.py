@@ -10,9 +10,9 @@ VISIBILITY IS ACCOUNTABILITY.
 
 import json
 import logging
-from datetime import datetime, time as dtime, timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Callable
+from typing import Dict, Any, List, Optional
 from zoneinfo import ZoneInfo
 from dataclasses import dataclass
 from enum import Enum
@@ -59,7 +59,7 @@ MASTER_SCHEDULE = [
 
     # 5:00 AM - Data refresh
     ScheduledTask("05:00", "polygon_data_refresh", "Refresh Polygon EOD cache", "refresh_polygon", priority=2, weekdays_only=True),
-    ScheduledTask("05:15", "universe_validation", "Validate 900-stock universe", "validate_universe", priority=2, weekdays_only=True),
+    ScheduledTask("05:15", "universe_validation", "Validate 800-stock universe", "validate_universe", priority=2, weekdays_only=True),
     ScheduledTask("05:30", "indicator_precalc", "Pre-calculate indicators", "precalc_indicators", priority=2, weekdays_only=True),
 
     # 6:00 AM - Economic data
@@ -110,7 +110,7 @@ MASTER_SCHEDULE = [
     # MORNING SESSION (10:00 AM - 11:30 AM ET) - PRIMARY TRADING WINDOW
     # =========================================================================
     ScheduledTask("10:00", "morning_scan_start", "*** PRIMARY WINDOW OPEN - SCANNING ***", "log_primary_open", priority=1, weekdays_only=True),
-    ScheduledTask("10:00", "full_universe_scan", "Scan 900 stocks for signals", "scan_universe", priority=1, weekdays_only=True),
+    ScheduledTask("10:00", "full_universe_scan", "Scan 800 stocks for signals", "scan_universe", priority=1, weekdays_only=True),
     ScheduledTask("10:01", "signal_ranking", "Rank signals by confidence", "rank_signals", priority=1, weekdays_only=True),
     ScheduledTask("10:02", "historical_pattern_check", "Check historical patterns", "check_patterns", priority=1, weekdays_only=True),
     ScheduledTask("10:03", "consecutive_day_analysis", "Analyze consecutive day patterns", "analyze_consecutive", priority=2, weekdays_only=True),
@@ -325,6 +325,8 @@ MASTER_SCHEDULE = [
     ScheduledTask("20:00", "full_data_validation", "Full data validation", "full_validation", priority=2, weekdays_only=True),
 
     ScheduledTask("21:00", "ml_model_retrain_check", "Check if ML models need retrain", "check_retrain", priority=3, weekdays_only=True),
+    # FIX (2026-01-07): Fix 3 - Actually trigger retraining if drift detected
+    ScheduledTask("21:15", "nightly_ml_retrain", "Retrain ML models if drift detected", "full_retrain", priority=3, weekdays_only=True),
     ScheduledTask("21:30", "walk_forward_mini", "Mini walk-forward test", "mini_wf", priority=3, weekdays_only=True),
 
     ScheduledTask("22:00", "research_experiment_2", "Run overnight experiment", "run_experiment", priority=4, weekdays_only=True),
@@ -350,7 +352,7 @@ MASTER_SCHEDULE = [
     ScheduledTask("06:04", "sat_data_integrity", "Check all data files", "data_integrity", priority=1, saturday_only=True),
     ScheduledTask("06:06", "sat_broker_check", "Verify broker connection", "broker_connect", priority=1, saturday_only=True),
     ScheduledTask("06:08", "sat_cache_check", "Check Polygon cache health", "check_polygon", priority=2, saturday_only=True),
-    ScheduledTask("06:10", "sat_universe_validate", "Validate 900-stock universe", "validate_universe", priority=2, saturday_only=True),
+    ScheduledTask("06:10", "sat_universe_validate", "Validate 800-stock universe", "validate_universe", priority=2, saturday_only=True),
     ScheduledTask("06:12", "sat_data_freshness", "Check data freshness", "full_validation", priority=2, saturday_only=True),
 
     # --- 06:15 AM - Quick Weekly P&L Summary ---
@@ -382,10 +384,10 @@ MASTER_SCHEDULE = [
     ScheduledTask("06:55", "sat_reports_save", "Save all reports", "save_research", priority=1, saturday_only=True),
 
     # ===========================================================================
-    # 07:00 AM - BUILD MONDAY WATCHLIST (Scan 900 stocks)
+    # 07:00 AM - BUILD MONDAY WATCHLIST (Scan 800 stocks)
     # ===========================================================================
-    ScheduledTask("07:00", "sat_watchlist_start", "*** BUILD MONDAY WATCHLIST - SCAN 900 ***", "log_weekend_start", priority=1, saturday_only=True),
-    ScheduledTask("07:02", "sat_scan_universe", "Scan 900 stocks for setups", "scan_universe", priority=1, saturday_only=True),
+    ScheduledTask("07:00", "sat_watchlist_start", "*** BUILD MONDAY WATCHLIST - SCAN 800 ***", "log_weekend_start", priority=1, saturday_only=True),
+    ScheduledTask("07:02", "sat_scan_universe", "Scan 800 stocks for setups", "scan_universe", priority=1, saturday_only=True),
     ScheduledTask("07:05", "sat_scan_ibs_rsi", "Find IBS+RSI patterns", "scan_universe", priority=1, saturday_only=True),
     ScheduledTask("07:08", "sat_scan_turtle", "Find Turtle Soup patterns", "scan_universe", priority=1, saturday_only=True),
     ScheduledTask("07:11", "sat_scan_dual", "Find Dual Strategy patterns", "scan_universe", priority=1, saturday_only=True),
@@ -642,7 +644,7 @@ MASTER_SCHEDULE = [
 
     # --- 18:00 PM - Universe & Parameter Review ---
     ScheduledTask("18:00", "sun_review_start", "*** UNIVERSE & PARAM REVIEW ***", "log_deep_research", priority=1, sunday_only=True),
-    ScheduledTask("18:05", "sun_universe_review", "Review 900-stock universe", "review_universe", priority=2, sunday_only=True),
+    ScheduledTask("18:05", "sun_universe_review", "Review 800-stock universe", "review_universe", priority=2, sunday_only=True),
     ScheduledTask("18:20", "sun_universe_cleanup", "Remove dead/delisted", "cleanup", priority=2, sunday_only=True),
     ScheduledTask("18:35", "sun_param_review", "Review frozen parameters", "review_params", priority=2, sunday_only=True),
     ScheduledTask("18:50", "sun_param_drift", "Check parameter drift", "check_drift", priority=2, sunday_only=True),

@@ -24,7 +24,6 @@ Requirements:
 import argparse
 import json
 import logging
-import pickle
 from pathlib import Path
 from datetime import datetime
 import sys
@@ -35,7 +34,6 @@ import pandas as pd
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from core.structured_log import jlog
 
 logger = logging.getLogger(__name__)
 

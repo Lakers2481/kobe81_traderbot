@@ -34,11 +34,10 @@ Data Sources:
 import logging
 import os
 import requests
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 import time
-import numpy as np
 
 logger = logging.getLogger(__name__)
 

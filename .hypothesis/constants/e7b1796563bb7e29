@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\cognitive\contradiction_resolver.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.3, 0.5, 0.6, 0.7, 1.0, 100.0, 500, '...', 'CONFIDENCE:\\s*(\\d+)', 'HIGH', 'HOLD', 'LONG', 'No signals to weight', 'No valid directions', 'REASONING:\\s*(.+)', 'SHORT', 'STAND_DOWN', '_', 'action', 'confidence', 'confidence_weighted', 'contradictions', 'correct', 'critical', 'decision', 'description', 'direction', 'high', 'historical', 'llm_arbitration', 'low', 'medium', 'method', 'no_contradiction', 'none', 'outcome', 'parameters', 'prefer_source', 'reason', 'reasoning', 'rule_based', 'severity', 'signal_a', 'signal_b', 'signals', 'source', 'stand_down', 'total', 'user', 'was_profitable', 'winning_signal']

@@ -12,7 +12,7 @@ import pandas as pd
 # Sorted by liquidity/volume. All stocks have options. All have historical data.
 # =============================================================================
 
-CANONICAL_UNIVERSE_FILE = Path(__file__).parent / "optionable_liquid_900.csv"
+CANONICAL_UNIVERSE_FILE = Path(__file__).parent / "optionable_liquid_800.csv"
 EXPECTED_COUNT = 900
 MAGNIFICENT_7 = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NVDA', 'TSLA']
 

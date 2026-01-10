@@ -9,9 +9,8 @@ import os
 import sys
 from pathlib import Path
 import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-from typing import Dict, List, Tuple, Optional
+from datetime import datetime
+from typing import Dict
 import json
 import requests
 from dotenv import load_dotenv
@@ -23,8 +22,7 @@ sys.path.insert(0, str(project_root))
 # Load environment variables
 load_dotenv(project_root / '.env')
 
-from core.structured_log import jlog
-from data.providers.polygon_eod import fetch_daily_bars_polygon, PolygonConfig
+from data.providers.polygon_eod import PolygonConfig
 
 
 class DataQualityValidator:
@@ -640,7 +638,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Validate data pipeline for paper trading")
-    parser.add_argument("--universe", default="data/universe/optionable_liquid_900.csv",
+    parser.add_argument("--universe", default="data/universe/optionable_liquid_800.csv",
                        help="Universe file path")
     parser.add_argument("--cache", default="data/cache",
                        help="Cache directory path")

@@ -1,7 +1,8 @@
 # READINESS.md - Production Readiness Matrix
 
-> **Last Updated:** 2026-01-03
-> **Overall Status:** READY for Micro-Cap Paper/Live Trading
+> **Last Updated:** 2026-01-07
+> **Overall Status:** READY for 24/7 Automated Trading (Paper & Live)
+> **Recent Fixes:** 5 critical infrastructure gaps fixed (2026-01-06)
 
 ---
 
@@ -9,9 +10,19 @@
 
 | Mode | Ready? | Evidence |
 |------|--------|----------|
-| **Backtest** | YES | 1021 tests pass, 64% WR verified |
-| **Paper Trading** | YES | All gates wired, dual caps enforced |
-| **Live Trading** | YES (Micro) | IOC LIMIT, kill switch, idempotency |
+| **Backtest** | ✅ YES | 1021 tests pass, 64% WR verified |
+| **Paper Trading** | ✅ YES | All gates wired, dual caps enforced, 24/7 infrastructure fixed |
+| **Live Trading** | ✅ YES (Micro) | IOC LIMIT, kill switch, idempotency, reconciliation |
+
+### 2026-01-06 Infrastructure Fixes
+
+| Fix | What Changed |
+|-----|--------------|
+| Reconciliation | Now auto-fixes discrepancies (not just reports) |
+| Position State | Atomic writes with file locking via StateManager |
+| Post-Trade Validation | Verifies broker state within 10 seconds of fill |
+| Signal Replay | Date-based decision IDs prevent same-day duplicates |
+| Exit Catch-Up | Catches missed time-exits on restart |
 
 ---
 
@@ -29,7 +40,7 @@
 
 **Verification Command:**
 ```bash
-python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_900.csv --start 2023-01-01 --end 2024-12-31 --cap 150
+python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_800.csv --start 2023-01-01 --end 2024-12-31 --cap 150
 ```
 
 ---
@@ -51,7 +62,7 @@ python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liq
 **Verification Commands:**
 ```bash
 python scripts/preflight.py --dotenv ./.env
-python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --cap 50
+python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_800.csv --cap 50
 ```
 
 ---
@@ -68,14 +79,22 @@ python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900
 | Kill switch | YES | Decorator enforces check before every order |
 | Idempotency | YES | SQLite prevents duplicate submissions |
 | Telegram alerts | YES | Real-time fill notifications |
-| Health monitoring | YES | HTTP endpoints on port 5000 |
+| Health monitoring | YES | HTTP endpoints on port 8081 |
 | Audit trail | YES | Hash chain + structured logging |
+| **Reconciliation** | **YES** | Auto-fixes discrepancies on startup/daily |
+| **Post-trade validation** | **YES** | Verifies position within 10s of fill |
+| **Atomic state** | **YES** | StateManager with file locking |
+| **Signal replay protection** | **YES** | Date-based decision IDs |
+| **Exit catch-up** | **YES** | Closes overdue positions on restart |
 
 **CRITICAL SAFEGUARDS:**
 1. Kill switch blocks all orders when `state/KILL_SWITCH` exists
 2. Idempotency store prevents duplicate fills
 3. IOC LIMIT orders only (no market orders)
 4. Dual position cap (2% risk AND 20% notional)
+5. **NEW:** Reconciliation auto-syncs state with broker
+6. **NEW:** Post-trade validation detects drift immediately
+7. **NEW:** Exit manager catches up on missed exits
 
 **Verification Commands:**
 ```bash

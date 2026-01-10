@@ -13,8 +13,7 @@ Key Features:
 """
 
 from typing import Dict, List, Optional, Callable, Any, Tuple
-from dataclasses import dataclass, field
-import numpy as np
+from dataclasses import dataclass
 import pandas as pd
 from datetime import datetime
 import logging

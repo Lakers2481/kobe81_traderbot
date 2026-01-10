@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\data\lake\io.py
+# hypothesis_version: 6.150.0
+
+['%Y-%m-%d', '.parquet', '_year', 'close', 'created_at', 'data/lake', 'data/manifests', 'dataset_id', 'date_range', 'error', 'errors', 'file_count', 'high', 'low', 'open', 'provider', 'schema_version', 'snappy', 'symbol', 'symbols', 'timeframe', 'timestamp', 'total_rows', 'valid', 'volume', 'year', 'years', 'years_coverage']

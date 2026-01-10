@@ -26,7 +26,7 @@ from altdata.sentiment import fetch_polygon_news, compute_daily_sentiment, write
 
 def main() -> None:
     ap = argparse.ArgumentParser(description='Update daily sentiment cache from Polygon news')
-    ap.add_argument('--universe', type=str, default='data/universe/optionable_liquid_900.csv')
+    ap.add_argument('--universe', type=str, default='data/universe/optionable_liquid_800.csv')
     ap.add_argument('--date', type=str, default=None, help='YYYY-MM-DD (default: today)')
     ap.add_argument('--lookback', type=int, default=1, help='Days of news to include (default 1)')
     ap.add_argument('--dotenv', type=str, default='./.env')

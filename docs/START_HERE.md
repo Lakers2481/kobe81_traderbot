@@ -174,7 +174,7 @@ python scripts/scan.py --cap 900 --deterministic --top3
 
 ### Start Paper Trading
 ```bash
-python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --cap 50
+python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_800.csv --cap 50
 ```
 
 ### View Positions

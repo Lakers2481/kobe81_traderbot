@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\features\store.py
+# hypothesis_version: 6.150.0
+
+[1024, '%Y%m%d_%H%M%S', '%Y-%m-%d', 'FeatureSetManifest', 'base_dir', 'created_at', 'data/features', 'date', 'date_range', 'feature_set_id', 'features', 'file_hash', 'file_path', 'manifest.json', 'registry_snapshot', 'row_count', 'symbol', 'symbols', 'total_feature_sets', 'total_size_bytes', 'total_size_mb', 'utf-8']

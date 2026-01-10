@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\safety\execution_choke.py
+# hypothesis_version: 6.150.0
+
+['%Y%m%d%H%M%S', '=', 'ALPACA_BASE_URL', 'F', 'KILL_SWITCH', 'LIVE TRADING READY', 'NO_LIVE_ORDERS', 'PAPER TRADING READY', 'TRADING_MODE', '__main__', '_ack_token', '_safety_result', 'ack_token_valid', 'allowed', 'api.alpaca.markets', 'approve_live_action', 'blocked', 'caller', 'checks', 'evidence_hash', 'false', 'kill_switch_inactive', 'live', 'live_ready', 'live_trading_enabled', 'mode', 'paper', 'paper_only_disabled', 'paper_ready', 'reason', 'recommendation', 'registered_functions', 'safety_violation', 'state', 'test', 'timestamp', 'trading_mode_live', 'true', 'unknown', 'wrong']

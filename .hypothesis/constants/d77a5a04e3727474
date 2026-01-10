@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\cognitive\global_workspace.py
+# hypothesis_version: 6.150.0
+
+[0.01, 0.1, 0.5, 1.0, 60.0, 1000, 3600, '*', 'access_count', 'active_topics', 'alert', 'attention_weight', 'confidence', 'data', 'decision', 'error', 'history_log_size', 'insight', 'priority', 'regime', 'risk', 'self_state', 'signal', 'source', 'stats', 'timestamp', 'topic', 'total_broadcasts', 'total_publishes', 'total_subscribers', 'ttl_seconds', 'unknown', 'working_memory', 'working_memory_size', 'workspace']

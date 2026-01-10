@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\analytics\recovery_analyzer.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.005, 0.01, 0.02, 50.0, '0.5pct', '1pct', '2pct', 'breakeven', 'combo_id', 'day_k', 'entry_price', 'mean_mae', 'mean_mfe', 'median_mae', 'median_mfe', 'mfe_mae_ratio', 'n_events', 'rank', 'target_hit_score']

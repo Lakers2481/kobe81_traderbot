@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 # Try to import pydantic v2 first, then v1
 try:
-    from pydantic import BaseModel, Field, ValidationError, field_validator
+    from pydantic import BaseModel, Field, ValidationError, field_validator, ConfigDict
     PYDANTIC_V2 = True
 except ImportError:
     try:
@@ -123,7 +123,7 @@ if PYDANTIC_V2 is not None:
         """Data provider configuration."""
         provider: Literal["polygon", "stooq", "yfinance"] = "polygon"
         cache_dir: str = "data/cache"
-        universe_file: str = "data/universe/optionable_liquid_900.csv"
+        universe_file: str = "data/universe/optionable_liquid_800.csv"
 
     class BacktestConfig(BaseModel):
         """Backtest configuration."""
@@ -164,8 +164,7 @@ if PYDANTIC_V2 is not None:
         execution: ExecutionConfig = Field(default_factory=ExecutionConfig)
         vix: VixConfig = Field(default_factory=VixConfig)
 
-        class Config:
-            extra = "allow"  # Allow extra fields not in schema
+        model_config = ConfigDict(extra="allow")  # Allow extra fields not in schema
 
 else:
     # Fallback: No pydantic - use dicts

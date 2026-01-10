@@ -6,7 +6,7 @@ This module orchestrates ALL available AI/ML/Data components to enrich signals
 from the raw DualStrategyScanner output to fully-analyzed TOP 2 trades.
 
 Pipeline Flow:
-    900 stocks → DualStrategyScanner → Raw Signals
+    800 stocks → DualStrategyScanner → Raw Signals
                         ↓
     [25+ Enrichment Stages - ALL COMPONENTS WIRED]
                         ↓
@@ -20,14 +20,12 @@ This is the BRAIN of the trading system - it connects everything.
 from __future__ import annotations
 
 import logging
-import traceback
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
 
 import pandas as pd
-import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -294,6 +292,14 @@ class ComponentRegistry:
         except ImportError as e:
             self.metacognitive_governor = None
             self.components['metacognitive_governor'] = ComponentStatus('Metacognitive Governor', False, error=str(e))
+
+        try:
+            from cognitive.symbol_rag_production import SymbolRAGProduction
+            self.symbol_rag = SymbolRAGProduction()
+            self.components['symbol_rag'] = ComponentStatus('Symbol RAG (Production)', True, True)
+        except ImportError as e:
+            self.symbol_rag = None
+            self.components['symbol_rag'] = ComponentStatus('Symbol RAG (Production)', False, error=str(e))
 
         # =====================================================================
         # CATEGORY 6: RISK MANAGEMENT
@@ -1122,7 +1128,7 @@ class ComponentRegistry:
         """Print component status to console."""
         summary = self.get_summary()
         print(f"\n{'='*60}")
-        print(f"COMPONENT REGISTRY STATUS")
+        print("COMPONENT REGISTRY STATUS")
         print(f"{'='*60}")
         print(f"Total Components: {summary['total_components']}")
         print(f"Available: {summary['available']}")
@@ -1200,7 +1206,27 @@ class EnrichedSignal:
     cognitive_confidence: float = 0.0
     cognitive_reasoning: str = ""
     cognitive_concerns: str = ""
+    cognitive_episode_id: str = ""
+    cognitive_decision_mode: str = ""
+    cognitive_size_multiplier: float = 1.0
     knowledge_boundary_safe: bool = True
+
+    # Quality Gate Results
+    passes_quality_gate: bool = False
+    rejection_reasons: str = ""
+
+    # Adjudication Component Scores
+    adj_signal_strength: float = 0.0
+    adj_pattern_confluence: float = 0.0
+    adj_volatility_contraction: float = 0.0
+    adj_sector_strength: float = 0.0
+
+    # Original Signal Fields
+    ibs: float = 0.0
+    rsi2: float = 50.0
+    atr: float = 0.0
+    original_score: float = 0.0
+    reason: str = ""
 
     # Alt Data Signals
     news_sentiment: float = 0.0
@@ -1230,6 +1256,18 @@ class EnrichedSignal:
     nearest_resistance: float = 0.0
     distance_to_support_pct: float = 0.0
     distance_to_resistance_pct: float = 0.0
+
+    # RAG Historical Trade Knowledge (FIX #4)
+    rag_num_similar_trades: int = 0
+    rag_win_rate: Optional[float] = None
+    rag_avg_pnl: Optional[float] = None
+    rag_recommendation: str = "UNCERTAIN"
+    rag_reasoning: str = ""
+    rag_faithfulness: float = 0.0
+    rag_relevance: float = 0.0
+    rag_context_precision: float = 0.0
+    rag_overall_quality: float = 0.0
+    rag_conf_boost: float = 0.0
 
     # Final Confidence (weighted combination)
     final_conf_score: float = 0.5
@@ -1508,6 +1546,64 @@ class UnifiedSignalEnrichmentPipeline:
                     signal.ml_meta_conf = safe_float(row['conf_score'], 0.5)
                     signal.final_conf_score = safe_float(row['conf_score'], 0.5)
 
+                # ============================================================
+                # CRITICAL FIX: Copy cognitive fields if already evaluated
+                # scan.py runs cognitive evaluation BEFORE unified pipeline,
+                # so these fields exist in the DataFrame but weren't being copied
+                # ============================================================
+                if 'cognitive_approved' in row:
+                    signal.cognitive_approved = bool(row.get('cognitive_approved', False))
+                if 'cognitive_confidence' in row:
+                    signal.cognitive_confidence = safe_float(row.get('cognitive_confidence'), 0.0)
+                if 'cognitive_reasoning' in row:
+                    signal.cognitive_reasoning = safe_str(row.get('cognitive_reasoning'), '')
+                if 'cognitive_concerns' in row:
+                    signal.cognitive_concerns = safe_str(row.get('cognitive_concerns'), '')
+                if 'cognitive_episode_id' in row:
+                    signal.cognitive_episode_id = safe_str(row.get('cognitive_episode_id'), '')
+                if 'cognitive_decision_mode' in row:
+                    signal.cognitive_decision_mode = safe_str(row.get('cognitive_decision_mode'), '')
+                if 'cognitive_size_multiplier' in row:
+                    signal.cognitive_size_multiplier = safe_float(row.get('cognitive_size_multiplier'), 1.0)
+
+                # Copy quality gate fields
+                if 'quality_score' in row:
+                    signal.quality_score = int(safe_float(row.get('quality_score'), 0))
+                if 'quality_tier' in row:
+                    signal.quality_tier = safe_str(row.get('quality_tier'), 'N/A')
+                if 'passes_gate' in row:
+                    signal.passes_quality_gate = bool(row.get('passes_gate', False))
+                if 'rejection_reasons' in row:
+                    signal.rejection_reasons = safe_str(row.get('rejection_reasons'), '')
+
+                # Copy sentiment if already calculated
+                if 'sent_mean' in row:
+                    signal.news_sentiment = safe_float(row.get('sent_mean'), 0.0)
+
+                # Copy adjudication fields (already calculated by signal_adjudicator)
+                if 'adjudication_score' in row:
+                    signal.adjudication_score = safe_float(row.get('adjudication_score'), 0.0)
+                if 'adj_signal_strength' in row:
+                    signal.adj_signal_strength = safe_float(row.get('adj_signal_strength'), 0.0)
+                if 'adj_pattern_confluence' in row:
+                    signal.adj_pattern_confluence = safe_float(row.get('adj_pattern_confluence'), 0.0)
+                if 'adj_volatility_contraction' in row:
+                    signal.adj_volatility_contraction = safe_float(row.get('adj_volatility_contraction'), 0.0)
+                if 'adj_sector_strength' in row:
+                    signal.adj_sector_strength = safe_float(row.get('adj_sector_strength'), 0.0)
+
+                # Copy original signal fields that may be useful
+                if 'ibs' in row:
+                    signal.ibs = safe_float(row.get('ibs'), 0.0)
+                if 'rsi2' in row:
+                    signal.rsi2 = safe_float(row.get('rsi2'), 50.0)
+                if 'atr' in row:
+                    signal.atr = safe_float(row.get('atr'), 0.0)
+                if 'score' in row:
+                    signal.original_score = safe_float(row.get('score'), 0.0)
+                if 'reason' in row:
+                    signal.reason = safe_str(row.get('reason'), '')
+
                 enriched.append(signal)
 
             except Exception as e:
@@ -1540,40 +1636,43 @@ class UnifiedSignalEnrichmentPipeline:
         # Stage 6: Sentiment Analysis
         enriched = self._stage_sentiment_analysis(enriched)
 
-        # Stage 7: Alt Data (News, Insider, Congress, Options)
+        # Stage 7: RAG Historical Trade Knowledge
+        enriched = self._stage_rag_historical_knowledge(enriched)
+
+        # Stage 8: Alt Data (News, Insider, Congress, Options)
         enriched = self._stage_alt_data(enriched)
 
-        # Stage 8: Conviction Scoring
+        # Stage 9: Conviction Scoring
         enriched = self._stage_conviction_scoring(enriched, price_data)
 
-        # Stage 9: Support/Resistance
+        # Stage 10: Support/Resistance
         enriched = self._stage_support_resistance(enriched, price_data)
 
-        # Stage 10: Expected Move
+        # Stage 11: Expected Move
         enriched = self._stage_expected_move(enriched, price_data)
 
-        # Stage 11: Circuit Breaker Check
+        # Stage 12: Circuit Breaker Check
         enriched = self._stage_circuit_breakers(enriched)
 
-        # Stage 12: Knowledge Boundary
+        # Stage 13: Knowledge Boundary
         enriched = self._stage_knowledge_boundary(enriched)
 
-        # Stage 13: Kelly Sizing
+        # Stage 14: Kelly Sizing
         enriched = self._stage_kelly_sizing(enriched, account_equity)
 
-        # Stage 14: VaR Calculation
+        # Stage 15: VaR Calculation
         enriched = self._stage_var_calculation(enriched, price_data, current_positions)
 
-        # Stage 15: Correlation Check
+        # Stage 16: Correlation Check
         enriched = self._stage_correlation_check(enriched, price_data, current_positions)
 
-        # Stage 16: Cognitive Brain
+        # Stage 17: Cognitive Brain
         enriched = self._stage_cognitive_brain(enriched, price_data, spy_data)
 
-        # Stage 17: Calculate Final Confidence
+        # Stage 18: Calculate Final Confidence
         enriched = self._stage_final_confidence(enriched)
 
-        # Stage 18: Rank Signals
+        # Stage 19: Rank Signals
         enriched = self._stage_rank_signals(enriched)
 
         # Get TOP 5 and TOP 2
@@ -1657,15 +1756,35 @@ class UnifiedSignalEnrichmentPipeline:
             except Exception as e:
                 logger.debug(f"HMM regime detection failed: {e}")
 
-        # VIX Level
-        if self.registry.vix_monitor is not None:
+        # VIX Level - try multiple sources
+        vix_level = 0.0
+
+        # Source 1: VIX Monitor (real-time)
+        if vix_level == 0.0 and self.registry.vix_monitor is not None:
             try:
                 vix_monitor = self.registry.vix_monitor()
-                vix_level = vix_monitor.get_current_vix()
-                for signal in signals:
-                    signal.vix_level = vix_level
+                vix_level = vix_monitor.get_current_vix() or 0.0
             except Exception as e:
                 logger.debug(f"VIX monitor failed: {e}")
+
+        # Source 2: VIX data DataFrame (passed in from scan.py)
+        if vix_level == 0.0 and vix_data is not None and len(vix_data) > 0:
+            try:
+                # Get most recent VIX close
+                if 'close' in vix_data.columns:
+                    vix_level = float(vix_data['close'].iloc[-1])
+                elif 'vix' in vix_data.columns:
+                    vix_level = float(vix_data['vix'].iloc[-1])
+                self.log(f"  Using VIX from DataFrame: {vix_level:.2f}")
+            except Exception as e:
+                logger.debug(f"VIX from DataFrame failed: {e}")
+
+        # Apply VIX to all signals
+        if vix_level > 0.0:
+            for signal in signals:
+                signal.vix_level = vix_level
+        else:
+            self.log("  [WARN] VIX level is 0.0 - all sources failed")
 
         self.stages_executed.append(stage_name)
         return signals
@@ -1803,54 +1922,159 @@ class UnifiedSignalEnrichmentPipeline:
         self.stages_executed.append(stage_name)
         return signals
 
+    def _stage_rag_historical_knowledge(
+        self,
+        signals: List[EnrichedSignal],
+    ) -> List[EnrichedSignal]:
+        """Stage 7: RAG-based historical trade knowledge retrieval.
+
+        ============================================================================
+        FIX #4: PRODUCTION-GRADE RAG SYSTEM (2026-01-08)
+        ============================================================================
+        This stage queries the RAG system for similar historical trades and enriches
+        signals with that context. Uses vector embeddings (sentence-transformers)
+        and RAGAS-style evaluation (faithfulness, relevance, precision).
+
+        Quality Gates:
+        - Faithfulness >= 0.7 (retrieved docs have required fields)
+        - Answer Relevance >= 0.6 (docs semantically close to query)
+        - Context Precision >= 0.6 (relevant docs / total docs)
+
+        Stand-Down Logic:
+        - If RAG quality below thresholds → recommendation = "STAND_DOWN"
+        - If < 3 similar trades found → recommendation = "UNCERTAIN"
+        - If win rate < 45% → recommendation = "STAND_DOWN"
+
+        Fallback Mode:
+        - If dependencies (sentence-transformers, chromadb) not available
+        - RAG returns STAND_DOWN with reason explaining missing dependencies
+        ============================================================================
+        """
+        stage_name = "RAG Historical Knowledge"
+        self.log(f"Stage 7: {stage_name}")
+
+        if self.registry.symbol_rag is None:
+            self.log(f"  [SKIP] {stage_name} not available")
+            return signals
+
+        if not self.registry.symbol_rag.is_available():
+            self.log(f"  [SKIP] RAG dependencies not installed (sentence-transformers, chromadb)")
+            return signals
+
+        try:
+            for signal in signals:
+                # Build query from signal context
+                setup_desc = signal.reason if signal.reason else f"{signal.strategy} setup"
+                query = f"How does {signal.symbol} perform after {setup_desc}?"
+
+                # Query RAG for similar historical trades
+                response = self.registry.symbol_rag.query(query, symbol=signal.symbol)
+
+                # Store RAG results in signal
+                signal.rag_num_similar_trades = response.num_similar_trades
+                signal.rag_win_rate = response.win_rate_similar
+                signal.rag_avg_pnl = response.avg_pnl_similar
+                signal.rag_recommendation = response.recommendation
+                signal.rag_reasoning = response.reasoning
+                signal.rag_faithfulness = response.evaluation.faithfulness
+                signal.rag_relevance = response.evaluation.answer_relevance
+                signal.rag_context_precision = response.evaluation.context_precision
+                signal.rag_overall_quality = response.evaluation.overall_quality
+
+                # Confidence boost from RAG
+                if response.recommendation == "PROCEED" and response.win_rate_similar:
+                    if response.win_rate_similar >= 0.65:
+                        signal.rag_conf_boost = 0.10  # +10% for strong historical edge
+                    elif response.win_rate_similar >= 0.55:
+                        signal.rag_conf_boost = 0.05  # +5% for moderate edge
+                    else:
+                        signal.rag_conf_boost = 0.0
+                elif response.recommendation == "STAND_DOWN":
+                    signal.rag_conf_boost = -0.15  # -15% penalty for low quality RAG
+                else:
+                    signal.rag_conf_boost = 0.0
+
+                wr_str = f"{response.win_rate_similar:.1%}" if response.win_rate_similar else "N/A"
+                self.log(f"  [{signal.symbol}] RAG: {response.num_similar_trades} trades, "
+                        f"WR={wr_str}, Rec={response.recommendation}, Boost={signal.rag_conf_boost:+.0%}")
+
+        except Exception as e:
+            logger.warning(f"RAG stage failed: {e}")
+            # Fail gracefully - don't block pipeline
+
+        self.stages_executed.append(stage_name)
+        return signals
+
     def _stage_alt_data(
         self,
         signals: List[EnrichedSignal],
     ) -> List[EnrichedSignal]:
-        """Stage 7: Alternative data (insider, congress, options flow)."""
+        """Stage 7: Alternative data (insider, congress, options flow).
+
+        ============================================================================
+        PHASE 5 DOCUMENTATION (2026-01-08): ALT DATA COMPONENTS ARE STUBS
+        ============================================================================
+        Current Status: ALL alt data sources return DEFAULT VALUES.
+
+        - Insider Activity: No API configured, returns 'neutral', $0
+        - Congressional Trades: No Quiver API key, returns 'neutral', 0 buys/sells
+        - Options Flow: No API configured, returns 'neutral', no unusual
+
+        These components are PLACEHOLDERS. They do NOT affect trading decisions
+        because they always return neutral/default values. To enable real alt data:
+        1. Configure appropriate API keys in .env
+        2. Implement actual API clients in altdata/ directory
+        3. Register clients in ComponentRegistry
+
+        For now, this stage is informational only and does not contribute to
+        signal quality or confidence scoring.
+        ============================================================================
+        """
         stage_name = "Alt Data"
         self.log(f"Stage 7: {stage_name}")
+        self.log(f"  [INFO] Alt data sources are STUBS - returning default values")
 
         # Insider Activity
-        if self.registry.insider_tracker is not None:
+        if hasattr(self.registry, 'get_insider_client') and self.registry.get_insider_client is not None:
             try:
-                tracker = self.registry.insider_tracker()
+                client = self.registry.get_insider_client()
                 for signal in signals:
                     try:
-                        insider_data = tracker.get_recent_activity(signal.symbol)
+                        insider_data = client.get_recent_activity(signal.symbol)
                         signal.insider_signal = insider_data.get('signal', 'neutral')
                         signal.insider_value = insider_data.get('total_value', 0.0)
                     except Exception:
                         pass
             except Exception as e:
-                logger.debug(f"Insider tracker failed: {e}")
+                logger.debug(f"Insider client failed: {e}")
 
         # Congressional Trades
-        if self.registry.congress_tracker is not None:
+        if hasattr(self.registry, 'get_congressional_client') and self.registry.get_congressional_client is not None:
             try:
-                tracker = self.registry.congress_tracker()
+                client = self.registry.get_congressional_client()
                 for signal in signals:
                     try:
-                        congress_data = tracker.get_recent_activity(signal.symbol)
+                        congress_data = client.get_recent_activity(signal.symbol)
                         signal.congress_signal = congress_data.get('signal', 'neutral')
                         signal.congress_buys = congress_data.get('buys', 0)
                         signal.congress_sells = congress_data.get('sells', 0)
                     except Exception:
                         pass
             except Exception as e:
-                logger.debug(f"Congress tracker failed: {e}")
+                logger.debug(f"Congressional client failed: {e}")
 
         # Options Flow
-        if self.registry.options_flow is not None:
+        if hasattr(self.registry, 'get_options_flow_client') and self.registry.get_options_flow_client is not None:
             try:
-                analyzer = self.registry.options_flow()
-                for signal in signals:
-                    try:
-                        flow_data = analyzer.get_unusual_activity(signal.symbol)
-                        signal.options_flow_signal = flow_data.get('signal', 'neutral')
-                        signal.options_unusual_activity = flow_data.get('unusual', False)
-                    except Exception:
-                        pass
+                client = self.registry.get_options_flow_client()
+                if client is not None:
+                    for signal in signals:
+                        try:
+                            flow_data = client.get_unusual_activity(signal.symbol)
+                            signal.options_flow_signal = flow_data.get('signal', 'neutral')
+                            signal.options_unusual_activity = flow_data.get('unusual', False)
+                        except Exception:
+                            pass
             except Exception as e:
                 logger.debug(f"Options flow failed: {e}")
 
@@ -1987,10 +2211,21 @@ class UnifiedSignalEnrichmentPipeline:
             status = breakers.check_all()
 
             if not status.can_trade:
-                self.log(f"  [ALERT] Circuit breaker triggered: {status.triggered_breakers}")
-                # Don't remove signals, but flag them
+                # ============================================================================
+                # PHASE 4 FIX (2026-01-08): Circuit breakers now BLOCK all signals
+                # ============================================================================
+                # OLD: Just flagged signals but let them through (useless)
+                # NEW: Actually blocks ALL signals when circuit breaker is triggered
+                # This is a global market-level block (VIX spike, drawdown limit, etc.)
+                # ============================================================================
+                self.log(f"  [BLOCKED] Circuit breaker triggered: {status.triggered_breakers}")
+                self.log(f"  [BLOCKED] Rejecting ALL {len(signals)} signals due to market conditions")
                 for signal in signals:
-                    signal.cognitive_concerns = f"CIRCUIT BREAKER: {status.triggered_breakers}"
+                    signal.cognitive_concerns = f"CIRCUIT BREAKER BLOCKED: {status.triggered_breakers}"
+                    signal.passes_gate = False  # Mark as not passing
+                # Return EMPTY list - no signals should proceed
+                self.stages_executed.append(stage_name)
+                return []
 
         except Exception as e:
             logger.debug(f"Circuit breaker check failed: {e}")
@@ -2010,6 +2245,16 @@ class UnifiedSignalEnrichmentPipeline:
             self.log(f"  [SKIP] {stage_name} not available")
             return signals
 
+        # ============================================================================
+        # PHASE 4 FIX (2026-01-08): Knowledge boundary now FILTERS OUT unsafe signals
+        # ============================================================================
+        # OLD: Just appended to cognitive_concerns but let signals through (useless)
+        # NEW: Actually removes signals where we don't have confidence to trade
+        # This filters out signals for novel/unusual situations where brain is uncertain
+        # ============================================================================
+        safe_signals = []
+        blocked_count = 0
+
         try:
             kb = self.registry.knowledge_boundary()
 
@@ -2017,16 +2262,29 @@ class UnifiedSignalEnrichmentPipeline:
                 try:
                     result = kb.check_signal(signal.to_dict())
                     signal.knowledge_boundary_safe = result.is_safe
-                    if not result.is_safe:
-                        signal.cognitive_concerns += f" KNOWLEDGE BOUNDARY: {result.reason}"
-                except Exception:
-                    pass
+
+                    if result.is_safe:
+                        safe_signals.append(signal)
+                    else:
+                        # Block this signal - we don't have enough knowledge to trade it
+                        blocked_count += 1
+                        signal.cognitive_concerns += f" KNOWLEDGE BOUNDARY BLOCKED: {result.reason}"
+                        signal.passes_gate = False
+                        self.log(f"  [BLOCKED] {signal.symbol}: {result.reason}")
+                except Exception as e:
+                    # If check fails, be conservative and let signal through
+                    safe_signals.append(signal)
+                    self.log(f"  [WARN] {signal.symbol}: KB check failed ({e}), allowing through")
 
         except Exception as e:
             logger.debug(f"Knowledge boundary check failed: {e}")
+            return signals  # On error, return all signals
+
+        if blocked_count > 0:
+            self.log(f"  Knowledge boundary blocked {blocked_count}/{len(signals)} signals")
 
         self.stages_executed.append(stage_name)
-        return signals
+        return safe_signals
 
     def _stage_kelly_sizing(
         self,
@@ -2182,35 +2440,45 @@ class UnifiedSignalEnrichmentPipeline:
         self.log(f"Stage 17: {stage_name}")
 
         for signal in signals:
-            # Weighted combination of all confidence sources
-            # Weights sum to 1.0
+            # ============================================================================
+            # PHASE 2 FIX (2026-01-08): Remove dummy ML components from confidence scoring
+            # ============================================================================
+            # OLD weights had 50% going to non-working components that always return 0.5:
+            #   - ml_meta: 0.25 (TensorFlow not installed, always 0.5)
+            #   - lstm: 0.10 (TensorFlow not installed, always 0.5)
+            #   - ensemble: 0.15 (Never properly called, always 0.5)
+            #
+            # NEW weights use ONLY working components:
+            #   - markov: Markov chain prediction (WORKS)
+            #   - conviction: 6-factor rule-based score (WORKS)
+            #   - historical: Streak/pattern win rate (WORKS)
+            #   - cognitive: Brain deliberation confidence (WORKS - now 30% authority)
+            # ============================================================================
             weights = {
-                'ml_meta': 0.25,
-                'lstm': 0.10,
-                'ensemble': 0.15,
-                'markov': 0.10,
-                'conviction': 0.15,
-                'historical': 0.15,
-                'cognitive': 0.10,
+                'markov': 0.20,       # Markov chain direction prediction - WORKS
+                'conviction': 0.25,   # Rule-based conviction score - WORKS
+                'historical': 0.25,   # Historical pattern win rate - WORKS
+                'cognitive': 0.30,    # Cognitive brain - WORKS (INCREASED from 10%)
             }
 
-            # Normalize scores to 0-1 range
+            # Only use working component scores (no more dummy 0.5 values)
             scores = {
-                'ml_meta': signal.ml_meta_conf,
-                'lstm': signal.lstm_success,
-                'ensemble': signal.ensemble_conf,
                 'markov': signal.markov_pi_up,
                 'conviction': signal.conviction_score / 100.0,
                 'historical': signal.streak_win_rate,
                 'cognitive': signal.cognitive_confidence,
             }
 
-            # Calculate weighted sum
+            # Calculate weighted sum (now based on REAL data, not dummy values)
             final_conf = sum(weights[k] * scores[k] for k in weights)
 
             # Boost for auto-pass patterns
             if signal.qualifies_auto_pass:
                 final_conf = min(0.95, final_conf + 0.10)
+
+            # RAG confidence boost (FIX #4)
+            if signal.rag_conf_boost != 0.0:
+                final_conf = max(0.0, min(1.0, final_conf + signal.rag_conf_boost))
 
             # Penalty for circuit breaker concerns
             if signal.cognitive_concerns and 'CIRCUIT BREAKER' in signal.cognitive_concerns:
@@ -2395,16 +2663,24 @@ def run_full_enrichment(
     signals: pd.DataFrame,
     price_data: pd.DataFrame,
     spy_data: Optional[pd.DataFrame] = None,
+    vix_data: Optional[pd.DataFrame] = None,
     verbose: bool = True,
 ) -> Tuple[List[EnrichedSignal], List[TradeThesis]]:
     """
     Convenience function to run the full enrichment pipeline.
 
+    Args:
+        signals: DataFrame with raw signals
+        price_data: DataFrame with OHLCV data for all symbols
+        spy_data: Optional SPY data for regime detection
+        vix_data: Optional VIX data for volatility context
+        verbose: Whether to print progress
+
     Returns:
         Tuple of (all_enriched_signals, top2_theses)
     """
     pipeline = get_unified_pipeline(verbose=verbose)
-    return pipeline.enrich_signals(signals, price_data, spy_data)
+    return pipeline.enrich_signals(signals, price_data, spy_data, vix_data)
 
 
 if __name__ == "__main__":

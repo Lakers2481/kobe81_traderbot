@@ -8,7 +8,6 @@ Usage: python scripts/deploy.py [--check|--backup|--deploy|--rollback]
 import argparse
 import hashlib
 import json
-import os
 import shutil
 import subprocess
 import sys

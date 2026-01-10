@@ -23,7 +23,7 @@ from __future__ import annotations
 import os
 import time
 from dataclasses import dataclass
-from datetime import datetime, date
+from datetime import datetime
 from typing import Optional, Dict, Any, List
 import logging
 

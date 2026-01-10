@@ -3,10 +3,8 @@ Unit tests for cognitive/semantic_memory.py
 
 Tests the AI's knowledge base of general trading rules and patterns.
 """
-import pytest
 import tempfile
 from pathlib import Path
-from datetime import datetime
 
 
 class TestSemanticRuleDataclass:

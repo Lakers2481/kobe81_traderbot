@@ -322,6 +322,10 @@ class AlpacaCryptoBroker(BrokerBase):
         Returns:
             OrderResult with success/failure status
         """
+        # === PAPER MODE GUARD - MUST BE FIRST ===
+        from safety.paper_guard import ensure_paper_mode_or_die
+        ensure_paper_mode_or_die(context=f"AlpacaCryptoBroker.place_order:{order.symbol}")
+
         try:
             # SAFETY GATE CHECK - Required for all order submissions
             gate_result = evaluate_safety_gates(

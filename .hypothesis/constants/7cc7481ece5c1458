@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\strategies\ict\turtle_soup.py
+# hypothesis_version: 6.150.0
+
+[0.2, 0.3, 0.5, 0.8, 1.0, 5.0, 15.0, 100.0, 110, 200, 300, 1000000, 5000000, '\nSample signals:', '!', '2020-01-01', 'B', 'TEST', '__main__', 'atr14', 'atr14_sig', 'bars_since_high', 'bars_since_low', 'close', 'entry_price', 'high', 'long', 'low', 'open', 'prior_N_high', 'prior_N_low', 'reason', 'short', 'side', 'sma200', 'sma200_sig', 'stop_loss', 'sweep_strength', 'swept_level', 'symbol', 'take_profit', 'time_stop_bars', 'timestamp', 'volume']

@@ -20,7 +20,6 @@ Usage:
 import argparse
 import json
 import logging
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -29,6 +28,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from autonomous.brain import AutonomousBrain
+from core.structured_log import jlog
 from autonomous.awareness import get_context
 
 
@@ -157,6 +157,7 @@ def main():
     # Daemon mode
     if args.daemon:
         # TODO: Implement proper daemonization for Windows
+        jlog('incomplete_feature_warning', feature='windows_daemonization', status='not_implemented')
         print("Daemon mode not yet implemented for Windows")
         print("Use: start /B python scripts/run_autonomous.py")
         return

@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\pipelines\gates_pipeline.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.05, 0.1, 0.15, 0.25, 0.5, 0.75, 1.0, 100, 'a', 'all_gates_passed', 'backtest_results', 'checks', 'fdr', 'fully_passed', 'gate_0_sanity', 'gate_1_baseline', 'gate_2_robustness', 'gate_3_risk', 'gate_4_multiple', 'gate_results', 'gates', 'lookahead_score', 'max_dd', 'max_drawdown', 'message', 'metrics', 'min_pf', 'min_trades', 'min_wr', 'name', 'num_hypotheses', 'passed', 'profit_factor', 'results.jsonl', 'shift_check', 'strategies_validated', 'strategy_name', 'threshold', 'thresholds', 'timestamp', 'total_trades', 'unknown', 'win_rate']

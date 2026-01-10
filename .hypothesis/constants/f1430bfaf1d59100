@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\ml_features\anomaly_detection.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.044715, 0.3, 0.4, 0.5, 0.7, 0.7978845608, 1.0, 3.0, 95.0, 100.0, 100, 'WARNING', 'anomaly_combined', 'anomaly_pattern', 'anomaly_price', 'anomaly_volume', 'close', 'is_anomaly', 'matrix_profile_error', 'open', 'pattern_anomaly', 'pattern_score', 'price_drop', 'price_score', 'price_spike', 'right', 'stumpy_not_available', 'volatility_regime', 'volume', 'volume_score', 'volume_spike']

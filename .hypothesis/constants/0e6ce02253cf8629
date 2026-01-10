@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\cognitive\symbol_rag_production.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.2, 0.3, 0.45, 0.5, 0.6, 0.7, 1.0, 'No trades to index', 'PROCEED', 'STAND_DOWN', 'UNCERTAIN', 'WIN', 'all-MiniLM-L6-v2', 'available', 'avg_pnl_similar', 'collection_name', 'cosine', 'distances', 'documents', 'embedding_model', 'evaluation', 'hnsw:space', 'index_size', 'metadatas', 'num_similar_trades', 'outcome', 'pnl_pct', 'query', 'reasoning', 'recommendation', 'retrieved_documents', 'retrieved_metadata', 'strategy', 'symbol', 'timestamp', 'trade_knowledge', 'vector_db_path', 'win_rate_similar']

@@ -15,7 +15,7 @@ Created: 2026-01-04
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from enum import Enum
@@ -98,7 +98,7 @@ class RebalanceRecommendation:
     def to_summary(self) -> str:
         """Generate human-readable summary."""
         lines = [
-            f"**Rebalancing Recommendation**",
+            "**Rebalancing Recommendation**",
             f"Urgency: {self.urgency.name}",
             "",
             f"Max Drift: {self.max_drift:.1%}",

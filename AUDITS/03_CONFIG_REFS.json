@@ -165,7 +165,7 @@
     "pattern": ".csv",
     "file": "autonomous\\master_brain_full.py",
     "line": 561,
-    "content": "universe_file = Path(\"data/universe/optionable_liquid_900.csv\")"
+    "content": "universe_file = Path(\"data/universe/optionable_liquid_800.csv\")"
   },
   {
     "pattern": ".json",
@@ -237,7 +237,7 @@
     "pattern": ".csv",
     "file": "autonomous\\research.py",
     "line": 745,
-    "content": "universe_file = Path(\"data/universe/optionable_liquid_900.csv\")"
+    "content": "universe_file = Path(\"data/universe/optionable_liquid_800.csv\")"
   },
   {
     "pattern": "state/",
@@ -531,13 +531,13 @@
     "pattern": ".csv",
     "file": "data\\universe\\canonical.py",
     "line": 15,
-    "content": "CANONICAL_UNIVERSE_FILE = Path(__file__).parent / \"optionable_liquid_900.csv\""
+    "content": "CANONICAL_UNIVERSE_FILE = Path(__file__).parent / \"optionable_liquid_800.csv\""
   },
   {
     "pattern": ".csv",
     "file": "data\\universe\\loader.py",
     "line": 15,
-    "content": "CANONICAL_UNIVERSE_FILE = Path(__file__).parent / \"optionable_liquid_900.csv\""
+    "content": "CANONICAL_UNIVERSE_FILE = Path(__file__).parent / \"optionable_liquid_800.csv\""
   },
   {
     "pattern": ".json",
@@ -1545,13 +1545,13 @@
     "pattern": ".csv",
     "file": "scripts\\overnight_runner.py",
     "line": 53,
-    "content": "universe = load_universe('data/universe/optionable_liquid_900.csv', cap=100)"
+    "content": "universe = load_universe('data/universe/optionable_liquid_800.csv', cap=100)"
   },
   {
     "pattern": ".csv",
     "file": "scripts\\overnight_runner.py",
     "line": 140,
-    "content": "'universe_file': Path('data/universe/optionable_liquid_900.csv').exists(),"
+    "content": "'universe_file': Path('data/universe/optionable_liquid_800.csv').exists(),"
   },
   {
     "pattern": "state/",
@@ -1707,7 +1707,7 @@
     "pattern": ".csv",
     "file": "scripts\\quant_pattern_analysis.py",
     "line": 208,
-    "content": "universe_file = Path(\"data/universe/optionable_liquid_900.csv\")"
+    "content": "universe_file = Path(\"data/universe/optionable_liquid_800.csv\")"
   },
   {
     "pattern": ".env",
@@ -1863,7 +1863,7 @@
     "pattern": ".csv",
     "file": "scripts\\scan.py",
     "line": 10,
-    "content": "- Loads universe from data/universe/optionable_liquid_900.csv (900 symbols)"
+    "content": "- Loads universe from data/universe/optionable_liquid_800.csv (800 symbols)"
   },
   {
     "pattern": ".env",
@@ -1881,7 +1881,7 @@
     "pattern": ".csv",
     "file": "scripts\\scan_down_streaks.py",
     "line": 99,
-    "content": "universe_file = Path(\"data/universe/optionable_liquid_900.csv\")"
+    "content": "universe_file = Path(\"data/universe/optionable_liquid_800.csv\")"
   },
   {
     "pattern": ".csv",
@@ -2061,7 +2061,7 @@
     "pattern": ".csv",
     "file": "scripts\\test.py",
     "line": 149,
-    "content": "universe_file = Path(\"data/universe/optionable_liquid_900.csv\")"
+    "content": "universe_file = Path(\"data/universe/optionable_liquid_800.csv\")"
   },
   {
     "pattern": ".env",
@@ -2139,7 +2139,7 @@
     "pattern": ".csv",
     "file": "scripts\\verify_data.py",
     "line": 52,
-    "content": "universe = pd.read_csv('data/universe/optionable_liquid_900.csv')"
+    "content": "universe = pd.read_csv('data/universe/optionable_liquid_800.csv')"
   },
   {
     "pattern": ".csv",
@@ -2181,7 +2181,7 @@
     "pattern": ".csv",
     "file": "scripts\\verify_scan_consistency.py",
     "line": 34,
-    "content": "symbols = load_universe(ROOT / 'data/universe/optionable_liquid_900.csv', cap=900)"
+    "content": "symbols = load_universe(ROOT / 'data/universe/optionable_liquid_800.csv', cap=900)"
   },
   {
     "pattern": ".csv",

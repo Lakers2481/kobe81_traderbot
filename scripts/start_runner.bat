@@ -20,7 +20,7 @@ REM Run the 24/7 runner
 REM Scan times: 10:00 (primary), 10:30 (fallback), 14:30 (power hour), 15:30 (EOD)
 python scripts/runner.py ^
     --mode %MODE% ^
-    --universe data/universe/optionable_liquid_900.csv ^
+    --universe data/universe/optionable_liquid_800.csv ^
     --cap 900 ^
     --scan-times 10:00,10:30,14:30,15:30 ^
     --dotenv .env

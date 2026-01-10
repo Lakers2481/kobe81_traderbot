@@ -10,11 +10,10 @@ This module enables Kobe to learn from its experiences:
 
 import json
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional, Dict, List, Any
-import pandas as pd
 from zoneinfo import ZoneInfo
 
 logger = logging.getLogger(__name__)
@@ -244,6 +243,165 @@ class LearningEngine:
             logger.error(f"Memory update failed: {e}")
             return {"status": "error", "error": str(e)}
 
+    def record_trade_experience(self, trade: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        === TIER 2.3: Wire Episodic/Semantic Memory Updates ===
+
+        Records a trade experience to both episodic and semantic memory systems.
+        - Episodic memory: Stores the specific trade context and outcome
+        - Semantic memory: Reinforces or weakens patterns based on outcomes
+
+        Args:
+            trade: Dict with symbol, pnl, reason/pattern_type, regime, etc.
+
+        Returns:
+            Dict with status and memory update results
+        """
+        from core.structured_log import jlog
+
+        results = {
+            "episodic_stored": False,
+            "semantic_updated": False,
+            "errors": []
+        }
+
+        symbol = trade.get('symbol', 'UNKNOWN')
+        pnl = trade.get('pnl', 0)
+        won = pnl > 0
+        pattern = trade.get('reason', trade.get('pattern_type', trade.get('entry_reason', 'unknown')))
+        regime = trade.get('regime', 'UNKNOWN')
+
+        # === Store to Episodic Memory ===
+        try:
+            from cognitive.episodic_memory import EpisodicMemory
+
+            episodic = EpisodicMemory()
+
+            episode = {
+                'timestamp': trade.get('timestamp', datetime.now(ET).isoformat()),
+                'context': {
+                    'symbol': symbol,
+                    'regime': regime,
+                    'pattern': pattern,
+                    'entry_price': trade.get('entry_price', 0),
+                    'stop_loss': trade.get('stop_loss', 0),
+                    'target': trade.get('target', 0),
+                },
+                'outcome': {
+                    'pnl': pnl,
+                    'won': won,
+                    'exit_reason': trade.get('exit_reason', 'unknown'),
+                    'duration': trade.get('duration_bars', 0),
+                }
+            }
+
+            # Store the episode
+            episodic.store(
+                context=f"Trade {symbol} using {pattern} in {regime} regime",
+                reasoning=f"Entry based on {pattern} signal",
+                outcome="win" if won else "loss",
+                metadata=episode,
+            )
+
+            results["episodic_stored"] = True
+            logger.info(f"Episodic memory stored for {symbol}")
+
+        except ImportError:
+            results["errors"].append("EpisodicMemory not available")
+            logger.debug("EpisodicMemory not available for trade recording")
+        except Exception as e:
+            results["errors"].append(f"Episodic error: {str(e)}")
+            logger.warning(f"Failed to store episodic memory: {e}")
+
+        # === Update Semantic Memory (Pattern Reinforcement) ===
+        try:
+            from cognitive.semantic_memory import SemanticMemory
+
+            semantic = SemanticMemory()
+
+            if won:
+                # Reinforce successful patterns
+                semantic.reinforce_pattern(pattern)
+
+                # Also reinforce regime-specific pattern
+                regime_pattern = f"{pattern}_{regime}"
+                semantic.reinforce_pattern(regime_pattern)
+
+                logger.info(f"Semantic memory: Reinforced pattern '{pattern}' (win)")
+            else:
+                # Weaken failed patterns
+                semantic.weaken_pattern(pattern)
+
+                # Also weaken regime-specific pattern
+                regime_pattern = f"{pattern}_{regime}"
+                semantic.weaken_pattern(regime_pattern)
+
+                logger.info(f"Semantic memory: Weakened pattern '{pattern}' (loss)")
+
+            results["semantic_updated"] = True
+            results["pattern_action"] = "reinforced" if won else "weakened"
+
+        except ImportError:
+            results["errors"].append("SemanticMemory not available")
+            logger.debug("SemanticMemory not available for pattern update")
+        except AttributeError as e:
+            # Handle case where reinforce_pattern/weaken_pattern don't exist
+            results["errors"].append(f"Semantic method missing: {str(e)}")
+            logger.warning(f"SemanticMemory missing method: {e}")
+        except Exception as e:
+            results["errors"].append(f"Semantic error: {str(e)}")
+            logger.warning(f"Failed to update semantic memory: {e}")
+
+        # Log the result
+        jlog('trade_experience_recorded',
+             symbol=symbol,
+             won=won,
+             pattern=pattern,
+             episodic_stored=results["episodic_stored"],
+             semantic_updated=results["semantic_updated"])
+
+        return results
+
+    def batch_record_experiences(self, trades: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Record multiple trade experiences in batch.
+
+        Args:
+            trades: List of trade dicts
+
+        Returns:
+            Summary of batch recording results
+        """
+        from core.structured_log import jlog
+
+        total = len(trades)
+        episodic_success = 0
+        semantic_success = 0
+        errors = []
+
+        for trade in trades:
+            result = self.record_trade_experience(trade)
+            if result["episodic_stored"]:
+                episodic_success += 1
+            if result["semantic_updated"]:
+                semantic_success += 1
+            errors.extend(result.get("errors", []))
+
+        summary = {
+            "total_trades": total,
+            "episodic_stored": episodic_success,
+            "semantic_updated": semantic_success,
+            "success_rate": episodic_success / total if total > 0 else 0,
+            "errors": errors[:10],  # Cap errors
+        }
+
+        jlog('batch_experience_recorded',
+             total=total,
+             episodic=episodic_success,
+             semantic=semantic_success)
+
+        return summary
+
     def daily_reflection(self) -> Dict[str, Any]:
         """Generate daily performance reflection."""
         logger.info("Generating daily reflection...")
@@ -387,9 +545,22 @@ class LearningEngine:
 
 # Task handlers
 def analyze_trades() -> Dict[str, Any]:
-    """Task handler for trade analysis."""
+    """
+    Task handler for trade analysis.
+
+    === TIER 2.3: Now also records to Episodic/Semantic Memory ===
+    """
     engine = LearningEngine()
-    return engine.analyze_trades()
+    result = engine.analyze_trades()
+
+    # Wire memory recording for analyzed trades
+    if result.get("status") == "success" and result.get("trades_data"):
+        trades_data = result.get("trades_data", [])
+        if trades_data:
+            memory_result = engine.batch_record_experiences(trades_data)
+            result["memory_update"] = memory_result
+
+    return result
 
 
 def update_memory() -> Dict[str, Any]:
@@ -402,6 +573,36 @@ def daily_reflection() -> Dict[str, Any]:
     """Task handler for daily reflection."""
     engine = LearningEngine()
     return engine.daily_reflection()
+
+
+def record_trade_experience(trade: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Task handler for recording a single trade to memory.
+
+    === TIER 2.3: Episodic/Semantic Memory Updates ===
+
+    Args:
+        trade: Dict with symbol, pnl, reason, regime, etc.
+
+    Returns:
+        Dict with memory update results
+    """
+    engine = LearningEngine()
+    return engine.record_trade_experience(trade)
+
+
+def batch_record_trades(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Task handler for batch recording trades to memory.
+
+    Args:
+        trades: List of trade dicts
+
+    Returns:
+        Summary of batch recording
+    """
+    engine = LearningEngine()
+    return engine.batch_record_experiences(trades)
 
 
 if __name__ == "__main__":

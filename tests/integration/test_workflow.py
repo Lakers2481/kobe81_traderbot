@@ -2,7 +2,6 @@
 Integration tests for end-to-end workflows.
 """
 
-import pytest
 import pandas as pd
 from pathlib import Path
 import sys

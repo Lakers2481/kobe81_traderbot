@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\execution\execution_guard.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.05, 0.1, 0.5, 1.0, 5.0, 100000.0, 100, 'America/New_York', 'Quote is valid', 'approved', 'cannot', 'checks', 'diff_pct', 'enabled', 'error', 'execution', 'guard', 'guard_enabled', 'inactive', 'max_spread_pct', 'mid', 'no quote', 'passed', 'price', 'price_sanity', 'proposed_price', 'provided', 'qty', 'quote', 'quote_freshness', 'quote_validity', 'reason', 'rejection_reasons', 'side', 'size_limits', 'spread', 'spread_pct', 'stand_down_reasons', 'status', 'symbol', 'timestamp', 'tradable', 'trading_status', 'unknown']

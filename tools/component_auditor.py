@@ -23,14 +23,12 @@ from __future__ import annotations
 import ast
 import argparse
 import json
-import os
-import re
 import sys
 from collections import defaultdict
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional
 
 # Project root
 ROOT = Path(__file__).resolve().parents[1]

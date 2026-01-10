@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\web\__init__.py
+# hypothesis_version: 6.150.0
+
+['app', 'get_data_provider', 'start_dashboard']

@@ -114,8 +114,8 @@ timestamp | symbol | open | high | low | close | volume
 
 **Module:** `data/universe/loader.py`
 
-**Universe File:** `data/universe/optionable_liquid_900.csv`
-- **Size:** 900 stocks
+**Universe File:** `data/universe/optionable_liquid_800.csv`
+- **Size:** 800 stocks
 - **Criteria:**
   - Listed options contracts (verified via Polygon)
   - Average daily volume > threshold
@@ -502,8 +502,8 @@ python scripts/preflight.py --dotenv /path/to/.env
    - Fetch earliest/latest bars
    - Compute coverage years
 3. Sort by coverage descending
-4. Cap at 900 symbols
-5. Write `optionable_liquid_900.csv` and `.full.csv`
+4. Cap at 800 symbols
+5. Write `optionable_liquid_800.csv` and `.full.csv`
 
 **Usage:**
 ```bash
@@ -515,7 +515,7 @@ python scripts/build_universe_polygon.py \
 ```
 
 **Output:**
-- `data/universe/optionable_liquid_900.csv` (900 symbols)
+- `data/universe/optionable_liquid_800.csv` (800 symbols)
 - `data/universe/optionable_liquid_final.full.csv` (coverage metadata)
 
 ---
@@ -528,7 +528,7 @@ python scripts/build_universe_polygon.py \
 **Usage:**
 ```bash
 python scripts/prefetch_polygon_universe.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --start 2015-01-01 --end 2024-12-31 \
   --cache data/cache --concurrency 3
 ```
@@ -589,7 +589,7 @@ python scripts/aggregate_wf_report.py \
 **Usage:**
 ```bash
 python scripts/run_paper_trade.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --start 2024-06-01 --end 2025-12-26 --cap 50
 ```
 
@@ -610,7 +610,7 @@ python scripts/run_paper_trade.py \
 ```bash
 # DANGER: REAL MONEY
 python scripts/run_live_trade_micro.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --cap 10
 ```
 
@@ -632,7 +632,7 @@ python scripts/run_live_trade_micro.py \
 ```bash
 python scripts/runner.py \
   --mode paper \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --cap 50 \
   --scan-times 09:35,10:30,15:55 \
   --lookback-days 540
@@ -642,7 +642,7 @@ python scripts/runner.py \
 ```bash
 python scripts/runner.py \
   --mode live \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --cap 10 \
   --scan-times 09:35,10:30,15:55
 ```
@@ -672,7 +672,7 @@ python scripts/runner.py \
 â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
 â”‚ 2. UNIVERSE FILTERING                                           â”‚
 â”‚    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                                     â”‚
-â”‚    â”‚ load_universe()      â”‚ â”€â”€ 900 symbols â”€â”€>                  â”‚
+â”‚    â”‚ load_universe()      â”‚ â”€â”€ 800 symbols â”€â”€>                  â”‚
 â”‚    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                                     â”‚
 â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
                            â”‚
@@ -1003,7 +1003,7 @@ kobe81_traderbot/
 â”‚   â”‚   â””â”€â”€ multi_source.py    # Future: yfinance fallback
 â”‚   â””â”€â”€ universe/
 â”‚       â”œâ”€â”€ loader.py          # Symbol list management
-â”‚       â””â”€â”€ optionable_liquid_900.csv  # 900 stocks
+â”‚       â””â”€â”€ optionable_liquid_800.csv  # 800 stocks
 â”œâ”€â”€ docs/
 â”‚   â”œâ”€â”€ README.md              # Quick start
 â”‚   â”œâ”€â”€ RUN_24x7.md            # Scheduler setup
@@ -1078,7 +1078,7 @@ kobe81_traderbot/
 ```bash
 python scripts/run_backtest_polygon.py \
   --strategy rsi2 \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --start 2020-01-01 --end 2024-12-31 \
   --cap 900 \
   --outdir backtest_outputs
@@ -1120,7 +1120,7 @@ python scripts/run_backtest_polygon.py \
 **Usage:**
 ```bash
 python scripts/run_wf_polygon.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --start 2015-01-01 --end 2024-12-31 \
   --train-days 252 --test-days 63 \
   --strategies rsi2,ICT,and \
@@ -1201,7 +1201,7 @@ ALPACA_BASE_URL=https://api.alpaca.markets
 
 # Run live script
 python scripts/run_live_trade_micro.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --cap 10
 ```
 
@@ -1234,7 +1234,7 @@ while True:
 ```
 Action: Start program
 Program: python.exe
-Arguments: scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv
+Arguments: scripts/runner.py --mode paper --universe data/universe/optionable_liquid_800.csv
 Start in: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot
 Trigger: At system startup
 Conditions: Only if computer is on AC power
@@ -1350,7 +1350,7 @@ ORDER BY created_at DESC;
 **Validation:**
 ```bash
 python scripts/validate_universe_coverage.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --min-symbols 900 --min-years 10
 # Output: PASS or FAIL with details
 ```
@@ -1399,7 +1399,7 @@ pytest tests/integration/
 ```bash
 # Full 10-year walk-forward
 python scripts/run_wf_polygon.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --start 2015-01-01 --end 2024-12-31 \
   --strategies rsi2,ICT,and
 

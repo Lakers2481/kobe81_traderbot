@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\ml_features\regime_hmm.py
+# hypothesis_version: 6.150.0
+
+[-0.08, -0.02, 0.0, 0.02, 0.08, 0.1, 0.12, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.5, 2.0, 100, 252, 'BEAR_HIGH_VOL', 'BEAR_LOW_VOL', 'BULL_HIGH_VOL', 'BULL_LOW_VOL', 'Close', 'Insufficient data', 'SIDEWAYS', 'UNKNOWN', 'close', 'confidence', 'current_regime', 'days_in_regime', 'down', 'error', 'extreme', 'full', 'high', 'hmm_available', 'low', 'metadata', 'momentum_20d', 'momentum_weight', 'neutral', 'normal', 'r_squared', 'regime_probabilities', 'returns', 'stop_loss_multiplier', 'strategy_adjustments', 'strong_down', 'strong_up', 'trend_state', 'up', 'vix_level', 'volatility', 'volatility_state']

@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\pipelines\universe_pipeline.py
+# hypothesis_version: 6.150.0
+
+[100, 'duplicate_count', 'min_symbols', 'symbol', 'total_symbols', 'universe', 'validation_time']

@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\risk\position_limit_gate.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.4, 5.0, 200, '/', 'AAPL', 'ALPACA_API_KEY_ID', 'ALPACA_BASE_URL', 'AMZN', 'APCA-API-KEY-ID', 'APCA-API-SECRET-KEY', 'APCA_API_KEY_ID', 'APCA_API_SECRET_KEY', 'CVX', 'Consumer Staples', 'Energy', 'Financials', 'GOOG', 'GS', 'Healthcare', 'JNJ', 'JPM', 'MSFT', 'Real Estate', 'SPG', 'TSLA', 'Technology', 'UNH', 'WMT', 'XOM', 'current_price', 'market_value', 'max_per_symbol', 'max_positions', 'ok', 'open_positions', 'open_symbols', 'positions_available', 'qty', 'sector', 'symbol']

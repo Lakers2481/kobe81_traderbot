@@ -1,0 +1,120 @@
+{
+  "date": "2026-01-06",
+  "snapshots": [
+    {
+      "timestamp": "2026-01-06T17:57:13.372429-05:00",
+      "time": "17:57:13",
+      "observations": [
+        {
+          "symbol": "SPG",
+          "timestamp": "17:57:13",
+          "premarket_price": 183.405,
+          "current_price": 183.405,
+          "change_pct": 0.0,
+          "spread": 0.0011450069518278102,
+          "strength": "NEUTRAL",
+          "signal": "Holding near premarket levels",
+          "original_entry": 183.24,
+          "stop_loss": 178.43
+        },
+        {
+          "symbol": "CPT",
+          "timestamp": "17:57:13",
+          "premarket_price": 110.035,
+          "current_price": 110.035,
+          "change_pct": 0.0,
+          "spread": 0.00099968191938928,
+          "strength": "NEUTRAL",
+          "signal": "Holding near premarket levels",
+          "original_entry": 110.33,
+          "stop_loss": 107.07
+        },
+        {
+          "symbol": "LOGI",
+          "timestamp": "17:57:13",
+          "premarket_price": 98.4,
+          "current_price": 98.4,
+          "change_pct": 0.0,
+          "spread": 0.0010162601626017126,
+          "strength": "NEUTRAL",
+          "signal": "Holding near premarket levels",
+          "original_entry": 98.44,
+          "stop_loss": 93.64
+        },
+        {
+          "symbol": "FROG",
+          "timestamp": "17:57:13",
+          "premarket_price": 58.5,
+          "current_price": 58.5,
+          "change_pct": 0.0,
+          "spread": 0.002051282051282129,
+          "strength": "NEUTRAL",
+          "signal": "Holding near premarket levels",
+          "original_entry": 57.9,
+          "stop_loss": 52.66
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-01-06T17:57:19.438086-05:00",
+      "time": "17:57:19",
+      "observations": [
+        {
+          "symbol": "SPG",
+          "timestamp": "17:57:19",
+          "premarket_price": 183.405,
+          "current_price": 183.405,
+          "change_pct": 0.0,
+          "spread": 0.0011450069518278102,
+          "strength": "NEUTRAL",
+          "signal": "Holding near premarket levels",
+          "original_entry": 183.24,
+          "stop_loss": 178.43
+        },
+        {
+          "symbol": "CPT",
+          "timestamp": "17:57:19",
+          "premarket_price": 110.035,
+          "current_price": 110.035,
+          "change_pct": 0.0,
+          "spread": 0.00099968191938928,
+          "strength": "NEUTRAL",
+          "signal": "Holding near premarket levels",
+          "original_entry": 110.33,
+          "stop_loss": 107.07
+        },
+        {
+          "symbol": "LOGI",
+          "timestamp": "17:57:19",
+          "premarket_price": 98.4,
+          "current_price": 98.4,
+          "change_pct": 0.0,
+          "spread": 0.0010162601626017126,
+          "strength": "NEUTRAL",
+          "signal": "Holding near premarket levels",
+          "original_entry": 98.44,
+          "stop_loss": 93.64
+        },
+        {
+          "symbol": "FROG",
+          "timestamp": "17:57:19",
+          "premarket_price": 58.5,
+          "current_price": 58.5,
+          "change_pct": 0.0,
+          "spread": 0.002051282051282129,
+          "strength": "NEUTRAL",
+          "signal": "Holding near premarket levels",
+          "original_entry": 57.9,
+          "stop_loss": 52.66
+        }
+      ]
+    }
+  ],
+  "latest_summary": {
+    "timestamp": "17:57:19",
+    "strong_count": 0,
+    "weak_count": 0,
+    "neutral_count": 4,
+    "bias": "NEUTRAL"
+  }
+}

@@ -5,19 +5,14 @@ FIX (2026-01-05): Added for data quality monitoring.
 """
 from __future__ import annotations
 
-import pytest
-from datetime import datetime, timedelta
 
 import pandas as pd
-import numpy as np
 
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from data.quality.corporate_actions_canary import (
-    DiscontinuityEvent,
-    CanaryResult,
     calculate_overnight_returns,
     classify_discontinuity,
     check_symbol_for_splits,

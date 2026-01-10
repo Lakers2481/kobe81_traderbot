@@ -34,7 +34,6 @@ import requests
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
-from functools import lru_cache
 import time
 
 # VADER is already in requirements.txt

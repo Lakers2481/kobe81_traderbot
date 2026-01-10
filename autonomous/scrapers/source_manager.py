@@ -24,6 +24,14 @@ from .reddit_scraper import RedditScraper, scrape_reddit_ideas
 from .youtube_scraper import YouTubeScraper, scrape_youtube_strategies
 from .arxiv_scraper import ArxivScraper, scrape_arxiv_papers
 
+# Firecrawl unified adapter (preferred when API key available)
+try:
+    from .firecrawl_adapter import FirecrawlAdapter, get_firecrawl, HAS_FIRECRAWL
+except ImportError:
+    HAS_FIRECRAWL = False
+    FirecrawlAdapter = None
+    get_firecrawl = None
+
 
 @dataclass
 class ExternalIdea:
@@ -70,7 +78,7 @@ class SourceManager:
     - Source rotation and rate limiting
     """
 
-    def __init__(self, state_dir: Optional[Path] = None):
+    def __init__(self, state_dir: Optional[Path] = None, use_firecrawl: bool = True):
         self.state_dir = state_dir or Path("state/autonomous/external_ideas")
         self.state_dir.mkdir(parents=True, exist_ok=True)
 
@@ -82,6 +90,14 @@ class SourceManager:
         self.reddit_scraper = RedditScraper()
         self.youtube_scraper = YouTubeScraper()
         self.arxiv_scraper = ArxivScraper()
+
+        # Initialize Firecrawl (unified web scraper - preferred when available)
+        self.use_firecrawl = use_firecrawl and HAS_FIRECRAWL
+        self.firecrawl = get_firecrawl() if self.use_firecrawl and get_firecrawl else None
+
+        if self.firecrawl:
+            jlog("source_manager_init", level="INFO",
+                 message="Firecrawl adapter initialized - using unified web ingestion")
 
         # Load existing ideas
         self.ideas_queue: List[ExternalIdea] = self._load_ideas()
@@ -311,5 +327,154 @@ class SourceManager:
             "extracted": extracted_count,
             "validated": validated_count,
             "successful": successful_count,
-            "pending_extraction": len(self.ideas_queue) - extracted_count
+            "pending_extraction": len(self.ideas_queue) - extracted_count,
+            "firecrawl_enabled": self.use_firecrawl,
         }
+
+    # ========== FIRECRAWL UNIFIED METHODS ==========
+
+    def scrape_url_firecrawl(self, url: str) -> Optional[ExternalIdea]:
+        """
+        Scrape a single URL using Firecrawl unified adapter.
+
+        This is the PREFERRED method when Firecrawl API key is available.
+        Handles anti-bot, JS rendering, and structured extraction.
+
+        Args:
+            url: URL to scrape
+
+        Returns:
+            ExternalIdea or None if scraping failed
+        """
+        if not self.firecrawl:
+            jlog("source_manager_firecrawl_unavailable", level="WARNING",
+                 url=url)
+            return None
+
+        jlog("source_manager_firecrawl_scrape", level="INFO", url=url)
+
+        result = self.firecrawl.scrape_url(url)
+
+        if not result.success:
+            jlog("source_manager_firecrawl_failed", level="WARNING",
+                 url=url, error=result.error)
+            return None
+
+        # Determine source type from URL
+        source_type = self._detect_source_type(url)
+
+        # Create ExternalIdea
+        import hashlib
+        content_hash = hashlib.md5(url.encode()).hexdigest()[:8]
+        idea_id = f"idea_firecrawl_{content_hash}"
+
+        idea = ExternalIdea(
+            idea_id=idea_id,
+            source_type=source_type,
+            source_id=url,
+            source_url=url,
+            title=result.title or url,
+            description=result.content[:500] if result.content else "",
+            content=result.content,
+            metadata={
+                **result.metadata,
+                'scraped_via': 'firecrawl',
+            },
+        )
+
+        if idea.idea_id not in self.processed_ids:
+            self.ideas_queue.append(idea)
+            self._save_ideas()
+
+        return idea
+
+    def extract_strategy_firecrawl(self, url: str) -> Optional[Dict]:
+        """
+        Extract structured trading strategy from URL using Firecrawl.
+
+        Args:
+            url: URL containing strategy information
+
+        Returns:
+            Structured strategy dict or None
+        """
+        if not self.firecrawl:
+            return None
+
+        jlog("source_manager_firecrawl_extract", level="INFO", url=url)
+
+        extraction = self.firecrawl.extract_strategy(url)
+
+        if extraction.confidence < 0.3:
+            jlog("source_manager_firecrawl_low_confidence", level="WARNING",
+                 url=url, confidence=extraction.confidence)
+            return None
+
+        return extraction.to_dict()
+
+    def batch_scrape_firecrawl(self, urls: List[str]) -> List[ExternalIdea]:
+        """
+        Batch scrape multiple URLs using Firecrawl.
+
+        Args:
+            urls: List of URLs to scrape
+
+        Returns:
+            List of ExternalIdea objects
+        """
+        if not self.firecrawl:
+            jlog("source_manager_firecrawl_unavailable", level="WARNING")
+            return []
+
+        jlog("source_manager_firecrawl_batch", level="INFO", count=len(urls))
+
+        results = self.firecrawl.batch_scrape(urls)
+        ideas = []
+
+        for result in results:
+            if result.success:
+                source_type = self._detect_source_type(result.url)
+
+                import hashlib
+                content_hash = hashlib.md5(result.url.encode()).hexdigest()[:8]
+                idea_id = f"idea_firecrawl_{content_hash}"
+
+                if idea_id not in self.processed_ids:
+                    idea = ExternalIdea(
+                        idea_id=idea_id,
+                        source_type=source_type,
+                        source_id=result.url,
+                        source_url=result.url,
+                        title=result.title or result.url,
+                        description=result.content[:500] if result.content else "",
+                        content=result.content,
+                        metadata={'scraped_via': 'firecrawl'},
+                    )
+                    ideas.append(idea)
+                    self.ideas_queue.append(idea)
+
+        self._save_ideas()
+
+        jlog("source_manager_firecrawl_batch_complete", level="INFO",
+             scraped=len(ideas))
+
+        return ideas
+
+    def _detect_source_type(self, url: str) -> str:
+        """Detect source type from URL."""
+        url_lower = url.lower()
+
+        if 'github.com' in url_lower:
+            return 'github'
+        elif 'reddit.com' in url_lower:
+            return 'reddit'
+        elif 'youtube.com' in url_lower or 'youtu.be' in url_lower:
+            return 'youtube'
+        elif 'arxiv.org' in url_lower:
+            return 'arxiv'
+        elif 'medium.com' in url_lower:
+            return 'medium'
+        elif 'twitter.com' in url_lower or 'x.com' in url_lower:
+            return 'twitter'
+        else:
+            return 'web'

@@ -22,7 +22,7 @@ Usage:
 
 from __future__ import annotations
 
-from typing import Callable, Optional, Union, List
+from typing import Callable, Optional, Union
 import logging
 
 import numpy as np

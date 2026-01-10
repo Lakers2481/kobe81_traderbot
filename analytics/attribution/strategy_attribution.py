@@ -13,10 +13,10 @@ Author: Kobe Trading System
 Created: 2026-01-04
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, date, timedelta
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 import json
 import statistics
 

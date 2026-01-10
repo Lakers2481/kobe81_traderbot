@@ -13,7 +13,6 @@ Outputs: reports/morning_report_YYYYMMDD.html
 """
 
 import argparse
-from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
@@ -29,7 +28,6 @@ from core.clock.tz_utils import fmt_ct, fmt_et, now_et
 from altdata.sentiment import load_daily_cache, normalize_sentiment_to_conf
 from data.providers.polygon_eod import fetch_daily_bars_polygon
 from ml_meta.model import DEPLOYED_DIR, load_model, FEATURE_COLS, model_paths
-from core.journal import append_journal
 from ml_meta.features import compute_features_frame
 from explainability.trade_explainer import explain_trade, ExplainConfig
 try:

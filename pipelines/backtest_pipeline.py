@@ -123,7 +123,7 @@ class BacktestPipeline(Pipeline):
 
             # Load a sample of the universe
             symbols = load_universe(
-                str(self.data_dir / "universe" / "optionable_liquid_900.csv"),
+                str(self.data_dir / "universe" / "optionable_liquid_800.csv"),
                 cap=self.universe_cap
             )
 

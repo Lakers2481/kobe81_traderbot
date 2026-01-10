@@ -15,12 +15,11 @@ Any detected issue = IMMEDIATE REJECTION.
 
 from __future__ import annotations
 
-import json
 import logging
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from llm import ToolDefinition
 from agents.base_agent import BaseAgent, AgentConfig, ToolResult

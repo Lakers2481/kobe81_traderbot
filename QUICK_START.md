@@ -43,16 +43,16 @@ python scripts/run_backtest_polygon.py \
 ### A. Full Walk-Forward Validation (10 Years)
 
 ```bash
-# 1. Prefetch data (one-time, ~30 min for 900 stocks)
+# 1. Prefetch data (one-time, ~30 min for 800 stocks)
 python scripts/prefetch_polygon_universe.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --start 2015-01-01 --end 2024-12-31 \
   --cache data/cache --concurrency 3 \
   --dotenv ./.env
 
 # 2. Run walk-forward
 python scripts/run_wf_polygon.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --start 2015-01-01 --end 2024-12-31 \
   --train-days 252 --test-days 63 \
   --cap 900 --outdir wf_outputs \
@@ -69,7 +69,7 @@ python scripts/aggregate_wf_report.py \
 
 ```bash
 python scripts/run_showdown_polygon.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --start 2015-01-01 --end 2024-12-31 \
   --cap 900 --outdir showdown_outputs \
   --cache data/cache \
@@ -80,7 +80,7 @@ python scripts/run_showdown_polygon.py \
 
 ```bash
 python scripts/run_paper_trade.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --cap 50 \
   --dotenv ./.env
 ```
@@ -181,7 +181,7 @@ python scripts/prefetch_polygon_universe.py ...
 kobe81_traderbot/
 â”œâ”€â”€ strategies/          # IBS+RSI, ICT Turtle Soup strategies
 â”œâ”€â”€ backtest/            # Backtesting engine
-â”œâ”€â”€ data/                # Providers, universe (900 stocks)
+â”œâ”€â”€ data/                # Providers, universe (800 stocks)
 â”œâ”€â”€ execution/           # Alpaca broker
 â”œâ”€â”€ risk/                # PolicyGate ($75/order)
 â”œâ”€â”€ oms/                 # Order management

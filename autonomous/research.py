@@ -380,7 +380,7 @@ class ResearchEngine:
                 return {"status": "error", "error": "No cached data found"}
 
             # Use ALL 900 cached stocks for accurate results
-            cache_files = sorted(cache_dir.glob("*.csv"))  # Full 900 stocks
+            cache_files = sorted(cache_dir.glob("*.csv"))  # Full 800 stocks
             if not cache_files:
                 return {"status": "error", "error": "No cache files found"}
 
@@ -745,11 +745,11 @@ class ResearchEngine:
                     issues.append(f"{len(tiny_files)} potentially corrupt files (<1KB)")
 
             # Check universe
-            universe_file = Path("data/universe/optionable_liquid_900.csv")
+            universe_file = Path("data/universe/optionable_liquid_800.csv")
             if universe_file.exists():
                 universe = pd.read_csv(universe_file)
-                if len(universe) < 900:
-                    issues.append(f"Universe has only {len(universe)} stocks (target: 900)")
+                if len(universe) < 800:
+                    issues.append(f"Universe has only {len(universe)} stocks (target: 800)")
 
             # Check model freshness
             model_dir = Path("models")
@@ -982,6 +982,147 @@ class ResearchEngine:
             "timestamp": datetime.now(ET).isoformat(),
         }
 
+    # ========== ALPHA MINING (2026-01-07 Enhancement) ==========
+
+    def run_alpha_mining(self, min_sharpe: float = 0.5) -> Dict[str, Any]:
+        """
+        Run alpha mining using the new VectorBT + Alphalens infrastructure.
+
+        This method:
+        1. Loads cached price data
+        2. Runs VectorBT mining to test 10,000+ parameter combinations
+        3. Validates top performers with Alphalens IC analysis
+        4. Creates discoveries for promising alphas
+        5. Submits hypotheses to CuriosityEngine
+
+        Args:
+            min_sharpe: Minimum Sharpe ratio to consider
+
+        Returns:
+            Results of the alpha mining sweep
+        """
+        logger.info("Running alpha mining with VectorBT + Alphalens...")
+
+        try:
+            # Check if alpha mining infrastructure is available
+            from research import (
+                get_alpha_research_integration,
+                HAS_VBT,
+                HAS_ALPHALENS,
+                HAS_ALPHA_LIBRARY,
+            )
+
+            integration = get_alpha_research_integration()
+
+            # Load cached price data
+            cache_dir = Path("data/polygon_cache")
+            if not cache_dir.exists():
+                cache_dir = Path("data/cache")
+            if not cache_dir.exists():
+                return {"status": "error", "error": "No cached data available"}
+
+            # Load sample of stocks for mining (more for better results)
+            cache_files = sorted(cache_dir.glob("*.csv"))[:100]  # Sample 100 stocks
+            if not cache_files:
+                return {"status": "error", "error": "No cache files found"}
+
+            # Build combined price DataFrame
+            dfs = []
+            for f in cache_files:
+                try:
+                    df = pd.read_csv(f)
+                    if 'timestamp' not in df.columns and 'date' in df.columns:
+                        df['timestamp'] = pd.to_datetime(df['date'])
+                    elif 'timestamp' in df.columns:
+                        df['timestamp'] = pd.to_datetime(df['timestamp'])
+                    if 'symbol' not in df.columns:
+                        df['symbol'] = f.stem.upper()
+                    dfs.append(df)
+                except Exception:
+                    continue
+
+            if not dfs:
+                return {"status": "error", "error": "Could not load price data"}
+
+            prices_df = pd.concat(dfs, ignore_index=True)
+            logger.info(f"Loaded {len(prices_df)} rows from {len(dfs)} symbols for alpha mining")
+
+            # Run alpha mining sweep
+            discoveries = integration.run_alpha_mining_sweep(
+                prices=prices_df,
+                min_sharpe=min_sharpe,
+                min_trades=30,
+            )
+
+            # Submit hypotheses to CuriosityEngine
+            hypotheses_submitted = integration.submit_hypotheses_to_curiosity_engine()
+
+            # Record discoveries
+            for disc in discoveries:
+                if disc.sharpe_ratio > 1.0:  # Record high-quality discoveries
+                    discovery = Discovery(
+                        id=f"alpha_{disc.alpha_id}",
+                        type="alpha_mining",
+                        description=f"Alpha '{disc.name}' discovered via VectorBT mining",
+                        evidence={
+                            "sharpe": disc.sharpe_ratio,
+                            "win_rate": disc.win_rate,
+                            "profit_factor": disc.profit_factor,
+                            "trades": disc.total_trades,
+                            "category": disc.category,
+                        },
+                        confidence=min(0.9, 0.5 + disc.sharpe_ratio / 5),
+                    )
+                    self.discoveries.append(discovery)
+
+            self.save_state()
+
+            # Get summary
+            summary = integration.get_summary()
+
+            return {
+                "status": "success",
+                "alphas_discovered": len(discoveries),
+                "top_sharpe": max((d.sharpe_ratio for d in discoveries), default=0),
+                "hypotheses_submitted": hypotheses_submitted,
+                "vectorbt_available": HAS_VBT,
+                "alphalens_available": HAS_ALPHALENS,
+                "alpha_library_size": summary.get('alpha_library_size', 0),
+                "symbols_tested": len(dfs),
+                "timestamp": datetime.now(ET).isoformat(),
+            }
+
+        except ImportError as e:
+            logger.warning(f"Alpha mining infrastructure not available: {e}")
+            return {
+                "status": "error",
+                "error": f"Alpha mining infrastructure not available: {e}",
+                "recommendation": "Install dependencies: pip install vectorbt alphalens-reloaded",
+            }
+        except Exception as e:
+            logger.error(f"Alpha mining failed: {e}")
+            return {"status": "error", "error": str(e)}
+
+    def get_alpha_library_stats(self) -> Dict[str, Any]:
+        """Get statistics about the alpha library."""
+        try:
+            from research import get_alpha_library, HAS_ALPHA_LIBRARY
+
+            if not HAS_ALPHA_LIBRARY:
+                return {"status": "error", "error": "AlphaLibrary not available"}
+
+            library = get_alpha_library()
+            return {
+                "status": "success",
+                "total_alphas": len(library._registry),
+                "categories": list(library._categories.keys()),
+                "alphas_per_category": {
+                    cat: len(alphas) for cat, alphas in library._categories.items()
+                },
+            }
+        except Exception as e:
+            return {"status": "error", "error": str(e)}
+
     def run_real_backtest(self, param_changes: Dict[str, Any]) -> Dict[str, Any]:
         """
         Run an actual backtest with modified parameters.
@@ -1155,6 +1296,18 @@ def optimize_profit_factor() -> Dict[str, Any]:
     """Task handler for PF-focused optimization."""
     engine = ResearchEngine()
     return engine.optimize_profit_factor()
+
+
+def run_alpha_mining(min_sharpe: float = 0.5) -> Dict[str, Any]:
+    """Task handler for alpha mining using VectorBT + Alphalens."""
+    engine = ResearchEngine()
+    return engine.run_alpha_mining(min_sharpe)
+
+
+def get_alpha_library_stats() -> Dict[str, Any]:
+    """Task handler for getting alpha library statistics."""
+    engine = ResearchEngine()
+    return engine.get_alpha_library_stats()
 
 
 def run_real_backtest(param_changes: Dict[str, Any]) -> Dict[str, Any]:

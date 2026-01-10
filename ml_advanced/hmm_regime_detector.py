@@ -14,7 +14,7 @@ Key Features:
 MERGED FROM GAME_PLAN_2K28 - Production Ready
 """
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
 from enum import Enum
 import logging
@@ -897,3 +897,46 @@ class AdaptiveRegimeDetector:
 def create_regime_detector(use_hmm: bool = True) -> AdaptiveRegimeDetector:
     """Factory function to create regime detector."""
     return AdaptiveRegimeDetector(use_hmm=use_hmm)
+
+
+# Singleton instance for get_hmm_detector()
+_hmm_detector_instance: Optional[HMMRegimeDetector] = None
+
+
+def get_hmm_detector(model_path: str = "models/hmm_regime_v1.pkl") -> HMMRegimeDetector:
+    """
+    Factory function to get HMM regime detector singleton.
+
+    FIX (2026-01-08): Added missing factory function that scan.py expects.
+    This provides a singleton instance that loads from saved model if available.
+
+    Args:
+        model_path: Path to saved model file (default: models/hmm_regime_v1.pkl)
+
+    Returns:
+        HMMRegimeDetector instance (singleton)
+
+    Raises:
+        ImportError: If hmmlearn is not installed
+    """
+    global _hmm_detector_instance
+
+    if _hmm_detector_instance is None:
+        _hmm_detector_instance = HMMRegimeDetector()
+        model_file = Path(model_path)
+        if model_file.exists():
+            try:
+                _hmm_detector_instance.load_model(str(model_file))
+                logger.info(f"HMM detector loaded from {model_path}")
+            except Exception as e:
+                logger.warning(f"Could not load HMM model from {model_path}: {e}")
+        else:
+            logger.info(f"No pre-trained HMM model at {model_path}. Use fit() to train.")
+
+    return _hmm_detector_instance
+
+
+def reset_hmm_detector() -> None:
+    """Reset the singleton HMM detector instance. Useful for testing."""
+    global _hmm_detector_instance
+    _hmm_detector_instance = None

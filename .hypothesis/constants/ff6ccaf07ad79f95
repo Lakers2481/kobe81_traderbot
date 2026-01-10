@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\data\providers\polygon_intraday.py
+# hypothesis_version: 6.150.0
+
+[0.0, 1000.0, '15Min', '1H', '1Hour', '1Min', '5Min', 'OK', 'POLYGON_API_KEY', 'c', 'h', 'high', 'hour', 'l', 'low', 'minute', 'n', 'o', 'open', 'results', 'status', 't', 'utf-8', 'v', 'vw']

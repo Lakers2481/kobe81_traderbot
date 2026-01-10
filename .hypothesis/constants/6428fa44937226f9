@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\explainability\decision_packet.py
+# hypothesis_version: 6.150.0
+
+['*.json', 'Z', 'data_hash', 'date', 'description', 'entry_price', 'execution_plan', 'exit_price', 'feature_values', 'gate', 'historical_analogs', 'holding_days', 'limit', 'market_context', 'message', 'metadata', 'ml_outputs', 'model_hash', 'notional', 'packet_hash', 'passed', 'pnl_pct', 'position_size', 'r', 'reason', 'reasons', 'reports/totd', 'reward_amount', 'reward_risk_ratio', 'risk_amount', 'risk_gate_results', 'run_id', 'sentiment_score', 'sentiment_source', 'side', 'signal_description', 'similarity_score', 'stop_loss', 'strategy_name', 'strategy_reasons', 'symbol', 'take_profit', 'timestamp', 'unknown', 'unknowns', 'utf-8', 'value', 'w']

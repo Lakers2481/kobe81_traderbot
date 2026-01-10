@@ -184,7 +184,7 @@ def run_backtest(symbols: List[str], start: str, end: str, params=None, max_symb
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--universe', default='data/universe/optionable_liquid_900.csv')
+    parser.add_argument('--universe', default='data/universe/optionable_liquid_800.csv')
     parser.add_argument('--start', default='2024-01-01')
     parser.add_argument('--end', default='2025-12-26')
     parser.add_argument('--cap', type=int, default=200)
@@ -229,7 +229,7 @@ def main():
     for reason, count in results.get('exit_reasons', {}).items():
         print(f"  {reason}: {count}")
 
-    # Scale to 900 stocks
+    # Scale to 800 stocks
     scale = 900 / results['symbols_tested'] if results['symbols_tested'] > 0 else 1
     projected_spd = results['signals_per_day'] * scale
 

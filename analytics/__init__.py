@@ -33,6 +33,21 @@ from analytics.duckdb_engine import (
     analyze_wf_results,
 )
 
+# Pyfolio integration (optional - requires pyfolio-reloaded)
+try:
+    from analytics.pyfolio_integration import (
+        load_returns_from_backtest,
+        load_transactions_from_backtest,
+        fetch_benchmark_returns,
+        generate_simple_tearsheet,
+        generate_full_tearsheet,
+        generate_wf_tearsheets,
+        extract_pyfolio_metrics,
+        HAS_PYFOLIO,
+    )
+except ImportError:
+    HAS_PYFOLIO = False
+
 __all__ = [
     # Edge Decomposition
     "EdgeDecomposition",

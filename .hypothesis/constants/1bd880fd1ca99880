@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\pipelines\data_audit_pipeline.py
+# hypothesis_version: 6.150.0
+
+[0.01, 0.95, 252, 'No cache file', 'cache', 'checks', 'close', 'data_audit', 'errors', 'freshness_days', 'high', 'large_gaps', 'low', 'min_pass_rate', 'ohlc_violations', 'open', 'pass_rate', 'passed', 'polygon_eod', 'sample_size', 'symbol', 'symbols_audited', 'symbols_passed', 'timestamp', 'total_rows']

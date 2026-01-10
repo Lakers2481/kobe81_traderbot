@@ -24,7 +24,6 @@ Usage:
 import logging
 from dataclasses import dataclass
 from typing import Dict, Optional, List
-from datetime import datetime
 from enum import Enum
 
 logger = logging.getLogger(__name__)

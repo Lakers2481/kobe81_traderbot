@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\portfolio\state_manager.py
+# hypothesis_version: 6.150.0
+
+[0.0, 10000.0, '.json', '.lock', 'KILL_SWITCH', 'autonomous', 'backups', 'brain_state', 'brain_state.json', 'current_task', 'daily_pnl', 'daily_pnl.json', 'earnings_cache', 'earnings_cache.json', 'idle', 'kill_switch', 'last_heartbeat', 'last_reconcile.json', 'max_notional', 'notional_used', 'nt', 'orders', 'orders.json', 'position_state.json', 'positions', 'r', 'reconciliation', 'state', 'status', 'symbols', 'timestamp', 'today_validated.json', 'utf-8', 'validated_at', 'w', 'watchlist', 'week_start', 'weekly_budget', 'weekly_budget.json']

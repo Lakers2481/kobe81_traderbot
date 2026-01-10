@@ -17,18 +17,17 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from dataclasses import asdict, fields
-from datetime import datetime
+from dataclasses import asdict
 from core.clock.tz_utils import now_et, fmt_ct
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from config.env_loader import load_env
 # 
 
-from strategies.registry import get_production_scanner, DualStrategyScanner, DualStrategyParams
+from strategies.registry import DualStrategyScanner, DualStrategyParams
 
 # Default paths
 STATE_DIR = ROOT / "state"

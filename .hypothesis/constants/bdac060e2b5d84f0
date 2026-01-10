@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\backtest\fill_model.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.1, 0.2, 0.25, 0.3, 0.95, 1.0, 'always', 'always_fill', 'bar_range', 'bar_volume', 'base_probability', 'buy', 'edge_penalty', 'fill_ratio', 'limit', 'limit_not_touched', 'limit_order', 'limit_price', 'max_participation', 'min_fill_ratio', 'model', 'partial', 'partial_fill', 'probabilistic', 'reason', 'requested_qty', 'sell', 'use_open_for_gap']

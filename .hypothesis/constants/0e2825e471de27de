@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\core\regime_filter.py
+# hypothesis_version: 6.150.0
+
+[200, 252, 'SPY', 'close', 'enabled', 'max_ann_vol', 'realized_vol', 'regime_ok', 'require_above_slow', 'returns', 'sma_fast', 'sma_slow', 'timestamp', 'trend_fast', 'trend_slow', 'vol_window']

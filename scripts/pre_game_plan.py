@@ -25,7 +25,7 @@ def run_cmd(args: list[str]) -> int:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description='Generate pre-game plan and pre-market picks')
-    ap.add_argument('--universe', type=str, default='data/universe/optionable_liquid_900.csv')
+    ap.add_argument('--universe', type=str, default='data/universe/optionable_liquid_800.csv')
     ap.add_argument('--cap', type=int, default=300)
     ap.add_argument('--dotenv', type=str, default='./.env')
     ap.add_argument('--date', type=str, default=None, help='Plan date (YYYY-MM-DD); default: prior business day UTC')

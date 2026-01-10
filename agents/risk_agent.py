@@ -14,7 +14,6 @@ REJECT-BY-DEFAULT: Any gate failure = archive forever.
 
 from __future__ import annotations
 
-import json
 import logging
 from dataclasses import dataclass, asdict
 from datetime import datetime

@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\cognitive\self_consistency.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.1, 0.2, 0.3, 0.5, 0.7, 0.8, 1.0, 2.0, 100, 500, 1000, 'ANSWER', 'BUY', 'CONCLUSION', 'CORRECT', 'DECISION', 'FALSE', 'HOLD', 'INCORRECT', 'NO', 'RECOMMENDATION', 'SELL', 'STAND_DOWN', 'TRUE', 'UNKNOWN', 'YES', '\\$[\\d,]+', '\\b(BUY|LONG)\\b', '\\b(HOLD|NEUTRAL)\\b', '\\b(SELL|SHORT)\\b', '\\bNO[_\\s]?TRADE\\b', '\\bNO\\b', '\\bSTAND[_\\s]?DOWN\\b', '\\bYES\\b', '\\d+\\.?\\d*%', 'agreement_ratio', 'answer_distribution', 'because', 'boolean', 'categorical', 'confidence', 'consider', 'final_answer', 'freeform', 'however', 'maybe', 'might', 'n_samples', 'numeric', 'perhaps', 'possibly', 'processing_time_ms', 'reasoning', 'therefore', 'trading_decision', 'uncertain', 'unique_answers', 'user']

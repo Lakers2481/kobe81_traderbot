@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\ml_advanced\markov_chain\higher_order.py
+# hypothesis_version: 6.150.0
+
+[0.1, 0.5, 'DOWN', 'FLAT', 'HigherOrderMarkov', 'UP', 'all_probs', 'bounce_prob', 'bounce_samples', 'composite_counts', 'confidence', 'consecutive_days', 'continuation_prob', 'continuation_samples', 'counts', 'fitted', 'min_samples', 'most_likely', 'n_states', 'order', 'pattern', 'prob_down', 'prob_up', 'probability', 'samples', 'smoothing', 'states', 'threshold', 'total_transitions', '→']

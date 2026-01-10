@@ -1,6 +1,6 @@
 {
   "title": "SUPER AUDIT VERIFICATION REPORT",
-  "generated": "2026-01-06T01:29:27.211415",
+  "generated": "2026-01-09T16:23:17.592632",
   "version": "1.0.0",
   "sections": [
     {
@@ -66,25 +66,25 @@
           "name": "Heartbeat",
           "status": "PASS",
           "evidence": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\state\\autonomous\\heartbeat.json",
-          "value": "alive=True, cycles=2504"
+          "value": "alive=True, cycles=184"
         },
         {
           "name": "Watchlist",
           "status": "PASS",
           "evidence": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\state\\watchlist\\next_day.json",
-          "value": "TOTD=AAPL, size=4"
+          "value": "TOTD=AGG, size=5"
         },
         {
           "name": "Recent Logs",
           "status": "PASS",
           "evidence": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\logs",
-          "value": "5 active log files"
+          "value": "4 active log files"
         },
         {
           "name": "Data Cache",
           "status": "PASS",
           "evidence": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\data\\polygon_cache",
-          "value": "102 stocks cached"
+          "value": "108 stocks cached"
         }
       ],
       "passed": 4,

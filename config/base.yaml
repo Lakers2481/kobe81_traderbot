@@ -29,16 +29,16 @@ modes:
     max_notional_per_order: 11000      # 10% of $105k account (max_notional_pct cap)
     max_daily_notional: 22000          # 20% total daily exposure (2 positions max)
     max_positions: 2                   # Max 2 positions per day
-    risk_per_trade_pct: 0.02  # 2% per trade - risk-based sizing
+    risk_per_trade_pct: 0.025  # 2.5% per trade - validation mode (was 2%)
     max_notional_pct: 0.10    # 10% of account per position (CRITICAL!)
     max_daily_exposure_pct: 0.20  # 20% total daily exposure (CRITICAL!)
-    description: "Live trading mode - conservative 10%/position, 20%/day"
+    description: "Live trading mode - validation 2.5% risk, 10%/position, 20%/day"
 
 # Data Provider Settings
 data:
   provider: "polygon"
   cache_dir: "data/cache"
-  universe_file: "data/universe/optionable_liquid_900.csv"
+  universe_file: "data/universe/optionable_liquid_800.csv"  # 800 stocks: 795 with 10+ years, 5 with 9.3 years (2026-01-08)
 
 # Backtest Settings
 backtest:
@@ -257,9 +257,10 @@ historical_edge:
   baseline_mode: overall         # overall | regime (regime uses market regime baseline when available)
 
 # Volatility-Targeted Sizing (config-gated)
+# FIX (2026-01-08): Aligned with live trading (policy.modes.medium) for backtest parity
 sizing:
   enabled: false  # Set true to use ATR-based position sizing
-  risk_per_trade_pct: 0.005  # 0.5% of equity per trade
+  risk_per_trade_pct: 0.025  # 2.5% of equity per trade (aligned with live medium mode)
   atr_multiple_for_stop: 2.0  # Stop = entry - ATR(14) × multiple
 
 # Multi-Asset Scheduler (Top-1% Gaps)
@@ -408,6 +409,22 @@ cognitive:
     vix_greed_level: 15.0             # VIX level indicating greed
     vix_extreme_fear_level: 35.0      # VIX level indicating extreme fear
     vix_extreme_greed_level: 12.0     # VIX level indicating extreme greed
+
+# Sentiment Analysis Provider (Fix #2 - 2026-01-08)
+sentiment:
+  provider: "vader"                   # Options: "vader", "fingpt", "ab_test"
+  # vader: Rule-based (2014) - fast, proven baseline
+  # fingpt: FinBERT fine-tuned (2023) - better for financial domain
+  # ab_test: Run both, log comparison (for statistical validation)
+
+  fingpt_model: "ProsusAI/finbert"    # FinGPT model (110M params, production-ready)
+  cache_predictions: true             # Cache predictions for 24h
+  max_latency_ms: 500                 # Alert if inference > 500ms
+  batch_size: 32                      # Batch processing size
+
+  # A/B Testing
+  ab_test_enabled: false              # Enable A/B testing mode
+  ab_test_log_path: "state/ab_tests/sentiment_vader_vs_fingpt.jsonl"
 
 # Telegram Trade Confirmation (human-in-the-loop)
 telegram:

@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\options\spreads.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.15, 0.25, 0.3, 0.5, 5.0, 500.0, 100, 'bearish', 'breakeven_prices', 'bullish', 'buy', 'contract_symbol', 'cost', 'expiration', 'is_credit', 'legs', 'max_loss', 'max_profit', 'net_delta', 'net_theta', 'net_vega', 'neutral', 'option_type', 'quantity', 'risk_reward_ratio', 'sell', 'side', 'spread_type', 'strike', 'symbol', 'total_cost', 'volatile']

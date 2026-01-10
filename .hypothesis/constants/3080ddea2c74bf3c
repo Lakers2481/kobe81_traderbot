@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\risk\weekly_exposure_gate.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.05, 0.1, 0.2, 0.4, 105000.0, 100, 'America/New_York', 'INFO', 'WARN', 'WeeklyBudgetState', 'all_positions_closed', 'approved', 'budget', 'can_reset', 'closed', 'closed_this_week', 'current_exposure_pct', 'current_pct', 'daily', 'entries_today', 'entry_date', 'entry_time', 'exit_date', 'exit_reason', 'exposure', 'freed_available_at', 'freed_pending', 'last_updated', 'max_daily_pct', 'max_per_day', 'max_weekly_pct', 'notional', 'open', 'open_symbols', 'pct_of_account', 'positions', 'r', 'remaining', 'reset_blocked_reason', 'status', 'symbol', 'total_this_week', 'unknown', 'unused_carried', 'w', 'week', 'weekly_budget_entry', 'weekly_budget_exit', 'weekly_budget_freed', 'weekly_budget_loaded', 'weekly_budget_reset', 'weekly_budget_saved']

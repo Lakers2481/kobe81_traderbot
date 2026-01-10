@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\cognitive\signal_processor.py
+# hypothesis_version: 6.150.0
+
+[-1.0, 0.0, 0.3, 0.45, 0.5, 0.6, 0.7, 0.85, 1.0, 20.0, 100.0, 200, '; ', 'BEAR', 'BULL', 'CHOPPY', 'NAN', 'NONE', 'UNKNOWN', 'active_episodes', 'adjudication_score', 'brain_status', 'close', 'cognitive_approved', 'cognitive_concerns', 'cognitive_confidence', 'cognitive_episode_id', 'cognitive_reasoning', 'cognitive_stand_down', 'compound', 'conf_score', 'current_positions', 'daily', 'data_timestamp', 'entry_price', 'error', 'get', 'ibs', 'ict', 'level', 'market_mood_score', 'market_sentiment', 'ml_confidence', 'online_learning', 'pending_features', 'pnl', 'position_symbols', 'price', 'processor_active', 'quality_score', 'r_multiple', 'regime', 'regime_confidence', 'rsi', 'sentiment', 'size_multiplier', 'stop_loss', 'strategy', 'symbol', 'symbol_sentiment', 'take_profit', 'timestamp', 'turtle', 'unknown', 'vix', 'volume', 'won', '|']

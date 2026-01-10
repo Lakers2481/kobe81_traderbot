@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\data\quality\corporate_actions_canary.py
+# hypothesis_version: 6.150.0
+
+[50.0, 100, 110, 180, 220, '%Y-%m-%d', '_counter', 'close', 'data_error', 'dividend', 'events_by_cause', 'failed', 'open', 'pass_rate', 'passed', 'reverse_split', 'split', 'symbol', 'symbols_flagged', 'total_events', 'total_symbols', 'type', 'unknown']

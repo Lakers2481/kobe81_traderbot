@@ -57,7 +57,7 @@
 
 ### 4. DATA CACHE
 - **102 stocks** cached in data/polygon_cache/
-- Target: 900 stocks (11.3% coverage - prefetch in progress)
+- Target: 800 stocks (11.3% coverage - prefetch in progress)
 
 ---
 

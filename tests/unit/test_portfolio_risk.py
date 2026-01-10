@@ -2,7 +2,6 @@
 Unit tests for portfolio risk gate.
 """
 
-import pytest
 from pathlib import Path
 import tempfile
 

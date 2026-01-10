@@ -1,6 +1,6 @@
 param(
   [string]$DotEnv = ".\\.env",
-  [string]$Universe = "data\universe\optionable_liquid_900.csv",
+  [string]$Universe = "data\universe\optionable_liquid_800.csv",
   [int]$Cap = 50,
   [string]$ScanTimes = "09:35,10:30,15:55",
   [int]$LookbackDays = 540,

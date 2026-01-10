@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\core\secrets.py
+# hypothesis_version: 6.150.0
+
+[100, '***ALPACA_KEY***', '***ALPACA_SECRET***', '***AWS_KEY***', '***MASKED***', '***TELEGRAM_TOKEN***', '-', '...', 'Bearer ***MASKED***', '\\bAKIA[0-9A-Z]{16}\\b', '\\bPK[A-Z0-9]{18,}\\b', '\\bSK[A-Z0-9]{18,}\\b', '_', 'access_token', 'alpaca_api_key_id', 'api-key', 'apiKey=***MASKED***', 'apiKey=\\S+', 'api_key', 'api_key=***MASKED***', 'apikey', 'bearer', 'bearer\\s+\\S+', 'hmac', 'key', 'mysql://***:***@***', 'mysql://\\S+@\\S+', 'passwd', 'passwd=***MASKED***', 'password', 'polygon_api_key', 'postgres://\\S+@\\S+', 'pwd', 'secret', 'secret_key', 'secretkey', 'token', 'webhook_secret']

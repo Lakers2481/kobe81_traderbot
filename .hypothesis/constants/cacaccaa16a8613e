@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\execution\broker_base.py
+# hypothesis_version: 6.150.0
+
+[0.0, 100, 'USD', 'accepted', 'account_id', 'all', 'ask', 'ask_size', 'avg_price', 'bid', 'bid_size', 'broker_order_id', 'buy', 'buying_power', 'cancelled', 'cash', 'client_order_id', 'cls', 'cost_basis', 'currency', 'current_price', 'day', 'equity', 'error_code', 'error_message', 'expired', 'extended_hours', 'fill_price', 'filled', 'filled_qty', 'fok', 'gtc', 'ioc', 'last', 'limit', 'limit_price', 'market', 'market_ask', 'market_bid', 'market_value', 'mid', 'opg', 'order_type', 'partially_filled', 'pattern_day_trader', 'pending', 'portfolio_value', 'qty', 'rejected', 'sell', 'side', 'spread', 'spread_pct', 'status', 'stop', 'stop_limit', 'stop_loss_price', 'stop_price', 'submitted', 'success', 'symbol', 'take_profit_limit', 'time_in_force', 'timestamp', 'trading_blocked', 'unrealized_pnl', 'unrealized_pnl_pct', 'volume']

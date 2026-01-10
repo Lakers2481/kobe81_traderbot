@@ -11,7 +11,7 @@ Scoring Factors:
 4. Regime persistence - Self-transition probability
 
 Use Cases:
-- Pre-filter 900 stocks to top 100 by π(Up) before detailed scan
+- Pre-filter 800 stocks to top 100 by π(Up) before detailed scan
 - Rank watchlist by today's UP probability
 - Identify mean-reversion candidates (high deviation)
 
@@ -30,15 +30,13 @@ from __future__ import annotations
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
 
-from .predictor import MarkovPredictor
-from .state_classifier import StateClassifier, compute_returns
 from .stationary_dist import StationaryDistribution
-from .transition_matrix import TransitionMatrix, build_transition_matrix
+from .transition_matrix import build_transition_matrix
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +111,7 @@ class MarkovAssetScorer:
     Score and rank assets using Markov chain metrics.
 
     This is the core ranking system for pre-filtering the universe.
-    Instead of scanning all 900 stocks with full strategy logic,
+    Instead of scanning all 800 stocks with full strategy logic,
     first score them by Markov metrics and focus on the top N.
 
     Scoring Components:

@@ -139,7 +139,7 @@ kobe81_traderbot/
 │   │   └── binance_klines.py     # Crypto
 │   ├── universe/
 │   │   ├── loader.py             # Universe loading
-│   │   └── optionable_liquid_900.csv
+│   │   └── optionable_liquid_800.csv
 │   ├── cache/                    # EOD cache
 │   ├── lake/                     # Frozen snapshots
 │   └── snapshots/                # Point-in-time snapshots

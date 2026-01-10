@@ -61,7 +61,7 @@ def show_status():
     # Self-learner
     learner = get_self_learner()
     diagnosis = learner.diagnose_system()
-    print(f"Self-Learner:")
+    print("Self-Learner:")
     print(f"  Lessons: {diagnosis['lessons_learned']}")
     print(f"  Known Fixes: {diagnosis['known_fixes']}")
     print()
@@ -69,7 +69,7 @@ def show_status():
     # Guardian state
     guardian = get_guardian()
     state = guardian.get_state()
-    print(f"Guardian:")
+    print("Guardian:")
     print(f"  Mode: {state.mode.value}")
     print(f"  Running: {'YES' if state.is_running else 'NO'}")
     print(f"  Trading Allowed: {'YES' if state.trading_allowed else 'NO'}")

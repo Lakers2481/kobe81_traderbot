@@ -24,7 +24,7 @@ import os
 import sys
 from datetime import datetime, date, timedelta
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -40,7 +40,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Constants
-DEFAULT_UNIVERSE = ROOT / "data" / "universe" / "optionable_liquid_900.csv"
+DEFAULT_UNIVERSE = ROOT / "data" / "universe" / "optionable_liquid_800.csv"
 CACHE_DIR = ROOT / "data" / "cache"
 MANIFEST_FILE = ROOT / "state" / "data_manifest.json"
 CHECK_REPORT = ROOT / "reports" / "premarket_check.json"

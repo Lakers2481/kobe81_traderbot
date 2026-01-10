@@ -10,7 +10,6 @@ from typing import Dict, Any, List
 import pandas as pd
 
 import sys
-import os
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from data.providers.polygon_eod import fetch_daily_bars_polygon, has_options_polygon
@@ -54,7 +53,7 @@ def main():
     ap.add_argument('--cap', type=int, default=900)
     ap.add_argument('--concurrency', type=int, default=3)
     ap.add_argument('--cache', type=str, default='data/cache')
-    ap.add_argument('--out', type=str, default='data/universe/optionable_liquid_900.csv')
+    ap.add_argument('--out', type=str, default='data/universe/optionable_liquid_800.csv')
     ap.add_argument('--dotenv', type=str, default='./.env')
     ap.add_argument('--fallback-free', action='store_true', default=False, help='Backfill pre-Polygon coverage with Yahoo Finance')
     args = ap.parse_args()

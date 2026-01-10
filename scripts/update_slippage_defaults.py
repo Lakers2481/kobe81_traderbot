@@ -29,7 +29,7 @@ import logging
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 import statistics
 
 # Add project root to path

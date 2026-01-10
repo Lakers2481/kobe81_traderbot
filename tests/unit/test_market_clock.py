@@ -2,7 +2,6 @@
 Unit tests for multi-asset market clock.
 """
 
-import pytest
 from datetime import datetime, date, time
 from zoneinfo import ZoneInfo
 
@@ -15,7 +14,7 @@ from core.clock import (
 from core.clock.equities_calendar import EquitiesCalendar
 from core.clock.crypto_clock import CryptoClock
 from core.clock.options_event_clock import OptionsEventClock
-from core.clock.macro_events import MacroEventCalendar, MacroEventType
+from core.clock.macro_events import MacroEventCalendar
 
 ET = ZoneInfo("America/New_York")
 UTC = ZoneInfo("UTC")

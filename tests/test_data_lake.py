@@ -4,12 +4,9 @@ Tests for Frozen Data Lake.
 Tests manifest computation, IO operations, and data integrity.
 """
 import pytest
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 import tempfile
-import json
 
 # Import modules under test
 from data.lake.manifest import (

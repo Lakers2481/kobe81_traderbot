@@ -37,10 +37,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from research_os import (
-    ResearchOSOrchestrator,
-    KnowledgeCard,
     CardStatus,
-    ResearchProposal,
     ProposalStatus,
     ApprovalGate,
     APPROVE_LIVE_ACTION,

@@ -7,7 +7,7 @@ MISSION: Analyze how stocks bounce after consecutive down days.
 
 CRITICAL RULES (NO VIOLATIONS):
 1. NO LOOKAHEAD - Events defined using ONLY data up to day t
-2. EXACT 900 UNIVERSE - Hard fail if not exactly 900 stocks
+2. EXACT 900 UNIVERSE - Hard fail if not exactly 800 stocks
 3. REAL DATA ONLY - From cached Polygon data, no synthetic
 4. NO TAUTOLOGY - Never define event as "streak ended" (fake 100%)
 
@@ -19,7 +19,7 @@ import sys
 import warnings
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -33,7 +33,7 @@ warnings.filterwarnings('ignore')
 
 CONFIG = {
     # Universe
-    "universe_file": "data/universe/optionable_liquid_900.csv",
+    "universe_file": "data/universe/optionable_liquid_800.csv",
     "expected_count": 900,
     "magnificent_7": ["AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA"],
 
@@ -61,7 +61,7 @@ CONFIG = {
 
 def load_universe_strict() -> List[str]:
     """
-    Load EXACTLY 900 stocks. HARD FAIL if not 900.
+    Load EXACTLY 800 stocks. HARD FAIL if not 900.
     Also verify Magnificent 7 are present.
     """
     universe_path = Path(CONFIG["universe_file"])
@@ -421,7 +421,7 @@ def analyze_symbol(symbol: str) -> Optional[Dict]:
 
 
 def run_full_analysis() -> Dict:
-    """Run full analysis across all 900 stocks."""
+    """Run full analysis across all 800 stocks."""
 
     print("=" * 70)
     print("QUANT SCAN: CONSECUTIVE DOWN-DAY BOUNCE ANALYSIS")

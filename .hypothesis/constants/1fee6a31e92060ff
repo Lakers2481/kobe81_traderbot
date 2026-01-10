@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\pipelines\base.py
+# hypothesis_version: 6.150.0
+
+[150, 'a', 'artifacts', 'data', 'duration_seconds', 'end_time', 'errors', 'logs', 'metrics', 'pipeline_name', 'reports', 'start_time', 'state', 'success', 'symbol', 'universe', 'warnings']

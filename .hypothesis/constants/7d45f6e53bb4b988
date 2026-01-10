@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\llm\provider_openai.py
+# hypothesis_version: 6.150.0
+
+[0.7, 60.0, 2000, 'OPENAI_API_KEY', 'OPENAI_BASE_URL', 'api_key', 'base_url', 'completion_tokens', 'content', 'description', 'error', 'function', 'gpt-4o', 'json_object', 'max_tokens', 'messages', 'model', 'name', 'openai', 'parameters', 'prompt_tokens', 'response_format', 'role', 'sk-no-key-required', 'stop', 'temperature', 'timeout', 'tool', 'tool_call_id', 'tools', 'type', 'vllm']

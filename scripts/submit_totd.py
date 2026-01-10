@@ -26,7 +26,7 @@ from core.structured_log import jlog
 from core.hash_chain import append_block
 from core.config_pin import sha256_file
 from core.clock.macro_events import MacroEventCalendar
-from core.signal_freshness import validate_signal_file, check_signal_freshness
+from core.signal_freshness import validate_signal_file
 
 
 def get_open_position_count() -> int:

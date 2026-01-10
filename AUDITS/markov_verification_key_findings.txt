@@ -1,0 +1,161 @@
+================================================================================
+MARKOV 5-DOWN PATTERN VERIFICATION - KEY FINDINGS
+================================================================================
+
+QUESTION: Does "5 consecutive down days" predict 66% up probability?
+
+ANSWER: NO - Pattern NOT reproduced in rigorous testing
+
+================================================================================
+CRITICAL NUMBERS
+================================================================================
+
+Period              | Instances | P(Up)  | p-value  | Significant? | Verdict
+--------------------|-----------|--------|----------|--------------|------------------
+DISCOVERY (2010-15) |    834    | 52.5%  | 0.078    | NO           | NOT_SIGNIFICANT
+TRAIN (2015-20)     |    974    | 58.8%  | 0.000000 | YES          | MARGINAL
+TEST (2020-23) ⭐   |    719    | 51.7%  | 0.185    | NO           | NOT_SIGNIFICANT
+VALIDATION (23-25)  |    559    | 57.8%  | 0.000134 | YES          | MARGINAL
+
+⭐ TEST PERIOD IS THE TRUE OUT-OF-SAMPLE RESULT (most important)
+
+CLAIMED: 66%
+OBSERVED (TEST): 51.7%
+DIFFERENCE: -14.3 percentage points
+
+================================================================================
+WALK-FORWARD (Year-by-Year)
+================================================================================
+
+Year | Instances | P(Up)  | Significant?
+-----|-----------|--------|-------------
+2015 |    235    | 65.5%  | YES ✓
+2016 |    193    | 52.3%  | NO ✗
+2017 |    134    | 59.7%  | YES ✓
+2018 |    243    | 53.1%  | NO ✗
+2019 |    169    | 64.5%  | YES ✓
+2020 |    147    | 51.7%  | NO ✗
+2021 |    202    | 50.0%  | NO ✗
+2022 |    370    | 52.7%  | NO ✗
+2023 |    199    | 55.8%  | NO ✗
+2024 |    182    | 63.2%  | YES ✓
+
+SUMMARY: 4 out of 10 years significant (40%)
+AVERAGE: 56.9%
+STABILITY: POOR (15.5 pp range)
+
+================================================================================
+STATISTICAL TESTS (TEST Period 2020-2023)
+================================================================================
+
+Test                | Result        | Interpretation
+--------------------|---------------|------------------------------------
+Binomial p-value    | 0.185         | NOT significant (need p < 0.01)
+Wilson CI (99%)     | [46.9%, 56.5%]| Includes 0.5 (cannot exclude random)
+Cohen's h           | 0.035         | Negligible effect size
+Sample Size         | 719 instances | Adequate for conclusion
+
+VERDICT: FAIL TO REJECT NULL HYPOTHESIS
+         Cannot conclude pattern has predictive power
+
+================================================================================
+BACKTEST (TEST Period with Realistic Costs)
+================================================================================
+
+Metric              | Value
+--------------------|------------
+Trades              | 719
+Win Rate            | 50.5%
+Profit Factor       | 1.58
+Sharpe Ratio        | 2.65
+Max Drawdown        | 9.4%
+Total Return        | 301.5%
+Final Equity        | $40,153 (from $10,000)
+
+NOTE: Profitable due to favorable R:R, but assumes EVERY instance traded
+      Real-world selectivity would reduce trade count significantly
+
+================================================================================
+WHY IT FAILED
+================================================================================
+
+1. CLAIMED 66% NOT REPRODUCED
+   - Best single year: 65.5% (2015 only)
+   - Discovery period: 52.5%
+   - Test period: 51.7%
+
+2. TEST PERIOD SHOWS NO SIGNIFICANCE
+   - p-value = 0.185 (need < 0.01)
+   - Essentially a coin flip
+
+3. HIGH INSTABILITY
+   - Only 40% of years show significance
+   - Range: 50.0% to 65.5%
+
+4. NEGLIGIBLE EFFECT SIZE
+   - Cohen's h = 0.035 (need > 0.2 for "small")
+   - Even when significant, effect is tiny
+
+5. DATA QUALITY ISSUES
+   - 57% of symbols FAILED quality checks
+   - Pattern may not generalize broadly
+
+================================================================================
+FINAL VERDICT
+================================================================================
+
+FOR TRADING:
+    ❌ DO NOT TRADE
+    
+    Pattern is NOT robust enough for systematic trading
+    - Test period failure (51.7% vs claimed 66%)
+    - High instability (only 40% years significant)
+    - Negligible effect size
+    
+    May work in SPECIFIC REGIMES (bull markets like 2015, 2019, 2024)
+    but FAILS to generalize
+
+FOR INTERVIEWS:
+    ✅ USE THIS VERIFICATION
+    
+    Demonstrates:
+    - Proper train/test/validation methodology
+    - Multiple statistical test literacy
+    - Understanding of data-mining risks
+    - Walk-forward validation
+    - Honest reporting of negative results
+    - Professional quant rigor
+
+CONFIDENCE LEVEL: LOW (pattern not tradeable)
+
+================================================================================
+FILES GENERATED
+================================================================================
+
+All verification artifacts in:
+    data/verification/markov_*_instances.csv (3,086 total instances)
+    data/verification/walkforward_results.csv
+    AUDITS/MARKOV_QUANT_VERIFICATION_REPORT.md (full 18KB report)
+    AUDITS/MARKOV_QUANT_VERIFICATION_REPORT.json (full data)
+
+All data VERIFIABLE on Yahoo Finance
+
+================================================================================
+KEY LESSON
+================================================================================
+
+Even famous quant claims (Renaissance Technologies) require independent
+verification. In-sample significance does NOT guarantee out-of-sample
+robustness.
+
+TRAIN period: 58.8% (looked good!)
+TEST period:  51.7% (reality check!)
+
+This is why professional quants use proper train/test splits.
+
+================================================================================
+Generated: 2026-01-08
+Script: scripts/experiments/quant_edge_65_markov_verification.py
+Runtime: ~30 minutes
+Author: QUANT_EDGE_65_AGENT
+================================================================================

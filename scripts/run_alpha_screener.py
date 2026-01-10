@@ -7,7 +7,7 @@ Run walk-forward alpha screening on the universe to discover profitable alphas.
 
 Usage:
     # Screen all alphas on universe
-    python scripts/run_alpha_screener.py --universe data/universe/optionable_liquid_900.csv
+    python scripts/run_alpha_screener.py --universe data/universe/optionable_liquid_800.csv
 
     # Limit symbols for faster screening
     python scripts/run_alpha_screener.py --cap 50
@@ -32,7 +32,7 @@ sys.path.insert(0, str(ROOT))
 from dotenv import load_dotenv
 load_dotenv(ROOT / '.env')
 
-from research.alphas import ALPHA_REGISTRY, compute_alphas
+from research.alphas import ALPHA_REGISTRY
 from research.screener import screen_universe, save_screening_report
 from data.providers.multi_source import fetch_daily_bars_multi
 from data.universe.loader import load_universe
@@ -45,7 +45,7 @@ def main():
     parser.add_argument(
         '--universe',
         type=str,
-        default=str(ROOT / 'data' / 'universe' / 'optionable_liquid_900.csv'),
+        default=str(ROOT / 'data' / 'universe' / 'optionable_liquid_800.csv'),
         help='Path to universe CSV file',
     )
     parser.add_argument(

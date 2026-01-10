@@ -15,8 +15,6 @@ Version: 1.0.0
 
 import json
 from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional
 
 from pipelines.base import Pipeline
 

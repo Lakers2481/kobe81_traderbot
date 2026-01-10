@@ -49,8 +49,8 @@ def main():
                         lines = len(pf.readlines())
                         total_lines_py += lines
                         largest_files.append((lines, rel_path))
-                except:
-                    pass
+                except Exception:
+                    pass  # Skip unreadable files
 
     # Sort for output
     sorted_exts = sorted(ext_counts.items(), key=lambda x: -x[1])
@@ -127,7 +127,7 @@ def main():
         '|------|-------------|',
         f'| `file_manifest_all.txt` | All {total:,} files in repository |',
         f'| `file_manifest_py.txt` | All {ext_counts.get(".py", 0):,} Python files |',
-        f'| `file_manifest_configs.txt` | All config files (yml, yaml, json, toml, ini, env) |',
+        '| `file_manifest_configs.txt` | All config files (yml, yaml, json, toml, ini, env) |',
         f'| `file_manifest_scripts.txt` | All {ext_counts.get(".sh", 0) + ext_counts.get(".ps1", 0) + ext_counts.get(".bat", 0):,} shell/batch scripts |',
         f'| `file_manifest_notebooks.txt` | All {ext_counts.get(".ipynb", 0):,} Jupyter notebooks |',
         '',

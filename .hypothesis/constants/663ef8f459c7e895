@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\web\api\signal_queue.py
+# hypothesis_version: 6.150.0
+
+[1000, '%Y%m%d%H%M', 'ExternalSignal', 'a', 'by_source', 'by_symbol', 'duplicate', 'executed', 'expired', 'expires_at', 'max_queue_size', 'oldest_signal_age_s', 'open', 'pending', 'pending_count', 'processed_at', 'processing', 'rejected', 'seen_keys_count', 'source', 'status', 'timestamp', 'utf-8']

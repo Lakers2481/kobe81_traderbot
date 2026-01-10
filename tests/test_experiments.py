@@ -5,14 +5,11 @@ Tests experiment registration, results recording, and reproducibility.
 """
 import pytest
 import tempfile
-from pathlib import Path
-import json
 
 from experiments import (
     ExperimentRegistry,
     ExperimentConfig,
     ExperimentResults,
-    Experiment,
     ExperimentStatus,
 )
 

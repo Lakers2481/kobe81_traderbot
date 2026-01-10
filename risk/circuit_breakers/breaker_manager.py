@@ -15,7 +15,7 @@ Created: 2026-01-04
 """
 
 import json
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
@@ -511,7 +511,7 @@ if __name__ == "__main__":
     print(f"Overall Status: {state.overall_status.value}")
     print(f"Overall Action: {state.overall_action.value}")
     print(f"Size Multiplier: {state.size_multiplier:.0%}")
-    print(f"\nBreaker Details:")
+    print("\nBreaker Details:")
     for name, details in state.breaker_details.items():
         print(f"  {name}: {details}")
 

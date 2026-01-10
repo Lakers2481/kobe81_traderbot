@@ -12,16 +12,13 @@ For step-by-step reasoning on current strategies, use:
 from __future__ import annotations
 
 import argparse
-import json
-import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from config.env_loader import load_env
 
 
 def fetch_price_data(symbol: str, start: str, end: str) -> Optional[Any]:

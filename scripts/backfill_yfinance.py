@@ -6,7 +6,6 @@ Fills gaps where Polygon free tier doesn't have data.
 from __future__ import annotations
 
 import argparse
-import os
 import sys
 import time
 from pathlib import Path
@@ -71,7 +70,7 @@ def backfill_symbol(symbol: str, cache_dir: Path, start: str = "2015-01-01", end
 
 def main():
     parser = argparse.ArgumentParser(description="Rate-limited yfinance backfill")
-    parser.add_argument("--universe", type=str, default="data/universe/optionable_liquid_900.csv")
+    parser.add_argument("--universe", type=str, default="data/universe/optionable_liquid_800.csv")
     parser.add_argument("--cache", type=str, default="data/cache")
     parser.add_argument("--start", type=str, default="2015-01-01")
     parser.add_argument("--end", type=str, default="2020-12-27")

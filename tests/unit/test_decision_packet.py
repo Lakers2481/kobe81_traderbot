@@ -2,7 +2,6 @@
 Unit tests for decision packet.
 """
 
-import pytest
 import json
 import tempfile
 from pathlib import Path
@@ -10,10 +9,8 @@ from pathlib import Path
 from explainability.decision_packet import (
     DecisionPacket,
     RiskGateResult,
-    HistoricalAnalog,
     ExecutionPlan,
     build_decision_packet,
-    load_latest_packet,
 )
 
 

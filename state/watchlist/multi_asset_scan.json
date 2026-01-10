@@ -1,0 +1,104 @@
+{
+  "scan_time": "2026-01-06T18:35:06.496389",
+  "total_signals": 11,
+  "by_asset_class": {
+    "equity": 5,
+    "crypto": 0,
+    "options": 6
+  },
+  "top5": [
+    {
+      "symbol": "CVE",
+      "asset_class": "EQUITY",
+      "strategy": "TurtleSoup",
+      "entry": 16.64,
+      "stop": 15.72,
+      "target": 17.33,
+      "live": 16.93,
+      "gap_pct": 0.01742788461538458,
+      "rr": 0.7499999999999976,
+      "ev": 0.0674999999999985,
+      "conf_score": 141.2
+    },
+    {
+      "symbol": "CVE_18C",
+      "asset_class": "OPTIONS",
+      "strategy": "TurtleSoup_CALL",
+      "entry": 0.27,
+      "stop": 0,
+      "target": 0.54,
+      "live": 0.27,
+      "gap_pct": 0,
+      "rr": 1.0,
+      "ev": 0.495,
+      "conf_score": 99.0
+    },
+    {
+      "symbol": "CVE_16P",
+      "asset_class": "OPTIONS",
+      "strategy": "TurtleSoup_PUT",
+      "entry": 0.3,
+      "stop": 0,
+      "target": 0.6,
+      "live": 0.3,
+      "gap_pct": 0,
+      "rr": 1.0,
+      "ev": 0.495,
+      "conf_score": 99.0
+    },
+    {
+      "symbol": "VTR_79C",
+      "asset_class": "OPTIONS",
+      "strategy": "TurtleSoup_CALL",
+      "entry": 0.78,
+      "stop": 0,
+      "target": 1.56,
+      "live": 0.78,
+      "gap_pct": 0,
+      "rr": 1.0,
+      "ev": 0.495,
+      "conf_score": 99.0
+    },
+    {
+      "symbol": "VTR_75P",
+      "asset_class": "OPTIONS",
+      "strategy": "TurtleSoup_PUT",
+      "entry": 0.81,
+      "stop": 0,
+      "target": 1.62,
+      "live": 0.81,
+      "gap_pct": 0,
+      "rr": 1.0,
+      "ev": 0.495,
+      "conf_score": 99.0
+    }
+  ],
+  "top2": [
+    {
+      "symbol": "CVE",
+      "asset_class": "EQUITY",
+      "strategy": "TurtleSoup",
+      "entry": 16.64,
+      "stop": 15.72,
+      "target": 17.33,
+      "live": 16.93,
+      "gap_pct": 0.01742788461538458,
+      "rr": 0.7499999999999976,
+      "ev": 0.0674999999999985,
+      "conf_score": 141.2
+    },
+    {
+      "symbol": "CVE_18C",
+      "asset_class": "OPTIONS",
+      "strategy": "TurtleSoup_CALL",
+      "entry": 0.27,
+      "stop": 0,
+      "target": 0.54,
+      "live": 0.27,
+      "gap_pct": 0,
+      "rr": 1.0,
+      "ev": 0.495,
+      "conf_score": 99.0
+    }
+  ]
+}

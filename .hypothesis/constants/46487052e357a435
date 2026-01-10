@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\llm\router.py
+# hypothesis_version: 6.150.0
+
+[2000, 'analysis', 'anthropic', 'coding', 'error', 'model', 'ollama', 'openai', 'reasoning', 'simple', 'system', 'tool_use', 'user', 'vllm']

@@ -40,7 +40,7 @@ DATA → SIGNALS → SCORING → RISK → SIZING → EXECUTION → STATE → REP
 │         ▼                              ▼                              ▼                                  │
 │  ┌─────────────┐             ┌─────────────────┐            ┌─────────────────┐                          │
 │  │  Universe   │             │  Data Quality   │            │  Alt Data       │                          │
-│  │  900 stocks │             │  preflight/     │            │  altdata/       │                          │
+│  │  800 stocks │             │  preflight/     │            │  altdata/       │                          │
 │  │  10yr hist  │             │  data_quality   │            │  sentiment.py   │                          │
 │  └─────────────┘             └─────────────────┘            └─────────────────┘                          │
 │                                                                                                          │

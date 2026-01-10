@@ -1,9 +1,23 @@
 #!/usr/bin/env python3
+"""
+DEPRECATED: This script is deprecated. Use run_paper_trade.py --live instead.
+
+This script lacks critical safeguards present in run_paper_trade.py:
+- No weekly exposure gate
+- No unified enrichment pipeline (Kelly sizing, regime, VIX)
+- No cognitive brain evaluation
+- No learning hub integration
+- No kill zone gate
+
+Use the unified script for live trading:
+  python scripts/run_paper_trade.py --live --confirm-live I_UNDERSTAND_REAL_MONEY --universe ...
+"""
 from __future__ import annotations
 
 import argparse
+import warnings
+from datetime import datetime
 from pathlib import Path
-import os
 
 import pandas as pd
 
@@ -20,13 +34,48 @@ from strategies.dual_strategy import DualStrategyScanner, DualStrategyParams
 from execution.broker_alpaca import get_best_ask, get_best_bid, construct_decision, place_ioc_limit
 from risk.policy_gate import PolicyGate, RiskLimits
 from risk.position_limit_gate import PositionLimitGate, PositionLimits
+from risk.signal_quality_gate import filter_to_best_signals
 from core.hash_chain import append_block
 from core.structured_log import jlog
 from monitor.health_endpoints import update_request_counter
 from core.config_pin import sha256_file
 
+# FIX 4 (2026-01-08): Wire learning hub for episodic memory
+try:
+    from integration.learning_hub import get_learning_hub
+    LEARNING_HUB_AVAILABLE = True
+except ImportError:
+    LEARNING_HUB_AVAILABLE = False
+
 
 def main():
+    # ==========================================================================
+    # DEPRECATION WARNING
+    # ==========================================================================
+    warnings.warn(
+        "run_live_trade_micro.py is DEPRECATED. "
+        "Use: python scripts/run_paper_trade.py --live --confirm-live I_UNDERSTAND_REAL_MONEY",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    print("=" * 70)
+    print("WARNING: This script is DEPRECATED")
+    print("=" * 70)
+    print()
+    print("This script lacks critical safeguards. Use the unified script instead:")
+    print("  python scripts/run_paper_trade.py --live --confirm-live I_UNDERSTAND_REAL_MONEY")
+    print()
+    print("Missing safeguards in this script:")
+    print("  - Weekly exposure gate (40% cap)")
+    print("  - Unified enrichment pipeline (100+ fields)")
+    print("  - Cognitive brain evaluation")
+    print("  - Kill zone gate (10:00-11:30, 14:30-15:30)")
+    print("  - Decision cards audit trail")
+    print()
+    print("Proceeding with REDUCED SAFEGUARDS in 5 seconds...")
+    print("=" * 70)
+    import time
+    time.sleep(5)
     ap = argparse.ArgumentParser(description='Kobe live micro trading (IOC LIMIT only)')
     ap.add_argument('--universe', type=str, required=True)
     ap.add_argument('--start', type=str, required=True)
@@ -85,6 +134,16 @@ def main():
     if not todays.empty and is_earnings_filter_enabled():
         todays = pd.DataFrame(filter_signals_by_earnings(todays.to_dict('records')))
 
+    # FIX (2026-01-08): Apply quality gate for parity with scan.py (Score >= 70, Conf >= 0.60)
+    if not todays.empty:
+        before_count = len(todays)
+        filtered_signals = filter_to_best_signals(todays.to_dict('records'), max_signals=10)
+        todays = pd.DataFrame(filtered_signals) if filtered_signals else pd.DataFrame()
+        jlog('quality_gate_applied', before=before_count, after=len(todays))
+        if todays.empty:
+            print('No signals passed quality gate (Score >= 70, Confidence >= 0.60).')
+            return
+
     config_pin = sha256_file('config/settings.json') if Path('config/settings.json').exists() else None
     submitted = 0
     for _, row in todays.iterrows():
@@ -130,6 +189,28 @@ def main():
         print(f"{sym} -> {rec.status} @ {limit_px} qty {qty} note={rec.notes}")
         if str(rec.status).upper().endswith('SUBMITTED'):
             update_request_counter('orders_submitted', 1)
+            # FIX 4 (2026-01-08): Record entry with learning hub for feedback loop
+            if LEARNING_HUB_AVAILABLE:
+                try:
+                    hub = get_learning_hub()
+                    stop_loss = row.get('stop_loss', limit_px * 0.95) if hasattr(row, 'get') else limit_px * 0.95
+                    strategy_name = row.get('strategy', 'DUAL_STRATEGY') if hasattr(row, 'get') else 'DUAL_STRATEGY'
+                    hub.record_trade_entry({
+                        'symbol': sym,
+                        'side': 'long',
+                        'entry_price': limit_px,
+                        'shares': qty,
+                        'strategy': strategy_name,
+                        'trade_id': rec.decision_id,
+                        'entry_time': datetime.utcnow().isoformat(),
+                        'stop_loss': float(stop_loss) if stop_loss else limit_px * 0.95,
+                        'take_profit': limit_px * 1.05,  # 5% target for micro
+                        'signal_score': row.get('conf_score', 0) if hasattr(row, 'get') else 0,
+                        'regime': 'unknown',  # Live micro doesn't have enrichment
+                    })
+                    jlog('learning_hub_entry_recorded', symbol=sym, trade_id=rec.decision_id)
+                except Exception as e:
+                    jlog('learning_hub_entry_error', symbol=sym, error=str(e), level='WARN')
         elif str(rec.status).upper().endswith('REJECTED'):
             update_request_counter('orders_rejected', 1)
         submitted += 1

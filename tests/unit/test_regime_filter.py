@@ -4,7 +4,6 @@ Tests for core/regime_filter.py - Market regime filtering.
 from __future__ import annotations
 
 from datetime import datetime
-import pytest
 import numpy as np
 import pandas as pd
 from pathlib import Path

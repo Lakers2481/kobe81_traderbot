@@ -3,7 +3,6 @@ Unit tests for cognitive/knowledge_boundary.py
 
 Tests the AI's ability to recognize the limits of its own knowledge.
 """
-import pytest
 from datetime import datetime, timedelta
 
 
@@ -139,7 +138,7 @@ class TestAssessKnowledgeState:
         assert assessment.should_stand_down is False
 
     def test_missing_data_increases_uncertainty(self):
-        from cognitive.knowledge_boundary import KnowledgeBoundary, UncertaintySource
+        from cognitive.knowledge_boundary import KnowledgeBoundary
 
         boundary = KnowledgeBoundary()
 

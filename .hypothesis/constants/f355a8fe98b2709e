@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\ml_features\shap_explainer.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.01, 0.5, 1.0, 100, 'base_value', 'decreased', 'deep', 'dense', 'feature', 'forest', 'gbm', 'gradient', 'impact', 'increased', 'keras', 'kernel', 'lasso', 'lgb', 'lightgbm', 'linear', 'logistic', 'lstm', 'model_type', 'negative', 'network', 'neural', 'positive', 'prediction', 'random', 'rank', 'ridge', 'sequential', 'shap_value', 'timestamp', 'top_features', 'tree', 'value', 'xgb']

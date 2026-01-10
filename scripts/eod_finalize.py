@@ -15,7 +15,7 @@ Tasks:
 
 Usage:
     python scripts/eod_finalize.py --dotenv ./.env
-    python scripts/eod_finalize.py --universe data/universe/optionable_liquid_900.csv
+    python scripts/eod_finalize.py --universe data/universe/optionable_liquid_800.csv
     python scripts/eod_finalize.py --check-only
 """
 from __future__ import annotations
@@ -44,7 +44,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Constants
-DEFAULT_UNIVERSE = ROOT / "data" / "universe" / "optionable_liquid_900.csv"
+DEFAULT_UNIVERSE = ROOT / "data" / "universe" / "optionable_liquid_800.csv"
 CACHE_DIR = ROOT / "data" / "cache"
 MANIFEST_FILE = ROOT / "state" / "data_manifest.json"
 POLYGON_DELAY_MINUTES = 30  # Wait for Polygon to finalize data
@@ -384,7 +384,7 @@ def main():
 Examples:
     python scripts/eod_finalize.py --dotenv ./.env
     python scripts/eod_finalize.py --check-only
-    python scripts/eod_finalize.py --universe data/universe/optionable_liquid_900.csv
+    python scripts/eod_finalize.py --universe data/universe/optionable_liquid_800.csv
         """
     )
     parser.add_argument("--dotenv", type=str, default="./.env",

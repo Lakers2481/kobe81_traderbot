@@ -20,7 +20,7 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))

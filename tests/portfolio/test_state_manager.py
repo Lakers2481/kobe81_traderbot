@@ -3,13 +3,10 @@ Tests for portfolio/state_manager.py - Central state management.
 """
 from __future__ import annotations
 
-import json
 import pytest
-import tempfile
 import threading
 import time
 from pathlib import Path
-from unittest.mock import patch
 
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))

@@ -14,9 +14,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Optional, Dict, List, Any, Protocol, runtime_checkable
-from abc import ABC, abstractmethod
 
-import numpy as np
 import pandas as pd
 
 import sys
@@ -25,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from core.structured_log import jlog
 from .feature_pipeline import FeaturePipeline, FeatureConfig
-from .signal_confidence import SignalConfidence, ConfidenceConfig, ConfidenceLevel
+from .signal_confidence import SignalConfidence, ConfidenceConfig
 from .regime_ml import RegimeDetectorML, RegimeConfig, RegimeState
 from .anomaly_detection import AnomalyDetector, AnomalyConfig
 

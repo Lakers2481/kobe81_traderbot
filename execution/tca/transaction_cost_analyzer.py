@@ -43,7 +43,6 @@ from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-import pandas as pd
 
 from cognitive.self_model import get_self_model
 from cognitive.global_workspace import get_workspace

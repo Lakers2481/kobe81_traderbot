@@ -14,7 +14,6 @@ Tests for the new advanced integration components:
 Run: python -m pytest tests/test_integration_pipeline.py -v
 """
 
-import pytest
 import numpy as np
 import pandas as pd
 from datetime import datetime
@@ -56,7 +55,6 @@ class TestFullIntegrationPipeline:
 
     def test_full_pipeline_rejection_by_cognitive_brain(self):
         """Test that cognitive rejection path is handled correctly."""
-        from execution.intelligent_executor import IntelligentExecutor
         from cognitive.signal_processor import CognitiveSignalProcessor
 
         # Test that signal processor can be created

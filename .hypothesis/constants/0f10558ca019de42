@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\options\chain_fetcher.py
+# hypothesis_version: 6.150.0
+
+[0.01, 0.2, 20.0, 100, 200, 1000, '%Y-%m-%d', 'ALPACA_API_KEY_ID', 'OptionsChain', 'POLYGON_API_KEY', 'apiKey', 'ask', 'ask_price', 'bid', 'bid_price', 'c', 'call', 'contract_symbol', 'contract_type', 'day', 'days_to_expiration', 'delta', 'details', 'expiration', 'expiration_date', 'expiration_date.gte', 'expiration_date.lte', 'gamma', 'greeks', 'implied_volatility', 'inf', 'is_itm', 'last', 'last_quote', 'limit', 'mid', 'midpoint', 'open_interest', 'option_type', 'polygon', 'put', 'results', 'strike', 'strike_price', 'strike_price.gte', 'strike_price.lte', 'symbol', 'theta', 'ticker', 'underlying_price', 'underlying_ticker', 'vega', 'volume']

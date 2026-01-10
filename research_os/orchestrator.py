@@ -15,13 +15,12 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 
 from .knowledge_card import KnowledgeCard, KnowledgeCardStore, DiscoveryType, CardStatus
-from .proposal import ResearchProposal, ProposalStore, ChangeType, ProposalStatus
-from .approval_gate import ApprovalGate, APPROVE_LIVE_ACTION, SafetyError
+from .proposal import ResearchProposal, ProposalStore, ChangeType
+from .approval_gate import ApprovalGate, SafetyError
 
 logger = logging.getLogger(__name__)
 

@@ -31,7 +31,6 @@ Usage:
 """
 
 import logging
-import os
 import re
 import threading
 from dataclasses import dataclass, field

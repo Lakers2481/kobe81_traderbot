@@ -27,11 +27,10 @@ from execution.broker_base import (
     OrderResult,
     OrderSide,
     OrderType,
-    TimeInForce,
     BrokerOrderStatus,
 )
 from execution.broker_factory import register_broker
-from safety.execution_choke import evaluate_safety_gates, SafetyViolationError
+from safety.execution_choke import evaluate_safety_gates
 
 logger = logging.getLogger(__name__)
 
@@ -366,6 +365,10 @@ class CryptoBroker(BrokerBase):
         Returns:
             OrderResult with success/failure status
         """
+        # === PAPER MODE GUARD - MUST BE FIRST ===
+        from safety.paper_guard import ensure_paper_mode_or_die
+        ensure_paper_mode_or_die(context=f"CryptoBroker.place_order:{order.symbol}")
+
         try:
             # SAFETY GATE CHECK - Required for all order submissions
             # Crypto broker uses sandbox flag to determine paper vs live

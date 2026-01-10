@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\llm\provider_ollama.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.7, 120.0, 2000, ':', 'OLLAMA_HOST', 'arguments', 'balanced', 'codellama', 'coding', 'content', 'deepseek-r1', 'error', 'eval_count', 'fast', 'json', 'llama3.2', 'message', 'mistral', 'models', 'name', 'num_predict', 'ollama', 'prompt_eval_count', 'reasoning', 'role', 'stop', 'temperature', 'tool_name']

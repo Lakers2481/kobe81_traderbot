@@ -10,11 +10,10 @@ Handles system upkeep:
 
 import json
 import logging
-import os
 import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any
 from zoneinfo import ZoneInfo
 
 logger = logging.getLogger(__name__)
@@ -35,7 +34,7 @@ class MaintenanceEngine:
         checks_passed = 0
 
         # Check 1: Universe file exists
-        universe_file = self.base_dir / "data/universe/optionable_liquid_900.csv"
+        universe_file = self.base_dir / "data/universe/optionable_liquid_800.csv"
         if universe_file.exists():
             checks_passed += 1
         else:

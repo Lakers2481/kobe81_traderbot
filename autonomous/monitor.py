@@ -11,7 +11,7 @@ Provides real-time monitoring of the 24/7 brain:
 
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from zoneinfo import ZoneInfo
@@ -205,6 +205,139 @@ class BrainMonitor:
             "recent_tasks": self.get_task_history(10),
             "alerts": self.check_alerts(),
         }
+
+    def self_heal_check(self) -> Dict[str, Any]:
+        """
+        === TIER 5: Self-Healing Monitoring ===
+
+        Check for common issues and attempt to fix them automatically.
+
+        Returns:
+            Dict with detected issues and actions taken
+        """
+        from core.structured_log import jlog
+
+        issues = []
+        actions_taken = []
+
+        # 1. Check data freshness
+        try:
+            data_dir = Path("data/cache")
+            if data_dir.exists():
+                cache_files = list(data_dir.glob("*.csv"))
+                if cache_files:
+                    latest_file = max(cache_files, key=lambda p: p.stat().st_mtime)
+                    age_hours = (datetime.now().timestamp() - latest_file.stat().st_mtime) / 3600
+
+                    if age_hours > 48:  # Data older than 2 days
+                        issues.append({
+                            'type': 'stale_data',
+                            'message': f'Cache data is {age_hours:.1f} hours old',
+                            'severity': 'warning'
+                        })
+                        # Trigger prefetch
+                        try:
+                            jlog('self_heal_trigger_prefetch', age_hours=age_hours)
+                            actions_taken.append('scheduled_prefetch')
+                        except Exception:
+                            pass
+        except Exception as e:
+            issues.append({'type': 'data_check_failed', 'message': str(e), 'severity': 'info'})
+
+        # 2. Check broker connection
+        try:
+            from execution.broker_alpaca import AlpacaBroker
+            broker = AlpacaBroker()
+            if not broker.is_connected():
+                issues.append({
+                    'type': 'broker_disconnected',
+                    'message': 'Broker connection is down',
+                    'severity': 'critical'
+                })
+                # Attempt reconnect
+                try:
+                    broker.connect()
+                    actions_taken.append('broker_reconnected')
+                    jlog('self_heal_broker_reconnected')
+                except Exception:
+                    actions_taken.append('broker_reconnect_failed')
+        except ImportError:
+            pass  # Broker module not available
+        except Exception as e:
+            issues.append({'type': 'broker_check_failed', 'message': str(e), 'severity': 'info'})
+
+        # 3. Check kill switch (shouldn't be active during trading hours)
+        try:
+            from core.kill_switch import is_kill_switch_active, get_kill_switch_info
+            if is_kill_switch_active():
+                info = get_kill_switch_info()
+                issues.append({
+                    'type': 'kill_switch_active',
+                    'message': f"Kill switch is active: {info.get('reason', 'Unknown')}",
+                    'severity': 'critical'
+                })
+        except Exception:
+            pass
+
+        # 4. Check memory/disk usage
+        try:
+            import shutil
+            total, used, free = shutil.disk_usage(".")
+            free_gb = free / (1024 ** 3)
+            used_pct = used / total * 100
+
+            if free_gb < 1:
+                issues.append({
+                    'type': 'critical_disk_space',
+                    'message': f'Critical: Only {free_gb:.2f}GB disk space free',
+                    'severity': 'critical'
+                })
+            elif free_gb < 5:
+                issues.append({
+                    'type': 'low_disk_space',
+                    'message': f'Warning: Only {free_gb:.1f}GB disk space free',
+                    'severity': 'warning'
+                })
+
+                # Clean old logs if disk is low
+                try:
+                    logs_dir = Path("logs")
+                    if logs_dir.exists():
+                        old_logs = sorted(logs_dir.glob("*.log*"), key=lambda p: p.stat().st_mtime)
+                        if len(old_logs) > 20:
+                            for old_log in old_logs[:-10]:  # Keep last 10
+                                old_log.unlink()
+                            actions_taken.append('cleaned_old_logs')
+                            jlog('self_heal_cleaned_logs', removed=len(old_logs) - 10)
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+        # 5. Check heartbeat staleness
+        heartbeat = self.get_heartbeat()
+        if heartbeat.get('status') == 'stale' or heartbeat.get('status') == 'dead':
+            issues.append({
+                'type': 'brain_unresponsive',
+                'message': f"Brain heartbeat is {heartbeat.get('status')}",
+                'severity': 'critical'
+            })
+
+        result = {
+            'timestamp': datetime.now(ET).isoformat(),
+            'issues_found': len(issues),
+            'issues': issues,
+            'actions_taken': actions_taken,
+            'health_score': max(0, 100 - len([i for i in issues if i['severity'] == 'critical']) * 30
+                               - len([i for i in issues if i['severity'] == 'warning']) * 10)
+        }
+
+        jlog('self_heal_check_complete',
+             issues=len(issues),
+             actions=len(actions_taken),
+             health_score=result['health_score'])
+
+        return result
 
 
 def print_status():

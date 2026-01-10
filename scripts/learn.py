@@ -10,7 +10,7 @@ import json
 from collections import defaultdict
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 
 def load_trade_history(limit: int = 100, days: int = 30) -> List[Dict]:

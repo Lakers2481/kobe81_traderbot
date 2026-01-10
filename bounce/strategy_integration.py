@@ -14,17 +14,13 @@ from typing import Dict, List, Optional, Tuple
 from datetime import datetime
 
 import pandas as pd
-import numpy as np
 
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from bounce.bounce_score import (
-    calculate_bounce_score,
-    apply_bounce_gates,
     get_bounce_profile_for_signal,
     adjust_signal_for_bounce,
-    rank_signals_by_bounce,
 )
 
 

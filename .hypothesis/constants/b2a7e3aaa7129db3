@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\core\kill_switch.py
+# hypothesis_version: 6.150.0
+
+['.tmp', 'CRITICAL', 'ERROR', 'KILL_SWITCH_', 'KillSwitchTrigger', 'Manual activation', 'T', 'Unknown', 'WARNING', 'activate_kill_switch', 'activated_at', 'activated_by', 'auto_trigger', 'broker_disconnect', 'check_kill_switch', 'context', 'data_feed_failure', 'equity_fetch_failure', 'execution_anomaly', 'get_kill_switch_info', 'manual', 'max_daily_loss', 'max_drawdown', 'reason', 'state/KILL_SWITCH', 'system', 'trigger', 'unknown', 'utf-8', 'w', '{']

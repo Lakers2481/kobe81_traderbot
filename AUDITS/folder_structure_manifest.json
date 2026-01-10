@@ -1,0 +1,311 @@
+{
+  "agent": "folder_orchestrator_v1",
+  "ts_utc": "2026-01-09T04:54:16.173799",
+  "root": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot",
+  "folders": {
+    "__pycache__": "__pycache__\\",
+    "agents": "agents\\",
+    "alerts": "alerts\\",
+    "altdata": "altdata\\",
+    "analysis": "analysis\\",
+    "analytics": "analytics\\",
+    "archive": "archive\\",
+    "AUDITS": "AUDITS\\",
+    "autonomous": "autonomous\\",
+    "backtest": "backtest\\",
+    "backtest_outputs": "backtest_outputs\\",
+    "backups": "backups\\",
+    "bounce": "bounce\\",
+    "cache": "cache\\",
+    "cognitive": "cognitive\\",
+    "compliance": "compliance\\",
+    "config": "config\\",
+    "core": "core\\",
+    "C\uf03aUsersOwnerOneDriveDesktopkobe81_traderbotdataverification": "C\uf03aUsersOwnerOneDriveDesktopkobe81_traderbotdataverification\\",
+    "C\uf03aUsersOwnerOneDriveDesktopkobe81_traderbotscriptsexperiments": "C\uf03aUsersOwnerOneDriveDesktopkobe81_traderbotscriptsexperiments\\",
+    "dashboard": "dashboard\\",
+    "data": "data\\",
+    "data_exploration": "data_exploration\\",
+    "docs": "docs\\",
+    "evaluation": "evaluation\\",
+    "evolution": "evolution\\",
+    "execution": "execution\\",
+    "experiments": "experiments\\",
+    "explainability": "explainability\\",
+    "extensions": "extensions\\",
+    "guardian": "guardian\\",
+    "integration": "integration\\",
+    "llm": "llm\\",
+    "logs": "logs\\",
+    "messaging": "messaging\\",
+    "ml": "ml\\",
+    "ml_advanced": "ml_advanced\\",
+    "ml_features": "ml_features\\",
+    "ml_meta": "ml_meta\\",
+    "mlruns": "mlruns\\",
+    "models": "models\\",
+    "monitor": "monitor\\",
+    "news": "news\\",
+    "notebooks": "notebooks\\",
+    "observability": "observability\\",
+    "oms": "oms\\",
+    "ops": "ops\\",
+    "OPS_LOGS": "OPS_LOGS\\",
+    "optimization": "optimization\\",
+    "optimize_outputs": "optimize_outputs\\",
+    "options": "options\\",
+    "output": "output\\",
+    "outputs": "outputs\\",
+    "pipelines": "pipelines\\",
+    "portfolio": "portfolio\\",
+    "preflight": "preflight\\",
+    "quant_gates": "quant_gates\\",
+    "RELEASE": "RELEASE\\",
+    "reports": "reports\\",
+    "research": "research\\",
+    "research_os": "research_os\\",
+    "risk": "risk\\",
+    "RUNBOOKS": "RUNBOOKS\\",
+    "safety": "safety\\",
+    "scanner": "scanner\\",
+    "scripts": "scripts\\",
+    "selfmonitor": "selfmonitor\\",
+    "showdown_2025_cap60": "showdown_2025_cap60\\",
+    "showdown_outputs": "showdown_outputs\\",
+    "simulation": "simulation\\",
+    "smoke_outputs": "smoke_outputs\\",
+    "smoke_turtle_soup": "smoke_turtle_soup\\",
+    "smoke_wf_audit": "smoke_wf_audit\\",
+    "state": "state\\",
+    "stateguardian": "stateguardian\\",
+    "strategies": "strategies\\",
+    "strategy_specs": "strategy_specs\\",
+    "tax": "tax\\",
+    "testing": "testing\\",
+    "tests": "tests\\",
+    "tools": "tools\\",
+    "trade_logging": "trade_logging\\",
+    "validation": "validation\\",
+    "vuLDY5zrhSOyIpTVB6JB5taCKu71bWAQ": "vuLDY5zrhSOyIpTVB6JB5taCKu71bWAQ\\",
+    "web": "web\\",
+    "wf_outputs": "wf_outputs\\"
+  },
+  "files": [],
+  "actions": [
+    "CONSOLIDATE outputs/ and output/ into single outputs/ directory",
+    "CREATE __init__.py in 15 directories"
+  ],
+  "summary": {
+    "ok": false,
+    "problems": 7,
+    "suggested_moves": 38
+  },
+  "problems": [
+    "Found 34 loose documentation files in root",
+    "Found 7 output directories - consolidate",
+    "Found 15 Python packages missing __init__.py",
+    "Found strange directory: vuLDY5zrhSOyIpTVB6JB5taCKu71bWAQ",
+    "Found strange directory: _ul",
+    "Found strange directory: _ul-DESKTOP-5IB5S6R",
+    "Found strange directory: nul"
+  ],
+  "suggested_moves": [
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AAPL_DATA_VALIDATION_REPORT.json",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AUDITS\\AAPL_DATA_VALIDATION_REPORT.json",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AI_HANDOFF_PROMPT.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\AI_HANDOFF_PROMPT.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AUDITSall_python_files.txt",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AUDITS\\AUDITSall_python_files.txt",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AUDIT_QUICK_SUMMARY.json",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AUDITS\\AUDIT_QUICK_SUMMARY.json",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AUDIT_SUMMARY.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\AUDIT_SUMMARY.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\CAPABILITY_MATRIX.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\CAPABILITY_MATRIX.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\CLAUDE_PROMPT_DETERMINISM_AUDIT.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\CLAUDE_PROMPT_DETERMINISM_AUDIT.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\CLAUDE_WORK_PROMPT.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\CLAUDE_WORK_PROMPT.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\COMPREHENSIVE_AUDIT_REPORT.json",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AUDITS\\COMPREHENSIVE_AUDIT_REPORT.json",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\DATA_VERIFICATION_REPORT.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\DATA_VERIFICATION_REPORT.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\EXTERNAL_RESOURCES_DETAILED_ANALYSIS.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\EXTERNAL_RESOURCES_DETAILED_ANALYSIS.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\EXTERNAL_RESOURCES_RESEARCH_REPORT.json",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AUDITS\\EXTERNAL_RESOURCES_RESEARCH_REPORT.json",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\EXTERNAL_RESOURCE_AUDIT_FINAL_REPORT.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\EXTERNAL_RESOURCE_AUDIT_FINAL_REPORT.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\FIX_1_IMPLEMENTATION_SUMMARY.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\FIX_1_IMPLEMENTATION_SUMMARY.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\FIX_2_IMPLEMENTATION_SUMMARY.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\FIX_2_IMPLEMENTATION_SUMMARY.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\FIX_3_IMPLEMENTATION_SUMMARY.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\FIX_3_IMPLEMENTATION_SUMMARY.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\FIX_4_IMPLEMENTATION_SUMMARY.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\FIX_4_IMPLEMENTATION_SUMMARY.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\INTEGRATION_RECOMMENDATIONS.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\INTEGRATION_RECOMMENDATIONS.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\INTERVIEW_ONE_PAGER.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\INTERVIEW_ONE_PAGER.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\markov_verification_output.txt",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AUDITS\\markov_verification_output.txt",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\MODULE_FILE_COUNTS.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\MODULE_FILE_COUNTS.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\NIGHT_AUDIT_REPORT.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\NIGHT_AUDIT_REPORT.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\OPTIMIZER_PROOF_VERDICT.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\OPTIMIZER_PROOF_VERDICT.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\OVERNIGHT_STATUS.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\OVERNIGHT_STATUS.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\PIPELINE_FLOW_DIAGRAM.txt",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AUDITS\\PIPELINE_FLOW_DIAGRAM.txt",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\PIPELINE_VERIFICATION_REPORT.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\PIPELINE_VERIFICATION_REPORT.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\PRODUCTION_CRITICAL_COMPONENTS.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\PRODUCTION_CRITICAL_COMPONENTS.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\PROGRESS_STATUS.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\PROGRESS_STATUS.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\PROJECT_CONTEXT.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\PROJECT_CONTEXT.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\QUICK_START.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\QUICK_START.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\requirements-dev.txt",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AUDITS\\requirements-dev.txt",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\requirements.lock.txt",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AUDITS\\requirements.lock.txt",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\SENTINEL_AUDIT_REPORT_20260106.json",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\AUDITS\\SENTINEL_AUDIT_REPORT_20260106.json",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\SYSTEM_ARCHITECTURE_INVENTORY.md",
+      "to": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\docs\\SYSTEM_ARCHITECTURE_INVENTORY.md",
+      "reason": "Root clutter - move to proper location"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\vuLDY5zrhSOyIpTVB6JB5taCKu71bWAQ",
+      "to": "DELETE or INVESTIGATE",
+      "reason": "Unknown purpose, possibly temp/garbage"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\_ul",
+      "to": "DELETE or INVESTIGATE",
+      "reason": "Unknown purpose, possibly temp/garbage"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\_ul-DESKTOP-5IB5S6R",
+      "to": "DELETE or INVESTIGATE",
+      "reason": "Unknown purpose, possibly temp/garbage"
+    },
+    {
+      "from": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\nul",
+      "to": "DELETE or INVESTIGATE",
+      "reason": "Unknown purpose, possibly temp/garbage"
+    }
+  ],
+  "hints_for_agents": [
+    "data_agent: Primary data location is data/, cache is data/cache/ and cache/",
+    "backtest_agent: Backtest outputs are in backtest_outputs/, wf_outputs/, and showdown_outputs/",
+    "strategy_agent: Strategies are in strategies/ with dual_strategy/, ibs_rsi/, ict/ subdirs",
+    "report_agent: Reports go to reports/, human-readable summaries to reports/tearsheets/",
+    "claude_agent: Documentation in docs/, audit reports in AUDITS/"
+  ]
+}

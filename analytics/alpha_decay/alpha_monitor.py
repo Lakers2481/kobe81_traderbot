@@ -13,14 +13,13 @@ Created: 2026-01-04
 """
 
 from dataclasses import dataclass
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
 from enum import Enum
 import json
 import statistics
 
-import numpy as np
 
 from core.structured_log import get_logger
 
@@ -353,7 +352,7 @@ class AlphaDecayMonitor:
             return ("CONTINUE", "Strategy performing well. Maintain current allocation.")
 
         elif status == HealthStatus.DEGRADING:
-            return ("REDUCE", f"Performance declining. Consider reducing allocation by 25-50%.")
+            return ("REDUCE", "Performance declining. Consider reducing allocation by 25-50%.")
 
         elif status == HealthStatus.DYING:
             return ("PAUSE", "Significant degradation detected. Pause new entries and review.")

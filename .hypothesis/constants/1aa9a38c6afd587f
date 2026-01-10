@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\pipelines\reporting_pipeline.py
+# hypothesis_version: 6.150.0
+
+['# DAILY SUMMARY', '# KOBE STATUS REPORT', '## BRAIN STATUS', '## DATA STATUS', '## GOAL PROGRESS', '## MONDAY GAME PLAN', '## RESEARCH STATUS', '## RESEARCH SUMMARY', '## SIGNALS', '## STRATEGY HEALTH', '## SYSTEM AUDIT', '## TRADING', '## WEEK AHEAD', '### Key Events', '### Kill Zones (ET)', '### Quality Gates', '*.csv', '- Cache Healthy: YES', '- Cache: NOT FOUND', '- P&L: $0.00', '- Trades Today: 0', '- Win Rate: N/A', '---', 'autonomous', 'cache', 'heartbeat.json', 'polygon_eod', 'reporting', 'reports_generated', 'research', 'research_state.json', 'status_latest.md']

@@ -360,7 +360,7 @@ if __name__ == "__main__":
     ]
 
     result = breaker.check(recent_trades=trades)
-    print(f"\nAfter 3 consecutive losses:")
+    print("\nAfter 3 consecutive losses:")
     print(f"  Status: {result['status'].value}")
     print(f"  Action: {result['action'].value}")
     print(f"  Message: {result['message']}")
@@ -373,7 +373,7 @@ if __name__ == "__main__":
     ]
 
     result = breaker.check(recent_trades=more_losses)
-    print(f"\nAfter 5 consecutive losses:")
+    print("\nAfter 5 consecutive losses:")
     print(f"  Status: {result['status'].value}")
     print(f"  Action: {result['action'].value}")
     print(f"  Message: {result['message']}")

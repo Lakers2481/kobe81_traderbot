@@ -15,7 +15,7 @@ Kobe is an **autonomous trading robot** that combines:
 - **24/7 Automation** - Runs continuously without human intervention
 
 ### How It Works
-1. **Scans** 900 stocks at market open
+1. **Scans** 800 stocks at market open
 2. **Evaluates** signals through cognitive brain (928 episodes, 57.87% historical WR)
 3. **Picks** the single best Trade of the Day (TOTD)
 4. **Sizes** position based on confidence (2% risk, $2,500 max)
@@ -111,37 +111,37 @@ Quick Start
    python scripts/preflight.py --dotenv ./.env
 
 2) Build the 900-stock universe with proofs
-   python scripts/build_universe_polygon.py --candidates data/universe/optionable_liquid_candidates.csv --start 2015-01-01 --end 2024-12-31 --min-years 10 --cap 900 --concurrency 3 --cache data/cache --out data/universe/optionable_liquid_900.csv --dotenv ./.env
+   python scripts/build_universe_polygon.py --candidates data/universe/optionable_liquid_candidates.csv --start 2015-01-01 --end 2024-12-31 --min-years 10 --cap 900 --concurrency 3 --cache data/cache --out data/universe/optionable_liquid_800.csv --dotenv ./.env
 
 3) Prefetch EOD bars (faster WF)
-   python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --cache data/cache --concurrency 3 --dotenv ./.env
+   python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --cache data/cache --concurrency 3 --dotenv ./.env
 
 4) Walk-forward comparison and report
-   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+   python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
    python scripts/aggregate_wf_report.py --wfdir wf_outputs --out wf_outputs/wf_report.html
 
 5) Showdown (full-period side-by-side)
-   python scripts/run_showdown_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --cap 900 --outdir showdown_outputs --cache data/cache --dotenv ./.env
+   python scripts/run_showdown_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --cap 900 --outdir showdown_outputs --cache data/cache --dotenv ./.env
 
 Paper and Live Trading (IOC LIMIT)
 - Paper (micro budgets):
-  python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --cap 50 --dotenv ./.env
+  python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --cap 50 --dotenv ./.env
 
 - Live (micro budgets; set ALPACA_BASE_URL to live in .env):
-  python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --cap 10 --dotenv ./.env
+  python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --cap 10 --dotenv ./.env
 
 Evidence Artifacts
 - wf_outputs/wf_summary_compare.csv â€” strategy side-by-side KPIs
 - wf_outputs/<strategy>/split_NN/{trade_list.csv,equity_curve.csv,summary.json}
 - showdown_outputs/showdown_summary.csv, showdown_report.html
-- data/universe/optionable_liquid_900.csv and `.full.csv` (coverage, ADV, options proofs)
+- data/universe/optionable_liquid_800.csv and `.full.csv` (coverage, ADV, options proofs)
 - logs/events.jsonl (structured), state/hash_chain.jsonl (audit)
 
 24/7 Runner
 - Paper example:
-  python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv --cap 50 --scan-times 09:35,10:30,15:55 --lookback-days 540 --dotenv ./.env
+  python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_800.csv --cap 50 --scan-times 09:35,10:30,15:55 --lookback-days 540 --dotenv ./.env
 - Live example:
-  python scripts/runner.py --mode live --universe data/universe/optionable_liquid_900.csv --cap 10 --scan-times 09:35,10:30,15:55 --lookback-days 540 --dotenv ./.env
+  python scripts/runner.py --mode live --universe data/universe/optionable_liquid_800.csv --cap 10 --scan-times 09:35,10:30,15:55 --lookback-days 540 --dotenv ./.env
  - Task Scheduler setup: see docs/RUN_24x7.md
 
 Time Zones
@@ -156,7 +156,7 @@ Kobe runs two parallel systems:
 ### Paper Trading Runner
 Executes trades during market hours.
 ```bash
-python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv --cap 50 --scan-times 09:35,10:30,15:55 --dotenv ./.env
+python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_800.csv --cap 50 --scan-times 09:35,10:30,15:55 --dotenv ./.env
 ```
 
 ### Overnight Runner
@@ -243,7 +243,7 @@ All features below are disabled by default. Enable in `config/base.yaml`:
 
 Robustness Tools
 - Parameter Optimization:
-  python scripts/optimize.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --cap 100 --outdir optimize_outputs --dotenv ./.env
+  python scripts/optimize.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --cap 100 --outdir optimize_outputs --dotenv ./.env
 
 - Monte Carlo Robustness Testing:
   python scripts/monte_carlo.py --trades wf_outputs/ibs_rsi/split_00/trade_list.csv --iterations 1000 --outdir monte_carlo_outputs

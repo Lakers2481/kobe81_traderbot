@@ -13,11 +13,10 @@ import argparse
 import json
 import os
 import subprocess
-import signal
 import sys
 from pathlib import Path
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -31,7 +30,7 @@ HEALTH_PID_FILE = PID_DIR / "health.pid"
 RUNNER_PID_FILE = PID_DIR / "runner.pid"
 KILL_SWITCH_FILE = STATE_DIR / "KILL_SWITCH"
 
-DEFAULT_UNIVERSE = ROOT / "data" / "universe" / "optionable_liquid_900.csv"
+DEFAULT_UNIVERSE = ROOT / "data" / "universe" / "optionable_liquid_800.csv"
 DEFAULT_CAP = 50
 
 

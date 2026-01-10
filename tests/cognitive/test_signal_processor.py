@@ -3,7 +3,6 @@ Unit tests for cognitive/signal_processor.py
 
 Tests the bridge between trading signals and the cognitive brain.
 """
-import pytest
 import pandas as pd
 from datetime import datetime
 

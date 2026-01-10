@@ -36,9 +36,9 @@ The trading data pipeline has been validated through 7 comprehensive layers. All
 
 | Check | Status | Result |
 |-------|--------|--------|
-| Universe File Exists | PASS | 900 symbols loaded |
+| Universe File Exists | PASS | 800 symbols loaded |
 | Universe File Schema | PASS | Correct format with 'symbol' column |
-| Symbol Count | PASS | 900 symbols (matches expected) |
+| Symbol Count | PASS | 800 symbols (matches expected) |
 | Cache Directory | PASS | Exists at `data/cache/` |
 | Cache File Schema | PASS | All required OHLCV columns present |
 
@@ -75,7 +75,7 @@ The trading data pipeline has been validated through 7 comprehensive layers. All
 
 | Check | Status | Result |
 |-------|--------|--------|
-| Cache Coverage | PASS | 100.0% of universe cached (950/900 symbols) |
+| Cache Coverage | PASS | 100.0% of universe cached (950/800 symbols) |
 
 ---
 
@@ -142,7 +142,7 @@ python scripts/prefetch_polygon_universe.py --symbols VIX,VIXY --start 2020-01-0
 **Action Required:**
 ```bash
 # Generate sector map from universe
-python scripts/generate_sector_map.py --universe data/universe/optionable_liquid_900.csv --output data/sector_map.csv
+python scripts/generate_sector_map.py --universe data/universe/optionable_liquid_800.csv --output data/sector_map.csv
 ```
 
 **Risk Level:** MEDIUM - Affects advanced risk management only
@@ -220,7 +220,7 @@ The data pipeline is **ready for paper trading** with the following conditions:
 **Usage:**
 ```bash
 python scripts/validate_data_pipeline.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --cache data/cache \
   --output reports/data_pipeline_audit.json
 ```

@@ -96,7 +96,7 @@ try {
         # Register for current user only (no admin required)
         $RepoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
         $action = New-ScheduledTaskAction -Execute "python" `
-            -Argument "scripts\scheduler_kobe.py --dotenv .\.env --universe data\universe\optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram" `
+            -Argument "scripts\scheduler_kobe.py --dotenv .\.env --universe data\universe\optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram" `
             -WorkingDirectory $RepoRoot
         $triggerLogon = New-ScheduledTaskTrigger -AtLogon
         $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable

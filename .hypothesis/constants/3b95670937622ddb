@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\data\lake\__init__.py
+# hypothesis_version: 6.150.0
+
+['DatasetManifest', 'FileRecord', 'LakeReader', 'LakeWriter', 'SCHEMA_VERSION', 'compute_dataset_id', 'compute_file_hash', 'create_manifest', 'dataset_exists', 'find_manifest', 'list_manifests', 'quick_freeze', 'quick_load']

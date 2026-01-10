@@ -3,7 +3,7 @@
 Overnight Watchlist Builder - Generates next day's Top 5 watchlist.
 
 Runs at 3:30 PM to:
-1. Scan 900 stocks for NEXT DAY setups
+1. Scan 800 stocks for NEXT DAY setups
 2. Generate Top 5 watchlist + TOTD
 3. Save to state/watchlist/next_day.json
 4. Optionally prefetch data for Top 5 only (saves API calls)
@@ -323,7 +323,7 @@ def prefetch_watchlist_data(symbols: List[str], provider) -> None:
 
 def main():
     parser = argparse.ArgumentParser(description='Build overnight watchlist for next trading day')
-    parser.add_argument('--universe', type=str, default='data/universe/optionable_liquid_900.csv')
+    parser.add_argument('--universe', type=str, default='data/universe/optionable_liquid_800.csv')
     parser.add_argument('--cap', type=int, default=900)
     parser.add_argument('--top', type=int, default=5, help='Number of stocks for watchlist')
     parser.add_argument('--dotenv', type=str, default='./.env')

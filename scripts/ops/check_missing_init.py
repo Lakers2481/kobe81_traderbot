@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Find directories with Python files but missing __init__.py"""
 import os
-import sys
 
 def find_missing_init(root_dir='.'):
     missing = []

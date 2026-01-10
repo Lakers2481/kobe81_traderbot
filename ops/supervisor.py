@@ -10,12 +10,9 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum, auto
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 import json
 import logging
-import os
-import subprocess
-import sys
 import threading
 import time
 

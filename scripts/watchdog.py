@@ -15,11 +15,10 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import subprocess
 import sys
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -136,7 +135,7 @@ def start_scheduler() -> bool:
     cmd = [
         sys.executable, str(ROOT / "scripts" / "scheduler_kobe.py"),
         "--dotenv", str(dotenv),
-        "--universe", "data/universe/optionable_liquid_900.csv",
+        "--universe", "data/universe/optionable_liquid_800.csv",
         "--cap", "900",
         "--tick-seconds", "20",
         "--telegram"

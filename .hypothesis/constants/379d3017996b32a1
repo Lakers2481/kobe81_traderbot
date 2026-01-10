@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\compliance\prohibited_list.py
+# hypothesis_version: 6.150.0
+
+['earnings', 'near_earnings_window']

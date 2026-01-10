@@ -136,20 +136,20 @@ Legend: [module] files | (service) endpoints | {data} artifacts
 
 UNIVERSE (900 SYMBOLS)
 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-{data/universe/optionable_liquid_900.csv}  â† loader: data/universe/loader.py
+{data/universe/optionable_liquid_800.csv}  â† loader: data/universe/loader.py
 
 
 RUN ENTRY POINTS
 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 - Walkâ€‘Forward (IBS\+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 
 - Daily pipeline (Topâ€‘3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 
 - Live/Paper (IOC LIMIT) with spread gate:
-  python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --cap 50 --dotenv ./.env --max-spread-pct 0.02
-  python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_900.csv --cap 10 --dotenv ./.env --max-spread-pct 0.02
+  python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_800.csv --cap 50 --dotenv ./.env --max-spread-pct 0.02
+  python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_800.csv --cap 10 --dotenv ./.env --max-spread-pct 0.02
 
 
 NOTES
@@ -417,7 +417,7 @@ EXPLAINABILITY & REPORTS (DETAILED)
   │  │   └─────────┘      └─────────┘      └─────────┘      └─────────┘      └─────────┘         │   │
   │  │                                                                                            │   │
   │  │   Mode: --mode paper  or  --mode live                                                      │   │
-  │  │   Universe: 900 stocks, Cap: configurable                                                  │   │
+  │  │   Universe: 800 stocks, Cap: configurable                                                  │   │
   │  │                                                                                            │   │
   │  └───────────────────────────────────────────────────────────────────────────────────────────┘   │
   │                                                                                                   │

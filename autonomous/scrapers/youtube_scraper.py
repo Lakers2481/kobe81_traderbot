@@ -9,13 +9,11 @@ with REAL backtest data - NO synthetic data ever.
 """
 
 import time
-import hashlib
 from pathlib import Path
 from datetime import datetime, timedelta
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Optional, Any
 import json
-import re
 
 from core.structured_log import jlog
 

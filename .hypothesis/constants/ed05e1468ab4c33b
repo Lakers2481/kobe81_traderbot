@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\execution\intelligent_executor.py
+# hypothesis_version: 6.150.0
+
+[0.5, 100000.0, 'IOC', 'LIMIT', 'UNKNOWN', 'approved', 'broker_order_id', 'close', 'components', 'entry_price', 'equity', 'executed', 'execution_results', 'long', 'max_signals_per_run', 'min_confidence', 'ml_confidence', 'new_stop', 'old_stop', 'order_manager', 'paper_mode', 'policy_gate', 'position_size', 'reason', 'regime', 'rejection_reason', 'risk_manager', 'shares', 'side', 'signal_id', 'signals_approved', 'signals_executed', 'signals_generated', 'signals_rejected', 'state', 'strategy', 'strategy_selector', 'strategy_used', 'symbol', 'timestamp', 'unknown', 'warnings']

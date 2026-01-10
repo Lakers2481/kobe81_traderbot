@@ -3,8 +3,7 @@ Tests for scripts/preflight_live.py - Live trading preflight gate.
 """
 from __future__ import annotations
 
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import json
 
 import sys
@@ -15,7 +14,6 @@ from scripts.preflight_live import (
     run_preflight,
     check_kill_switch,
     check_broker_keys,
-    check_settings_schema,
     check_webhook_hmac,
     CheckResult,
     PreflightReport,

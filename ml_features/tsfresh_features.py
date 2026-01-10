@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Optional, List, Dict, Union, Set
+from typing import Optional, List, Dict
 from dataclasses import dataclass, field
 import warnings
 

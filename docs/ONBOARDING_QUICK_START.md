@@ -13,11 +13,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n## Table of Contents
 
 1. [System Overview](#system-overview)
@@ -36,18 +36,18 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n## System Overview
 
 ### What is Kobe81?
 
 Kobe81 is an **institutional-grade quantitative trading system** that:
 - Implements proven mean-reversion strategies (IBS+RSI + ICT Turtle Soup)
-- Backtests with 10 years of historical data (900 stocks)
+- Backtests with 10 years of historical data (800 stocks)
 - Executes trades automatically via Alpaca broker
 - Enforces strict risk controls (kill switch, budgets, audit trail)
 - Prevents common pitfalls (lookahead bias, overfitting, duplicate orders)
@@ -66,11 +66,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n---`n## Canonical Setup (Two Strategies + 900 Universe)
 
 Use these commands as the source of truth:
@@ -78,11 +78,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n|---`n## Canonical Setup (Two Strategies + 900 Universe)
 
 Use these commands as the source of truth:
@@ -90,11 +90,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n---`n## Canonical Setup (Two Strategies + 900 Universe)
 
 Use these commands as the source of truth:
@@ -102,11 +102,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n---`n## Canonical Setup (Two Strategies + 900 Universe)
 
 Use these commands as the source of truth:
@@ -114,11 +114,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n|
 | `scripts/runner.py` | 24/7 scheduler - main entry point |
 | `scripts/run_paper_trade.py` | Paper trading execution |
@@ -137,11 +137,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n## First 5 Minutes
 
 ### 1. Navigate to Project
@@ -190,11 +190,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n## Understanding the Architecture
 
 ### The 10 Layers (Top to Bottom)
@@ -208,7 +208,7 @@ Layer 6:  OMS             - Order management, idempotency
 Layer 5:  RISK            - Policy gate, kill switch
 Layer 4:  BACKTEST        - Historical simulation
 Layer 3:  STRATEGY        - Signal generation (IBS+RSI + ICT Turtle Soup)
-Layer 2:  UNIVERSE        - Stock filtering (900 symbols)
+Layer 2:  UNIVERSE        - Stock filtering (800 symbols)
 Layer 1:  DATA            - Market data ingestion (Polygon)
 Layer 0:  EXTERNAL        - APIs, configuration
 ```
@@ -252,16 +252,16 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n## Running Your First Backtest
 
 ### Step 1: Build Universe (One-Time Setup)
 
-This takes ~30 minutes and downloads 10 years of data for 900 stocks:
+This takes ~30 minutes and downloads 10 years of data for 800 stocks:
 
 ```bash
 python scripts/build_universe_polygon.py \
@@ -278,7 +278,7 @@ python scripts/build_universe_polygon.py \
 - Loads candidate symbols from CSV
 - Checks each for options availability (via Polygon)
 - Verifies 10+ years of historical data
-- Writes final 900 symbols to `data/universe/optionable_liquid_900.csv`
+- Writes final 800 symbols to `data/universe/optionable_liquid_800.csv`
 
 **Skip this step if universe file already exists.**
 
@@ -288,7 +288,7 @@ Pre-download all historical bars to speed up backtests:
 
 ```bash
 python scripts/prefetch_polygon_universe.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --start 2015-01-01 \
   --end 2024-12-31 \
   --cache data/cache \
@@ -303,7 +303,7 @@ python scripts/prefetch_polygon_universe.py \
 # IBS+RSI Backtest (single strategy)
 python scripts/run_backtest_polygon.py \
   --strategy IBS+RSI \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --start 2020-01-01 \
   --end 2024-12-31 \
   --cap 900 \
@@ -313,7 +313,7 @@ python scripts/run_backtest_polygon.py \
 # ICT Turtle Soup Backtest (single strategy)
 python scripts/run_backtest_polygon.py \
   --strategy turtle_soup \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --start 2020-01-01 \
   --end 2024-12-31 \
   --cap 900 \
@@ -348,7 +348,7 @@ Test strategy stability across multiple time periods:
 
 ```bash
 python scripts/run_wf_polygon.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --start 2015-01-01 \
   --end 2024-12-31 \
   --train-days 252 \
@@ -390,11 +390,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n## Paper Trading Setup
 
 ### Prerequisites
@@ -408,7 +408,7 @@ Use these commands as the source of truth:
 
 ```bash
 python scripts/run_paper_trade.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --start 2024-06-01 \
   --end 2025-12-26 \
   --cap 50
@@ -443,7 +443,7 @@ python scripts/positions.py
 ```bash
 python scripts/runner.py \
   --mode paper \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --cap 50 \
   --scan-times 09:35,10:30,15:55 \
   --lookback-days 540
@@ -479,11 +479,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n## Key Concepts
 
 ### 1. Strategies
@@ -605,11 +605,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n## Common Tasks
 
 ### View Recent Logs
@@ -728,11 +728,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n## Troubleshooting
 
 ### Issue: Preflight fails with "Missing env keys"
@@ -787,7 +787,7 @@ grep "policy_veto" logs/events.jsonl
 grep "order_submit" logs/events.jsonl
 
 # Run with debug output
-python scripts/run_paper_trade.py --cap 10 --universe data/universe/optionable_liquid_900.csv --start 2024-01-01 --end 2025-12-26
+python scripts/run_paper_trade.py --cap 10 --universe data/universe/optionable_liquid_800.csv --start 2024-01-01 --end 2025-12-26
 ```
 
 ### Issue: walk-forward takes too long
@@ -846,11 +846,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n## Next Steps
 
 ### After Paper Trading Success (30+ days)
@@ -896,11 +896,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n---`n## Canonical Setup (Two Strategies + 900 Universe)
 
 Use these commands as the source of truth:
@@ -908,11 +908,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n--|---`n## Canonical Setup (Two Strategies + 900 Universe)
 
 Use these commands as the source of truth:
@@ -920,11 +920,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n---`n## Canonical Setup (Two Strategies + 900 Universe)
 
 Use these commands as the source of truth:
@@ -932,11 +932,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n-|---`n## Canonical Setup (Two Strategies + 900 Universe)
 
 Use these commands as the source of truth:
@@ -944,11 +944,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n---`n## Canonical Setup (Two Strategies + 900 Universe)
 
 Use these commands as the source of truth:
@@ -956,11 +956,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n-|---`n## Canonical Setup (Two Strategies + 900 Universe)
 
 Use these commands as the source of truth:
@@ -968,11 +968,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n---`n## Canonical Setup (Two Strategies + 900 Universe)
 
 Use these commands as the source of truth:
@@ -980,11 +980,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n--|---`n## Canonical Setup (Two Strategies + 900 Universe)
 
 Use these commands as the source of truth:
@@ -992,11 +992,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n---`n## Canonical Setup (Two Strategies + 900 Universe)
 
 Use these commands as the source of truth:
@@ -1004,11 +1004,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n--|
 | Universe Cap | 10 | 25 | 50 | 100+ |
 | Order Budget | $75 | $150 | $300 | $500+ |
@@ -1022,11 +1022,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n## Additional Resources
 
 ### Documentation
@@ -1051,11 +1051,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n## Getting Help
 
 ### Check Logs First
@@ -1122,11 +1122,11 @@ Use these commands as the source of truth:
 - Preflight:
   python scripts/preflight.py --dotenv ./.env
 - Walk-forward (IBS+RSI vs ICT):
-  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
+  python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63 --cap 900 --outdir wf_outputs --cache data/cache --dotenv ./.env
 - Daily pipeline (Top-3 + TOTD):
   python scripts/run_daily_pipeline.py --dotenv ./.env --cap 900 --ensure-top3
 - Scheduler (24/7):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --tick-seconds 20 --telegram
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --tick-seconds 20 --telegram
 `n**Congratulations!** You're now ready to operate Kobe81 Traderbot.
 
 **Remember:**

@@ -8,7 +8,6 @@ add/remove symbols, and validate data history.
 from __future__ import annotations
 
 import argparse
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -325,7 +324,7 @@ Examples:
     ap.add_argument(
         "--universe",
         type=str,
-        default="data/universe/optionable_liquid_900.csv",
+        default="data/universe/optionable_liquid_800.csv",
         help="Universe CSV file",
     )
     ap.add_argument(

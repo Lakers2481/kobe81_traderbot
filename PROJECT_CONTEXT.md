@@ -23,7 +23,7 @@
 | Core Architecture | COMPLETE | 10-layer system fully implemented |
 | Strategies | COMPLETE | IBS+RSI, ICT Turtle Soup,  filter |
 | Backtesting | COMPLETE | Walk-forward validated |
-| Universe | COMPLETE | 900 stocks, 10Y coverage |
+| Universe | COMPLETE | 800 stocks, 10Y coverage |
 | Paper Trading | READY | Micro budgets enforced |
 | Live Trading | READY | Pending paper validation |
 | CI/CD | PASSING | GitHub Actions (63 tests) |
@@ -60,7 +60,7 @@
 â”‚          Signal generation, lookahead prevention            â”‚
 â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
 â”‚ Layer 2: UNIVERSE        data/universe/loader.py            â”‚
-â”‚          900 stocks, optionable, liquid, 10Y coverage       â”‚
+â”‚          800 stocks, optionable, liquid, 10Y coverage       â”‚
 â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
 â”‚ Layer 1: DATA            data/providers/polygon_eod.py      â”‚
 â”‚          Polygon API, CSV caching, rate limiting            â”‚
@@ -110,7 +110,7 @@
 - `scripts/scheduler_kobe.py` - 24/7 scheduler
 
 ### Data
-- `data/universe/optionable_liquid_900.csv` - 900 stocks
+- `data/universe/optionable_liquid_800.csv` - 800 stocks
 - `data/cache/` - Polygon data cache (203 MB)
 
 ### State
@@ -141,7 +141,7 @@ python scripts/preflight.py --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2
 ### 2. Walk-Forward Validation
 ```bash
 python scripts/run_wf_polygon.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --start 2015-01-01 --end 2024-12-31 \
   --train-days 252 --test-days 63 \
   --cap 900 --outdir wf_outputs \
@@ -152,7 +152,7 @@ python scripts/run_wf_polygon.py \
 ### 3. Paper Trading
 ```bash
 python scripts/run_paper_trade.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --cap 50 \
   --dotenv C:/Users/Owner/OneDrive/Desktop/GAME_PLAN_2K28/.env
 ```

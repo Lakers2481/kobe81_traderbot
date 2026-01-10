@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\ml_features\conviction_scorer.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.02, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 1.0, 1.2, 1.5, 2.0, 2.5, 3.0, 5.0, 100, 200, 'ACCEPTABLE', 'BUY', 'CONSIDER', 'Close', 'EXCELLENT', 'EXCEPTIONAL', 'GOOD', 'High', 'Low', 'PASS', 'STRONG BUY', 'Volume', 'WEAK', 'action', 'close', 'entry_price', 'high', 'low', 'market_score', 'reversion_score', 'risk_reward_score', 'rsi_2', 'stop_loss', 'take_profit', 'technical_score', 'tier', 'timing_score', 'total_score', 'volume', 'volume_score']

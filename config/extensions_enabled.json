@@ -1,0 +1,79 @@
+{
+  "version": "1.0.0",
+  "last_modified": "2026-01-08",
+  "description": "Extension enable/disable configuration for Kobe trading robot",
+
+  "extensions": {
+    "ml_markov": {
+      "enabled": true,
+      "description": "Markov chain direction prediction",
+      "integration": "--markov flag in scan.py"
+    },
+    "ml_hmm": {
+      "enabled": true,
+      "description": "HMM regime detection for position sizing",
+      "integration": "core/regime_filter.py"
+    },
+    "ml_lstm": {
+      "enabled": true,
+      "description": "LSTM confidence scoring for signal quality",
+      "integration": "scripts/scan.py (--ml flag) + autonomous/brain.py"
+    },
+    "ml_ensemble": {
+      "enabled": true,
+      "description": "Ensemble predictor for multi-model consensus",
+      "integration": "autonomous/monitor.py + pipelines/unified_signal_enrichment.py"
+    },
+    "ml_meta": {
+      "enabled": true,
+      "description": "Meta-model for signal scoring",
+      "integration": "scripts/scan.py"
+    },
+    "cognitive_brain": {
+      "enabled": true,
+      "description": "Brain-inspired decision system",
+      "integration": "integration/learning_hub.py"
+    },
+    "autonomous_brain": {
+      "enabled": true,
+      "description": "24/7 self-improving system",
+      "integration": "scripts/run_autonomous.py"
+    },
+    "risk_advanced": {
+      "enabled": true,
+      "description": "Advanced risk (VaR, Kelly, Correlation) - WIRED to execution path",
+      "integration": "scripts/run_paper_trade.py (position sizing + gates)"
+    },
+    "circuit_breakers": {
+      "enabled": true,
+      "description": "Circuit breakers for adverse conditions",
+      "integration": "risk/policy_gate.py"
+    },
+    "backtest_advanced": {
+      "enabled": true,
+      "description": "Walk-forward, Monte Carlo backtesting",
+      "integration": "scripts/run_wf_polygon.py"
+    },
+    "altdata": {
+      "enabled": true,
+      "description": "Sentiment and alternative data",
+      "integration": "scripts/scan.py"
+    },
+    "execution_analytics": {
+      "enabled": false,
+      "description": "Execution quality analytics (NOT WIRED)",
+      "integration": null
+    },
+    "external_scrapers": {
+      "enabled": true,
+      "description": "External research scrapers",
+      "integration": "autonomous/research.py"
+    }
+  },
+
+  "notes": {
+    "how_to_enable": "Set 'enabled' to true and ensure integration point is wired",
+    "how_to_disable": "Set 'enabled' to false - core will still work",
+    "testing_required": "Run verify_extension.py before enabling in production"
+  }
+}

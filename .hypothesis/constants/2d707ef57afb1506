@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\core\restart_backoff.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.1, 1.0, 2.0, 30.0, 3600.0, 'RestartBackoff', 'RestartState', 'attempt', 'attempt_count', 'backoff_disabled', 'backoff_multiplier', 'base_delay_seconds', 'component', 'enabled', 'error', 'failed_attempts', 'last_restart_time', 'max_delay_seconds', 'recent_failures', 'scheduler', 'time', 'total_restarts', 'unknown']

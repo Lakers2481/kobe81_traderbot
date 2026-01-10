@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\research\factor_validator.py
+# hypothesis_version: 6.150.0
+
+[0.0, 1e-08, 0.001, 0.01, 0.02, 0.05, 0.35, 1.0, 100, 252, 500, '2020-01-01', 'AAPL', 'AMZN', 'Agg', 'D', 'GOOGL', 'META', 'MSFT', 'README.md', '__main__', 'asset', 'close', 'corr', 'date', 'date_end', 'date_start', 'factor', 'ic_histogram.png', 'ic_mean', 'ic_pvalue', 'ic_sharpe', 'ic_std', 'ic_timeseries.png', 'momentum_20d', 'monotonic', 'name', 'num_observations', 'periods', 'q1_return', 'q5_q1_spread', 'q5_return', 'quantile_returns.png', 'report.json', 'significant_1pct', 'significant_5pct', 'symbol', 't_stat', 'timestamp', 'turnover_1d', 'turnover_5d', 'unnamed_factor', 'w']

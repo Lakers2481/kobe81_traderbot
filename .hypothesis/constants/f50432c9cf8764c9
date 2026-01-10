@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\autonomous\enhanced_research.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.5, 0.9, 1.0, -100, 100, '\nResearch Summary:', '*.csv', '=', 'America/New_York', '__main__', 'all', 'alpha_id', 'alpha_mining', 'alpha_name', 'alphas_discovered', 'categories_searched', 'category', 'config_path', 'data/cache', 'data/polygon_cache', 'date', 'discovered_at', 'discoveries', 'error', 'hypotheses_submitted', 'ic_mean', 'ic_sharpe', 'message', 'min_sharpe_threshold', 'name', 'parameters', 'profit_factor', 'promoted', 'q5_q1_spread', 'recommendation', 'sharpe', 'sharpe_ratio', 'status', 'success', 'symbol', 'timestamp', 'top_alphas', 'top_ic', 'top_sharpe', 'total_discoveries', 'total_trades', 'trades', 'updated_at', 'validated', 'vectorbt_available', 'win_rate']

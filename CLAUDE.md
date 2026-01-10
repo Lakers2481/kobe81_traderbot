@@ -42,7 +42,7 @@ This is not just code - it's the pursuit of perfection in algorithmic trading.
 |-----------|--------------|
 | **Zero Tolerance for Errors** | No warnings, no deprecated code, no crashes |
 | **Quant-Grade Quality** | Every function typed, every exception handled |
-| **Single Source of Truth** | One scanner (DualStrategyScanner), one universe (900 stocks) |
+| **Single Source of Truth** | One scanner (DualStrategyScanner), one universe (800 stocks) |
 | **Continuous Learning** | Cognitive brain improves with every trade |
 | **Capital Preservation First** | Risk gates never bypassed, kill switch always respected |
 
@@ -76,20 +76,20 @@ This is not just code - it's the pursuit of perfection in algorithmic trading.
 
 ## ONE Scanner System (Updated 2026-01-04)
 
-### KOBE STANDARD PIPELINE: 900 → 5 → 2
+### KOBE STANDARD PIPELINE: 800 → 5 → 2
 
 > **THIS IS THE ONLY WAY TO TRADE. NO EXCEPTIONS.**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                    KOBE STANDARD PIPELINE                               │
-│                         900 → 5 → 2                                     │
+│                         800 → 5 → 2                                     │
 └─────────────────────────────────────────────────────────────────────────┘
                                │
                                ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │  STEP 1: SCAN 900 STOCKS (Full Universe)                                │
-│  ├── Scan ALL 900 stocks in optionable_liquid_900.csv                   │
+│  ├── Scan ALL 800 stocks in optionable_liquid_800.csv                   │
 │  ├── Apply Dual Strategy (IBS+RSI + Turtle Soup)                        │
 │  ├── Apply Quality Gate (Score >= 70, Confidence >= 0.60)               │
 │  └── Apply Markov Boost (+5-10% for agreeing signals)                   │
@@ -151,7 +151,7 @@ python scripts/scan.py --cap 900 --deterministic --top5 --markov --markov-prefil
 
 **Verification Command:**
 ```bash
-python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_900.csv --start 2023-01-01 --end 2024-12-31 --cap 150
+python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_800.csv --start 2023-01-01 --end 2024-12-31 --cap 150
 ```
 **Expected:** ~64% WR, ~1.60 PF
 
@@ -208,7 +208,7 @@ else:
 │                    PREVIOUS DAY (3:30 PM)                           │
 ├─────────────────────────────────────────────────────────────────────┤
 │  OVERNIGHT_WATCHLIST                                                 │
-│  ├── Scan 900 stocks for NEXT DAY setups                            │
+│  ├── Scan 800 stocks for NEXT DAY setups                            │
 │  ├── Generate Top 5 watchlist + TOTD                                │
 │  └── Save to state/watchlist/next_day.json                          │
 └─────────────────────────────────────────────────────────────────────┘
@@ -244,7 +244,7 @@ else:
 │  └── Max 2 trades from watchlist                                    │
 │                                                                      │
 │  FALLBACK_SCAN (10:30 AM) - Only if watchlist fails                 │
-│  ├── Scan 900 stocks with HIGHER bar                                │
+│  ├── Scan 800 stocks with HIGHER bar                                │
 │  ├── Quality: Score >= 75, Confidence >= 0.70, R:R >= 2.0:1        │
 │  └── Max 1 trade from fallback                                      │
 └─────────────────────────────────────────────────────────────────────┘
@@ -345,20 +345,20 @@ python scripts/preflight.py --dotenv ./.env
 python scripts/build_universe_polygon.py --cidates data/universe/optionable_liquid_cidates.csv --start 2015-01-01 --end 2024-12-31 --min-years 10 --cap 900 --concurrency 3
 
 # Prefetch EOD bars for faster WF
-python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31
+python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31
 
 # Walk-forward + HTML report
-python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63
+python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63
 python scripts/aggregate_wf_report.py --wfdir wf_outputs
 
 # Paper trade (micro budget)
-python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --cap 50
+python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_800.csv --cap 50
 
 # Live trade (micro budget; requires live ALPACA_BASE_URL)
-python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_900.csv --cap 10
+python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_800.csv --cap 10
 
 # 24/7 runner (paper)
-python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv --cap 50 --scan-times 09:35,10:30,15:55
+python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_800.csv --cap 50 --scan-times 09:35,10:30,15:55
 
 # Verify audit chain
 python scripts/verify_hash_chain.py
@@ -830,7 +830,7 @@ Observable state transitions for next-day direction prediction. Complements HMM 
 | `stationary_dist.py` | Equilibrium distribution for mean-reversion signals |
 | `higher_order.py` | 2nd/3rd order chains for multi-day patterns |
 | `predictor.py` | Generate trading signals from Markov analysis |
-| `scorer.py` | Rank 900 stocks by stationary pi(Up) probability |
+| `scorer.py` | Rank 800 stocks by stationary pi(Up) probability |
 
 **How HMM + Markov Work Together:**
 | Component | What It Does | Integration |
@@ -962,7 +962,7 @@ Immutable datasets for reproducible backtesting. Once frozen, data never changes
 ```bash
 # Freeze equities from Stooq (free, no API key)
 python scripts/freeze_equities_eod.py \
-    --universe data/universe/optionable_liquid_900.csv \
+    --universe data/universe/optionable_liquid_800.csv \
     --start 2015-01-01 --end 2025-12-31 \
     --provider stooq
 

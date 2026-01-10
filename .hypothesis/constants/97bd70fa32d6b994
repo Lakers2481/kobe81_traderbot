@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\safety\mode.py
+# hypothesis_version: 6.150.0
+
+['=', 'KILL_SWITCH', 'KOBE_LIVE_TRADING', 'Paper order allowed', 'allowed', 'disabled', 'env_override', 'false', 'kill_switch', 'live', 'live_allowed', 'mode', 'mode_str', 'paper', 'paper_only', 'reason', 'state', 'timestamp', 'true']

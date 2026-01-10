@@ -18,7 +18,7 @@ Usage:
         timeframe='1d',
         start_date='2015-01-01',
         end_date='2024-12-31',
-        universe_path='data/universe/optionable_liquid_900.csv',
+        universe_path='data/universe/optionable_liquid_800.csv',
         schema_version='v1.0',
     )
 """
@@ -31,7 +31,6 @@ from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-import os
 
 logger = logging.getLogger(__name__)
 

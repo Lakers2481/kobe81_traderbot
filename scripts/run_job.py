@@ -51,7 +51,7 @@ def main() -> None:
                         "EOD_REPORT","EOD_LEARNING","OVERNIGHT_ANALYSIS"
                     ])
     ap.add_argument("--dotenv", type=str, default="./.env")
-    ap.add_argument("--universe", type=str, default=str(ROOT / 'data' / 'universe' / 'optionable_liquid_900.csv'))
+    ap.add_argument("--universe", type=str, default=str(ROOT / 'data' / 'universe' / 'optionable_liquid_800.csv'))
     ap.add_argument("--cap", type=int, default=900)
     ap.add_argument("--min-conf", type=float, default=0.60)
     ap.add_argument("--telegram", action="store_true", help="Send Telegram notifications for job result")

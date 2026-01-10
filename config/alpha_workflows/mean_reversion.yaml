@@ -1,0 +1,44 @@
+# Mean Reversion Alpha Workflow
+# Tests mean-reversion alpha factors (Kobe's specialty)
+
+name: mean_reversion_alpha_test
+description: Test mean-reversion alpha factors - IBS, RSI, Bollinger
+
+data:
+  universe_path: data/universe/optionable_liquid_800.csv
+  start_date: "2020-01-01"
+  end_date: "2024-12-31"
+  min_history_days: 252
+  provider: polygon
+
+features:
+  alpha_categories:
+    - mean_reversion
+    - volatility
+  lookback_windows: [2, 5, 10, 14, 20]
+  normalize: true
+  lag_features: true
+  lag_periods: [1, 2, 3]
+
+model:
+  model_type: lightgbm
+  train_ratio: 0.7
+  valid_ratio: 0.15
+  test_ratio: 0.15
+  target_horizon: 3  # Shorter horizon for mean reversion
+  target_type: returns
+  hyperparams:
+    n_estimators: 150
+    max_depth: 5
+    learning_rate: 0.03
+
+backtest:
+  initial_capital: 100000.0
+  max_positions: 5
+  position_size: 0.15
+  commission: 0.001
+  slippage: 0.001
+  rebalance_freq: daily
+
+output_dir: reports/alpha_factory/mean_reversion
+random_seed: 42

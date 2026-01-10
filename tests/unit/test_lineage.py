@@ -2,7 +2,6 @@
 Unit tests for data lineage tracking.
 """
 
-import pytest
 import tempfile
 from pathlib import Path
 
@@ -14,7 +13,6 @@ from core.lineage import (
     compute_decision_hash,
     compute_order_hash,
     LineageTracker,
-    LineageRecord,
     link_lineage,
 )
 

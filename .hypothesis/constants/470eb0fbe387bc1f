@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\execution\tca\transaction_cost_analyzer.py
+# hypothesis_version: 6.150.0
+
+[0.0, 100, 10000, 'BUY', 'avg_slippage_bps', 'r', 'regime', 'side', 'slippage_bps', 'spread_capture_bps', 'state/tca', 'status', 'tca_records.json', 'timestamp', 'total_cost_usd', 'total_trades', 'unknown', 'w']

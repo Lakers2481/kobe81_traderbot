@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\web\dashboard.py
+# hypothesis_version: 6.150.0
+
+[500, 8080, '-', '--host', '--port', '/', '/api/data', '/api/health', '/api/kill-switches', '/api/market', '/api/ml-confidence', '/api/performance', '/api/positions', '/api/signals', '/ws/live', '1.0.0', '127.0.0.1', '=', 'Host to bind to', 'KILL_SWITCH', 'Port to listen on', 'Real-Time Monitoring', '__main__', 'activated', 'alpaca_connected', 'app', 'components', 'dashboard.html', 'data', 'deactivated', 'error', 'healthy', 'host', 'initial', 'log_level', 'overall_health', 'polygon_connected', 'port', 'state', 'status', 'templates', 'timestamp', 'type', 'unknown', 'update', 'utf-8', 'warning']

@@ -3,12 +3,9 @@ Tests for ml_features module - ML-enhanced trading features.
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta
-import pytest
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from unittest.mock import patch, MagicMock
 
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -497,7 +494,7 @@ class TestRegimeML:
 
     def test_insufficient_data_handled(self):
         """Insufficient data is handled gracefully."""
-        from ml_features.regime_ml import RegimeDetectorML, RegimeState
+        from ml_features.regime_ml import RegimeDetectorML
         detector = RegimeDetectorML()
         df = create_ohlcv_data(num_days=20)  # Too short
 

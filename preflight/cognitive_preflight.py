@@ -28,9 +28,8 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import List, Dict, Any
 from enum import Enum
-import json
 
 logger = logging.getLogger(__name__)
 

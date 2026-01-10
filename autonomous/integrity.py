@@ -258,7 +258,6 @@ class IntegrityGuardian:
         issues = []
 
         try:
-            import pandas as pd
 
             # Check 1: Signals shouldn't reference future dates
             if 'timestamp' in signals_df.columns:

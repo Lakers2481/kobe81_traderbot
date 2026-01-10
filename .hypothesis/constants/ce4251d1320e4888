@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\backtest\walk_forward.py
+# hypothesis_version: 6.150.0
+
+[0.0, 5.0, 100000.0, 252, '_class', 'cache_dir', 'commissions', 'data/cache', 'error', 'fetch_func', 'gross_pnl', 'inf', 'initial_cash', 'max_drawdown', 'max_drawdown_avg', 'metrics', 'net_pnl', 'profit_factor', 'profit_factor_avg', 'sharpe', 'sharpe_avg', 'slippage_bps', 'spawn', 'split', 'splits', 'strategy', 'strategy_filter', 'test_end', 'test_start', 'total_fees', 'trades', 'trades_total', 'train_end', 'train_start', 'win_rate', 'win_rate_avg']

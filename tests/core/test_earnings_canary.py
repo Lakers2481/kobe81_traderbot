@@ -14,7 +14,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from core.earnings_filter import (
-    EarningsData,
     fetch_earnings_dates,
     get_earnings_source,
     run_earnings_canary,
@@ -56,19 +55,18 @@ class TestSourceTagging:
         assert len(dates) == 2
         assert source == "polygon"
 
-    def test_yfinance_fallback_source_tagging(self):
-        """Yfinance fallback is tagged correctly."""
-        # Mock at the module level where it's used
-        with patch("os.getenv", return_value=None):  # No Polygon key
-            with patch(
-                "core.earnings_filter._fetch_from_yfinance",
-                return_value=[datetime(2025, 1, 15), datetime(2024, 10, 15)],
-            ):
-                dates = fetch_earnings_dates("AAPL", force_refresh=True)
-                source = get_earnings_source("AAPL")
+    def test_no_polygon_key_returns_empty(self):
+        """Returns empty list when no Polygon API key is set.
 
-        assert len(dates) == 2
-        assert source == "yfinance"
+        FIX (2026-01-06): yfinance fallback removed. Now returns empty
+        when Polygon is unavailable, for faster/more reliable scans.
+        """
+        with patch("os.getenv", return_value=None):  # No Polygon key
+            dates = fetch_earnings_dates("AAPL", force_refresh=True)
+            source = get_earnings_source("AAPL")
+
+        assert dates == []
+        assert source == "none"
 
     def test_none_source_when_no_data(self):
         """Source is 'none' when no earnings found."""

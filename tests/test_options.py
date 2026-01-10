@@ -5,9 +5,7 @@ Tests Black-Scholes pricing, volatility calculation, strike selection,
 position sizing, and options backtesting.
 """
 import pytest
-import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
 
 # Import modules under test
 from options import (
@@ -19,15 +17,11 @@ from options import (
 )
 from options.volatility import (
     RealizedVolatility,
-    VolatilityMethod,
-    realized_vol,
     vol_with_floor,
 )
 from options.selection import (
     StrikeSelector,
     select_call_strike,
-    select_put_strike,
-    select_atm,
 )
 from options.position_sizing import (
     OptionsPositionSizer,

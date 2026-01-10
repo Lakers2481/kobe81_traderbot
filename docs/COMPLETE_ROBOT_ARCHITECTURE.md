@@ -1,4 +1,4 @@
-﻿**Alignment Note**: The canonical strategies are IBS+RSI (mean reversion) and ICT Turtle Soup (mean reversion). Universe size is 900. Any mentions of RSI/IBS+RSI/ICT or 900 symbols are legacy examples. Use README.md and AI_HANDOFF_PROMPT.md for source-of-truth commands.
+﻿**Alignment Note**: The canonical strategies are IBS+RSI (mean reversion) and ICT Turtle Soup (mean reversion). Universe size is 900. Any mentions of RSI/IBS+RSI/ICT or 800 symbols are legacy examples. Use README.md and AI_HANDOFF_PROMPT.md for source-of-truth commands.
 
 # Kobe81 Traderbot â€” Complete Architecture Blueprint
 
@@ -148,9 +148,9 @@ Crypto strategies mirror equities (IBS+RSI/ICT, IBS+RSI/ICT, AND) using hourly b
 
 ## Evidence & Commands
 - Build 900 universe with proof:
-  - `scripts/build_universe_polygon.py` â†’ `data/universe/optionable_liquid_900.csv` and `.full.csv`
+  - `scripts/build_universe_polygon.py` â†’ `data/universe/optionable_liquid_800.csv` and `.full.csv`
   - `scripts/check_polygon_earliest_universe.py` â†’ `data/universe/earliest_latest_universe.csv`
-  - `scripts/validate_universe_coverage.py` (assert â‰¥900 symbols and â‰¥10 years each)
+  - `scripts/validate_universe_coverage.py` (assert â‰¥800 symbols and â‰¥10 years each)
 - Prefetch data (faster WF): `scripts/prefetch_polygon_universe.py`
 - Walkâ€‘forward/Report: `scripts/run_wf_polygon.py`, `scripts/aggregate_wf_report.py`
 - Preflight: `scripts/preflight.py` (env keys, config pin, broker probe)

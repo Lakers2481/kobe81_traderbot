@@ -1,8 +1,7 @@
 """
 Tests for the MarketMoodAnalyzer module.
 """
-import pytest
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from altdata.market_mood_analyzer import (
     MarketMoodAnalyzer,

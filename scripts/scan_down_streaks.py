@@ -14,9 +14,8 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pandas as pd
-import numpy as np
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, List, Optional
 import json
 
@@ -96,7 +95,7 @@ def main():
     print()
 
     # Load universe
-    universe_file = Path("data/universe/optionable_liquid_900.csv")
+    universe_file = Path("data/universe/optionable_liquid_800.csv")
     if not universe_file.exists():
         print("ERROR: Universe file not found")
         return

@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\execution\order_manager.py
+# hypothesis_version: 6.150.0
+
+[0.999, 1.001, 'IOC', 'LIMIT', 'MARKET', 'TWAP', 'TWAP_', 'VWAP', 'done', 'error', 'execution_id', 'pending', 'running', 'status']

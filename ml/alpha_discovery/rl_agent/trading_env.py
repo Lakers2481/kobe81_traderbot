@@ -4,7 +4,7 @@ Custom Gym environment for trading simulation.
 from __future__ import annotations
 
 import logging
-from typing import Tuple, Dict, Any, Optional, List
+from typing import Tuple, Dict, List
 
 import numpy as np
 import pandas as pd

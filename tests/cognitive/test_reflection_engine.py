@@ -9,8 +9,7 @@ Run: python -m pytest tests/cognitive/test_reflection_engine.py -v
 """
 
 import pytest
-from datetime import datetime, timedelta
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import Mock
 
 
 class TestReflectionEngineInitialization:
@@ -105,7 +104,7 @@ class TestReflectOnEpisode:
     def test_reflect_on_winning_episode(self):
         """Test reflection on a winning trade episode."""
         from cognitive.reflection_engine import ReflectionEngine
-        from cognitive.episodic_memory import Episode, EpisodeOutcome
+        from cognitive.episodic_memory import EpisodeOutcome
 
         engine = ReflectionEngine()
 
@@ -131,7 +130,7 @@ class TestReflectOnEpisode:
     def test_reflect_on_losing_episode(self):
         """Test reflection on a losing trade episode."""
         from cognitive.reflection_engine import ReflectionEngine
-        from cognitive.episodic_memory import Episode, EpisodeOutcome
+        from cognitive.episodic_memory import EpisodeOutcome
 
         engine = ReflectionEngine()
 
@@ -158,7 +157,7 @@ class TestReflectOnEpisode:
     def test_reflect_on_stand_down_episode(self):
         """Test reflection on a stand-down decision."""
         from cognitive.reflection_engine import ReflectionEngine
-        from cognitive.episodic_memory import Episode, EpisodeOutcome
+        from cognitive.episodic_memory import EpisodeOutcome
 
         engine = ReflectionEngine()
 
@@ -303,7 +302,7 @@ class TestReflectionHistory:
 
     def test_reflection_history_limit(self):
         """Test that reflection history is limited."""
-        from cognitive.reflection_engine import ReflectionEngine, Reflection
+        from cognitive.reflection_engine import ReflectionEngine
         from cognitive.episodic_memory import EpisodeOutcome
 
         engine = ReflectionEngine()

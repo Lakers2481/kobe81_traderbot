@@ -33,12 +33,11 @@ from __future__ import annotations
 
 import csv
 import json
-import os
 import sys
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 # Add project root
 ROOT = Path(__file__).resolve().parents[1]
@@ -906,7 +905,7 @@ def main():
         print(f"\n{'=' * 60}")
         print(f"VERDICT: {report.verdict} (Grade {report.grade}, Score {report.score}/100)")
         if report.critical_issues:
-            print(f"\nFAILURE REASONS:")
+            print("\nFAILURE REASONS:")
             for issue in report.critical_issues[:5]:  # Show top 5
                 print(f"  ! {issue}")
         print(f"{'=' * 60}")

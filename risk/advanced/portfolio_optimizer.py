@@ -15,7 +15,7 @@ Created: 2026-01-04
 """
 
 from dataclasses import dataclass
-from typing import Optional, Dict, Any, List, Tuple
+from typing import Optional, Dict, Any, List
 
 import numpy as np
 import pandas as pd

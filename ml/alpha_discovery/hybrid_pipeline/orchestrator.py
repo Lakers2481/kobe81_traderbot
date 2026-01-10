@@ -20,7 +20,7 @@ from typing import Dict, List, Optional, Any
 import pandas as pd
 
 from ..pattern_miner import PatternCluster, PatternClusteringEngine, PatternLibrary
-from ..pattern_narrator import PatternNarrative, PatternPlaybook, PatternNarrator
+from ..pattern_narrator import PatternPlaybook, PatternNarrator
 from ..feature_discovery import FeatureImportanceReport, FeatureImportanceAnalyzer
 
 logger = logging.getLogger(__name__)

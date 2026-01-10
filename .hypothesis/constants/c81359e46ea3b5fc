@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\trade_logging\prometheus_metrics.py
+# hypothesis_version: 6.150.0
+
+[b'# prometheus_client not installed\n', 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0, 30.0, 100, 120, 250, 300, 'Current Sharpe ratio', 'Current VIX level', 'Daily P&L in USD', 'component', 'kobe_daily_pnl_usd', 'kobe_decisions_total', 'kobe_errors_total', 'kobe_open_positions', 'kobe_profit_factor', 'kobe_sharpe_ratio', 'kobe_signal_score', 'kobe_slippage_bps', 'kobe_total_pnl_usd', 'kobe_uptime_seconds', 'kobe_vix_level', 'kobe_win_rate', 'mode', 'normal', 'reason', 'side', 'source', 'strategy', 'symbol', 'type']

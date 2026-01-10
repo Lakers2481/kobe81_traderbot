@@ -1,0 +1,8 @@
+# Agent System Requirements
+litellm>=1.30.0         # Multi-model routing (Claude, ChatGPT, DeepSeek)
+pyyaml>=6.0             # Config file parsing
+rich>=13.0              # Beautiful terminal UI
+openai>=1.0.0           # OpenAI API client
+anthropic>=0.18.0       # Claude API client
+requests>=2.31.0        # HTTP requests
+python-dotenv>=1.0.0    # Environment variables

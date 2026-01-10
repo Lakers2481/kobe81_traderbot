@@ -19,7 +19,7 @@ Usage:
         df=ohlcv_data,
         provider='stooq',
         timeframe='1d',
-        universe_path='data/universe/optionable_liquid_900.csv',
+        universe_path='data/universe/optionable_liquid_800.csv',
     )
 
     # Read frozen data
@@ -31,7 +31,6 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Union
-from datetime import datetime
 
 import pandas as pd
 
@@ -41,7 +40,6 @@ from .manifest import (
     create_manifest,
     find_manifest,
     dataset_exists,
-    compute_file_hash,
     SCHEMA_VERSION,
 )
 

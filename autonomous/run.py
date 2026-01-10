@@ -37,19 +37,17 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 # Import safety first
-from safety import PAPER_ONLY, get_trading_mode, log_safety_status
+from safety import get_trading_mode, log_safety_status
 
 # Import autonomous components
 from autonomous.brain import AutonomousBrain
-from autonomous.awareness import MarketCalendarAwareness as MarketAwareness, get_context
-from autonomous.scheduler import AutonomousScheduler as TaskScheduler
+from autonomous.awareness import get_context
 
 
 class KobeRunner:
@@ -108,7 +106,7 @@ class KobeRunner:
 
         # Safety status
         mode = get_trading_mode()
-        print(f"\n[SAFETY]")
+        print("\n[SAFETY]")
         print(f"  Mode: {mode['mode_str'].upper()}")
         print(f"  Paper Only: {mode['paper_only']}")
         print(f"  Kill Switch: {'ACTIVE' if mode['kill_switch'] else 'inactive'}")
@@ -118,7 +116,7 @@ class KobeRunner:
         if heartbeat_file.exists():
             try:
                 hb = json.loads(heartbeat_file.read_text())
-                print(f"\n[BRAIN]")
+                print("\n[BRAIN]")
                 print(f"  Alive: {hb.get('alive', False)}")
                 print(f"  Phase: {hb.get('phase', 'unknown')}")
                 print(f"  Work Mode: {hb.get('work_mode', 'unknown')}")
@@ -128,14 +126,14 @@ class KobeRunner:
             except Exception as e:
                 print(f"\n[BRAIN] Error reading heartbeat: {e}")
         else:
-            print(f"\n[BRAIN] Not running (no heartbeat file)")
+            print("\n[BRAIN] Not running (no heartbeat file)")
 
         # Brain state
         brain_state_file = self.state_dir / "brain_state.json"
         if brain_state_file.exists():
             try:
                 state = json.loads(brain_state_file.read_text())
-                print(f"\n[STATE]")
+                print("\n[STATE]")
                 print(f"  Total Cycles: {state.get('cycles_completed', 0)}")
                 print(f"  Last Task: {state.get('last_task', 'none')}")
                 print(f"  Errors Today: {state.get('errors_today', 0)}")
@@ -147,7 +145,7 @@ class KobeRunner:
         if research_file.exists():
             try:
                 research = json.loads(research_file.read_text())
-                print(f"\n[RESEARCH]")
+                print("\n[RESEARCH]")
                 print(f"  Experiments Run: {research.get('experiments_run', 0)}")
                 print(f"  Discoveries: {research.get('discoveries_count', 0)}")
                 print(f"  Best Improvement: {research.get('best_improvement', 0):.1%}")
@@ -157,7 +155,7 @@ class KobeRunner:
         # Market awareness
         try:
             context = get_context()
-            print(f"\n[AWARENESS]")
+            print("\n[AWARENESS]")
             print(f"  Phase: {context.phase.value if hasattr(context, 'phase') else 'unknown'}")
             print(f"  Work Mode: {context.work_mode.value if hasattr(context, 'work_mode') else 'unknown'}")
             print(f"  Day Type: {context.day_type if hasattr(context, 'day_type') else 'unknown'}")
@@ -179,26 +177,26 @@ class KobeRunner:
             context = get_context()
             now = datetime.now()
 
-            print(f"\n[TIME]")
+            print("\n[TIME]")
             print(f"  Current: {now.strftime('%Y-%m-%d %H:%M:%S')}")
-            print(f"  Timezone: America/New_York")
+            print("  Timezone: America/New_York")
 
-            print(f"\n[PHASE]")
+            print("\n[PHASE]")
             print(f"  Current Phase: {context.phase.value if hasattr(context, 'phase') else 'unknown'}")
             print(f"  Work Mode: {context.work_mode.value if hasattr(context, 'work_mode') else 'unknown'}")
             print(f"  Day Type: {context.day_type if hasattr(context, 'day_type') else 'unknown'}")
 
-            print(f"\n[MARKET]")
+            print("\n[MARKET]")
             print(f"  Market Open: {context.market_open if hasattr(context, 'market_open') else False}")
             print(f"  Trading Allowed: {context.trading_allowed if hasattr(context, 'trading_allowed') else False}")
             print(f"  Kill Zone: {context.kill_zone if hasattr(context, 'kill_zone') else 'none'}")
 
-            print(f"\n[SEASON]")
+            print("\n[SEASON]")
             print(f"  Current: {context.season.value if hasattr(context, 'season') else 'normal'}")
             print(f"  Is Weekend: {context.is_weekend if hasattr(context, 'is_weekend') else False}")
 
-            print(f"\n[TASKS]")
-            print(f"  Context available for task selection")
+            print("\n[TASKS]")
+            print("  Context available for task selection")
 
         except Exception as e:
             print(f"Error getting awareness: {e}")
@@ -218,17 +216,17 @@ class KobeRunner:
         if research_file.exists():
             try:
                 research = json.loads(research_file.read_text())
-                print(f"\n[EXPERIMENTS]")
+                print("\n[EXPERIMENTS]")
                 print(f"  Total Run: {research.get('experiments_run', 0)}")
                 print(f"  In Progress: {research.get('experiments_in_progress', 0)}")
                 print(f"  Success Rate: {research.get('experiment_success_rate', 0):.1%}")
 
-                print(f"\n[DISCOVERIES]")
+                print("\n[DISCOVERIES]")
                 print(f"  Total: {research.get('discoveries_count', 0)}")
                 print(f"  Validated: {research.get('validated_discoveries', 0)}")
                 print(f"  Promoted: {research.get('promoted_discoveries', 0)}")
 
-                print(f"\n[BEST RESULTS]")
+                print("\n[BEST RESULTS]")
                 print(f"  Best Improvement: {research.get('best_improvement', 0):.1%}")
                 print(f"  Best Win Rate: {research.get('best_win_rate', 0):.1%}")
                 print(f"  Best Profit Factor: {research.get('best_profit_factor', 0):.2f}")
@@ -236,7 +234,7 @@ class KobeRunner:
                 # Recent experiments
                 recent = research.get('recent_experiments', [])[:5]
                 if recent:
-                    print(f"\n[RECENT EXPERIMENTS]")
+                    print("\n[RECENT EXPERIMENTS]")
                     for exp in recent:
                         print(f"  - {exp.get('name', 'unknown')}: {exp.get('result', 'N/A')}")
 
@@ -254,7 +252,7 @@ class KobeRunner:
                 patterns = json.loads(latest.read_text())
                 top_patterns = patterns.get('top_50_patterns', [])[:10]
                 if top_patterns:
-                    print(f"\n[TOP PATTERNS]")
+                    print("\n[TOP PATTERNS]")
                     for p in top_patterns:
                         print(f"  {p['symbol']}: {p['streak']}d streak, "
                               f"{p['bounce_5d']:.0f}% bounce, +{p['avg_5d']:.1f}% avg")
@@ -335,7 +333,7 @@ class KobeRunner:
             # Initialize brain
             brain = AutonomousBrain(state_dir=self.state_dir)
 
-            print(f"\n[START] Brain initialized")
+            print("\n[START] Brain initialized")
             print("[START] Press Ctrl+C for graceful shutdown")
             print("=" * 60)
 
@@ -546,7 +544,7 @@ Examples:
     if args.stage:
         universe_cap = args.stage
     elif args.full:
-        universe_cap = 900
+        universe_cap = 800
 
     # Create runner
     runner = KobeRunner()

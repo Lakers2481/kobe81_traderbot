@@ -22,7 +22,7 @@ def _run_scanner_subprocess(cap: int = 50, deterministic: bool = True) -> str:
         sys.executable,
         str(ROOT / "scripts" / "scan.py"),
         "--cap", str(cap),
-        "--universe", str(ROOT / "data" / "universe" / "optionable_liquid_900.csv"),
+        "--universe", str(ROOT / "data" / "universe" / "optionable_liquid_800.csv"),
     ]
     if deterministic:
         cmd.append("--deterministic")
@@ -136,7 +136,6 @@ class TestSortingDeterminism:
         """Test that sorted(glob(...)) produces consistent file order."""
         from pathlib import Path
         import tempfile
-        import os
 
         # Create temp directory with test files
         with tempfile.TemporaryDirectory() as tmpdir:

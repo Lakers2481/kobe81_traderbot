@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\ml_advanced\markov_chain\state_classifier.py
+# hypothesis_version: 6.150.0
+
+[-0.5, 0.5, 100, 'DOWN', 'FLAT', 'STRONG_DOWN', 'STRONG_UP', 'StateClassifier', 'UP', 'close', 'fitted', 'method', 'n_states', 'percentile', 'threshold', 'threshold_down', 'threshold_up', 'vol_multiplier', 'vol_window', 'volatility_adjusted']

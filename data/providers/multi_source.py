@@ -1,23 +1,21 @@
 from __future__ import annotations
 
-from contextlib import redirect_stdout, redirect_stderr
-from datetime import datetime, timedelta
+from datetime import datetime
 from io import StringIO
 from pathlib import Path
 from typing import Optional, Dict, Any, Tuple
 import re
 import warnings
 import logging
-import os
 import sys
 import time
 import random
-import json
 import threading
 
 import pandas as pd
 
 from .polygon_eod import fetch_daily_bars_polygon
+from .stooq_eod import fetch_daily_bars_stooq
 
 # Suppress noisy yfinance warnings about "possibly delisted" for market-closed dates
 logging.getLogger('yfinance').setLevel(logging.ERROR)
@@ -314,7 +312,6 @@ def fetch_daily_bars_stooq(symbol: str, start: str, end: str, cache_dir: Optiona
             pass
 
     try:
-        import datetime as dt
         s = pd.to_datetime(start)
         e = pd.to_datetime(end)
         df = web.DataReader(symbol, 'stooq', s, e)

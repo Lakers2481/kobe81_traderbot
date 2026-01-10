@@ -8,7 +8,6 @@ Loads OHLCV data for bounce analysis using:
 Reuses existing data providers from data/providers/
 """
 
-import os
 import sys
 from pathlib import Path
 from datetime import datetime, timedelta

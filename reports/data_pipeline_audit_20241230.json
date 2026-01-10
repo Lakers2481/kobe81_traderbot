@@ -35,7 +35,7 @@
         {
           "name": "Universe File Exists",
           "status": "PASS",
-          "message": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\data\\universe\\optionable_liquid_900.csv",
+          "message": "C:\\Users\\Owner\\OneDrive\\Desktop\\kobe81_traderbot\\data\\universe\\optionable_liquid_800.csv",
           "action": null
         },
         {
@@ -47,7 +47,7 @@
         {
           "name": "Universe Symbol Count",
           "status": "PASS",
-          "message": "900 symbols loaded",
+          "message": "800 symbols loaded",
           "action": null
         },
         {
@@ -110,7 +110,7 @@
         {
           "name": "Cache Coverage",
           "status": "PASS",
-          "message": "100.0% of universe cached (950 / 900 symbols)",
+          "message": "100.0% of universe cached (950 / 800 symbols)",
           "action": null
         }
       ]

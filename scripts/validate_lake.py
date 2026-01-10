@@ -33,9 +33,9 @@ import argparse
 import json
 import logging
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict
 
 import pandas as pd
 
@@ -354,7 +354,7 @@ Examples:
         print(f"ERROR: Manifest directory not found: {manifest_dir}")
         print("No datasets have been frozen yet.")
         print("\nTo freeze equities data, run:")
-        print("  python scripts/freeze_equities_eod.py --universe data/universe/optionable_liquid_900.csv")
+        print("  python scripts/freeze_equities_eod.py --universe data/universe/optionable_liquid_800.csv")
         sys.exit(1)
 
     # Get datasets to validate

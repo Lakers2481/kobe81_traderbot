@@ -40,11 +40,6 @@ from typing import Optional
 # Switched from Alpaca which requires separate paid data subscription
 from data.providers.polygon_intraday import (
     fetch_intraday_bars,
-    get_session_vwap,
-    get_first_hour_range,
-    is_above_vwap,
-    is_below_first_hour_low,
-    is_above_first_hour_high,
 )
 
 # FIX (2026-01-04): Import Prometheus counter for skip observability

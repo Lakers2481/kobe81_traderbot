@@ -2,7 +2,7 @@
 
 Daily (Topâ€‘3 + TOTD with ML)
 - Update sentiment cache:
-  python scripts/update_sentiment_cache.py --universe data/universe/optionable_liquid_900.csv --date 2025-01-03 --dotenv ./.env
+  python scripts/update_sentiment_cache.py --universe data/universe/optionable_liquid_800.csv --date 2025-01-03 --dotenv ./.env
 - Scan, score and write Topâ€‘3 + TOTD:
   python scripts/scan.py --dotenv ./.env --strategy all --cap 900 --top3 --ml --ensure-top3 --min-conf 0.60 --date 2025-01-03
 - Submit Trade of the Day (confidenceâ€‘gated):
@@ -24,7 +24,7 @@ Endâ€‘toâ€‘end weekly pipeline:
 
 24/7 Master Scheduler (2K28 schedule times)
 - Runs ET schedule (preâ€‘game, news, first scan, midâ€‘day scans, swing, EOD learning):
-  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_900.csv --cap 900 --min-conf 0.60 --tick-seconds 20
+  python scripts/scheduler_kobe.py --dotenv ./.env --universe data/universe/optionable_liquid_800.csv --cap 900 --min-conf 0.60 --tick-seconds 20
 
 Notes
 - Deployed models: state/models/deployed/meta_*.pkl (used by scanner)

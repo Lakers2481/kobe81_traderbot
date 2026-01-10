@@ -268,7 +268,6 @@ class TestAllBypassPathsPatched:
 
     def test_no_direct_alpaca_orders_without_gate(self):
         """Scan codebase for direct Alpaca order calls without safety gate."""
-        import re
 
         bypasses = []
 

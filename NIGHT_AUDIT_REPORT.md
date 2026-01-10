@@ -67,7 +67,7 @@
 |-----------|--------|
 | Cache directory | data/polygon_cache |
 | Cached stocks | 102 files |
-| Universe | 900 symbols |
+| Universe | 800 symbols |
 | OHLC integrity | PASS |
 | Sample data | 2516 bars (2015-2024) |
 

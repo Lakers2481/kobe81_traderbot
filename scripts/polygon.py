@@ -13,7 +13,7 @@ import sys
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional
 import random
 
 import pandas as pd
@@ -24,7 +24,7 @@ sys.path.insert(0, str(ROOT))
 
 from config.env_loader import load_env
 from data.universe.loader import load_universe
-from data.providers.polygon_eod import fetch_daily_bars_polygon, PolygonConfig
+from data.providers.polygon_eod import fetch_daily_bars_polygon
 
 
 POLYGON_TICKERS_URL = "https://api.polygon.io/v3/reference/tickers"
@@ -355,7 +355,7 @@ def main():
         epilog="""
 Examples:
   python scripts/polygon.py --verify-key
-  python scripts/polygon.py --check-coverage --universe data/universe/optionable_liquid_900.csv
+  python scripts/polygon.py --check-coverage --universe data/universe/optionable_liquid_800.csv
   python scripts/polygon.py --compare-cache --sample 10
   python scripts/polygon.py --full-validation --report outputs/polygon_report.txt
         """,
@@ -375,7 +375,7 @@ Examples:
     ap.add_argument(
         "--universe",
         type=str,
-        default="data/universe/optionable_liquid_900.csv",
+        default="data/universe/optionable_liquid_800.csv",
         help="Universe CSV file",
     )
     ap.add_argument(

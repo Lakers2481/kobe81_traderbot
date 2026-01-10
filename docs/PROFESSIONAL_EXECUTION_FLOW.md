@@ -18,7 +18,7 @@ This document defines the professional-grade execution flow for the Kobe Trading
 | Trading at open chaos | Could trade at 9:30 | Block trades until 10:00 |
 | Stale overnight analysis | Morning picks not re-validated | Fresh premarket validation |
 | No fallback plan | If watchlist fails, nothing | Fallback scan with higher bar |
-| Wasted compute | Scan 900 stocks multiple times | Overnight Top 5 + targeted scans |
+| Wasted compute | Scan 800 stocks multiple times | Overnight Top 5 + targeted scans |
 
 ---
 
@@ -29,7 +29,7 @@ This document defines the professional-grade execution flow for the Kobe Trading
 │                    PREVIOUS DAY (3:30 PM)                           │
 ├─────────────────────────────────────────────────────────────────────┤
 │  OVERNIGHT_WATCHLIST_BUILD                                          │
-│  ├── Scan 900 stocks for NEXT DAY setups                           │
+│  ├── Scan 800 stocks for NEXT DAY setups                           │
 │  ├── Generate Top 5 watchlist + TOTD                               │
 │  ├── Save to state/watchlist/next_day.json                         │
 │  └── Prefetch data for Top 5 only (saves API calls)                │
@@ -102,7 +102,7 @@ This document defines the professional-grade execution flow for the Kobe Trading
 │                    FALLBACK SCAN (10:30 AM)                         │
 ├─────────────────────────────────────────────────────────────────────┤
 │  FALLBACK_SCAN (10:30 AM) - Only if watchlist didn't trigger       │
-│  ├── Quick scan of 900 stocks                                       │
+│  ├── Quick scan of 800 stocks                                       │
 │  ├── Look for setups that EMERGED from the open                    │
 │  ├── HIGHER QUALITY BAR required:                                  │
 │  │   ├── Quality Score >= 75 (vs 65 for watchlist)                 │
@@ -146,7 +146,7 @@ This document defines the professional-grade execution flow for the Kobe Trading
 │                                                                     │
 │  SWING_SCANNER (3:30 PM)                                            │
 │  ├── Build NEXT DAY watchlist                                       │
-│  ├── Scan 900 stocks for overnight setups                          │
+│  ├── Scan 800 stocks for overnight setups                          │
 │  └── This becomes tomorrow's starting point                        │
 └─────────────────────────────────────────────────────────────────────┘
                                 │

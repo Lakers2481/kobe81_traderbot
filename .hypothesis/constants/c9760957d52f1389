@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\execution\reconcile.py
+# hypothesis_version: 6.150.0
+
+[1.0, 100, '+00:00', 'America/New_York', 'Z', 'all', 'avg_entry_price', 'avg_price', 'broker_positions', 'broker_value', 'client_order_id', 'created_at', 'critical', 'current_price', 'description', 'discrepancies', 'filled', 'filled_at', 'filled_avg_price', 'filled_qty', 'id', 'info', 'is_clean', 'limit_price', 'long', 'market_value', 'oms_orders_checked', 'oms_positions', 'oms_value', 'order_id', 'order_issues', 'partially_filled', 'pending_new', 'position_issues', 'qty', 'requested_qty', 'run_id', 'severity', 'short', 'side', 'status', 'suggested_action', 'summary', 'symbol', 'timestamp', 'total_discrepancies', 'type', 'unrealized_pl', 'utf-8', 'w', 'warning']

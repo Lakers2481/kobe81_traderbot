@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\execution\intraday_trigger.py
+# hypothesis_version: 6.150.0
+
+['5Min', 'combined', 'first_hour_high', 'first_hour_low', 'kill_switch', 'long', 'no_data', 'short', 'vwap_reclaim']

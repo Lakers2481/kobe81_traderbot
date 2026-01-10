@@ -6,12 +6,11 @@ Handles holidays, early closes, and DST-aware session times.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime, date, time, timedelta
 from typing import Dict, List, Optional, Tuple
 from zoneinfo import ZoneInfo
 
-from .market_clock import AssetType, SessionType, SessionInfo, MarketEvent
+from .market_clock import AssetType, SessionType, SessionInfo
 
 # Eastern Time
 ET = ZoneInfo("America/New_York")

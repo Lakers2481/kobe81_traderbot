@@ -3,7 +3,6 @@ Tests for rate limiting in monitor/health_endpoints.py
 """
 from __future__ import annotations
 
-import pytest
 import time
 from unittest.mock import patch
 

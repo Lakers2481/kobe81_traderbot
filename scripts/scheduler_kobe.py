@@ -120,7 +120,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from core.clock.tz_utils import fmt_ct, now_et
+from core.clock.tz_utils import now_et
 from core.clock.equities_calendar import EquitiesCalendar
 from core.journal import append_journal
 
@@ -470,7 +470,7 @@ def now_et_date_time() -> Tuple[str, dtime]:
 # CONTINUOUS WORK SYSTEM - Never idle, always learning
 # =============================================================================
 # When no scheduled task is running, the robot picks up continuous work:
-# - Stock-by-stock analysis (cycles through 900 stocks)
+# - Stock-by-stock analysis (cycles through 800 stocks)
 # - Pattern discovery on random stocks
 # - Mini-backtests on random symbols
 # - Alpha research and edge discovery
@@ -589,7 +589,7 @@ def do_continuous_work(universe: str, dotenv: str, cap: int, send_fn=None) -> No
 
 def main() -> None:
     ap = argparse.ArgumentParser(description='Kobe Master Scheduler (24/7)')
-    ap.add_argument('--universe', type=str, default='data/universe/optionable_liquid_900.csv')
+    ap.add_argument('--universe', type=str, default='data/universe/optionable_liquid_800.csv')
     ap.add_argument('--cap', type=int, default=900)
     ap.add_argument('--dotenv', type=str, default='./.env')
     ap.add_argument('--min-conf', type=float, default=0.60)
@@ -1392,7 +1392,7 @@ def main() -> None:
                                     from autonomous.handlers import weekly_game_plan
                                     result = weekly_game_plan()
                                     if send_fn:
-                                        send_fn(f"<b>WEEKEND_GAME_PLAN</b> Weekly plan ready!")
+                                        send_fn("<b>WEEKEND_GAME_PLAN</b> Weekly plan ready!")
                                 except Exception as e:
                                     if send_fn:
                                         send_fn(f"<b>WEEKEND_GAME_PLAN</b> Error: {e}")

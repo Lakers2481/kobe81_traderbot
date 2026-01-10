@@ -2,7 +2,7 @@ param(
   [string]$RepoRoot = "C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot",
   [string]$PythonExe = "python",
   [string]$DotEnv = ".\\.env",
-  [string]$Universe = "data\universe\optionable_liquid_900.csv",
+  [string]$Universe = "data\universe\optionable_liquid_800.csv",
   [int]$Cap = 900,
   [double]$MinConf = 0.60,
   [switch]$HeartbeatTelegram,

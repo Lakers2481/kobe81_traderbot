@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\risk\liquidity_gate.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.5, 1.0, 100.0, 100, 100000, '; ', 'Missing volume data', 'adv_usd', 'checked_at', 'common_issues', 'failed', 'insufficient_adv', 'issues', 'large_order_impact', 'low_volume', 'max_spread_pct', 'min_adv_usd', 'missing_quote', 'order_pct_of_adv', 'pass_rate', 'passed', 'reason', 'spread_pct', 'symbol', 'total_checks', 'wide_spread']

@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\options\volatility.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.1, 0.34, 0.5, 1.34, 2.0, 100, 252, 'close', 'close_to_close', 'closes', 'end_date', 'garman_klass', 'high', 'highs', 'lookback_days', 'low', 'lows', 'method', 'observations', 'open', 'opens', 'parkinson', 'start_date', 'volatility', 'volatility_pct', 'yang_zhang']

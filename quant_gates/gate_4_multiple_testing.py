@@ -6,8 +6,16 @@ Penalizes strategies for:
 - Number of attempts (data snooping)
 - Number of free parameters (overfitting)
 
-Adjusted T-stat threshold:
-  threshold = 2.0 + 0.1*(attempts/10) + 0.1*params
+Methods:
+1. Adjusted T-stat threshold (original):
+   threshold = 2.0 + 0.1*(attempts/10) + 0.1*params
+
+2. Bonferroni correction (NEW):
+   alpha_adjusted = alpha / n_trials
+
+3. Deflated Sharpe Ratio (NEW):
+   DSR = (SR - SR_threshold) / SE(SR)
+   Based on Bailey & López de Prado (2014)
 
 This prevents data mining bias.
 """
@@ -16,9 +24,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 import json
 
 logger = logging.getLogger(__name__)
@@ -34,6 +41,11 @@ class MultipleTestingResult:
     num_parameters: int
     penalty_breakdown: Dict[str, float]
     details: Dict[str, Any]
+    # NEW: Bonferroni and DSR support
+    bonferroni_alpha: Optional[float] = None
+    bonferroni_alpha_adjusted: Optional[float] = None
+    deflated_sharpe: Optional[float] = None
+    raw_sharpe: Optional[float] = None
 
 
 class Gate4MultipleTesting:
@@ -124,12 +136,83 @@ class Gate4MultipleTesting:
 
         return self.BASE_T_STAT + attempt_penalty + param_penalty
 
+    def calculate_bonferroni_alpha(
+        self,
+        alpha: float = 0.05,
+        n_trials: Optional[int] = None,
+        strategy_family: Optional[str] = None,
+    ) -> float:
+        """
+        Calculate Bonferroni-corrected significance level.
+
+        Args:
+            alpha: Desired family-wise significance level (default 0.05)
+            n_trials: Number of independent tests (if None, uses num_attempts)
+            strategy_family: Strategy family (to get attempts from registry)
+
+        Returns:
+            Bonferroni-corrected alpha
+        """
+        if n_trials is None:
+            if strategy_family is None:
+                raise ValueError("Must provide either n_trials or strategy_family")
+            n_trials = max(1, self.get_attempts(strategy_family))
+
+        return alpha / n_trials
+
+    def calculate_deflated_sharpe(
+        self,
+        returns: Any,
+        n_trials: int,
+        risk_free_rate: float = 0.0,
+        periods_per_year: int = 252,
+    ) -> Dict[str, float]:
+        """
+        Calculate Deflated Sharpe Ratio.
+
+        Wrapper around analytics.statistical_testing.deflated_sharpe_ratio().
+
+        Args:
+            returns: Array of strategy returns
+            n_trials: Number of strategies tested
+            risk_free_rate: Annual risk-free rate (default 0.0)
+            periods_per_year: Periods per year (252 for daily)
+
+        Returns:
+            Dict with DSR, raw SR, threshold, standard error
+        """
+        try:
+            from analytics.statistical_testing import deflated_sharpe_ratio
+            import numpy as np
+
+            result = deflated_sharpe_ratio(
+                returns=np.asarray(returns),
+                n_trials=n_trials,
+                risk_free_rate=risk_free_rate,
+                periods_per_year=periods_per_year,
+            )
+
+            return {
+                "deflated_sharpe": result.deflated_sharpe,
+                "sharpe_ratio": result.sharpe_ratio,
+                "sharpe_threshold": result.sharpe_threshold,
+                "standard_error": result.standard_error,
+                "n_trials": result.n_trials,
+                "n_observations": result.n_observations,
+            }
+        except ImportError:
+            logger.warning("Statistical testing module not available for DSR calculation")
+            return {}
+
     def validate(
         self,
         raw_t_stat: float,
         strategy_family: str,
         num_parameters: int,
         record_attempt: bool = True,
+        # NEW: Optional Bonferroni and DSR inputs
+        bonferroni_alpha: Optional[float] = None,
+        returns: Optional[Any] = None,
     ) -> MultipleTestingResult:
         """
         Validate strategy against multiple testing threshold.
@@ -139,9 +222,11 @@ class Gate4MultipleTesting:
             strategy_family: Strategy family name
             num_parameters: Number of free parameters
             record_attempt: Whether to record this as an attempt
+            bonferroni_alpha: Significance level for Bonferroni (optional)
+            returns: Strategy returns for DSR calculation (optional)
 
         Returns:
-            MultipleTestingResult
+            MultipleTestingResult with T-stat, Bonferroni, and DSR (if provided)
         """
         # Record attempt if requested
         if record_attempt:
@@ -160,6 +245,26 @@ class Gate4MultipleTesting:
         # Check if passes
         passed = raw_t_stat >= threshold
 
+        # Calculate Bonferroni alpha if requested
+        bonf_alpha_adjusted = None
+        if bonferroni_alpha is not None:
+            bonf_alpha_adjusted = self.calculate_bonferroni_alpha(
+                alpha=bonferroni_alpha,
+                n_trials=num_attempts,
+            )
+
+        # Calculate Deflated Sharpe Ratio if returns provided
+        dsr = None
+        raw_sr = None
+        if returns is not None and len(returns) > 0:
+            dsr_result = self.calculate_deflated_sharpe(
+                returns=returns,
+                n_trials=num_attempts,
+            )
+            if dsr_result:
+                dsr = dsr_result.get("deflated_sharpe")
+                raw_sr = dsr_result.get("sharpe_ratio")
+
         return MultipleTestingResult(
             passed=passed,
             raw_t_stat=raw_t_stat,
@@ -177,6 +282,10 @@ class Gate4MultipleTesting:
                 "passed": passed,
                 "margin": raw_t_stat - threshold,
             },
+            bonferroni_alpha=bonferroni_alpha,
+            bonferroni_alpha_adjusted=bonf_alpha_adjusted,
+            deflated_sharpe=dsr,
+            raw_sharpe=raw_sr,
         )
 
 

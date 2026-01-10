@@ -199,7 +199,7 @@ score = sweep_strength × 100
 
 ```bash
 # Run daily scan
-python scripts/scan.py --universe data/universe/optionable_liquid_900.csv
+python scripts/scan.py --universe data/universe/optionable_liquid_800.csv
 
 # Backtest dual strategy
 python scripts/backtest_dual_strategy.py --cap 200

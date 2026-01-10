@@ -225,15 +225,107 @@ def run_backtest(symbols: List[str], start: str, end: str, params: DualStrategyP
             'exit_reasons': strat_trades['exit_reason'].value_counts().to_dict(),
         }
 
+    # Return trades_df along with results
+    results['_trades_df'] = trades_df
+
     return results
+
+
+def build_equity_curve(trades_df: pd.DataFrame, start_date: str, end_date: str, initial_equity: float = 100000) -> pd.DataFrame:
+    """Build daily equity curve from trades."""
+    if trades_df.empty:
+        return pd.DataFrame()
+
+    # Create date range
+    dates = pd.date_range(start=start_date, end=end_date, freq='B')  # Business days
+
+    # Initialize equity tracking
+    equity = initial_equity
+    equity_data = []
+
+    # Sort trades by entry date
+    trades_sorted = trades_df.sort_values('entry_date')
+
+    prev_equity = initial_equity
+    for date in dates:
+        # Find trades that closed on or before this date
+        closed_trades = trades_sorted[
+            (pd.to_datetime(trades_sorted['entry_date']) <= date)
+        ]
+
+        # Calculate cumulative PnL (assume $1000 per trade for equity impact)
+        position_size = 1000  # $1000 per trade
+        cum_pnl = (closed_trades['pnl_pct'] / 100 * position_size).sum()
+
+        equity = initial_equity + cum_pnl
+        daily_return = (equity - prev_equity) / prev_equity if prev_equity > 0 else 0
+
+        equity_data.append({
+            'timestamp': date,
+            'equity': equity,
+            'returns': daily_return,
+        })
+        prev_equity = equity
+
+    return pd.DataFrame(equity_data)
+
+
+def save_backtest_outputs(trades_df: pd.DataFrame, results: Dict, output_dir: Path, start: str, end: str):
+    """Save backtest outputs for pyfolio integration."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Save trade list
+    trade_list_path = output_dir / 'trade_list.csv'
+    if not trades_df.empty:
+        # Convert to standard format
+        trades_export = trades_df.copy()
+        trades_export['timestamp'] = trades_export['entry_date']
+        trades_export['side'] = 'BUY'  # All entries are buys
+        trades_export['qty'] = 1
+        trades_export['price'] = trades_export['entry_price']
+        trades_export[['timestamp', 'symbol', 'side', 'qty', 'price']].to_csv(trade_list_path, index=False)
+        print(f"Saved: {trade_list_path}")
+
+    # Build and save equity curve
+    equity_df = build_equity_curve(trades_df, start, end)
+    if not equity_df.empty:
+        equity_path = output_dir / 'equity_curve.csv'
+        equity_df.to_csv(equity_path, index=False)
+        print(f"Saved: {equity_path}")
+
+    # Save summary
+    import json
+    combined = results.get('Combined', {})
+    summary = {
+        'trades': combined.get('trades', 0),
+        'win_rate': combined.get('win_rate', 0) / 100,  # Convert to decimal
+        'profit_factor': combined.get('profit_factor', 0),
+        'sharpe': 0,  # Will be calculated by pyfolio
+        'max_drawdown': 0,
+        'final_equity': equity_df['equity'].iloc[-1] if not equity_df.empty else 100000,
+        'gross_pnl': (trades_df['pnl_pct'] / 100 * 1000).sum() if not trades_df.empty else 0,
+        'net_pnl': (trades_df['pnl_pct'] / 100 * 1000).sum() if not trades_df.empty else 0,
+        'total_fees': 0,
+        'win_rate_pct': combined.get('win_rate', 0),
+        'avg_win_pct': combined.get('avg_win_pct', 0),
+        'avg_loss_pct': combined.get('avg_loss_pct', 0),
+        'signals_per_day': combined.get('signals_per_day', 0),
+    }
+
+    summary_path = output_dir / 'summary.json'
+    with open(summary_path, 'w') as f:
+        json.dump(summary, f, indent=2)
+    print(f"Saved: {summary_path}")
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--universe', default='data/universe/optionable_liquid_900.csv')
+    parser.add_argument('--universe', default='data/universe/optionable_liquid_800.csv')
     parser.add_argument('--start', default='2024-01-01')
     parser.add_argument('--end', default='2025-12-26')
     parser.add_argument('--cap', type=int, default=200)
+    parser.add_argument('--output-dir', type=str, default='backtest_outputs/dual_strategy',
+                        help='Directory to save outputs for pyfolio')
     args = parser.parse_args()
 
     symbols = load_universe(args.universe)
@@ -260,6 +352,11 @@ def main():
         print(f"Error: {results['error']}")
         return 1
 
+    # Save outputs for pyfolio
+    trades_df = results.pop('_trades_df', pd.DataFrame())
+    output_dir = Path(args.output_dir)
+    save_backtest_outputs(trades_df, results, output_dir, args.start, args.end)
+
     # Print results for each strategy
     for strat_name in ['IBS_RSI', 'TurtleSoup', 'Combined']:
         strat = results.get(strat_name, {})
@@ -279,7 +376,7 @@ def main():
         print(f"Avg Bars: {strat.get('avg_bars_held', 0)}")
         print(f"Signals/Day: {strat.get('signals_per_day', 0)}")
 
-    # Scale projections for 900 stocks
+    # Scale projections for 800 stocks
     scale = 900 / results['symbols_tested'] if results['symbols_tested'] > 0 else 1
 
     print(f"\n{'='*70}")

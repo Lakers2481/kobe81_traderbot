@@ -1,7 +1,7 @@
 import json
 import pytest
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import patch, MagicMock
 
 from execution.tca.transaction_cost_analyzer import TransactionCostAnalyzer, TCARecord, get_tca_analyzer
 from oms.order_state import OrderRecord, OrderStatus

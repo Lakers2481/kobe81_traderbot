@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\ml_features\regime_ml.py
+# hypothesis_version: 6.150.0
+
+[-0.1, 0.0, 0.1, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.75, 0.8, 1.5, 200, 252, 'INFO', 'RegimeDetectorML', 'WARNING', '_', 'bear', 'bull', 'close', 'combined_regime', 'crisis', 'dist_sma', 'full', 'hh_count', 'high', 'high_vol', 'ignore', 'll_count', 'low', 'low_vol', 'momentum', 'momentum_20', 'momentum_60', 'neutral', 'neutral_normal_vol', 'normal_vol', 'regime_confidence', 'regime_model_fitted', 'return_', 'return_20d', 'return_60d', 'strong_bear', 'strong_bull', 'trend_regime', 'unknown', 'vol_', 'vol_20d', 'vol_detection_error', 'vol_regime']

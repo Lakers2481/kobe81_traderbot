@@ -94,7 +94,7 @@ def check_spy_quote() -> dict:
 
 def check_universe() -> dict:
     """Check universe file."""
-    universe_path = ROOT / 'data' / 'universe' / 'optionable_liquid_900.csv'
+    universe_path = ROOT / 'data' / 'universe' / 'optionable_liquid_800.csv'
     if not universe_path.exists():
         return {'error': f'Universe file not found: {universe_path}'}
 

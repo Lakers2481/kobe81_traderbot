@@ -41,7 +41,7 @@ import json
 import logging
 import os
 from dataclasses import dataclass, field, asdict
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -1057,7 +1057,7 @@ class GameBriefingEngine:
 
     def generate_pregame(
         self,
-        universe: str = "data/universe/optionable_liquid_900.csv",
+        universe: str = "data/universe/optionable_liquid_800.csv",
         cap: int = 300,
         date: Optional[str] = None
     ) -> PreGameBriefing:
@@ -1712,7 +1712,7 @@ def get_briefing_engine(dotenv_path: str = "./.env") -> GameBriefingEngine:
 
 
 def generate_pregame_briefing(
-    universe: str = "data/universe/optionable_liquid_900.csv",
+    universe: str = "data/universe/optionable_liquid_800.csv",
     cap: int = 300,
     date: Optional[str] = None,
     dotenv_path: str = "./.env"

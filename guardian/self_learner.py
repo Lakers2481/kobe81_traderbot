@@ -21,7 +21,6 @@ from typing import Dict, Any, List, Optional
 from enum import Enum
 import json
 import hashlib
-import traceback
 
 # Load environment
 from dotenv import load_dotenv

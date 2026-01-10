@@ -28,9 +28,8 @@ from __future__ import annotations
 
 import logging
 import time
-from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import List, Optional, Union
 from io import StringIO
 
 import pandas as pd
@@ -286,3 +285,25 @@ def fetch_stooq_eod(
     """Convenience function to fetch Stooq EOD data."""
     provider = StooqEODProvider(**kwargs)
     return provider.fetch_universe(symbols, start, end)
+
+
+def fetch_daily_bars_stooq(
+    symbol: str,
+    start: str,
+    end: str,
+    cache_dir: Optional[Path] = None,
+) -> pd.DataFrame:
+    """
+    Fetch daily OHLCV bars from Stooq for a single symbol.
+
+    Args:
+        symbol: Stock ticker symbol
+        start: Start date YYYY-MM-DD
+        end: End date YYYY-MM-DD
+        cache_dir: Optional cache directory (currently not used for Stooq)
+
+    Returns:
+        DataFrame with columns: timestamp, symbol, open, high, low, close, volume
+    """
+    provider = StooqEODProvider()
+    return provider.fetch_symbol(symbol, start, end)

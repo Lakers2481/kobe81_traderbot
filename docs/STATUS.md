@@ -1,6 +1,6 @@
 ﻿# Kobe81 Traderbot - STATUS
 
-> **Last Updated:** 2026-01-05 15:17 UTC
+> **Last Updated:** 2026-01-09 22:29 UTC
 > **Verified By:** Claude Opus 4.5 (Autonomous Operation Mode)
 > **Document Type:** AI GOVERNANCE & SYSTEM BLUEPRINT
 > **Audit Status:** GRADE A+ - 947 tests passing, DETERMINISM VERIFIED, REPRODUCIBLE SCANS
@@ -368,12 +368,12 @@ Different days have different market conditions:
 
 **Full deterministic scan (for verification):**
 ```bash
-python scripts/scan.py --dotenv .env --universe data/universe/optionable_liquid_900.csv --cap 900 --top3 --ml --cognitive --deterministic --no-quality-gate
+python scripts/scan.py --dotenv .env --universe data/universe/optionable_liquid_800.csv --cap 900 --top3 --ml --cognitive --deterministic --no-quality-gate
 ```
 
 **Production scan (daily use):**
 ```bash
-python scripts/scan.py --dotenv .env --universe data/universe/optionable_liquid_900.csv --cap 300 --top3 --ml --cognitive --narrative
+python scripts/scan.py --dotenv .env --universe data/universe/optionable_liquid_800.csv --cap 300 --top3 --ml --cognitive --narrative
 ```
 
 ### Quality Gate Note
@@ -579,13 +579,13 @@ Use `scripts/backtest_dual_strategy.py` for ALL strategy verification - it uses 
 
 **Out-of-Sample Forward Test (2023-2024):**
 ```bash
-python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_900.csv --start 2023-01-01 --end 2024-12-31 --cap 150
+python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_800.csv --start 2023-01-01 --end 2024-12-31 --cap 150
 ```
 **Expected Result:** ~64% WR, ~1.60 PF
 
 **Full Backtest (2020-2024):**
 ```bash
-python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_900.csv --start 2020-01-01 --end 2024-12-31 --cap 100
+python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_800.csv --start 2020-01-01 --end 2024-12-31 --cap 100
 ```
 **Expected Result:** ~61% WR, ~1.30 PF
 
@@ -698,7 +698,7 @@ min_price: 15.0          # Min stock price
 ### Real Data Sources (VERIFIED)
 | Source | Type | Count | Status |
 |--------|------|-------|--------|
-| Polygon.io | EOD OHLCV | 900 symbols | Verified |
+| Polygon.io | EOD OHLCV | 800 symbols | Verified |
 | wf_outputs/and/ | Walk-forward trades | 19 splits | Legacy (IbsRsiStrategy) |
 | wf_outputs/ibs/ | Walk-forward trades | 19 splits | Legacy (IbsRsiStrategy) |
 | wf_outputs/rsi2/ | Walk-forward trades | 20 splits | Legacy (IbsRsiStrategy) |
@@ -766,7 +766,7 @@ Evidence locations:
 Run date: 2025-12-29 (weekend-safe scan used Friday 2025-12-26 for inputs)
 
 - Exact command (full universe with narratives):
-  - `python scripts/scan.py --strategy dual --universe data/universe/optionable_liquid_900.csv --top3 --ensure-top3 --narrative --dotenv ./.env`
+  - `python scripts/scan.py --strategy dual --universe data/universe/optionable_liquid_800.csv --top3 --ensure-top3 --narrative --dotenv ./.env`
 - Artifacts written (verifiable on disk):
   - `logs/daily_picks.csv` (Top-3)
   - `logs/trade_of_day.csv` (TOTD)
@@ -784,7 +784,7 @@ Notes
 
 - Purpose: validate end-to-end execution (broker connectivity, IOC LIMIT submissions, policy/liquidity gates, idempotency, logging).
 - Command:
-  - `python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --start 2024-11-01 --end 2024-12-27 --cap 20 --dotenv ./.env`
+  - `python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_800.csv --start 2024-11-01 --end 2024-12-27 --cap 20 --dotenv ./.env`
 - Artifacts:
   - `logs/paper_test_YYYYMMDD_HHMM.txt` (console capture) — latest: `logs/paper_test_20251229_1006.txt`
   - `logs/trades.jsonl` (order records: FILLED/REJECTED with reasons)
@@ -801,7 +801,7 @@ Conclusion: Execution pipeline is healthy in paper mode. Ready for showdown run.
 ## Showdown Evidence (2025-12-29)
 
 - Command:
-  - `python scripts/run_showdown_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --cap 200 --outdir showdown_outputs --cache data/cache --dotenv ./.env`
+  - `python scripts/run_showdown_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --cap 200 --outdir showdown_outputs --cache data/cache --dotenv ./.env`
 - Artifacts:
   - `showdown_outputs/showdown_summary.csv`
   - `showdown_outputs/showdown_report.html`
@@ -811,7 +811,7 @@ Notes:
 
 
 - Command (replicate exactly):
-  - `python scripts/scan.py --strategy dual --universe data/universe/optionable_liquid_900.csv --cap 120 --top3 --ensure-top3 --narrative --date 2025-12-28 --dotenv ./.env`
+  - `python scripts/scan.py --strategy dual --universe data/universe/optionable_liquid_800.csv --cap 120 --top3 --ensure-top3 --narrative --date 2025-12-28 --dotenv ./.env`
 - Artifacts (created on disk):
   - `logs/daily_picks.csv` (Top‑3, if available) — 2025‑12‑28
   - `logs/trade_of_day.csv` (TOTD) — 2025‑12‑28
@@ -1139,7 +1139,7 @@ indicator_signal = indicator.shift(1)  # Signal uses PREVIOUS bar
 ```
 1. CHECK: state/KILL_SWITCH does NOT exist
 2. VERIFY: data freshness (EOD bars current)
-3. RUN: python scripts/scan.py --universe data/universe/optionable_liquid_900.csv --dotenv ./.env
+3. RUN: python scripts/scan.py --universe data/universe/optionable_liquid_800.csv --dotenv ./.env
 4. VERIFY: logs/daily_picks.csv updated
 5. UPDATE STATUS.md if any issues
 ```
@@ -1179,14 +1179,14 @@ indicator_signal = indicator.shift(1)  # Signal uses PREVIOUS bar
 ```
 Kobe81 = Dual Strategy Mean-Reversion Trading System
        = IBS+RSI (high frequency) + ICT Turtle Soup (high conviction)
-       = 900-stock universe, EOD signals, IOC LIMIT execution
+       = 800-stock universe, EOD signals, IOC LIMIT execution
 ```
 
 ### Key Parameters
 
 | Parameter | Value | Notes |
 |-----------|-------|-------|
-| Universe | 900 symbols | Optionable, liquid, 10+ years history |
+| Universe | 800 symbols | Optionable, liquid, 10+ years history |
 | Data Source | Polygon.io | EOD OHLCV with CSV caching |
 | Broker | Alpaca | Paper + Live supported |
 | Order Type | IOC LIMIT | `limit_price = best_ask × 1.001` |
@@ -1796,7 +1796,7 @@ class DualStrategyParams:
 ```bash
 # Run the 10-year backtest with 200 symbols (takes ~5 minutes)
 python scripts/backtest_dual_strategy.py \
-    --universe data/universe/optionable_liquid_900.csv \
+    --universe data/universe/optionable_liquid_800.csv \
     --start 2015-01-01 \
     --end 2024-12-31 \
     --cap 200
@@ -1809,7 +1809,7 @@ python scripts/backtest_dual_strategy.py \
 DUAL STRATEGY SYSTEM BACKTEST
 ======================================================================
 Period: 2015-01-01 to 2024-12-31
-Universe: 900 symbols (testing 200)
+Universe: 800 symbols (testing 200)
 
 Strategy 1: IBS+RSI Mean Reversion
   Entry: IBS<0.08, RSI(2)<5.0, >SMA200
@@ -1844,7 +1844,7 @@ Wins/Losses: 705/467
 Win Rate: 60.2%
 Profit Factor: 1.44
 
-QUANT INTERVIEW CRITERIA (900-stock projection)
+QUANT INTERVIEW CRITERIA (800-stock projection)
 ======================================================================
 IBS_RSI:
   Win Rate >= 55%:    PASS (59.9%)
@@ -1869,7 +1869,7 @@ Combined:
 - Catches extreme oversold bounces (IBS < 0.08 = bottom 8% of daily range)
 - Wide stop (2x ATR) gives room for volatility
 - Patient time stop (7 bars) lets bounces develop
-- Result: ~10 signals/day across 900 stocks
+- Result: ~10 signals/day across 800 stocks
 
 **Turtle Soup (High Conviction):**
 - Looser sweep (0.3 ATR) catches valid liquidity sweeps others miss
@@ -2199,7 +2199,7 @@ from risk.policy_gate import PolicyGate
 
 ```bash
 # Run scanner
-python scripts/scan.py --universe data/universe/optionable_liquid_900.csv --dotenv ./.env
+python scripts/scan.py --universe data/universe/optionable_liquid_800.csv --dotenv ./.env
 
 # Paper trade
 python scripts/runner.py --mode paper --dotenv ./.env
@@ -2229,8 +2229,8 @@ This section documents today’s quick checks with exact commands and artifact p
   - Ultra‑quick WF: Aug 15–Dec 26, 2025; `cap=20`; 3 splits
   - Quick WF attempt: Mar 1–Dec 26, 2025; `cap=60`; partial before timeout (kept outputs)
 - Commands
-  - `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2024-01-02 --end 2024-12-26 --train-days 252 --test-days 63 --cap 30 --outdir wf_outputs_verify_2024_252x63 --fallback-free --dotenv ./.env`
-  - `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2023-01-02 --end 2024-12-26 --train-days 252 --test-days 63 --cap 60 --outdir wf_outputs_verify_2023_2024 --fallback-free --dotenv ./.env`
+  - `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2024-01-02 --end 2024-12-26 --train-days 252 --test-days 63 --cap 30 --outdir wf_outputs_verify_2024_252x63 --fallback-free --dotenv ./.env`
+  - `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2023-01-02 --end 2024-12-26 --train-days 252 --test-days 63 --cap 60 --outdir wf_outputs_verify_2023_2024 --fallback-free --dotenv ./.env`
 - Artifacts
   - `wf_outputs_verify_quick/wf_summary_compare.csv`
   - `wf_outputs_verify_quick/ibs_rsi/wf_splits.csv`, `wf_outputs_verify_quick/turtle_soup/wf_splits.csv`
@@ -2238,10 +2238,10 @@ This section documents today’s quick checks with exact commands and artifact p
 - Scanner evidence
   - Last scan recorded: see `python scripts/status.py --json --dotenv ./.env`
   - Latest picks on disk: `logs/daily_picks.csv`, `logs/trade_of_day.csv` (from prior successful run)
-  - Re‑run (example): `python scripts/scan.py --universe data/universe/optionable_liquid_900.csv --cap 120 --ensure-top3 --date 2025-12-26 --dotenv ./.env`
+  - Re‑run (example): `python scripts/scan.py --universe data/universe/optionable_liquid_800.csv --cap 120 --ensure-top3 --date 2025-12-26 --dotenv ./.env`
   - Faster smoke: add `--no-filters`; ML scoring: add `--ml --min-conf 0.55`
 - Follow-ups to refresh KPIs (overnight job)
-  - Full month WF refresh: `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2025-01-02 --end 2025-12-26 --train-days 252 --test-days 63 --cap 150 --outdir wf_outputs_verify_fullmonth --fallback-free --dotenv ./.env`
+  - Full month WF refresh: `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2025-01-02 --end 2025-12-26 --train-days 252 --test-days 63 --cap 150 --outdir wf_outputs_verify_fullmonth --fallback-free --dotenv ./.env`
   - Rebuild dataset + metrics: `python scripts/build_signal_dataset.py --wfdir wf_outputs_verify_fullmonth --dotenv ./.env`; `python scripts/metrics.py --wfdir wf_outputs_verify_fullmonth --strategy TURTLE_SOUP`; `python scripts/metrics.py --wfdir wf_outputs_verify_fullmonth --strategy IBS_RSI`
   - Optional HTML: `python scripts/aggregate_wf_report.py --wfdir wf_outputs_verify_fullmonth --out wf_outputs_verify_fullmonth/wf_report.html`
 
@@ -2250,9 +2250,9 @@ Purpose: confirm optimizer wiring and produce quick, reproducible artifacts (tin
 
 Commands (single-point micro grids)
 - IBS+RSI:
-  - `python scripts/optimize.py --strategy ibs_rsi --universe data/universe/optionable_liquid_900.csv --start 2025-11-15 --end 2025-12-26 --cap 5 --outdir optimize_outputs_micro --ibs-max 0.15 --rsi-max 10 --atr-mults 1.0 --r-mults 2.0 --time-stops 5 --dotenv ./.env`
+  - `python scripts/optimize.py --strategy ibs_rsi --universe data/universe/optionable_liquid_800.csv --start 2025-11-15 --end 2025-12-26 --cap 5 --outdir optimize_outputs_micro --ibs-max 0.15 --rsi-max 10 --atr-mults 1.0 --r-mults 2.0 --time-stops 5 --dotenv ./.env`
 - Turtle Soup:
-  - `python scripts/optimize.py --strategy turtle_soup --universe data/universe/optionable_liquid_900.csv --start 2025-11-15 --end 2025-12-26 --cap 5 --outdir optimize_outputs_micro --ict-lookbacks 20 --ict-min-bars 3 --ict-stop-bufs 0.5 --ict-time-stops 5 --ict-r-mults 2.0 --dotenv ./.env`
+  - `python scripts/optimize.py --strategy turtle_soup --universe data/universe/optionable_liquid_800.csv --start 2025-11-15 --end 2025-12-26 --cap 5 --outdir optimize_outputs_micro --ict-lookbacks 20 --ict-min-bars 3 --ict-stop-bufs 0.5 --ict-time-stops 5 --ict-r-mults 2.0 --dotenv ./.env`
 
 Artifacts
 - `optimize_outputs_micro/ibs_rsi_grid.csv`
@@ -2277,13 +2277,13 @@ Follow these exact steps to reproduce end-to-end results with no ambiguity.
 
 - Environment
   - Ensure `.env` contains Polygon and Alpaca keys. Verify with: `python scripts/status.py --json --dotenv ./.env`.
-  - Universe: `data/universe/optionable_liquid_900.csv` (cap via `--cap`).
+  - Universe: `data/universe/optionable_liquid_800.csv` (cap via `--cap`).
 
 - Walk-Forward (evidence refresh)
   - Quick smoke (both strats):
-    - `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2025-08-15 --end 2025-12-26 --train-days 252 --test-days 63 --cap 20 --outdir wf_outputs_verify_quick --fallback-free --dotenv ./.env`
+    - `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2025-08-15 --end 2025-12-26 --train-days 252 --test-days 63 --cap 20 --outdir wf_outputs_verify_quick --fallback-free --dotenv ./.env`
   - Overnight refresh (recommended for KPIs):
-    - `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2025-01-02 --end 2025-12-26 --train-days 252 --test-days 63 --cap 150 --outdir wf_outputs_verify_fullmonth --fallback-free --dotenv ./.env`
+    - `python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2025-01-02 --end 2025-12-26 --train-days 252 --test-days 63 --cap 150 --outdir wf_outputs_verify_fullmonth --fallback-free --dotenv ./.env`
 
 - Metrics from WF
   - `python scripts/metrics.py --wfdir wf_outputs_verify_fullmonth --strategy IBS_RSI`
@@ -2294,12 +2294,12 @@ Follow these exact steps to reproduce end-to-end results with no ambiguity.
   - `python scripts/train_meta.py --dotenv ./.env`
 
 - Parameter Tuning (grid search, compact)
-  - IBS+RSI example grid: `python scripts/optimize.py --strategy ibs_rsi --universe data/universe/optionable_liquid_900.csv --start 2025-01-02 --end 2025-12-26 --cap 150 --outdir optimize_outputs --ibs-max 0.10,0.15,0.20 --rsi-max 5,10,15 --atr-mults 0.8,1.0,1.2 --r-mults 1.5,2.0,2.5 --time-stops 5,7 --dotenv ./.env`
-  - Turtle Soup example grid: `python scripts/optimize.py --strategy turtle_soup --universe data/universe/optionable_liquid_900.csv --start 2025-01-02 --end 2025-12-26 --cap 150 --outdir optimize_outputs --ict-lookbacks 20,30 --ict-min-bars 3,5 --ict-stop-bufs 0.5,1.0 --ict-time-stops 5,7 --ict-r-mults 2.0,3.0 --dotenv ./.env`
+  - IBS+RSI example grid: `python scripts/optimize.py --strategy ibs_rsi --universe data/universe/optionable_liquid_800.csv --start 2025-01-02 --end 2025-12-26 --cap 150 --outdir optimize_outputs --ibs-max 0.10,0.15,0.20 --rsi-max 5,10,15 --atr-mults 0.8,1.0,1.2 --r-mults 1.5,2.0,2.5 --time-stops 5,7 --dotenv ./.env`
+  - Turtle Soup example grid: `python scripts/optimize.py --strategy turtle_soup --universe data/universe/optionable_liquid_800.csv --start 2025-01-02 --end 2025-12-26 --cap 150 --outdir optimize_outputs --ict-lookbacks 20,30 --ict-min-bars 3,5 --ict-stop-bufs 0.5,1.0 --ict-time-stops 5,7 --ict-r-mults 2.0,3.0 --dotenv ./.env`
   - Selection rule: choose best by Profit Factor then Win Rate; require sufficient trades (guard against tiny samples).
 
 - Daily Scan (Top‑3 + Trade of the Day)
-  - `python scripts/scan.py --universe data/universe/optionable_liquid_900.csv --cap 120 --ensure-top3 --date YYYY-MM-DD --dotenv ./.env`
+  - `python scripts/scan.py --universe data/universe/optionable_liquid_800.csv --cap 120 --ensure-top3 --date YYYY-MM-DD --dotenv ./.env`
   - Optional ML scoring: add `--ml --min-conf 0.55`; for speed only: add `--no-filters`.
 
 - Governance
@@ -2340,10 +2340,10 @@ Follow this checklist verbatim. Tick each box before proceeding.
 - [ ] Strategy alignment v2.2 confirmed (no lookahead, time stops), evidence in `reports/backtest_dual_latest.txt`
 - [ ] Scanner produces Top‑3/TOTD + narratives (evidence in `logs/`)
 - [ ] Paper runner scheduled or started:
-  - Manual: `python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv --cap 120 --scan-times 09:35,10:30,15:55 --lookback-days 540 --dotenv ./.env`
+  - Manual: `python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_800.csv --cap 120 --scan-times 09:35,10:30,15:55 --lookback-days 540 --dotenv ./.env`
   - Windows Task (admin): `ops/windows/start_runner.ps1` (register at logon)
 - [ ] Paper trading test executed (small window)
-  - `python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --start 2024-11-01 --end 2024-12-27 --cap 20 --dotenv ./.env`
+  - `python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_800.csv --start 2024-11-01 --end 2024-12-27 --cap 20 --dotenv ./.env`
   - Verify artifacts: `logs/paper_test_*.txt`, `logs/trades.jsonl`, `logs/events.jsonl`
 - [ ] Operational monitoring in place
   - Tail: `Get-Content logs/events.jsonl -Wait`
@@ -2355,7 +2355,7 @@ Live (only when approved)
 - [ ] `live_trading` approvals in `config/base.yaml` (require_env_approval + require_cli_flag)
 - [ ] Set env approval: `setx LIVE_TRADING_APPROVED YES` (new shell)
 - [ ] Run small-basket micro live test (supervised):
-  - `python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_900.csv --cap 5 --dotenv ./.env --approve-live`
+  - `python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_800.csv --cap 5 --dotenv ./.env --approve-live`
 - [ ] Stamp STATUS with command + artifacts (orders, events, positions)
 
 ## Paper Trading Runbook (Daily)
@@ -2703,7 +2703,7 @@ All 70 skills are documented in `.claude/skills/` and referenced in CLAUDE.md.
 
 ```bash
 # ALWAYS use this for strategy verification
-python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_900.csv --start 2023-01-01 --end 2024-12-31 --cap 150
+python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_800.csv --start 2023-01-01 --end 2024-12-31 --cap 150
 ```
 
 **Expected Results:** ~64% WR, ~1.60 PF, ~192 trades
@@ -2719,7 +2719,7 @@ All 5 checks must pass before any trading.
 ### Scanner Test
 
 ```bash
-python scripts/scan.py --universe data/universe/optionable_liquid_900.csv --cap 50 --dotenv ./.env
+python scripts/scan.py --universe data/universe/optionable_liquid_800.csv --cap 50 --dotenv ./.env
 ```
 
 ### Unit Tests
@@ -2815,7 +2815,7 @@ pytest -q tests/unit
 ### Test Results
 
 - Unit tests: 329 passing (unit only), 942 total
-- Scanner: Runs successfully on 900 symbols
+- Scanner: Runs successfully on 800 symbols
 - Verification script: All checks passing
 - All new imports verified working
 
@@ -3228,7 +3228,7 @@ prompt_context = get_symbol_context_for_prompt("AAPL")
 ```
 
 **Data Sources:**
-- Universe file (`data/universe/optionable_liquid_900.csv`) → sector, industry
+- Universe file (`data/universe/optionable_liquid_800.csv`) → sector, industry
 - Price cache (`data/cache/polygon/`) → technicals (IBS, RSI, ATR, SMA200)
 - Signal logs (`logs/daily_picks.csv`) → recent signals, win rate
 
@@ -3615,7 +3615,7 @@ DualStrategyScanner (2023-2024, 150 symbols):
 | | Macro blackout gate active | ✅ |
 | | Position limits enforced | ✅ |
 | **Data** | Polygon API connected | ✅ |
-| | 900-stock universe loaded | ✅ |
+| | 800-stock universe loaded | ✅ |
 | | Data cache working | ✅ |
 | | Weekend scanning handled | ✅ |
 | **AI/ML** | Calibration module ready | ✅ |
@@ -3657,7 +3657,7 @@ python scripts/pnl.py
 #### 24/7 Automated Mode
 ```bash
 # Start scheduler (scans at 09:35, 10:30, 15:55 ET)
-python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv --cap 50 --scan-times 09:35,10:30,15:55
+python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_800.csv --cap 50 --scan-times 09:35,10:30,15:55
 ```
 
 #### With All Features Enabled
@@ -4076,7 +4076,7 @@ PREFLIGHT OK - Ready for trading
 | Layer | Status | Details |
 |-------|--------|---------|
 | Layer 1: Source Validation | PASS | All API keys valid, connections working |
-| Layer 2: Schema Validation | PASS | Universe 900 symbols, correct format |
+| Layer 2: Schema Validation | PASS | Universe 800 symbols, correct format |
 | Layer 3: Range Validation | PASS | All prices positive, volumes valid |
 | Layer 4: Consistency Validation | PASS | Zero OHLC violations |
 | Layer 5: Cross-Source Validation | PASS | 100% cache coverage |
@@ -4165,17 +4165,17 @@ PREFLIGHT OK - Ready for trading
 
 **Option 1: Quick Scan (recommended for first test)**
 ```bash
-python scripts/scan.py --universe data/universe/optionable_liquid_900.csv --cap 50 --preview
+python scripts/scan.py --universe data/universe/optionable_liquid_800.csv --cap 50 --preview
 ```
 
 **Option 2: Full Paper Trade Session**
 ```bash
-python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --cap 50
+python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_800.csv --cap 50
 ```
 
 **Option 3: 24/7 Runner (with scan times)**
 ```bash
-python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv --cap 50 --scan-times 09:35,10:30,15:55
+python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_800.csv --cap 50 --scan-times 09:35,10:30,15:55
 ```
 
 ---
@@ -5299,7 +5299,7 @@ Multi-stage AI evaluation system:
 
 ```
 1. Scanner runs at 09:35
-2. Fetches fresh price data for 900 stocks
+2. Fetches fresh price data for 800 stocks
 3. Generates signals (IBS < 0.08 AND RSI < 5)
 4. Cognitive brain evaluates each signal
 5. Selects TOP 1 by confidence (TOTD)
@@ -5604,10 +5604,10 @@ $
 
 | File | Change | Impact |
 |------|--------|--------|
-| `scripts/scan.py` | Added ThreadPoolExecutor (10 workers) | 5-10x speedup for 900-stock scan |
+| `scripts/scan.py` | Added ThreadPoolExecutor (10 workers) | 5-10x speedup for 800-stock scan |
 
-**Before:** Sequential processing (15-20 min for 900 stocks)
-**After:** Parallel processing (2-3 min for 900 stocks)
+**Before:** Sequential processing (15-20 min for 800 stocks)
+**After:** Parallel processing (2-3 min for 800 stocks)
 
 **How to Revert:** `git revert fcae362`
 
@@ -5701,10 +5701,10 @@ python -c "from integration.learning_hub import LearningHub; print('OK')"
 python scripts/preflight.py --dotenv ./.env
 
 # Test parallel walk-forward
-python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv \
+python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv \
     --start 2024-01-01 --end 2025-12-31 --cap 50 --parallel --workers 4
 
-# Run 900-stock scan (parallel)
+# Run 800-stock scan (parallel)
 python scripts/scan.py --cap 900 --deterministic --top3
 ```
 

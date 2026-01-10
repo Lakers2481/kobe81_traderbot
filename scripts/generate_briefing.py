@@ -29,7 +29,6 @@ import argparse
 import json
 import logging
 import sys
-from datetime import datetime
 from pathlib import Path
 
 # Add project root to path
@@ -71,7 +70,7 @@ Phases:
     ap.add_argument(
         '--universe',
         type=str,
-        default='data/universe/optionable_liquid_900.csv',
+        default='data/universe/optionable_liquid_800.csv',
         help='Universe file path'
     )
     ap.add_argument(

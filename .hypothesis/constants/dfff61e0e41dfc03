@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\pipelines\spec_pipeline.py
+# hypothesis_version: 6.150.0
+
+[0.02, 0.1, 0.3, 0.5, 2.0, 3.0, 200, '1.0.0', 'External Strategy', 'UNKNOWN', 'a', 'above', 'atr_multiple', 'bars', 'condition', 'confidence', 'consecutive_down', 'description', 'discovery', 'discovery_type', 'draft', 'entry_conditions', 'evidence', 'exit_conditions', 'external', 'filters', 'idea_id', 'ideas.jsonl', 'ideas_processed', 'max_bars', 'max_pct', 'multiplier', 'parameter', 'pattern', 'period', 'risk_pct', 'sma_filter', 'source', 'source_idea_id', 'spec', 'specs', 'specs.jsonl', 'specs_generated', 'stop_loss', 'strategy', 'streak', 'symbol', 'symbol_filter', 'symbols', 'take_profit', 'time_stop', 'title', 'type', 'unknown']

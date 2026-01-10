@@ -596,7 +596,7 @@ sma = close.rolling(200).mean()
 1. **Prefetch Universe Data**
    ```bash
    python scripts/prefetch_polygon_universe.py \
-     --universe data/universe/optionable_liquid_900.csv \
+     --universe data/universe/optionable_liquid_800.csv \
      --start 2025-01-01 --end 2025-12-31
    ```
 
@@ -749,13 +749,13 @@ python scripts/preflight.py --dotenv ./.env
 
 # Start paper trading (micro budget)
 python scripts/run_paper_trade.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --cap 50
 
 # 24/7 runner (paper mode)
 python scripts/runner.py \
   --mode paper \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --cap 50 \
   --scan-times 09:35,10:30,15:55
 

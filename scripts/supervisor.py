@@ -11,7 +11,6 @@ If heartbeat is stale > 3 minutes, attempts to (re)start the scheduler.
 import subprocess
 import sys
 import json
-import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 

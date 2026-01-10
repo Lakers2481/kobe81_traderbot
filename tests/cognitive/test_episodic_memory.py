@@ -3,9 +3,7 @@ Unit tests for cognitive/episodic_memory.py
 
 Tests the AI's experiential journal - the complete memory of trading experiences.
 """
-import pytest
 import tempfile
-import shutil
 from datetime import datetime
 from pathlib import Path
 

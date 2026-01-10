@@ -447,6 +447,10 @@ class BrokerBase(ABC):
         Returns:
             OrderResult
         """
+        # === PAPER MODE GUARD - Defense in depth ===
+        from safety.paper_guard import ensure_paper_mode_or_die
+        ensure_paper_mode_or_die(context=f"BaseBroker.place_market_order:{symbol}")
+
         order = Order(
             symbol=symbol,
             side=side,
@@ -480,6 +484,10 @@ class BrokerBase(ABC):
         Returns:
             OrderResult
         """
+        # === PAPER MODE GUARD - Defense in depth ===
+        from safety.paper_guard import ensure_paper_mode_or_die
+        ensure_paper_mode_or_die(context=f"BaseBroker.place_limit_order:{symbol}")
+
         order = Order(
             symbol=symbol,
             side=side,
@@ -512,6 +520,10 @@ class BrokerBase(ABC):
         Returns:
             OrderResult
         """
+        # === PAPER MODE GUARD - Defense in depth ===
+        from safety.paper_guard import ensure_paper_mode_or_die
+        ensure_paper_mode_or_die(context=f"BaseBroker.place_ioc_limit:{symbol}")
+
         order = Order(
             symbol=symbol,
             side=side,
@@ -548,6 +560,10 @@ class BrokerBase(ABC):
         Returns:
             OrderResult
         """
+        # === PAPER MODE GUARD - Defense in depth ===
+        from safety.paper_guard import ensure_paper_mode_or_die
+        ensure_paper_mode_or_die(context=f"BaseBroker.place_bracket_order:{symbol}")
+
         order = Order(
             symbol=symbol,
             side=side,

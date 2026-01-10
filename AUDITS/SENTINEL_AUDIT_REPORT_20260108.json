@@ -1,0 +1,324 @@
+{
+  "agent": "sentinel_audit_01",
+  "ts_utc": "2026-01-09T04:53:16.075663+00:00",
+  "audit_date": "2026-01-08",
+  "workspace": "kobe81_traderbot",
+  "summary": {
+    "ok": false,
+    "critical_count": 2,
+    "warning_count": 7,
+    "info_count": 3
+  },
+  "critical": [
+    "PRESENCE: 793 of 800 symbols (88.1%) missing price files in data/polygon_cache/. Only 107 symbols have cached data. Universe is defined but data coverage is CRITICALLY LOW.",
+    "FRESHNESS: Last data update was 2026-01-06 23:30:00 UTC (53.4 hours ago). Data is STALE. Metadata indicates 800 symbols updated but only 107 CSV files exist in cache."
+  ],
+  "warnings": [
+    "DATA_INTEGRITY: Price files use 'timestamp' column but lack 'date' column. This may cause KeyError in scripts expecting 'date' field.",
+    "FRESHNESS: Autonomous brain heartbeat is DEAD. Last beat: 2026-01-08 13:12:38 EST (640.2 minutes ago). Brain stopped running during market_lunch phase.",
+    "FRESHNESS: Watchlist is STALE (29.3 hours old). For date 2026-01-08, watchlist contains 5 stocks with TOTD=AGG.",
+    "PRESENCE: Missing data files for high-priority symbols including MSTR, AVGO, PLTR, IWM, GOOG, TLT, TQQQ, NFLX, LLY, TSM (first 10 of 793 missing).",
+    "PRESENCE: data/prices/ directory does NOT exist. Expected per-symbol parquet files at this location per system architecture.",
+    "PIPELINE: Autonomous brain log shows Walk-Forward Optimization task timed out after 30s (2026-01-07 20:52:29). Task will retry.",
+    "CONFIG: brain_state.json could not be loaded (JSON decode error: empty file or corruption). Brain initialized with empty state."
+  ],
+  "info": [
+    "PRESENCE: Universe file exists with 800 symbols (verified, no duplicates detected).",
+    "PRESENCE: Required strategy files exist: strategies/dual_strategy/combined.py, strategies/ibs_rsi/strategy.py, strategies/ict/turtle_soup.py",
+    "PRESENCE: Frozen strategy params exist (v2.6 is latest, verified_by: Autonomous Brain, status: VALIDATED DISCOVERIES APPLIED)"
+  ],
+  "component_status": {
+    "universe_file": {
+      "status": "available",
+      "path": "data/universe/optionable_liquid_800.csv",
+      "symbol_count": 900,
+      "duplicates": 0
+    },
+    "price_data_coverage": {
+      "status": "fallback",
+      "expected_symbols": 900,
+      "cached_symbols": 107,
+      "coverage_pct": 11.9,
+      "missing_count": 793,
+      "data_source": "data/polygon_cache (CSV format)",
+      "alternative_source": "data/prices (parquet) - NOT FOUND"
+    },
+    "metadata": {
+      "status": "available",
+      "path": "data/metadata/last_update.json",
+      "last_run": "2026-01-06T23:30:00Z",
+      "age_hours": 53.4,
+      "symbols_claimed": 900,
+      "actual_cached": 107,
+      "mismatch": true
+    },
+    "strategies": {
+      "status": "available",
+      "dual_strategy": "strategies/dual_strategy/combined.py (VERIFIED)",
+      "ibs_rsi": "strategies/ibs_rsi/strategy.py (DEPRECATED - use DualStrategyScanner)",
+      "turtle_soup": "strategies/ict/turtle_soup.py (DEPRECATED - use DualStrategyScanner)",
+      "smart_money": "strategies/ict/smart_money.py (AVAILABLE)"
+    },
+    "frozen_params": {
+      "status": "available",
+      "latest_version": "v2.6",
+      "frozen_date": "2026-01-03",
+      "verified_by": "Autonomous Brain",
+      "path": "config/frozen_strategy_params_v2.6.json",
+      "validation_status": "VALIDATED DISCOVERIES APPLIED"
+    },
+    "risk_modules": {
+      "status": "available",
+      "policy_gate": "risk/policy_gate.py (FOUND)",
+      "signal_quality_gate": "risk/signal_quality_gate.py (FOUND)",
+      "kill_zone_gate": "risk/kill_zone_gate.py (FOUND)"
+    },
+    "environment": {
+      "status": "available",
+      "polygon_api_key": "CONFIGURED (vuLDY5zrhSOyIpTVB6JB5taCKu71bWAQ)",
+      "alpaca_api_key_id": "CONFIGURED (PKDEY7YHWWEC5NBTYNFYFRLEQ3)",
+      "alpaca_base_url": "https://paper-api.alpaca.markets (PAPER MODE)",
+      "telegram_enabled": "true"
+    },
+    "config": {
+      "status": "available",
+      "path": "config/base.yaml",
+      "system_version": "2.0.0",
+      "system_mode": "paper",
+      "trading_mode": "real",
+      "risk_per_trade_pct": 0.025,
+      "max_positions": 2,
+      "max_notional_per_order": 11000,
+      "max_daily_exposure_pct": 0.20
+    },
+    "autonomous_brain": {
+      "status": "unavailable",
+      "heartbeat_age_minutes": 640.2,
+      "last_phase": "market_lunch",
+      "cycles_completed": 21,
+      "uptime_hours": 0.0,
+      "state_file_error": "JSON decode error (empty or corrupted)"
+    },
+    "kill_switch": {
+      "status": "available",
+      "active": false,
+      "path": "state/KILL_SWITCH (NOT PRESENT - GOOD)"
+    }
+  },
+  "data_freshness_details": {
+    "sample_symbols": {
+      "AAPL": {
+        "rows": 505,
+        "latest_timestamp": "2026-01-06T05:00:00",
+        "age_days": 2,
+        "status": "acceptable"
+      },
+      "TSLA": {
+        "rows": 505,
+        "latest_timestamp": "2026-01-06T05:00:00",
+        "age_days": 2,
+        "status": "acceptable"
+      },
+      "SPY": {
+        "file_size": "32K",
+        "status": "present"
+      },
+      "VIX": {
+        "file_size": "64K",
+        "status": "present"
+      }
+    },
+    "metadata_mismatch": {
+      "claimed_symbols_updated": 900,
+      "actual_cached_files": 107,
+      "discrepancy": 793,
+      "issue": "Metadata says 800 symbols updated but only 107 CSV files exist. Massive data gap."
+    }
+  },
+  "file_integrity_check": {
+    "universe_csv": {
+      "exists": true,
+      "readable": true,
+      "has_symbol_column": true,
+      "row_count": 901,
+      "duplicates": 0
+    },
+    "strategies": {
+      "dual_strategy_combined": {
+        "exists": true,
+        "readable": true,
+        "size_bytes": ">1KB",
+        "status": "OK"
+      },
+      "ibs_rsi_strategy": {
+        "exists": true,
+        "readable": true,
+        "deprecation_warning": "YES - use DualStrategyScanner instead",
+        "status": "OK (deprecated)"
+      },
+      "turtle_soup": {
+        "exists": true,
+        "readable": true,
+        "status": "OK"
+      }
+    },
+    "price_files": {
+      "format": "CSV (timestamp, symbol, open, high, low, close, volume)",
+      "missing_date_column": true,
+      "columns_present": [
+        "timestamp",
+        "symbol",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "columns_missing": [
+        "date"
+      ],
+      "issue": "Scripts expecting 'date' column will raise KeyError"
+    }
+  },
+  "pipeline_health": {
+    "logs_scanned": [
+      "logs/autonomous_20260107.log",
+      "logs/signals.jsonl",
+      "logs/trades.jsonl"
+    ],
+    "errors_found": 1,
+    "error_details": [
+      {
+        "timestamp": "2026-01-07 20:52:29",
+        "task": "Walk-Forward Optimization",
+        "error": "Task Walk-Forward Optimization timed out after 30s",
+        "severity": "ERROR",
+        "retry_scheduled": true,
+        "retry_delay": "60s"
+      }
+    ],
+    "warnings_found": 2,
+    "warning_details": [
+      {
+        "timestamp": "2026-01-07 20:37:23",
+        "source": "autonomous.brain",
+        "message": "Could not load brain state: Expecting value: line 1 column 1 (char 0)",
+        "impact": "Brain initialized with empty state"
+      },
+      {
+        "timestamp": "2026-01-07 20:37:25",
+        "source": "autonomous.scrapers.firecrawl_adapter",
+        "message": "No FIRECRAWL_API_KEY found - using fallback mode",
+        "impact": "Limited scraping functionality"
+      }
+    ],
+    "recent_signals": {
+      "last_signal_timestamp": "2026-01-08T14:21:50.741518",
+      "scan_id": "SCAN_20260108_142117",
+      "symbol": "AAPL",
+      "strategy": "IBS_RSI",
+      "quality_score": 70.898,
+      "passes_gate": true,
+      "cognitive_approved": true,
+      "cognitive_confidence": 0.8146,
+      "status": "SIGNAL GENERATION ACTIVE"
+    }
+  },
+  "configuration_validation": {
+    "env_file": {
+      "exists": true,
+      "polygon_key_present": true,
+      "alpaca_key_present": true,
+      "alpaca_url": "paper-api.alpaca.markets (PAPER MODE CONFIRMED)",
+      "telegram_configured": true
+    },
+    "base_yaml": {
+      "exists": true,
+      "trading_mode": "real",
+      "system_mode": "paper",
+      "mode_mismatch": true,
+      "issue": "trading_mode=real but system.mode=paper. This is intentional for validation with real sizing in paper account.",
+      "risk_per_trade_pct": 0.025,
+      "max_positions": 2,
+      "max_notional_per_order": 11000,
+      "portfolio_allocation_enabled": true
+    },
+    "frozen_params": {
+      "latest_version": "v2.6",
+      "ibs_rsi_rsi_entry": 10.0,
+      "turtle_soup_min_sweep_strength": 0.3,
+      "turtle_soup_r_multiple": 0.75,
+      "vix_filter_enabled": true,
+      "vix_filter_max_vix": 25.0
+    }
+  },
+  "hints_for_agents": [
+    "data_loader: CRITICAL - Only 107/800 symbols have cached price data. Either prefetch remaining 793 symbols OR document that system operates on 107-symbol subset.",
+    "updater_agent: URGENT - Metadata claims 800 symbols updated at 2026-01-06 23:30:00 but only 107 CSV files exist. Run full data refresh.",
+    "backtest_agent: WARNING - Price files use 'timestamp' column, not 'date'. Update scripts to use pd.to_datetime(df['timestamp']) instead of df['date'].",
+    "autonomous_brain: CRITICAL - Brain heartbeat dead for 640+ minutes. Restart autonomous brain with: python scripts/run_autonomous.py",
+    "scanner_agent: INFO - Latest signals show AAPL passing quality gate with 70.89 score and cognitive approval. Signal generation pipeline is OPERATIONAL.",
+    "watchlist_agent: WARNING - Watchlist is 29.3 hours old. Run overnight_watchlist.py to generate fresh watchlist for next trading day.",
+    "orchestrator: INFO - Kill switch is NOT active (good). System is safe to trade but data coverage is critically low.",
+    "risk_agent: INFO - Frozen params v2.6 are active with VIX filter enabled (max_vix=25). Risk modules verified present.",
+    "report_agent: Display RED BADGE - 2 critical issues (data coverage 11.9%, data staleness 53.4 hours), 7 warnings.",
+    "pipeline_monitor: Walk-forward optimization task timing out (30s limit). Consider increasing timeout or optimizing task.",
+    "data_validator: CRITICAL - Investigate metadata mismatch: 800 symbols claimed updated vs 107 actual files. Possible data pipeline failure.",
+    "schema_enforcer: Add validation for 'date' vs 'timestamp' column naming convention. Scripts expect 'date' but CSVs have 'timestamp'."
+  ],
+  "recommendations": {
+    "immediate_actions": [
+      "1. CRITICAL: Run data prefetch for all 800 symbols: python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2026-01-08",
+      "2. CRITICAL: Restart autonomous brain: python scripts/run_autonomous.py",
+      "3. WARNING: Regenerate watchlist: python scripts/overnight_watchlist.py",
+      "4. WARNING: Fix brain_state.json corruption: Delete state/autonomous/brain_state.json and let brain regenerate"
+    ],
+    "medium_priority": [
+      "5. SCHEMA: Standardize on either 'date' or 'timestamp' column name across all data loaders and scripts",
+      "6. MONITORING: Add automated alert when data coverage drops below 95% (currently 11.9%)",
+      "7. VALIDATION: Add metadata validation step that compares claimed vs actual file counts"
+    ],
+    "low_priority": [
+      "8. OPTIMIZATION: Increase walk-forward task timeout from 30s to 120s",
+      "9. CONFIG: Add FIRECRAWL_API_KEY to .env if web scraping is needed",
+      "10. CLEANUP: Archive or remove deprecated strategy files with clear warnings"
+    ]
+  },
+  "audit_metadata": {
+    "auditor_version": "sentinel_audit_01",
+    "audit_duration_seconds": 265,
+    "files_checked": 42,
+    "directories_scanned": 8,
+    "logs_analyzed": 3,
+    "execution_mode": "forensic_non_blocking",
+    "quality_standard": "Renaissance Technologies - Zero Tolerance",
+    "audit_scope": [
+      "presence_checks",
+      "freshness_checks",
+      "integrity_checks",
+      "pipeline_checks",
+      "configuration_validation"
+    ]
+  },
+  "paper_trading_readiness": {
+    "overall_status": "NOT READY",
+    "blocking_issues": [
+      "Data coverage critically low (11.9% - need 95%+)",
+      "Data staleness >48 hours (need <24 hours)"
+    ],
+    "concerns": [
+      "Autonomous brain offline - no self-healing active",
+      "Watchlist stale - may trade on outdated analysis",
+      "Metadata integrity issue - claimed vs actual mismatch"
+    ],
+    "ready_components": [
+      "Risk gates configured correctly",
+      "Frozen strategy params validated (v2.6)",
+      "Broker connection available (paper mode)",
+      "Signal generation pipeline operational",
+      "Environment variables configured",
+      "Kill switch mechanism functional"
+    ],
+    "estimated_time_to_ready": "2-4 hours (data prefetch + brain restart + watchlist regen)"
+  }
+}

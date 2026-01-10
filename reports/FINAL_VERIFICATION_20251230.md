@@ -109,7 +109,7 @@ All module connections confirmed working:
 
 ```bash
 python scripts/backtest_dual_strategy.py \
-  --universe data/universe/optionable_liquid_900.csv \
+  --universe data/universe/optionable_liquid_800.csv \
   --start 2023-01-01 --end 2024-12-31 --cap 150
 ```
 

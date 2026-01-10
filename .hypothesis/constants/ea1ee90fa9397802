@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\backtest\monte_carlo.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.001, 0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 1.0, 100000.0, 100, 10000, 100000, '=', 'confidence_intervals', 'drawdown_stats', 'entry_price', 'equity_stats', 'expected_return', 'final_equity', 'max', 'max_drawdown', 'mean', 'min', 'n_simulations', 'optimal_f', 'optimal_growth_rate', 'pnl', 'pnl_pct', 'qty', 'results', 'risk_of_ruin', 'std', 'summary']

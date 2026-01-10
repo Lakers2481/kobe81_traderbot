@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\analytics\duckdb_engine.py
+# hypothesis_version: 6.150.0
+
+[252, 1000, ':memory:', 'DESC', 'ORDER BY split', 'SET threads TO 4', 'avg_profit_factor', 'avg_sharpe', 'avg_win_rate', 'data/cache', 'date', 'error', 'message', 'net_pnl', 'no_data', 'profit_factor', 'return', 'sharpe', 'status', 'strategy', 'symbol', 'total_net_pnl', 'total_pnl', 'total_pnl DESC', 'total_splits', 'total_trades', 'trades', 'wf_outputs', 'win_rate']

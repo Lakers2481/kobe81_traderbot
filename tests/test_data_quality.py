@@ -6,7 +6,7 @@ Tests data validation, coverage checks, and KnowledgeBoundary integration.
 import pytest
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime
 import tempfile
 from pathlib import Path
 

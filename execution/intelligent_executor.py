@@ -39,7 +39,7 @@ Usage:
 import logging
 import uuid
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any
 from datetime import datetime
 import pandas as pd
 

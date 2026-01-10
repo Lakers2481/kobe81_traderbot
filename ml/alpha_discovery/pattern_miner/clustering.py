@@ -23,7 +23,7 @@ try:
 except ImportError:
     SKLEARN_AVAILABLE = False
 
-from ..common.metrics import calculate_win_rate, calculate_profit_factor, calculate_cluster_stats
+from ..common.metrics import calculate_cluster_stats
 
 logger = logging.getLogger(__name__)
 

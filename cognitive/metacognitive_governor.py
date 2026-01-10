@@ -48,7 +48,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 import uuid
 
 logger = logging.getLogger(__name__)
@@ -72,6 +72,8 @@ class EscalationReason(Enum):
     SELF_MODEL_CONCERN = "self_model_concern" # AI's self-model indicates it's not good at this.
     RESOURCE_AVAILABLE = "resource_available" # Has spare compute, so can afford to think deeper.
     EXTREME_MARKET_MOOD = "extreme_market_mood"  # Market in extreme fear/greed state.
+    MODEL_DISAGREEMENT = "model_disagreement"  # Multiple models strongly disagree.
+    TOT_REQUIRED = "tot_required"  # Tree-of-Thoughts multi-path reasoning required.
 
 
 class StandDownReason(Enum):
@@ -99,6 +101,8 @@ class RoutingDecision:
     escalation_reasons: List[EscalationReason]
     stand_down_reason: Optional[StandDownReason]
     max_compute_ms: int  # The time budget allocated for this decision.
+    use_tree_of_thoughts: bool = False  # Whether to use ToT multi-path reasoning.
+    use_self_consistency: bool = False  # Whether to use self-consistency decoding.
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict:
@@ -108,6 +112,8 @@ class RoutingDecision:
             'mode': self.mode.value,
             'use_fast_path': self.use_fast_path,
             'use_slow_path': self.use_slow_path,
+            'use_tree_of_thoughts': self.use_tree_of_thoughts,
+            'use_self_consistency': self.use_self_consistency,
             'should_stand_down': self.should_stand_down,
             'confidence_in_routing': round(self.confidence_in_routing, 3),
             'escalation_reasons': [r.value for r in self.escalation_reasons],
@@ -498,6 +504,22 @@ class MetacognitiveGovernor:
             max_compute = self.default_fast_budget_ms + self.default_slow_budget_ms // 2
             self._slow_decisions += 1
 
+        # === CHECK 8: MODEL DISAGREEMENT (ToT trigger) ===
+        model_disagreement = context.get('model_disagreement', 0.0)
+        if model_disagreement > 0.4:
+            escalation_reasons.append(EscalationReason.MODEL_DISAGREEMENT)
+
+        # === DETERMINE ADVANCED REASONING MODES ===
+        # Tree-of-Thoughts for complex multi-path reasoning
+        use_tot = self._should_use_tree_of_thoughts(signal, context, escalation_reasons)
+        if use_tot:
+            escalation_reasons.append(EscalationReason.TOT_REQUIRED)
+            # ToT requires more compute
+            max_compute = max(max_compute, self.default_slow_budget_ms * 2)
+
+        # Self-consistency for robust reasoning
+        use_sc = self._should_use_self_consistency(signal, context, escalation_reasons)
+
         routing = RoutingDecision(
             decision_id=decision_id,
             mode=mode,
@@ -508,15 +530,20 @@ class MetacognitiveGovernor:
             escalation_reasons=escalation_reasons,
             stand_down_reason=None,
             max_compute_ms=max_compute,
+            use_tree_of_thoughts=use_tot,
+            use_self_consistency=use_sc,
             metadata={
                 'input_confidence': confidence,
                 'active_policy': active_policy.policy_id if active_policy else None,
                 'policy_force_slow_path': policy_force_slow_path,
+                'model_disagreement': model_disagreement,
             }
         )
 
         self._record_decision(routing)
-        logger.info(f"Decision {decision_id} routed to {mode.value} path due to {len(escalation_reasons)} escalation reasons.")
+        tot_status = " [ToT]" if use_tot else ""
+        sc_status = " [SC]" if use_sc else ""
+        logger.info(f"Decision {decision_id} routed to {mode.value} path{tot_status}{sc_status} due to {len(escalation_reasons)} escalation reasons.")
         return routing
 
     def _create_stand_down(self, decision_id: str, reason: StandDownReason, details: str) -> RoutingDecision:
@@ -544,6 +571,110 @@ class MetacognitiveGovernor:
         regime = context.get('regime', 'unknown')
         perf = self.self_model.get_performance(strategy, regime)
         return perf is None or perf.total_trades < 5
+
+    def _should_use_tree_of_thoughts(
+        self,
+        signal: Dict,
+        context: Dict,
+        escalation_reasons: List[EscalationReason],
+    ) -> bool:
+        """
+        Determines whether Tree-of-Thoughts multi-path reasoning should be used.
+
+        ToT is computationally expensive but dramatically improves reasoning on
+        complex decisions (74% vs 4% accuracy on puzzles per research).
+
+        Triggers:
+        - Model disagreement > 40% (significant divergence)
+        - 3+ conflicting factors (complex trade-off)
+        - High uncertainty score > 60%
+        - High stakes + conflicting signals
+        - Novel situation with conflicting signals
+
+        Args:
+            signal: The trading signal being evaluated
+            context: Market and portfolio context
+            escalation_reasons: Already-identified escalation reasons
+
+        Returns:
+            True if ToT should be used for this decision
+        """
+        # Trigger 1: Model disagreement (e.g., HMM vs technicals vs sentiment)
+        model_disagreement = context.get('model_disagreement', 0.0)
+        if model_disagreement > 0.4:
+            logger.debug(f"ToT triggered: model_disagreement={model_disagreement:.2f} > 0.4")
+            return True
+
+        # Trigger 2: Multiple conflicting factors
+        conflicting_factors = context.get('conflicting_factors', 0)
+        if conflicting_factors >= 3:
+            logger.debug(f"ToT triggered: conflicting_factors={conflicting_factors} >= 3")
+            return True
+
+        # Trigger 3: High uncertainty score
+        uncertainty_score = context.get('uncertainty_score', 0.0)
+        if uncertainty_score > 0.6:
+            logger.debug(f"ToT triggered: uncertainty_score={uncertainty_score:.2f} > 0.6")
+            return True
+
+        # Trigger 4: High stakes with conflicting signals
+        has_high_stakes = EscalationReason.HIGH_STAKES in escalation_reasons
+        has_conflicting = EscalationReason.CONFLICTING_SIGNALS in escalation_reasons
+        if has_high_stakes and has_conflicting:
+            logger.debug("ToT triggered: high stakes + conflicting signals")
+            return True
+
+        # Trigger 5: Novel situation with conflicting signals
+        has_novel = EscalationReason.NOVEL_SITUATION in escalation_reasons
+        if has_novel and has_conflicting:
+            logger.debug("ToT triggered: novel situation + conflicting signals")
+            return True
+
+        return False
+
+    def _should_use_self_consistency(
+        self,
+        signal: Dict,
+        context: Dict,
+        escalation_reasons: List[EscalationReason],
+    ) -> bool:
+        """
+        Determines whether Self-Consistency decoding should be used.
+
+        Self-consistency samples multiple reasoning chains and picks the
+        majority answer, reducing variance in LLM outputs.
+
+        Triggers:
+        - Low confidence in routing (< 0.6)
+        - Model disagreement between 20-40% (moderate divergence)
+        - Self-model concern (AI knows it struggles here)
+
+        Args:
+            signal: The trading signal being evaluated
+            context: Market and portfolio context
+            escalation_reasons: Already-identified escalation reasons
+
+        Returns:
+            True if self-consistency should be used
+        """
+        # Trigger 1: Moderate model disagreement
+        model_disagreement = context.get('model_disagreement', 0.0)
+        if 0.2 <= model_disagreement <= 0.4:
+            logger.debug(f"Self-consistency triggered: moderate disagreement={model_disagreement:.2f}")
+            return True
+
+        # Trigger 2: Self-model concern
+        if EscalationReason.SELF_MODEL_CONCERN in escalation_reasons:
+            logger.debug("Self-consistency triggered: self-model concern")
+            return True
+
+        # Trigger 3: Low confidence with any escalation
+        confidence = context.get('confidence', 0.5)
+        if confidence < 0.6 and len(escalation_reasons) >= 1:
+            logger.debug(f"Self-consistency triggered: low conf={confidence:.2f} + escalation")
+            return True
+
+        return False
 
     def _record_decision(self, routing: RoutingDecision) -> None:
         """Records the routing decision for future self-evaluation."""

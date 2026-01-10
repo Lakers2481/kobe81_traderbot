@@ -87,10 +87,10 @@ Output: `backups/backup_YYYYMMDD_HHMMSS.tar.gz`
 ### DATA_UPDATE (06:00 AM)
 
 ```bash
-python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31
+python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31
 ```
 
-Updates EOD cache for all 900 stocks.
+Updates EOD cache for all 800 stocks.
 
 ---
 
@@ -139,7 +139,7 @@ Pre-open signal scan. Signals won't execute until 10:00 AM (kill zone block).
 ### POSITION_MANAGER (10:00 AM - 16:00 PM, every 15 min)
 
 ```bash
-python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --cap 50 --watchlist-only
+python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_800.csv --cap 50 --watchlist-only
 ```
 
 Manages positions:

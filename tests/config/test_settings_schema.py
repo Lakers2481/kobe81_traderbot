@@ -4,7 +4,7 @@ Tests for config/settings_schema.py - Typed config validation.
 from __future__ import annotations
 
 import pytest
-from unittest.mock import patch, mock_open
+from unittest.mock import patch
 import os
 
 import sys

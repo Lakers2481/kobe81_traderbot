@@ -20,7 +20,7 @@ import json
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Tuple
 from zoneinfo import ZoneInfo
 import os
 
@@ -354,7 +354,7 @@ class DataValidator:
             if not api_key:
                 return False, {"error": "FRED_API_KEY not configured"}
 
-            url = f"https://api.stlouisfed.org/fred/series/observations"
+            url = "https://api.stlouisfed.org/fred/series/observations"
             params = {
                 "series_id": series_id,
                 "api_key": api_key,

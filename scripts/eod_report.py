@@ -10,7 +10,6 @@ Outputs: reports/eod_report_YYYYMMDD.html
 import argparse
 import sys
 from pathlib import Path
-from datetime import datetime
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:

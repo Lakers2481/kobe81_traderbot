@@ -7,12 +7,11 @@ Checks Alpaca API connectivity, shows account balance/buying power, and open ord
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 
 import requests
 

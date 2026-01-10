@@ -9,13 +9,10 @@ import argparse
 import json
 import os
 import signal
-import sys
-import threading
-import time
 from datetime import datetime
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 
 # Dashboard configuration
 DEFAULT_PORT = 8080

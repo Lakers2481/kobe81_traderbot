@@ -25,9 +25,7 @@ Usage:
 
 import logging
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
-from datetime import datetime
-import numpy as np
+from typing import Dict, List, Optional
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -129,6 +127,72 @@ class PortfolioRiskManager:
             except ImportError:
                 logger.warning("PortfolioHeatMonitor not available")
         return self._heat_monitor
+
+    @property
+    def var_calculator(self):
+        """FIX (2026-01-07): Lazy load Monte Carlo VaR calculator."""
+        if self._var_calculator is None:
+            try:
+                from risk.advanced.monte_carlo_var import MonteCarloVaR
+                self._var_calculator = MonteCarloVaR()
+                logger.info("MonteCarloVaR calculator initialized")
+            except ImportError:
+                logger.warning("MonteCarloVaR not available")
+        return self._var_calculator
+
+    def check_position_var(
+        self,
+        new_position: Dict,
+        current_positions: List[Dict],
+        max_var_pct: float = 0.05
+    ) -> tuple:
+        """
+        FIX (2026-01-07): Check if adding position keeps portfolio VaR within limits.
+
+        Args:
+            new_position: Dict with keys: symbol, shares, price
+            current_positions: List of position dicts
+            max_var_pct: Maximum portfolio VaR as % of equity (default 5%)
+
+        Returns:
+            (passed: bool, reason: str)
+        """
+        if not self.var_calculator:
+            return True, "VaR calculator not available - skipping check"
+
+        try:
+            # Combine positions for VaR calculation
+            all_positions = list(current_positions) + [new_position]
+
+            # Build positions DataFrame for VaR calc
+            import pandas as pd
+            positions_df = pd.DataFrame([
+                {
+                    'symbol': p.get('symbol', 'UNKNOWN'),
+                    'quantity': p.get('shares', p.get('quantity', 0)),
+                    'price': p.get('price', p.get('entry_price', 0)),
+                    'expected_return': 0.0,  # Conservative
+                    'volatility': 0.02,  # Default 2% daily vol
+                }
+                for p in all_positions
+            ])
+
+            if positions_df.empty:
+                return True, "No positions to check"
+
+            result = self.var_calculator.calculate_var(positions_df)
+
+            max_var_dollars = self.equity * max_var_pct
+            portfolio_var = result.get('var', 0)
+
+            if portfolio_var > max_var_dollars:
+                return False, f"Portfolio VaR ${portfolio_var:,.0f} exceeds ${max_var_dollars:,.0f} limit ({max_var_pct:.0%})"
+
+            return True, f"VaR check passed: ${portfolio_var:,.0f} < ${max_var_dollars:,.0f}"
+
+        except Exception as e:
+            logger.warning(f"VaR check failed: {e}")
+            return True, f"VaR check error - allowing trade: {e}"
 
     def _check_conformal_enabled(self) -> bool:
         """Check if conformal prediction is enabled in config."""

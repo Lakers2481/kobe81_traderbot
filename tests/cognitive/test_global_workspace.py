@@ -3,8 +3,6 @@ Unit tests for cognitive/global_workspace.py
 
 Tests the AI's inter-module communication hub (inspired by Global Workspace Theory).
 """
-import pytest
-import time
 
 
 class TestPriorityEnum:

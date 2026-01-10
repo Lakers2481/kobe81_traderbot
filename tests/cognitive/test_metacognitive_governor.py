@@ -10,7 +10,6 @@ Run: python -m pytest tests/cognitive/test_metacognitive_governor.py -v
 
 import pytest
 from datetime import datetime
-from unittest.mock import Mock, patch
 
 
 class TestMetacognitiveGovernorInitialization:
@@ -106,7 +105,7 @@ class TestRoutingDecisions:
     def test_conflicting_signals_escalates_to_slow(self):
         """Test that conflicting signals trigger slow path."""
         from cognitive.metacognitive_governor import (
-            MetacognitiveGovernor, ProcessingMode, EscalationReason
+            MetacognitiveGovernor, EscalationReason
         )
 
         governor = MetacognitiveGovernor()
@@ -163,7 +162,7 @@ class TestStandDownDecisions:
     def test_stand_down_has_correct_reason(self):
         """Test that stand-down decisions include the reason."""
         from cognitive.metacognitive_governor import (
-            MetacognitiveGovernor, StandDownReason
+            MetacognitiveGovernor
         )
 
         governor = MetacognitiveGovernor()

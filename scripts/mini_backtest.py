@@ -19,9 +19,7 @@ if str(ROOT) not in sys.path:
 from config.env_loader import load_env
 from data.providers.polygon_eod import fetch_daily_bars_polygon
 from core.clock.tz_utils import now_et
-import pandas as pd
 import numpy as np
-import json
 
 
 def mini_backtest(symbol: str, days: int, dotenv: str) -> dict:

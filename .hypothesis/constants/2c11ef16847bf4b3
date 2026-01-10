@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\ml_advanced\markov_chain\scorer.py
+# hypothesis_version: 6.150.0
+
+[0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.45, 0.5, 0.75, 0.9, 100, 252, 'No scored data', 'composite_score', 'current_state', 'deviation', 'down', 'error', 'flat', 'mean_composite', 'mean_pi_up', 'p10', 'p25', 'p50', 'p75', 'p90', 'p_down_today', 'p_up_today', 'persistence', 'pi_down', 'pi_up', 'rank', 'samples', 'score_percentiles', 'state_distribution', 'summary', 'symbol', 'threshold', 'top_bounce', 'top_mean_reversion', 'top_momentum', 'top_overall', 'top_trending', 'total_scored', 'up']

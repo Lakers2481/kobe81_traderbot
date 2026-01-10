@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\config\env_loader.py
+# hypothesis_version: 6.150.0
+
+['"', '#', "'", '=', 'ALPACA_API_KEY', 'ALPACA_API_KEY_ID', 'ALPACA_SECRET_KEY', 'utf-8']

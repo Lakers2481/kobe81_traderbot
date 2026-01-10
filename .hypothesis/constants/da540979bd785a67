@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\ml_advanced\markov_chain\predictor.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.1, 0.2, 0.3, 0.33, 0.34, 0.37, 0.4, 0.45, 0.5, 0.55, 0.6, 0.7, 1.0, 500, 'BUY', 'HOLD', 'MarkovPredictor', 'SELL', 'buy_threshold', 'classifier', 'confidence', 'config', 'current_state', 'fitted', 'higher_order', 'long', 'max_order', 'n_states', 'order_used', 'pi', 'prob_down', 'prob_flat', 'prob_up', 'probs_1st', 'recent_states', 'sell_threshold', 'side', 'signal', 'stationary_deviation', 'symbol', 'threshold', 'transition_matrix', 'use_higher_order', 'use_stationary']

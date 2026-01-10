@@ -2,7 +2,6 @@
 Unit tests for risk management.
 """
 
-import pytest
 from pathlib import Path
 import sys
 

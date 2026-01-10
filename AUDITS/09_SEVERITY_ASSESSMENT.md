@@ -50,7 +50,7 @@ All live trading paths are gated by 7 safety mechanisms:
 
 ### SEV-1-002: Data Cache Coverage
 **Location:** data/polygon_cache/
-**Impact:** Only 102/900 stocks cached (11.3%)
+**Impact:** Only 102/800 stocks cached (11.3%)
 **Root Cause:** Prefetch not complete
 **Risk:** LOW - Scanner will fetch on demand
 **Action:** Continue prefetch operation

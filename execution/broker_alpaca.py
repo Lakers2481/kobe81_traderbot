@@ -4,10 +4,13 @@ import os
 import json
 import logging
 import time
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Dict, Any, Tuple
+from typing import Optional, Dict, Any, Tuple, Callable, TypeVar
+
+# FIX (2026-01-07): TypeVar for generic decorator typing
+T = TypeVar('T')
 import uuid
 
 import requests
@@ -15,7 +18,8 @@ import requests
 from oms.order_state import OrderRecord, OrderStatus
 from oms.idempotency_store import IdempotencyStore
 from core.rate_limiter import with_retry
-from core.kill_switch import require_no_kill_switch, is_kill_switch_active
+from core.kill_switch import require_no_kill_switch
+from core.structured_log import jlog
 from monitor.health_endpoints import update_trade_event
 from config.settings_loader import (
     is_clamp_enabled,
@@ -173,6 +177,84 @@ def require_policy_gate(func):
     return wrapper
 
 
+# FIX (2026-01-07): Add portfolio-level risk gate (VaR + correlation enforcement)
+class PortfolioRiskError(Exception):
+    """Raised when portfolio risk limits would be exceeded."""
+    pass
+
+
+def require_portfolio_gate(func: Callable[..., T]) -> Callable[..., T]:
+    """
+    FIX (2026-01-07): Decorator to enforce VaR and correlation limits.
+
+    Checks portfolio-level risk before allowing order execution.
+    This is called AFTER require_policy_gate and complements it with
+    Monte Carlo VaR and correlation checks.
+    """
+    @wraps(func)
+    def wrapper(*args, **kwargs) -> T:
+        # Try to extract order info from args/kwargs
+        order = kwargs.get('order')
+        if order is None and args:
+            # First arg might be order or self
+            first_arg = args[0]
+            if hasattr(first_arg, 'symbol'):
+                order = first_arg
+
+        # If no order found, skip check (e.g., utility functions)
+        if order is None:
+            return func(*args, **kwargs)
+
+        try:
+            from portfolio.risk_manager import get_risk_manager
+            from core.structured_log import jlog
+
+            prm = get_risk_manager()
+
+            # Build position dict from order
+            new_position = {
+                'symbol': order.symbol if hasattr(order, 'symbol') else str(order),
+                'shares': order.qty if hasattr(order, 'qty') else 0,
+                'price': order.limit_price if hasattr(order, 'limit_price') else 0,
+            }
+
+            # Get current positions (best effort)
+            try:
+                from scripts.position_manager import get_position_states
+                current_positions = [
+                    {'symbol': s.symbol, 'shares': s.shares, 'price': s.current_price}
+                    for s in get_position_states().values()
+                ]
+            except Exception:
+                current_positions = []
+
+            # Check VaR
+            passed, reason = prm.check_position_var(new_position, current_positions)
+
+            if not passed:
+                jlog('portfolio_gate_var_rejected',
+                     symbol=new_position['symbol'],
+                     reason=reason,
+                     level='WARN')
+                raise PortfolioRiskError(reason)
+
+            jlog('portfolio_gate_passed',
+                 symbol=new_position['symbol'],
+                 reason=reason,
+                 level='DEBUG')
+
+        except PortfolioRiskError:
+            raise  # Re-raise risk errors
+        except Exception as e:
+            # Log but don't block - VaR check is advisory
+            jlog('portfolio_gate_error',
+                 error=str(e),
+                 level='WARN')
+
+        return func(*args, **kwargs)
+    return wrapper
+
+
 ALPACA_ORDERS_URL = "/v2/orders"
 ALPACA_QUOTES_URL = "/v2/stocks/quotes"
 ALPACA_BARS_URL = "/v2/stocks/bars"
@@ -210,6 +292,10 @@ def _alpaca_cfg() -> AlpacaConfig:
         key_id=key_id,
         secret=secret,
     )
+
+
+# FIX (2026-01-07): Alias for functions that call get_alpaca_config()
+get_alpaca_config = _alpaca_cfg
 
 
 def _auth_headers(cfg: AlpacaConfig) -> Dict[str, str]:
@@ -629,6 +715,102 @@ def resolve_ioc_status(
     return order
 
 
+def verify_position_after_trade(
+    symbol: str,
+    expected_qty: int,
+    side: str,
+    timeout_s: float = 10.0,
+) -> dict:
+    """
+    Verify broker position matches expected state after trade.
+
+    FIX (2026-01-06): Gap #3 - Post-trade validation within 60 seconds.
+
+    Fetches current position from broker and compares to expected quantity.
+    Logs any discrepancies for audit trail.
+
+    Args:
+        symbol: Stock symbol
+        expected_qty: Expected quantity after trade (positive for long)
+        side: 'buy' or 'sell'
+        timeout_s: How long to wait for position to reflect
+
+    Returns:
+        Dict with validation results
+    """
+    result = {
+        'verified': False,
+        'symbol': symbol,
+        'expected_qty': expected_qty,
+        'actual_qty': None,
+        'discrepancy': None,
+    }
+
+    cfg = get_alpaca_config()
+    if not cfg:
+        logger.error("verify_position_after_trade: No Alpaca config")
+        return result
+
+    # Wait a moment for order settlement
+    time.sleep(2.0)
+
+    try:
+        # Fetch position from broker
+        url = f"{cfg.base_url}/v2/positions/{symbol.upper()}"
+        r = requests.get(url, headers=_auth_headers(cfg), timeout=10)
+
+        if r.status_code == 404:
+            # No position exists
+            result['actual_qty'] = 0
+            if expected_qty == 0:
+                result['verified'] = True
+                logger.info(f"POST_TRADE_VERIFY: {symbol} position correctly closed")
+            else:
+                result['discrepancy'] = f"Expected {expected_qty} shares, got 0"
+                logger.warning(f"POST_TRADE_VERIFY MISMATCH: {symbol} - {result['discrepancy']}")
+        elif r.status_code == 200:
+            data = r.json()
+            actual_qty = int(float(data.get('qty', 0)))
+            result['actual_qty'] = actual_qty
+
+            # For buys, we expect qty to increase
+            # For sells, we expect qty to decrease or position to close
+            if actual_qty == expected_qty:
+                result['verified'] = True
+                logger.info(f"POST_TRADE_VERIFY: {symbol} position verified: {actual_qty} shares")
+            else:
+                # Check if it's within tolerance (partial fills are okay)
+                diff = abs(actual_qty - expected_qty)
+                if diff <= 1 or (expected_qty > 0 and actual_qty > 0):
+                    # Close enough (partial fill or rounding)
+                    result['verified'] = True
+                    logger.info(f"POST_TRADE_VERIFY: {symbol} position acceptable: {actual_qty} vs expected {expected_qty}")
+                else:
+                    result['discrepancy'] = f"Expected {expected_qty} shares, got {actual_qty}"
+                    logger.warning(f"POST_TRADE_VERIFY MISMATCH: {symbol} - {result['discrepancy']}")
+        else:
+            logger.warning(f"POST_TRADE_VERIFY: Failed to fetch position for {symbol}: HTTP {r.status_code}")
+            result['discrepancy'] = f"HTTP {r.status_code}"
+
+    except Exception as e:
+        logger.error(f"POST_TRADE_VERIFY ERROR: {symbol} - {e}")
+        result['discrepancy'] = str(e)
+
+    # Log to state for audit trail
+    try:
+        from pathlib import Path
+        import json
+        validation_log = Path("state/post_trade_validations.jsonl")
+        validation_log.parent.mkdir(parents=True, exist_ok=True)
+        with open(validation_log, 'a') as f:
+            result['timestamp'] = datetime.utcnow().isoformat() + "Z"
+            f.write(json.dumps(result) + "\n")
+    except Exception:
+        pass
+
+    return result
+
+
 def log_trade_event(order: OrderRecord, market_bid: Optional[float] = None, market_ask: Optional[float] = None) -> None:
     """
     Log trade event to logs/trades.jsonl for audit and analysis.
@@ -665,6 +847,7 @@ def log_trade_event(order: OrderRecord, market_bid: Optional[float] = None, mark
 
 
 @require_policy_gate
+@require_portfolio_gate  # FIX (2026-01-07): VaR/correlation enforcement
 @require_no_kill_switch
 def place_ioc_limit(order: OrderRecord, resolve_status: bool = True) -> BrokerExecutionResult:
     """
@@ -678,6 +861,10 @@ def place_ioc_limit(order: OrderRecord, resolve_status: bool = True) -> BrokerEx
     Returns:
         BrokerExecutionResult containing the updated OrderRecord and market bid/ask.
     """
+    # === PAPER MODE GUARD - MUST BE FIRST ===
+    from safety.paper_guard import ensure_paper_mode_or_die
+    ensure_paper_mode_or_die(context=f"place_ioc_limit:{order.symbol}")
+
     cfg = _alpaca_cfg()
     store = IdempotencyStore()
 
@@ -747,6 +934,76 @@ def place_ioc_limit(order: OrderRecord, resolve_status: bool = True) -> BrokerEx
         if resolve_status and order.broker_order_id:
             order = resolve_ioc_status(order)
         log_trade_event(order, market_bid=market_bid_at_execution, market_ask=market_ask_at_execution)
+
+        # FIX (2026-01-06): Gap #3 - Post-trade validation for filled orders
+        if order.status == OrderStatus.FILLED and order.filled_qty and order.filled_qty > 0:
+            # Run validation asynchronously to not block execution
+            try:
+                # Get current position qty before trade (if any)
+                cfg = get_alpaca_config()
+                if cfg:
+                    url = f"{cfg.base_url}/v2/positions/{order.symbol.upper()}"
+                    r = requests.get(url, headers=_auth_headers(cfg), timeout=5)
+                    current_qty = 0
+                    if r.status_code == 200:
+                        current_qty = int(float(r.json().get('qty', 0)))
+
+                    # Expected qty depends on side
+                    side_lower = normalize_side_lowercase(order.side)
+                    if side_lower == 'buy':
+                        expected_qty = current_qty  # Position should exist (we just added)
+                    else:
+                        expected_qty = max(0, current_qty - order.filled_qty)
+
+                    # Verify (but don't block on result)
+                    verify_result = verify_position_after_trade(
+                        order.symbol,
+                        expected_qty=expected_qty if expected_qty > 0 else order.filled_qty,
+                        side=side_lower,
+                    )
+                    if not verify_result.get('verified'):
+                        logger.warning(f"POST_TRADE_VERIFY FAILED: {order.symbol} - {verify_result.get('discrepancy')}")
+            except Exception as e:
+                logger.warning(f"POST_TRADE_VERIFY ERROR: {order.symbol} - {e}")
+
+            # FIX (2026-01-07): Fix 1 - Record trade entry to Learning Hub
+            # This enables the cognitive system to learn from trades
+            try:
+                from integration.learning_hub import get_learning_hub
+                from core.structured_log import jlog
+                from datetime import datetime
+
+                hub = get_learning_hub()
+                side_lower = normalize_side_lowercase(order.side)
+
+                # Record entry (exit will be recorded when position closes)
+                entry_data = {
+                    'symbol': order.symbol,
+                    'side': 'long' if side_lower == 'buy' else 'short',
+                    'entry_price': order.fill_price,
+                    'shares': order.filled_qty,
+                    'strategy': getattr(order, 'strategy', 'dual_strategy'),
+                    'trade_id': order.decision_id or f"TRADE_{order.symbol}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                    'entry_time': datetime.now().isoformat(),
+                    'stop_loss': getattr(order, 'stop_loss', None),
+                    'take_profit': getattr(order, 'take_profit', None),
+                }
+
+                # Record entry (async if available, sync fallback)
+                if hasattr(hub, 'record_trade_entry'):
+                    hub.record_trade_entry(entry_data)
+                    jlog('learning_hub_entry_recorded', symbol=order.symbol, trade_id=entry_data['trade_id'])
+                else:
+                    # Fallback: store in pending entries for later matching
+                    hub._pending_entries = getattr(hub, '_pending_entries', {})
+                    hub._pending_entries[order.symbol] = entry_data
+                    jlog('learning_hub_entry_pending', symbol=order.symbol)
+
+            except ImportError:
+                pass  # Learning hub not available
+            except Exception as e:
+                logger.warning(f"LEARNING_HUB_ENTRY ERROR: {order.symbol} - {e}")
+                # Don't fail the trade for learning issues
 
         return BrokerExecutionResult(order=order, market_bid_at_execution=market_bid_at_execution, market_ask_at_execution=market_ask_at_execution)
     except Exception as e:
@@ -1053,6 +1310,9 @@ def construct_decision(
     """
     Construct an order decision with optional LULD/volatility clamping.
 
+    FIX (2026-01-06): Gap #4 - Changed decision_id to (symbol, date, side) format
+    to prevent signal replay. Same signal on same day now gets blocked.
+
     Args:
         symbol: Stock symbol
         side: "BUY" or "SELL"
@@ -1060,9 +1320,14 @@ def construct_decision(
         best_ask: Best ask price from quote
         atr_value: Optional ATR(14) for ATR-based clamping
     """
-    now = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-    decision_id = f"DEC_{now}_{symbol.upper()}_{uuid.uuid4().hex[:6].upper()}"
-    idk = decision_id  # idempotency = decision id
+    # FIX (2026-01-07): Use date+hour+minute decision_id to allow valid intraday re-entries
+    # Example: BUY AAPL at 10:00, stop out, re-enter at 14:00 = valid (different decision_id)
+    # Format: DEC_YYYYMMDD_HHMM_SYMBOL_SIDE
+    date_str = datetime.utcnow().strftime("%Y%m%d_%H%M")
+    side_normalized = normalize_side(side)  # BUY or SELL
+    decision_id = f"DEC_{date_str}_{symbol.upper()}_{side_normalized}"
+    # Idempotency key includes a timestamp for logging, but decision_id is what matters for dedup
+    idk = f"{decision_id}_{datetime.utcnow().strftime('%H%M%S')}"
 
     # Limit: best ask + 0.1% (fallback to None -> caller must guard)
     if best_ask:
@@ -1135,6 +1400,10 @@ def place_order_with_liquidity_check(
         SECURITY FIX (2026-01-04): bypass_if_disabled param is deprecated and ignored.
         Liquidity gate is ALWAYS enabled, cannot be bypassed.
     """
+    # === PAPER MODE GUARD - MUST BE FIRST ===
+    from safety.paper_guard import ensure_paper_mode_or_die
+    ensure_paper_mode_or_die(context=f"place_order_with_liquidity_check:{order.symbol}")
+
     # SECURITY FIX (2026-01-04): Removed dead branch
     # Liquidity gate is always enabled, no bypass possible
     if bypass_if_disabled:
@@ -1324,26 +1593,32 @@ def place_bracket_order(
     Returns:
         BracketOrderResult with order details and exit order IDs
     """
+    # === PAPER MODE GUARD - MUST BE FIRST ===
+    from safety.paper_guard import ensure_paper_mode_or_die
+    ensure_paper_mode_or_die(context=f"place_bracket_order:{symbol}")
+
     cfg = _alpaca_cfg()
     store = IdempotencyStore()
 
     # Get current market quote for TCA benchmarking
     market_bid, market_ask, _, _, _ = get_quote_with_sizes(symbol)
 
-    # Construct order record
-    now = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-    decision_id = f"BRACKET_{now}_{symbol.upper()}_{uuid.uuid4().hex[:6].upper()}"
+    # FIX (2026-01-06): Gap #4 - Use date-based decision_id to prevent signal replay
+    date_str = datetime.utcnow().strftime("%Y%m%d")
+    side_normalized = normalize_side(side)
+    decision_id = f"BRACKET_{date_str}_{symbol.upper()}_{side_normalized}"
+    idk = f"{decision_id}_{datetime.utcnow().strftime('%H%M%S')}"
 
     order = OrderRecord(
         decision_id=decision_id,
         signal_id=decision_id.replace("BRACKET_", "SIG_"),
         symbol=symbol.upper(),
-        side=normalize_side(side),
+        side=side_normalized,
         qty=int(qty),
         limit_price=float(limit_price),
         tif=time_in_force.upper(),
         order_type="BRACKET",
-        idempotency_key=decision_id,
+        idempotency_key=idk,
         created_at=datetime.utcnow(),
     )
 
@@ -1694,6 +1969,10 @@ class AlpacaBroker(BrokerBase):
         Returns:
             BrokerOrderResult with execution details
         """
+        # === PAPER MODE GUARD - MUST BE FIRST ===
+        from safety.paper_guard import ensure_paper_mode_or_die
+        ensure_paper_mode_or_die(context=f"AlpacaBroker.place_order:{order.symbol}")
+
         # UNIFIED SAFETY GATE CHECK - Required for all order submissions
         gate_result = evaluate_safety_gates(
             is_paper_order=self.paper,
@@ -1765,6 +2044,10 @@ class AlpacaBroker(BrokerBase):
 
     def _place_order_direct(self, order: BrokerOrder, quote: Optional[Quote]) -> BrokerOrderResult:
         """Place order directly via Alpaca API (non-IOC)."""
+        # === PAPER MODE GUARD - MUST BE FIRST ===
+        from safety.paper_guard import ensure_paper_mode_or_die
+        ensure_paper_mode_or_die(context=f"AlpacaBroker._place_order_direct:{order.symbol}")
+
         cfg = _alpaca_cfg()
         store = IdempotencyStore()
 

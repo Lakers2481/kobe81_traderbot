@@ -10,7 +10,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
@@ -232,7 +232,7 @@ def main():
         epilog="""
 Examples:
   python scripts/data.py --cache-stats
-  python scripts/data.py --check-freshness --universe data/universe/optionable_liquid_900.csv
+  python scripts/data.py --check-freshness --universe data/universe/optionable_liquid_800.csv
   python scripts/data.py --check-freshness --cache-stats --show-stale
         """,
     )
@@ -251,7 +251,7 @@ Examples:
     ap.add_argument(
         "--universe",
         type=str,
-        default="data/universe/optionable_liquid_900.csv",
+        default="data/universe/optionable_liquid_800.csv",
         help="Universe CSV file",
     )
     ap.add_argument(

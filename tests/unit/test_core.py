@@ -2,9 +2,7 @@
 Unit tests for core functionality.
 """
 
-import pytest
 import json
-import tempfile
 from datetime import datetime
 from pathlib import Path
 import sys

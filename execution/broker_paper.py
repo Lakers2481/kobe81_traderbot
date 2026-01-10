@@ -27,7 +27,6 @@ from execution.broker_base import (
     OrderResult,
     OrderSide,
     OrderType,
-    TimeInForce,
     BrokerOrderStatus,
 )
 from execution.broker_factory import register_broker
@@ -231,6 +230,10 @@ class PaperBroker(BrokerBase):
         Returns:
             OrderResult with simulated execution details
         """
+        # === PAPER MODE GUARD - MUST BE FIRST (defense in depth) ===
+        from safety.paper_guard import ensure_paper_mode_or_die
+        ensure_paper_mode_or_die(context=f"PaperBroker.place_order:{order.symbol}")
+
         import random
 
         # UNIFIED SAFETY GATE CHECK - Paper broker is always paper mode

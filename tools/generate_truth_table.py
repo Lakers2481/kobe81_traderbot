@@ -26,7 +26,7 @@ import csv
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 # Add project root
 ROOT = Path(__file__).resolve().parents[1]

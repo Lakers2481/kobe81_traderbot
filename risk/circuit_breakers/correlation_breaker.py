@@ -19,7 +19,7 @@ Created: 2026-01-04
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, Any, List, Optional
 from pathlib import Path
 import json
@@ -340,7 +340,7 @@ class CorrelationBreaker:
             elif triggered_by == "beta_spike":
                 message = f"High portfolio beta {portfolio_beta:.2f} - excess market exposure"
             else:
-                message = f"Correlation anomaly detected"
+                message = "Correlation anomaly detected"
         else:
             message = f"Correlation normal at {avg_correlation:.2f}"
 

@@ -21,7 +21,6 @@ import pytest
 # Import all components
 from ml_advanced.markov_chain import (
     StateClassifier,
-    StateNames,
     TransitionMatrix,
     StationaryDistribution,
     HigherOrderMarkov,

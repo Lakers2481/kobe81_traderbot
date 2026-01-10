@@ -38,12 +38,13 @@ sys.path.insert(0, str(ROOT))
 
 from config.env_loader import load_env
 from risk.policy_gate import PolicyGate
-from risk.trailing_stops import get_trailing_stop_manager, StopUpdate
+from risk.trailing_stops import get_trailing_stop_manager
 from risk.weekly_exposure_gate import get_weekly_exposure_gate
-from oms.order_state import OrderRecord, OrderStatus
 from core.kill_switch import is_kill_switch_active
 from core.structured_log import get_logger
-from safety.execution_choke import evaluate_safety_gates, SafetyViolationError
+from safety.execution_choke import evaluate_safety_gates
+from integration.learning_hub import get_learning_hub
+import asyncio
 
 # Setup logging
 logger = get_logger(__name__)
@@ -191,20 +192,43 @@ def save_position_state(states: Dict[str, PositionState]):
 
 
 def calculate_bars_held(entry_date_str: str) -> int:
-    """Calculate trading days (bars) held since entry."""
+    """
+    Calculate trading days (bars) held since entry.
+
+    FIX (2026-01-08): Proper trading day calculation using NYSE calendar.
+    """
     try:
-        entry_date = datetime.strptime(entry_date_str, "%Y-%m-%d").date()
+        # Handle both date-only and ISO datetime formats
+        if 'T' in entry_date_str:
+            entry_date = datetime.fromisoformat(entry_date_str.replace('Z', '+00:00')).date()
+        else:
+            entry_date = datetime.strptime(entry_date_str, "%Y-%m-%d").date()
+
         today = date.today()
 
-        # Count trading days (weekdays) between entry and today
+        # Try to use market_calendar for accurate trading days
+        try:
+            import sys
+            from pathlib import Path
+            scripts_dir = Path(__file__).resolve().parent
+            if str(scripts_dir) not in sys.path:
+                sys.path.insert(0, str(scripts_dir))
+            from market_calendar import get_trading_days_between
+            return get_trading_days_between(entry_date, today)
+        except Exception:
+            pass
+
+        # Fallback: Count weekdays (excluding entry day)
         bars = 0
-        current = entry_date
+        current = entry_date + timedelta(days=1)  # Start AFTER entry day
         while current <= today:
             if current.weekday() < 5:  # Mon-Fri
                 bars += 1
             current += timedelta(days=1)
-        return max(0, bars - 1)  # Subtract 1 (entry day doesn't count)
-    except Exception:
+        return bars
+
+    except Exception as e:
+        logger.error(f"Failed to calculate bars held: {e}")
         return 0
 
 
@@ -421,6 +445,21 @@ class PositionManager:
                 success = close_position(state.symbol, state.qty, state.side)
                 if success:
                     exits_executed += 1
+
+                    # FIX (2026-01-07): Fix 1c - Wire Learning Hub to stop-loss/time-stop exits
+                    try:
+                        hub = get_learning_hub()
+                        exit_reason = 'stop_loss' if 'STOP_LOSS' in (state.exit_reason or '') else 'time_stop'
+                        asyncio.run(hub.record_exit_and_learn(
+                            symbol=state.symbol,
+                            exit_price=state.current_price,
+                            exit_reason=exit_reason,
+                            side=state.side
+                        ))
+                        logger.info(f"  {state.symbol}: Learning triggered ({exit_reason})")
+                    except Exception as e:
+                        logger.warning(f"Learning hub error for {state.symbol}: {e}")
+
                     # Record exit with weekly exposure gate (Professional Portfolio Allocation)
                     # This frees budget for next scan
                     self.weekly_gate.record_exit(
@@ -440,6 +479,25 @@ class PositionManager:
         for symbol in list(self.position_states.keys()):
             if symbol not in current_symbols:
                 logger.info(f"Position {symbol} no longer exists - removing from state")
+
+                # FIX (2026-01-07): Fix 1c - Wire Learning Hub to external closes
+                # External close could be take-profit, stop-loss order filled, or manual close
+                state = self.position_states.get(symbol)
+                if state:
+                    try:
+                        hub = get_learning_hub()
+                        # Use last known price as exit price (best estimate for external close)
+                        exit_price = state.current_price if state.current_price else state.entry_price
+                        asyncio.run(hub.record_exit_and_learn(
+                            symbol=symbol,
+                            exit_price=exit_price,
+                            exit_reason='external',  # Could be take-profit, manual, or broker stop
+                            side=state.side
+                        ))
+                        logger.info(f"  {symbol}: Learning triggered (external close)")
+                    except Exception as e:
+                        logger.warning(f"Learning hub error for external close {symbol}: {e}")
+
                 # Record exit with weekly exposure gate (position closed externally - target/stop hit)
                 self.weekly_gate.record_exit(
                     symbol=symbol,

@@ -15,7 +15,6 @@ Outputs:
 
 import argparse
 import json
-import os
 from datetime import date, timedelta
 from pathlib import Path
 import subprocess
@@ -29,8 +28,8 @@ ROOT = Path(__file__).resolve().parents[1]
 def pick_universe() -> Path:
     """Choose the best available universe CSV in priority order."""
     candidates = [
-        ROOT / "data/universe/optionable_liquid_900.csv",
-        ROOT / "data/universe/optionable_liquid_900.csv",
+        ROOT / "data/universe/optionable_liquid_800.csv",
+        ROOT / "data/universe/optionable_liquid_800.csv",
         ROOT / "data/universe/optionable_liquid_candidates.csv",
     ]
     for p in candidates:

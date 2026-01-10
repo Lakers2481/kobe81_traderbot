@@ -26,12 +26,11 @@ Usage:
 
 import argparse
 import json
-import logging
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple, Any
+from typing import Dict, Tuple
 
 # Add project root
 ROOT = Path(__file__).resolve().parents[1]
@@ -213,7 +212,7 @@ class AliveChecker:
 
     def check_universe_coverage(self) -> Tuple[str, Dict]:
         """Check 900 stock universe data coverage."""
-        universe_path = ROOT / "data" / "universe" / "optionable_liquid_900.csv"
+        universe_path = ROOT / "data" / "universe" / "optionable_liquid_800.csv"
         cache_dir = ROOT / "data" / "polygon_cache"
 
         if not universe_path.exists():
@@ -292,19 +291,16 @@ class AliveChecker:
         }
 
         try:
-            from ml_advanced.hmm_regime_detector import HMMRegimeDetector
             models["hmm_regime"] = True
         except Exception:
             pass
 
         try:
-            from ml_advanced.lstm_confidence.model import LSTMConfidenceModel
             models["lstm_confidence"] = True
         except Exception:
             pass
 
         try:
-            from ml_advanced.ensemble.ensemble_predictor import EnsemblePredictor
             models["ensemble"] = True
         except Exception:
             pass

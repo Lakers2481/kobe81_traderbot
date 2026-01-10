@@ -30,7 +30,7 @@ from research.screener import screen_universe, save_screening_report
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Research discovery run (features/alphas screening)")
-    ap.add_argument("--universe", type=str, default=str(ROOT / "data" / "universe" / "optionable_liquid_900.csv"))
+    ap.add_argument("--universe", type=str, default=str(ROOT / "data" / "universe" / "optionable_liquid_800.csv"))
     ap.add_argument("--start", type=str, default="2022-01-01")
     ap.add_argument("--end", type=str, default="2024-12-31")
     ap.add_argument("--cap", type=int, default=50, help="Limit symbols for faster screening")

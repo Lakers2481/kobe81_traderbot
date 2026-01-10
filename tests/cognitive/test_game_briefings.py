@@ -3,13 +3,10 @@
 import pytest
 import json
 from datetime import datetime
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-import tempfile
+from unittest.mock import Mock, patch
 
 # Import the module under test
 from cognitive.game_briefings import (
-    GameBriefingEngine,
     BriefingContext,
     PreGameBriefing,
     HalfTimeBriefing,

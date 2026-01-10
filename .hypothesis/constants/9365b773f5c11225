@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\risk\advanced\kelly_position_sizer.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.01, 0.02, 0.25, 0.5, 0.6696, 1.0, 1.53, 2.0, 'account_equity', 'adjusted_kelly', 'avg_loss', 'avg_win', 'base_kelly', 'baseline_volatility', 'capped', 'current_price', 'effective_kelly', 'fractional_kelly', 'inf', 'kelly_fraction', 'max_position_pct', 'original_shares', 'pnl', 'position_value', 'return', 'risk_amount', 'shares', 'stop_loss', 'win_loss_ratio', 'win_rate']

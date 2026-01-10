@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\backtest\slippage.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.0005, 0.02, 0.03, 0.05, 0.1, 0.5, 2.0, 5.0, 10.0, 100.0, 100, 10000, 'ATR not provided', 'Volume not provided', 'atr', 'atr_fraction', 'bps', 'bps_setting', 'buy', 'daily_volume', 'fallback', 'final_bps', 'fixed_bps', 'impact_coefficient', 'max_bps', 'min_bps', 'model', 'participation_rate', 'reason', 'spread', 'spread_fraction', 'spread_percentile', 'volatility', 'volatility_estimated', 'volume_impact', 'zero']

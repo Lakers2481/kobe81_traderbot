@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\research\alphas.py
+# hypothesis_version: 6.150.0
+
+[-1.0, 0.0, 1.0, 'alpha_gap_close', 'alpha_mom20', 'alpha_rev1', 'close', 'open', 'symbol', 'timestamp']

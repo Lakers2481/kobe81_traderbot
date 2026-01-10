@@ -35,7 +35,6 @@ import pandas as pd
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from core.structured_log import jlog
 
 logger = logging.getLogger(__name__)
 

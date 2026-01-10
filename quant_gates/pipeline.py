@@ -24,11 +24,11 @@ from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
-from .gate_0_sanity import Gate0Sanity, SanityResult
-from .gate_1_baseline import Gate1Baseline, BaselineResult
-from .gate_2_robustness import Gate2Robustness, RobustnessResult
-from .gate_3_risk import Gate3RiskRealism, RiskResult
-from .gate_4_multiple_testing import Gate4MultipleTesting, MultipleTestingResult
+from .gate_0_sanity import Gate0Sanity
+from .gate_1_baseline import Gate1Baseline
+from .gate_2_robustness import Gate2Robustness
+from .gate_3_risk import Gate3RiskRealism
+from .gate_4_multiple_testing import Gate4MultipleTesting
 
 logger = logging.getLogger(__name__)
 

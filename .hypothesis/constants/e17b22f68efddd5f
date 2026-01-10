@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\research\alpha_library.py
+# hypothesis_version: 6.150.0
+
+[-0.01, 1e-08, 0.01, 0.015, 0.3, 0.5, -100, 100, 120, 200, 252, '\nCategories:', '__main__', 'above_ma_200', 'above_ma_50', 'ad_line', 'adx_14d', 'cci_20d', 'close', 'consec_down', 'consec_up', 'cross_sectional', 'gap_down', 'gap_size', 'gap_up', 'gk_vol_20d', 'hammer', 'high', 'higher_high', 'ibs', 'inside_bar', 'intraday_range', 'low', 'lower_low', 'ma_cross_10_50', 'ma_cross_50_200', 'ma_cross_5_20', 'macd_12_26', 'macd_signal', 'mean_reversion', 'mfi_14d', 'momentum', 'open', 'outside_bar', 'pattern', 'rel_vol_20d', 'rs_vs_spy_20d', 'sector_rs', 'sr_proximity', 'symbol', 'technical', 'timestamp', 'tsmom_20d', 'tsmom_252d', 'tsmom_60d', 'turtle_sweep_20d', 'value', 'vol_breakout', 'vol_contraction', 'vol_expansion', 'vol_regime', 'volatility', 'volume', 'vwap_dist', 'williams_r_14d']

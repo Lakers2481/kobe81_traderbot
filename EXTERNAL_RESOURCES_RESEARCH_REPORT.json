@@ -1,0 +1,128 @@
+{
+  "agent": "researcher-prime",
+  "ts_utc": "2026-01-08T00:00:00Z",
+  "query": "Analyze 13 external resources (FinGPT, TradeMaster, Hands-On LLM, agentic-flow, Everywhere, NextChat, Lissy93 dotfiles, hello-algo, ML System Design Case Studies, tobor_v00, IrScrutinizer, arXiv 2504.17033) for integration with Kobe trading system",
+  "mode": "DeepDive",
+  "summary": {
+    "answer": "Analyzed 13 external resources across finance/trading (4), agent orchestration (2), UI/chat (1), dev/ops (1), learning/reference (2), and unrelated domains (3). HIGH VALUE: FinGPT (sentiment analysis datasets + LoRA fine-tuning), TradeMaster (RL evaluation harness PRUDEX-Compass), Hands-On LLM book (RAG/agent production patterns), agentic-flow (multi-agent orchestration with SONA adaptive learning), ML System Design Case Studies (300+ production ML architectures from Netflix/Airbnb/Meta). MEDIUM VALUE: NextChat (multi-LLM UI for user interaction), Lissy93 dotfiles (CI/CD automation patterns), hello-algo (educational reference only). LOW VALUE: Everywhere (desktop AI assistant - wrong domain), tobor_v00 (robotics hardware - unrelated), IrScrutinizer (infrared signal processing - unrelated), arXiv 2504.17033 (theoretical graph algorithms - no practical trading application). CRITICAL GAPS ADDRESSED: FinGPT provides real sentiment scoring (fixes alt-data dummy defaults), TradeMaster provides RL evaluation harness (validates current RL agent), agentic-flow provides production-grade agent orchestration (fixes advisory brain override issue), ML case studies provide architectural patterns for risk gates enforcement and data pipeline integrity.",
+    "confidence": "high"
+  },
+  "sources": [
+    {
+      "title": "FinGPT Paper (arXiv 2306.06031)",
+      "type": "academic",
+      "url_or_ref": "https://arxiv.org/abs/2306.06031",
+      "why_relevant": "Financial LLM architecture, LoRA fine-tuning methodology, sentiment analysis approach applicable to alt-data modules",
+      "quality": "high"
+    },
+    {
+      "title": "FinGPT GitHub Repository (AI4Finance-Foundation)",
+      "type": "official",
+      "url_or_ref": "https://github.com/AI4Finance-Foundation/FinGPT",
+      "why_relevant": "Open-source financial LLM with sentiment datasets (News/Tweets), LoRA fine-tuning < $300, Dow 30 forecaster demo, HuggingFace models",
+      "quality": "high"
+    },
+    {
+      "title": "TradeMaster GitHub Repository (NTU)",
+      "type": "official",
+      "url_or_ref": "https://github.com/TradeMaster-NTU/TradeMaster",
+      "why_relevant": "RL trading platform with PRUDEX-Compass evaluation benchmark, 15+ RL algorithms, 4 financial markets, data-driven market simulator",
+      "quality": "high"
+    },
+    {
+      "title": "Hands-On Large Language Models (O'Reilly Book GitHub)",
+      "type": "doc",
+      "url_or_ref": "https://github.com/HandsOnLLM/Hands-On-Large-Language-Models",
+      "why_relevant": "Production RAG patterns, agent architectures (ReAct, LangChain), semantic search, RAG evaluation methods, 300 custom figures",
+      "quality": "high"
+    },
+    {
+      "title": "agentic-flow v2.0.0-alpha (ruvnet)",
+      "type": "official",
+      "url_or_ref": "https://github.com/ruvnet/agentic-flow",
+      "why_relevant": "Production agent orchestration with 66 agents, 213 MCP tools, SONA adaptive learning (<1ms overhead), swarm intelligence, 60% cost savings via LLM router",
+      "quality": "high"
+    },
+    {
+      "title": "NextChat (ChatGPTNextWeb)",
+      "type": "official",
+      "url_or_ref": "https://github.com/ChatGPTNextWeb/NextChat",
+      "why_relevant": "Multi-platform LLM UI (Web/iOS/MacOS/Android/Linux/Windows) supporting 12+ providers (OpenAI, Claude, Gemini), privacy-first, markdown support",
+      "quality": "medium"
+    },
+    {
+      "title": "Lissy93 Dotfiles",
+      "type": "community",
+      "url_or_ref": "https://github.com/Lissy93/dotfiles",
+      "why_relevant": "Development environment automation patterns, Dotbot YAML-based setup, Docker containerization, cross-platform package management",
+      "quality": "medium"
+    },
+    {
+      "title": "hello-algo (krahets)",
+      "type": "doc",
+      "url_or_ref": "https://github.com/krahets/hello-algo",
+      "why_relevant": "Educational algorithms/data structures reference with 500 animations, 14 languages, but not trading-specific",
+      "quality": "medium"
+    },
+    {
+      "title": "ML System Design Case Studies (Engineer1999)",
+      "type": "doc",
+      "url_or_ref": "https://github.com/Engineer1999/A-Curated-List-of-ML-System-Design-Case-Studies",
+      "why_relevant": "300+ real-world ML architectures from 80+ companies (Netflix, Airbnb, Meta, Stripe, Spotify) covering CV, NLP, recommender systems, fraud detection, search/ranking",
+      "quality": "high"
+    },
+    {
+      "title": "Everywhere (DearVa)",
+      "type": "tool",
+      "url_or_ref": "https://github.com/DearVa/Everywhere",
+      "why_relevant": "Context-aware desktop AI assistant with MCP tools integration - wrong domain (desktop assistant, not trading system)",
+      "quality": "low"
+    },
+    {
+      "title": "tobor_v00 (evezor)",
+      "type": "community",
+      "url_or_ref": "https://github.com/evezor/tobor_v00",
+      "why_relevant": "Robotics arm control system (ESP32, stepper motors, CNC controller) - completely unrelated to trading",
+      "quality": "low"
+    },
+    {
+      "title": "IrScrutinizer (bengtmartensson)",
+      "type": "tool",
+      "url_or_ref": "https://github.com/bengtmartensson/IrScrutinizer",
+      "why_relevant": "Infrared signal processing (remote controls) - signal processing patterns marginally relevant but domain mismatch",
+      "quality": "low"
+    },
+    {
+      "title": "arXiv 2504.17033 - Shortest Paths Graph Algorithms",
+      "type": "academic",
+      "url_or_ref": "https://arxiv.org/pdf/2504.17033",
+      "why_relevant": "Theoretical computer science (directed graph shortest paths, sorting barrier) - no practical trading application",
+      "quality": "low"
+    }
+  ],
+  "contradictions": [
+    "FinGPT claims better performance than GPT-4/ChatGPT on sentiment tasks but only on their specific datasets (News/Tweets) - not independently verified on financial forecasting",
+    "TradeMaster provides 15+ RL algorithms but their PRUDEX-Compass benchmark doesn't specify transaction costs or slippage models - may not reflect real trading conditions",
+    "agentic-flow claims 60% cost savings via LLM router but doesn't specify baseline comparison or latency impact - unclear if suitable for real-time trading decisions"
+  ],
+  "gaps": [
+    "FinGPT: No clear integration path for real-time sentiment scoring; models are batch fine-tuned, not online learning",
+    "TradeMaster: Evaluation harness PRUDEX-Compass may not include regime-specific backtesting (bull/bear/chop)",
+    "Hands-On LLM: Book examples use LangChain which adds dependency overhead; no financial-specific RAG examples",
+    "agentic-flow: SONA adaptive learning is in alpha - production stability unknown; no financial domain examples",
+    "ML Case Studies: Curated list lacks specific position sizing or risk management architectures for trading systems",
+    "All resources: None address the specific problem of 'enriched data lost before order execution' - this is a Kobe-specific state management issue",
+    "All resources: None provide patterns for 'risk gates that log but don't block' - enforcement vs advisory distinction missing"
+  ],
+  "recommendations_for_agents": [
+    "sentinel_audit_01: Add monitoring for FinGPT sentiment API calls if integrated (check response times < 500ms, flag stale data > 24h old)",
+    "folder_orchestrator_v1: Create altdata/fingpt/ directory for sentiment models and cache; create research/trademaster/ for RL evaluation outputs",
+    "overseer_omega: CRITICAL - Require validation that agentic-flow SONA alpha integration doesn't override PolicyGate budgets; add kill switch test for agent orchestration layer",
+    "backtest_agent: Integrate TradeMaster PRUDEX-Compass benchmark metrics (Sharpe, Calmar, Sortino) as validation gate alongside existing WR/PF checks",
+    "strategy_builder: Reference ML System Design Case Studies for feature pipeline architecture (Netflix/Airbnb patterns for real-time feature computation)",
+    "data_validator: Add FinGPT sentiment scoring to altdata/sentiment.py to replace dummy 0.5 defaults; validate sentiment scores in range [-1, 1] with timestamp freshness",
+    "risk_agent: Study ML case studies for enforcement patterns (Stripe fraud detection blocking, not just logging) - apply to PolicyGate.check() hard stops",
+    "cognitive_brain: Integrate Hands-On LLM RAG evaluation patterns to validate that brain recommendations include source citations and confidence scores",
+    "autonomous_brain: Consider agentic-flow SONA for sub-millisecond pattern learning but ONLY for research mode, NEVER for live order execution without human approval"
+  ]
+}

@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\ml_features\confidence_integrator.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.1, 0.25, 0.35, 0.4, 100.0, 'ACCEPTABLE', 'CONSIDER', 'action', 'atr14', 'components_used', 'confidence', 'conviction', 'conviction_score', 'conviction_scorer', 'don20_width', 'ensemble', 'ensemble_predictor', 'ensemble_std', 'log_vol', 'lstm', 'lstm_confidence', 'lstm_model', 'ml_confidence', 'pos_in_don20', 'ret5', 'rv20', 'sma20_over_200', 'tier', 'weights']

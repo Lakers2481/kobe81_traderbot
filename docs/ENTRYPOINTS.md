@@ -10,7 +10,7 @@
 | Category | Primary Script | Command |
 |----------|---------------|---------|
 | **Daily Scan** | `scan.py` | `python scripts/scan.py --cap 900 --deterministic --top3` |
-| **Paper Trade** | `run_paper_trade.py` | `python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --cap 50` |
+| **Paper Trade** | `run_paper_trade.py` | `python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_800.csv --cap 50` |
 | **Live Trade** | `run_live_trade_micro.py` | `python scripts/run_live_trade_micro.py --cap 10` |
 | **24/7 Runner** | `runner.py` | `python scripts/runner.py --mode paper --scan-times 09:35,10:30,15:55` |
 | **Backtest** | `backtest_dual_strategy.py` | `python scripts/backtest_dual_strategy.py --start 2023-01-01 --end 2024-12-31` |
@@ -35,7 +35,7 @@ python scripts/scan.py --cap 900 --deterministic --top3
 
 ### Paper Trading
 ```bash
-python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900.csv --cap 50
+python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_800.csv --cap 50
 ```
 - **File:** `scripts/run_paper_trade.py`
 - **What it does:** Paper trades with dual position caps (2% risk, 20% notional)
@@ -45,7 +45,7 @@ python scripts/run_paper_trade.py --universe data/universe/optionable_liquid_900
 
 ### Live Trading (REAL MONEY)
 ```bash
-python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_900.csv --cap 10
+python scripts/run_live_trade_micro.py --universe data/universe/optionable_liquid_800.csv --cap 10
 ```
 - **File:** `scripts/run_live_trade_micro.py`
 - **What it does:** Live execution via Alpaca (IOC LIMIT)
@@ -58,7 +58,7 @@ python scripts/run_live_trade_micro.py --universe data/universe/optionable_liqui
 
 ### 24/7 Runner
 ```bash
-python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_900.csv --cap 50 --scan-times 09:35,10:30,15:55
+python scripts/runner.py --mode paper --universe data/universe/optionable_liquid_800.csv --cap 50 --scan-times 09:35,10:30,15:55
 ```
 - **File:** `scripts/runner.py`
 - **What it does:** Runs paper/live trading at configurable times
@@ -132,14 +132,14 @@ python scripts/generate_pregame_blueprint.py --cap 900 --top 5 --execute 2
 
 ### Canonical Backtest
 ```bash
-python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_900.csv --start 2023-01-01 --end 2024-12-31 --cap 150
+python scripts/backtest_dual_strategy.py --universe data/universe/optionable_liquid_800.csv --start 2023-01-01 --end 2024-12-31 --cap 150
 ```
 - **Expected:** ~64% WR, ~1.60 PF
 - **File:** `scripts/backtest_dual_strategy.py`
 
 ### Walk-Forward Backtest
 ```bash
-python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63
+python scripts/run_wf_polygon.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31 --train-days 252 --test-days 63
 ```
 - **Output:** `wf_outputs/<strategy>/split_NN/`
 
@@ -234,16 +234,16 @@ python scripts/send_telegram_test.py
 ```bash
 python scripts/build_universe_polygon.py --cidates data/universe/optionable_liquid_cidates.csv --start 2015-01-01 --end 2024-12-31 --min-years 10 --cap 900 --concurrency 3
 ```
-- **Output:** `data/universe/optionable_liquid_900.csv`
+- **Output:** `data/universe/optionable_liquid_800.csv`
 
 ### Prefetch EOD Data
 ```bash
-python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2024-12-31
+python scripts/prefetch_polygon_universe.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2024-12-31
 ```
 
 ### Freeze Data Lake
 ```bash
-python scripts/freeze_equities_eod.py --universe data/universe/optionable_liquid_900.csv --start 2015-01-01 --end 2025-12-31 --provider stooq
+python scripts/freeze_equities_eod.py --universe data/universe/optionable_liquid_800.csv --start 2015-01-01 --end 2025-12-31 --provider stooq
 python scripts/freeze_crypto_ohlcv.py --symbols BTCUSDT,ETHUSDT --start 2020-01-01 --end 2025-12-31
 ```
 

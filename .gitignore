@@ -186,3 +186,11 @@ reports/weekly_game_plan_*.md
 # Runtime analytics (generated during execution)
 data/alternative/
 execution/analytics/
+
+# Data cache directories
+vuLDY5zrhSOyIpTVB6JB5taCKu71bWAQ/
+
+# Large ML model files (use LFS or download separately)
+models/fingpt/
+*.bin
+*.safetensors

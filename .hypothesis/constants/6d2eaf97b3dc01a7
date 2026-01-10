@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\strategies\adaptive_selector.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.95, 1.0, 1.2, 200, 252, 'bear', 'bull', 'choppy', 'close', 'confidence', 'high_volatility', 'ibs_rsi', 'max_positions', 'neutral', 'none', 'notes', 'position_multiplier', 'regime', 'skip_trading', 'strategy', 'turtle_soup', 'unknown']

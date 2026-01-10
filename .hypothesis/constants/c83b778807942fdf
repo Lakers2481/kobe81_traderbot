@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\ml_features\pca_reducer.py
+# hypothesis_version: 6.150.0
+
+[0.95, 'DEBUG', 'ERROR', 'INFO', 'PCAReducer', 'WARNING', 'close', 'component', 'cumulative', 'date', 'high', 'low', 'n_components', 'open', 'pca_', 'pca_fit_error', 'pca_fitted', 'pca_sklearn_missing', 'pca_too_few_features', 'pca_too_few_samples', 'pca_transform_error', 'pca_transformed', 'per_component', 'symbol', 'timestamp', 'variance_ratio', 'volume']

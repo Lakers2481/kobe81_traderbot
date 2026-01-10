@@ -17,7 +17,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
   - `StationaryDistribution`: Compute equilibrium π for asset ranking (eigen, power, linear methods)
   - `HigherOrderMarkov`: 2nd/3rd order chains for multi-day patterns (Down→Down→Up bounces)
   - `MarkovPredictor`: Generate BUY/SELL/HOLD signals with confidence scoring
-  - `MarkovAssetScorer`: Rank 900 stocks by π(Up), deviation, persistence scores
+  - `MarkovAssetScorer`: Rank 800 stocks by π(Up), deviation, persistence scores
   - 38 unit tests (100% passing)
   - Complements existing HMM: HMM=hidden regimes, Markov=observable direction
 

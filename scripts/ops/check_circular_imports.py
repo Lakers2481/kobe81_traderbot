@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Check for circular imports in the codebase"""
 import os
-import sys
 import re
 from pathlib import Path
 from collections import defaultdict

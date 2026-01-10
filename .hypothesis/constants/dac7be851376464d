@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\scripts\market_calendar.py
+# hypothesis_version: 6.150.0
+
+[2024, 2025, 2026, '\nEarly Close Days:', '  Status: CLOSED', ' (TODAY)', ' <-- TODAY', '%H:%M', '%Y-%m-%d', '%a %m/%d', '--holidays', '--json', '--month', '--next', '--today', '--week', 'Christmas Day', 'Early Close', 'Good Friday', 'Independence Day', 'Juneteenth', 'Labor Day', 'Market Closed Days:', 'Market Open', 'Memorial Day', "New Year's Day", 'Presidents Day', 'Thanksgiving', 'Weekend', 'YEAR', '__main__', 'date', 'market_close', 'market_closed', 'market_open', 'next_trading_day', 'reason', 'store_true']

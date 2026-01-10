@@ -22,7 +22,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum, auto
+from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 import logging
@@ -254,6 +254,10 @@ class OrderStateMachine:
         Returns:
             ManagedOrder in PENDING state
         """
+        # === PAPER MODE GUARD - Defense in depth ===
+        from safety.paper_guard import ensure_paper_mode_or_die
+        ensure_paper_mode_or_die(context=f"OrderStateMachine.create_order:{symbol}")
+
         order_id = f"OSM-{uuid.uuid4().hex[:12].upper()}"
 
         order = ManagedOrder(

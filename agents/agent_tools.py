@@ -19,10 +19,9 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from llm import ToolDefinition
 from agents.base_agent import ToolResult
@@ -205,7 +204,7 @@ def write_draft(filename: str, content: str) -> ToolResult:
 # =============================================================================
 
 def get_universe_symbols(
-    universe_file: str = "data/universe/optionable_liquid_900.csv",
+    universe_file: str = "data/universe/optionable_liquid_800.csv",
     limit: int = 100,
 ) -> ToolResult:
     """
@@ -343,7 +342,6 @@ def run_mini_backtest(
 
         # Import strategy
         from strategies.registry import get_production_scanner
-        from backtest.engine import run_backtest
 
         scanner = get_production_scanner()
 

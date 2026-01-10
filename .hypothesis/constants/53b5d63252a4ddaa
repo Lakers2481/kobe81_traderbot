@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\llm\financial_adapter.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.7, 100, '$', 'CRITICAL', 'a', 'assistant', 'avg_pnl', 'bearish', 'bullish', 'buy', 'careful', 'caution', 'confidence', 'conflict', 'conflict_resolution', 'content', 'contradiction', 'disagree', 'down', 'entry', 'exit', 'general', 'has_confidence', 'has_explicit_stop', 'has_risk_reward', 'hmm', 'long', 'losses', 'macd', 'mentions_caution', 'outcome', 'pnl', 'position', 'price', 'query', 'r', 'r:r ratio', 'reasoning', 'regime', 'response', 'risk', 'risk/reward', 'role', 'rsi', 'sell', 'severity', 'short', 'signal', 'stand down', 'stand_down', 'stock', 'stop', 'system', 'target', 'technical', 'timestamp', 'total', 'trade', 'up', 'user', 'vix', 'win', 'win_rate', 'wins']

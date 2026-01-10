@@ -16,8 +16,6 @@ Author: Kobe Trading System
 Created: 2026-01-04
 """
 
-import os
-import json
 import zipfile
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -473,7 +471,7 @@ if __name__ == "__main__":
     pos = provider.get_positioning("E-MINI S&P 500")
 
     if 'error' not in pos:
-        print(f"\nS&P 500 E-mini Futures:")
+        print("\nS&P 500 E-mini Futures:")
         print(f"  Report Date: {pos.get('report_date', 'N/A')}")
         print(f"  Commercial Net: {pos.get('commercial_net', 'N/A'):,}")
         print(f"  Commercial Percentile: {pos.get('commercial_percentile', 'N/A'):.1f}%")

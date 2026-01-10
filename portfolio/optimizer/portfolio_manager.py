@@ -18,7 +18,7 @@ Created: 2026-01-04
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, date
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from enum import Enum
@@ -28,8 +28,8 @@ import numpy as np
 import pandas as pd
 
 from core.structured_log import get_logger
-from .mean_variance import MeanVarianceOptimizer, OptimalPortfolio
-from .risk_parity import RiskParityOptimizer, RiskParityPortfolio
+from .mean_variance import MeanVarianceOptimizer
+from .risk_parity import RiskParityOptimizer
 from .rebalancer import PortfolioRebalancer, RebalanceRecommendation, RebalanceUrgency
 
 logger = get_logger(__name__)

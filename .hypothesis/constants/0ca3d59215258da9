@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\ml_advanced\markov_chain\transition_matrix.py
+# hypothesis_version: 6.150.0
+
+[1.0, 'Rows must sum to 1', 'Transition Matrix:', 'TransitionMatrix', 'counts', 'fitted', 'ignore', 'inf', 'matrix', 'min_samples', 'n_states', 'not fitted', 'r', 'reliable', 'smoothing', 'threshold', 'total_transitions', 'unreliable', 'w']

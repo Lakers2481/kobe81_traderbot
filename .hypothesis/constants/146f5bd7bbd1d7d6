@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\core\clock\options_event_clock.py
+# hypothesis_version: 6.150.0
+
+['America/New_York', 'expiry_date', 'is_monthly', 'monthly_expiry', 'weekly_expiry']

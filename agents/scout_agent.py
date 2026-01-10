@@ -18,7 +18,7 @@ import json
 import logging
 from dataclasses import dataclass, asdict
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from llm import ToolDefinition
 from agents.base_agent import BaseAgent, AgentConfig, ToolResult
@@ -212,7 +212,6 @@ You have access to file tools to read existing strategies and write drafts.
         """Search for existing ideas to avoid duplicates."""
         try:
             from pathlib import Path
-            import os
 
             ideas_dir = Path(__file__).parent.parent / "ideas"
             if not ideas_dir.exists():

@@ -13,7 +13,7 @@ This is CRITICAL for:
 Usage:
     python scripts/refresh_polygon_cache.py
     python scripts/refresh_polygon_cache.py --symbols AAPL,TSLA,MSFT
-    python scripts/refresh_polygon_cache.py --universe data/universe/optionable_liquid_900.csv
+    python scripts/refresh_polygon_cache.py --universe data/universe/optionable_liquid_800.csv
 """
 
 from __future__ import annotations
@@ -78,7 +78,7 @@ def refresh_polygon_cache(
         symbols_to_refresh = [f.stem.upper() for f in cache_dir.glob('*.csv')]
         if not symbols_to_refresh:
             # Fallback to universe if no cache exists
-            default_universe = ROOT / 'data' / 'universe' / 'optionable_liquid_900.csv'
+            default_universe = ROOT / 'data' / 'universe' / 'optionable_liquid_800.csv'
             if default_universe.exists():
                 symbols_to_refresh = load_universe(str(default_universe))
 

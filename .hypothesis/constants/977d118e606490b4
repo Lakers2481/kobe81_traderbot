@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\ml_features\ensemble_brain.py
+# hypothesis_version: 6.150.0
+
+[-0.1, 0.0, 0.001, 0.01, 0.1, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0, 100, 200, 1000, 'No models available', 'adam', 'available_libraries', 'available_libs', 'binary', 'binary:logistic', 'confidence', 'direction', 'disagreement_score', 'ensemble', 'ensemble_proba', 'ensemble_state.json', 'error', 'feature_count', 'feature_importance', 'feature_names', 'ignore', 'is_fitted', 'lightgbm', 'loaded_models', 'logloss', 'long', 'meta_learner', 'meta_learner.pkl', 'metadata', 'method', 'model_confidences', 'model_votes', 'model_weights', 'models', 'n_features', 'n_models_voted', 'neural_net', 'neutral', 'predict_proba', 'quick_ensemble', 'r', 'random_forest', 'rb', 'relu', 'short', 'signal', 'timestamp', 'w', 'wb', 'xgboost']

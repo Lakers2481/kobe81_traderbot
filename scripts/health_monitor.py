@@ -25,9 +25,9 @@ import json
 import os
 import subprocess
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
 # Add project root to path
 ROOT = Path(__file__).resolve().parents[1]

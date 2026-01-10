@@ -8,7 +8,7 @@ Usage: python scripts/calendar.py [--today|--week|--month|--holidays YEAR]
 import argparse
 from datetime import datetime, timedelta, time
 from core.clock.tz_utils import fmt_ct
-from typing import List, Tuple, Optional
+from typing import Tuple, Optional
 import json
 
 # US Market holidays (2024-2025)
@@ -249,6 +249,47 @@ def get_next_trading_day(from_date: datetime = None) -> datetime:
         next_day += timedelta(days=1)
 
     return next_day
+
+
+def get_trading_days_between(start_date, end_date) -> int:
+    """
+    Count trading days between two dates (inclusive of end_date, exclusive of start_date).
+
+    FIX (2026-01-08): Proper trading day calculation for time stops.
+
+    Args:
+        start_date: Entry date (not counted)
+        end_date: Current date (counted if trading day)
+
+    Returns:
+        Number of trading days held (1 = held overnight, 2 = held 2 trading days, etc.)
+
+    Example:
+        Entry: Monday Jan 5, Today: Wednesday Jan 7
+        Trading days held = 2 (Tue + Wed counted, Mon entry not counted)
+    """
+    from datetime import date
+
+    # Convert to date objects if datetime
+    if hasattr(start_date, 'date'):
+        start_date = start_date.date()
+    if hasattr(end_date, 'date'):
+        end_date = end_date.date()
+
+    if end_date <= start_date:
+        return 0
+
+    count = 0
+    current = start_date + timedelta(days=1)  # Start from day AFTER entry
+
+    while current <= end_date:
+        dt = datetime.combine(current, time(12, 0))  # Noon on that day
+        closed, _ = is_market_closed(dt)
+        if not closed:
+            count += 1
+        current += timedelta(days=1)
+
+    return count
 
 
 def main():

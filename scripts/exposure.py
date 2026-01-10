@@ -7,11 +7,10 @@ Usage: python scripts/exposure.py [--sector|--cap|--factor|--all]
 
 import argparse
 import json
-import os
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 try:
     import requests

@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\core\structured_log.py
+# hypothesis_version: 6.150.0
+
+[100, 1024, 'INFO', 'KOBE_LOG_MAX_BYTES', 'a', 'backup_files', 'event', 'events.jsonl', 'file', 'kobe', 'level', 'logs', 'main_log', 'main_log_size_bytes', 'r', 'size_bytes', 'total_size_bytes', 'ts', 'utf-8']

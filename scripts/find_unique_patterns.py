@@ -14,8 +14,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from datetime import datetime
-from typing import List, Dict, Tuple
-from collections import defaultdict
+from typing import Dict
 
 def load_cached_stock(symbol: str) -> pd.DataFrame:
     """Load stock data from polygon cache."""

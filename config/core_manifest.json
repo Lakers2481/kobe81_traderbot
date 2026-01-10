@@ -1,0 +1,418 @@
+{
+  "version": "1.0.0",
+  "created": "2026-01-07",
+  "description": "Kobe Trading Robot Core Manifest - Defines exactly what's CORE vs EXTENSION",
+
+  "core": {
+    "description": "Minimum viable trading system - ~70 files that CANNOT fail",
+    "total_files": 70,
+
+    "entry_points": {
+      "description": "Main scripts that execute trading operations",
+      "files": [
+        "scripts/scan.py",
+        "scripts/run_paper_trade.py",
+        "scripts/runner.py",
+        "scripts/preflight.py",
+        "scripts/reconcile_alpaca.py"
+      ]
+    },
+
+    "strategies": {
+      "description": "Signal generation - DualStrategyScanner is the ONLY production scanner",
+      "files": [
+        "strategies/__init__.py",
+        "strategies/registry.py",
+        "strategies/dual_strategy/__init__.py",
+        "strategies/dual_strategy/combined.py",
+        "strategies/ibs_rsi/__init__.py",
+        "strategies/ibs_rsi/strategy.py",
+        "strategies/ict/__init__.py",
+        "strategies/ict/turtle_soup.py"
+      ]
+    },
+
+    "risk": {
+      "description": "Risk management gates - MUST pass before any trade",
+      "files": [
+        "risk/__init__.py",
+        "risk/policy_gate.py",
+        "risk/equity_sizer.py",
+        "risk/kill_zone_gate.py",
+        "risk/position_limit_gate.py",
+        "risk/weekly_exposure_gate.py",
+        "risk/liquidity_gate.py",
+        "risk/signal_quality_gate.py",
+        "risk/dynamic_position_sizer.py"
+      ]
+    },
+
+    "execution": {
+      "description": "Order placement and broker communication",
+      "files": [
+        "execution/__init__.py",
+        "execution/broker_alpaca.py",
+        "execution/broker_base.py",
+        "execution/broker_factory.py",
+        "execution/utils.py",
+        "execution/reconcile.py"
+      ]
+    },
+
+    "data": {
+      "description": "Data fetching and universe management",
+      "files": [
+        "data/__init__.py",
+        "data/providers/__init__.py",
+        "data/providers/polygon_eod.py",
+        "data/providers/multi_source.py",
+        "data/universe/__init__.py",
+        "data/universe/loader.py",
+        "data/validation.py"
+      ]
+    },
+
+    "oms": {
+      "description": "Order management system",
+      "files": [
+        "oms/__init__.py",
+        "oms/order_state.py",
+        "oms/idempotency_store.py"
+      ]
+    },
+
+    "core_utils": {
+      "description": "Core utilities and infrastructure",
+      "files": [
+        "core/__init__.py",
+        "core/structured_log.py",
+        "core/hash_chain.py",
+        "core/config_pin.py",
+        "core/kill_switch.py",
+        "core/alerts.py",
+        "core/rate_limiter.py",
+        "core/earnings_filter.py",
+        "core/regime_filter.py",
+        "core/clock/__init__.py",
+        "core/clock/tz_utils.py",
+        "core/clock/market_clock.py",
+        "core/clock/equities_calendar.py"
+      ]
+    },
+
+    "config": {
+      "description": "Configuration management",
+      "files": [
+        "config/__init__.py",
+        "config/env_loader.py",
+        "config/settings_loader.py",
+        "config/settings_schema.py"
+      ]
+    },
+
+    "monitor": {
+      "description": "Health monitoring and heartbeat",
+      "files": [
+        "monitor/__init__.py",
+        "monitor/health_endpoints.py",
+        "monitor/heartbeat.py"
+      ]
+    },
+
+    "portfolio": {
+      "description": "Portfolio state management",
+      "files": [
+        "portfolio/state_manager.py"
+      ]
+    },
+
+    "safety": {
+      "description": "Execution safety gates",
+      "files": [
+        "safety/execution_choke.py"
+      ]
+    },
+
+    "ops": {
+      "description": "Operational utilities",
+      "files": [
+        "ops/locks.py"
+      ]
+    },
+
+    "market_calendar": {
+      "description": "Market hours detection",
+      "files": [
+        "scripts/market_calendar.py"
+      ]
+    }
+  },
+
+  "extensions": {
+    "description": "Optional enhancements - can be enabled/disabled without breaking core",
+
+    "ml_markov": {
+      "description": "Markov chain direction prediction (Medallion-inspired)",
+      "enabled": true,
+      "tested": true,
+      "impact": "Adds +5-10% confidence boost when Markov agrees with signal",
+      "files": [
+        "ml_advanced/markov_chain/__init__.py",
+        "ml_advanced/markov_chain/state_classifier.py",
+        "ml_advanced/markov_chain/transition_matrix.py",
+        "ml_advanced/markov_chain/stationary_dist.py",
+        "ml_advanced/markov_chain/higher_order.py",
+        "ml_advanced/markov_chain/predictor.py",
+        "ml_advanced/markov_chain/scorer.py"
+      ],
+      "integration_point": "scripts/scan.py --markov flag"
+    },
+
+    "ml_hmm": {
+      "description": "Hidden Markov Model regime detection",
+      "enabled": true,
+      "tested": true,
+      "impact": "Position sizing multiplier based on regime (BULL=1.0, NEUTRAL=0.5, BEAR=0.25)",
+      "files": [
+        "ml_advanced/hmm_regime_detector.py",
+        "models/hmm_regime_v1.pkl",
+        "models/hmm_regime_metadata.json"
+      ],
+      "integration_point": "core/regime_filter.py"
+    },
+
+    "ml_lstm": {
+      "description": "LSTM confidence scoring (A/B/C grades)",
+      "enabled": false,
+      "tested": false,
+      "impact": "Multi-output signal confidence",
+      "files": [
+        "ml_advanced/lstm_confidence/__init__.py",
+        "ml_advanced/lstm_confidence/model.py",
+        "ml_advanced/lstm_confidence/config.py"
+      ],
+      "integration_point": "NOT WIRED"
+    },
+
+    "ml_ensemble": {
+      "description": "Ensemble predictor (XGBoost, LightGBM, LSTM)",
+      "enabled": false,
+      "tested": false,
+      "impact": "Weighted ensemble prediction",
+      "files": [
+        "ml_advanced/ensemble/__init__.py",
+        "ml_advanced/ensemble/ensemble_predictor.py",
+        "ml_advanced/ensemble/loader.py",
+        "ml_advanced/ensemble/regime_weights.py"
+      ],
+      "integration_point": "NOT WIRED"
+    },
+
+    "ml_meta": {
+      "description": "Meta-model for signal scoring",
+      "enabled": true,
+      "tested": true,
+      "impact": "ML-based confidence scoring in scan",
+      "files": [
+        "ml_meta/__init__.py",
+        "ml_meta/model.py",
+        "ml_meta/features.py"
+      ],
+      "integration_point": "scripts/scan.py"
+    },
+
+    "cognitive_brain": {
+      "description": "Brain-inspired decision system with self-awareness",
+      "enabled": true,
+      "tested": true,
+      "impact": "Deliberation, learning from outcomes, introspection",
+      "files": [
+        "cognitive/__init__.py",
+        "cognitive/cognitive_brain.py",
+        "cognitive/metacognitive_governor.py",
+        "cognitive/reflection_engine.py",
+        "cognitive/self_model.py",
+        "cognitive/episodic_memory.py",
+        "cognitive/semantic_memory.py",
+        "cognitive/knowledge_boundary.py",
+        "cognitive/curiosity_engine.py"
+      ],
+      "integration_point": "integration/learning_hub.py"
+    },
+
+    "autonomous_brain": {
+      "description": "24/7 self-improving system",
+      "enabled": true,
+      "tested": true,
+      "impact": "Always-on research, learning, maintenance",
+      "files": [
+        "autonomous/__init__.py",
+        "autonomous/brain.py",
+        "autonomous/awareness.py",
+        "autonomous/scheduler.py",
+        "autonomous/research.py",
+        "autonomous/learning.py",
+        "autonomous/maintenance.py",
+        "autonomous/monitor.py"
+      ],
+      "integration_point": "scripts/run_autonomous.py"
+    },
+
+    "risk_advanced": {
+      "description": "Advanced risk management (VaR, Kelly, correlation)",
+      "enabled": false,
+      "tested": true,
+      "impact": "Monte Carlo VaR, Kelly sizing, correlation limits",
+      "files": [
+        "risk/advanced/__init__.py",
+        "risk/advanced/monte_carlo_var.py",
+        "risk/advanced/kelly_position_sizer.py",
+        "risk/advanced/correlation_limits.py",
+        "risk/advanced/portfolio_optimizer.py"
+      ],
+      "integration_point": "NOT WIRED - available for manual use"
+    },
+
+    "circuit_breakers": {
+      "description": "Circuit breakers for volatility, drawdown, streaks",
+      "enabled": true,
+      "tested": true,
+      "impact": "Auto-halt trading on adverse conditions",
+      "files": [
+        "risk/circuit_breakers/__init__.py",
+        "risk/circuit_breakers/breaker_manager.py",
+        "risk/circuit_breakers/drawdown_breaker.py",
+        "risk/circuit_breakers/volatility_breaker.py",
+        "risk/circuit_breakers/streak_breaker.py",
+        "risk/circuit_breakers/correlation_breaker.py",
+        "risk/circuit_breakers/execution_breaker.py"
+      ],
+      "integration_point": "risk/policy_gate.py"
+    },
+
+    "backtest_advanced": {
+      "description": "Advanced backtesting (walk-forward, Monte Carlo)",
+      "enabled": true,
+      "tested": true,
+      "impact": "Walk-forward validation, Monte Carlo simulation",
+      "files": [
+        "backtest/__init__.py",
+        "backtest/engine.py",
+        "backtest/walk_forward.py",
+        "backtest/monte_carlo.py",
+        "backtest/slippage.py",
+        "backtest/costs.py",
+        "backtest/fill_model.py"
+      ],
+      "integration_point": "scripts/run_wf_polygon.py"
+    },
+
+    "altdata": {
+      "description": "Alternative data (sentiment, news)",
+      "enabled": true,
+      "tested": false,
+      "impact": "Sentiment-based confidence adjustment",
+      "files": [
+        "altdata/__init__.py",
+        "altdata/sentiment.py",
+        "data/alternative/__init__.py",
+        "data/alternative/news_sentiment.py",
+        "data/alternative/insider_trades.py",
+        "data/alternative/congress_trades.py"
+      ],
+      "integration_point": "scripts/scan.py (sentiment normalization)"
+    },
+
+    "execution_analytics": {
+      "description": "Execution quality analytics",
+      "enabled": false,
+      "tested": false,
+      "impact": "Slippage tracking, market impact analysis",
+      "files": [
+        "execution/analytics/__init__.py",
+        "execution/analytics/slippage_tracker.py",
+        "execution/analytics/market_impact.py",
+        "execution/analytics/timing_analysis.py",
+        "execution/analytics/execution_report.py",
+        "execution/tca/__init__.py",
+        "execution/tca/transaction_cost_analyzer.py"
+      ],
+      "integration_point": "NOT WIRED"
+    },
+
+    "external_scrapers": {
+      "description": "External research scrapers (GitHub, Reddit, arXiv, YouTube)",
+      "enabled": true,
+      "tested": false,
+      "impact": "Autonomous strategy discovery",
+      "files": [
+        "autonomous/scrapers/__init__.py",
+        "autonomous/scrapers/source_manager.py",
+        "autonomous/scrapers/github_scraper.py",
+        "autonomous/scrapers/reddit_scraper.py",
+        "autonomous/scrapers/youtube_scraper.py",
+        "autonomous/scrapers/arxiv_scraper.py",
+        "autonomous/scrapers/firecrawl_adapter.py"
+      ],
+      "integration_point": "autonomous/research.py"
+    }
+  },
+
+  "not_wired": {
+    "description": "Files that exist but are NOT connected to the trading hot path",
+    "files": [
+      "ml_advanced/lstm_confidence/",
+      "ml_advanced/ensemble/",
+      "ml_advanced/tft/",
+      "ml_advanced/online_learning.py",
+      "execution/intelligent_executor.py",
+      "execution/execution_bandit.py",
+      "execution/order_state_machine.py",
+      "execution/intraday_trigger.py",
+      "risk/intelligent_exit_manager.py",
+      "risk/trailing_stops.py",
+      "risk/volatility_targeting.py",
+      "data/ml/generative_market_model.py",
+      "cognitive/tree_of_thoughts.py",
+      "cognitive/self_consistency.py",
+      "cognitive/azr_reasoning.py",
+      "cognitive/causal_reasoner.py",
+      "autonomous/comprehensive_brain.py",
+      "autonomous/enhanced_brain.py",
+      "autonomous/master_brain.py",
+      "autonomous/master_brain_full.py"
+    ]
+  },
+
+  "duplicates_to_resolve": {
+    "description": "Multiple versions of similar functionality - need consolidation",
+    "items": [
+      {
+        "category": "Brain implementations",
+        "files": ["autonomous/brain.py", "autonomous/enhanced_brain.py", "autonomous/comprehensive_brain.py", "autonomous/master_brain.py", "autonomous/master_brain_full.py"],
+        "recommendation": "Keep brain.py, archive others"
+      },
+      {
+        "category": "Scheduler implementations",
+        "files": ["autonomous/scheduler.py", "autonomous/scheduler_full.py"],
+        "recommendation": "Keep scheduler.py, archive scheduler_full.py"
+      },
+      {
+        "category": "Research implementations",
+        "files": ["autonomous/research.py", "autonomous/enhanced_research.py"],
+        "recommendation": "Keep research.py, archive enhanced_research.py"
+      }
+    ]
+  },
+
+  "verification_checklist": {
+    "description": "Each core file must pass these checks",
+    "checks": [
+      "imports_ok: File imports without errors",
+      "no_syntax_errors: Python syntax is valid",
+      "dependencies_available: All required modules exist",
+      "tests_pass: Associated tests pass (if any)",
+      "integration_verified: Can be called from entry point"
+    ]
+  }
+}

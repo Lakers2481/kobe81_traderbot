@@ -15,7 +15,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from datetime import datetime, date, timedelta
-from typing import List, Optional, Dict, Any
+from typing import Optional, Dict, Any
 
 import pandas as pd
 

@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\altdata\sentiment.py
+# hypothesis_version: 6.150.0
+
+[0.0, 0.2, 1.0, 2.0, 100, 200, 'SENTIMENT_MODEL', 'a', 'ab_test', 'active_model', 'agreement', 'apiKey', 'article_url', 'available_models', 'coerce', 'compound', 'count', 'data/sentiment', 'date', 'default_model', 'desc', 'description', 'difference', 'fingpt', 'fingpt_available', 'fingpt_score', 'limit', 'mean', 'order', 'published_utc', 'published_utc.gte', 'published_utc.lte', 'results', 'score', 'sent_count', 'sent_mean', 'symbol', 'text_length', 'text_preview', 'ticker', 'timestamp', 'title', 'vader', 'vader_score']

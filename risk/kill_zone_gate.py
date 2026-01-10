@@ -22,10 +22,10 @@ from __future__ import annotations
 import logging
 from datetime import datetime, time as dtime
 from typing import Tuple, Optional
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 
-import pytz
+from zoneinfo import ZoneInfo
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +94,7 @@ class KillZoneGate:
 
     def __init__(self, config: Optional[KillZoneConfig] = None):
         self.config = config or KillZoneConfig()
-        self.ET = pytz.timezone('America/New_York')
+        self.ET = ZoneInfo('America/New_York')
 
     def get_current_zone(self, now: Optional[datetime] = None) -> KillZone:
         """Determine which kill zone we're currently in."""

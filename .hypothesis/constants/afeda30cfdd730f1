@@ -1,0 +1,4 @@
+# file: C:\Users\Owner\OneDrive\Desktop\kobe81_traderbot\features\registry.py
+# hypothesis_version: 6.150.0
+
+[200, '.', '1.0.0', 'Feature not found', 'FeatureMetadata', 'atr_14', 'author', 'category', 'close_above_sma200', 'created_at', 'custom', 'dependencies', 'derived', 'description', 'error', 'feature_hash', 'fundamental', 'ibs', 'is_shifted', 'latest', 'lookback_periods', 'macro', 'markov_state', 'momentum', 'name', 'params', 'pattern', 'period', 'price_action', 'rsi_2', 'sentiment', 'sma_200', 'sweep_strength', 'system', 'trend', 'utf-8', 'version', 'volatility', 'volume']

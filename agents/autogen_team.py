@@ -12,9 +12,8 @@ Created: 2026-01-04
 """
 
 import os
-import json
 from datetime import datetime
-from typing import Optional, Dict, Any, List, Callable
+from typing import Optional, Dict, Any, List
 
 from core.structured_log import get_logger
 
@@ -211,7 +210,7 @@ class RiskManagerAgent(BaseTradingAgent):
         }
 
         try:
-            from risk.advanced.portfolio_optimizer import PortfolioOptimizer, PortfolioConstraints, Position
+            from risk.advanced.portfolio_optimizer import PortfolioOptimizer, Position
 
             optimizer = PortfolioOptimizer()
 
