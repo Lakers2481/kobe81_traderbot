@@ -369,14 +369,17 @@ class FrozenParamsError(ConfigurationError):
 # SYSTEM ERRORS
 # =============================================================================
 
-class SystemError(QuantSystemError):
+class InfrastructureError(QuantSystemError):
     """
-    Base class for general system errors.
+    Base class for general system/infrastructure errors.
+
+    Note: Named InfrastructureError (not SystemError) to avoid
+    shadowing Python's built-in SystemError exception.
     """
-    error_code = "SYSTEM_ERROR"
+    error_code = "INFRASTRUCTURE_ERROR"
 
 
-class UnsafePathError(SystemError):
+class UnsafePathError(InfrastructureError):
     """
     Raised when an unsafe file path is detected.
 
@@ -386,14 +389,14 @@ class UnsafePathError(SystemError):
     is_recoverable = False
 
 
-class LockError(SystemError):
+class LockError(InfrastructureError):
     """
     Raised when a lock cannot be acquired.
     """
     error_code = "LOCK_FAILED"
 
 
-class ReconciliationError(SystemError):
+class ReconciliationError(InfrastructureError):
     """
     Raised when broker-local reconciliation fails.
 
@@ -405,7 +408,7 @@ class ReconciliationError(SystemError):
     error_code = "RECONCILIATION_MISMATCH"
 
 
-class StateCorruptionError(SystemError):
+class StateCorruptionError(InfrastructureError):
     """
     Raised when system state is corrupted.
     """

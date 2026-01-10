@@ -39,8 +39,8 @@ from core.exceptions import (
     SettingsValidationError,
     MissingConfigError,
     FrozenParamsError,
-    # System exceptions
-    SystemError,
+    # System/Infrastructure exceptions
+    InfrastructureError,
     UnsafePathError,
     LockError,
     ReconciliationError,
