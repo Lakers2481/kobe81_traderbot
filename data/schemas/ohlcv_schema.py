@@ -35,9 +35,10 @@ Date: 2026-01-07
 
 from __future__ import annotations
 
-import pandera as pa
-from pandera import Column, Check, DataFrameSchema
+import pandera.pandas as pa
+from pandera import Column, DataFrameSchema
 from datetime import datetime
+from typing import Optional
 import pandas as pd
 
 
@@ -53,54 +54,42 @@ class OHLCVSchema(pa.DataFrameModel):
     - Timestamps: Unique, monotonically increasing
     """
 
-    timestamp: pd.Series[datetime] = pa.Field(
+    timestamp: pa.Timestamp = pa.Field(
         nullable=False,
         unique=True,  # No duplicate timestamps
         coerce=True,  # Auto-convert to datetime
     )
 
-    symbol: pd.Series[str] = pa.Field(
+    symbol: pa.String = pa.Field(
         nullable=False,
         str_length={"min_value": 1, "max_value": 10},
     )
 
-    open: pd.Series[float] = pa.Field(
+    open: pa.Float = pa.Field(
         nullable=False,
         gt=0,  # Must be positive
-        checks=[
-            Check.greater_than(0),
-            Check.less_than(1_000_000),  # Sanity: no stock > $1M
-        ]
+        lt=1_000_000,  # Sanity: no stock > $1M
     )
 
-    high: pd.Series[float] = pa.Field(
+    high: pa.Float = pa.Field(
         nullable=False,
         gt=0,
-        checks=[
-            Check.greater_than(0),
-            Check.less_than(1_000_000),
-        ]
+        lt=1_000_000,
     )
 
-    low: pd.Series[float] = pa.Field(
+    low: pa.Float = pa.Field(
         nullable=False,
         gt=0,
-        checks=[
-            Check.greater_than(0),
-            Check.less_than(1_000_000),
-        ]
+        lt=1_000_000,
     )
 
-    close: pd.Series[float] = pa.Field(
+    close: pa.Float = pa.Field(
         nullable=False,
         gt=0,
-        checks=[
-            Check.greater_than(0),
-            Check.less_than(1_000_000),
-        ]
+        lt=1_000_000,
     )
 
-    volume: pd.Series[float] = pa.Field(
+    volume: pa.Float = pa.Field(
         nullable=False,
         ge=0,  # Volume can be 0 (halts, pre-market)
     )
