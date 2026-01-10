@@ -135,7 +135,7 @@ class AlphaMiner:
 
         for window in windows:
             # Calculate momentum for all symbols at once (vectorized)
-            momentum = self.close.pct_change(window)
+            momentum = self.close.pct_change(window, fill_method=None)
 
             for entry_thresh in entry_thresholds:
                 for exit_thresh in exit_thresholds:
@@ -608,15 +608,27 @@ class AlphaMiner:
         results = []
 
         for window in windows:
-            mom = self.close.pct_change(window)
+            mom = self.close.pct_change(window, fill_method=None)
             # Simple buy-and-hold comparison
-            returns = self.close.pct_change()
+            returns = self.close.pct_change(fill_method=None)
+
+            # Handle both single and multi-column returns
+            ret_sum = returns.sum()
+            ret_mean = returns.mean()
+            ret_std = returns.std()
+
+            if isinstance(ret_sum, pd.Series):
+                total_ret = float(ret_sum.mean())
+                sharpe = float((ret_mean / (ret_std + 1e-8) * np.sqrt(252)).mean())
+            else:
+                total_ret = float(ret_sum) if pd.notna(ret_sum) else 0.0
+                sharpe = float(ret_mean / (ret_std + 1e-8) * np.sqrt(252)) if pd.notna(ret_mean) else 0.0
 
             result = AlphaResult(
                 name=f"mom_{window}d",
                 params={'window': window},
-                total_return=float(returns.sum().mean()) if hasattr(returns.sum(), 'mean') else float(returns.sum()),
-                sharpe_ratio=float((returns.mean() / (returns.std() + 1e-8) * np.sqrt(252)).mean()) if hasattr(returns.mean(), 'mean') else 0,
+                total_return=total_ret,
+                sharpe_ratio=sharpe,
                 win_rate=0.5,
                 profit_factor=1.0,
                 max_drawdown=0.2,

@@ -124,8 +124,13 @@ Decision: {self.decision_reason}
         return doc.strip()
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary for metadata storage."""
-        return asdict(self)
+        """Convert to dictionary for metadata storage.
+
+        Note: Filters out None values as ChromaDB doesn't accept them in metadata.
+        """
+        result = asdict(self)
+        # ChromaDB can't handle None values in metadata - filter them out
+        return {k: v for k, v in result.items() if v is not None}
 
 
 @dataclass
