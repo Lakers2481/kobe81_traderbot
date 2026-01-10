@@ -23,7 +23,8 @@
       "WebFetch(domain:github.com)",
       "Bash(ls:*)",
       "WebFetch(domain:api.github.com)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(git lfs:*)"
     ]
   }
 }
