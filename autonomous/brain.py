@@ -299,15 +299,18 @@ class AutonomousBrain:
 
         # Check research engine for new high-value discoveries
         for disc in self.research.discoveries:
-            if disc.confidence > 0.6 and disc.improvement > 0.05:
+            # Handle both Discovery types (brain.py and research.py have different classes)
+            improvement = getattr(disc, "improvement", 0.0)
+            confidence = getattr(disc, "confidence", 0.5)
+            if confidence > 0.6 and improvement > 0.05:
                 if not getattr(disc, "_alerted", False):
                     discovery = Discovery(
                         discovery_type="parameter_improvement",
                         description=disc.description,
                         source="research_engine",
-                        improvement=disc.improvement,
-                        confidence=disc.confidence,
-                        data={"experiment_id": disc.experiment_id},
+                        improvement=improvement,
+                        confidence=confidence,
+                        data={"experiment_id": getattr(disc, "experiment_id", getattr(disc, "id", "unknown"))},
                     )
                     discoveries.append(discovery)
                     disc._alerted = True
